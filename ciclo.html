@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciclo de Vida del Software - Etapa Análisis</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&family=Lato:wght@300;400;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --accent-color: #60a5fa;
+            --dark-bg: #0f172a;
+            --light-accent: #dbeafe;
+            --text-dark: #1e293b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --gradient-1: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            --gradient-2: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: var(--light-accent);
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Slides Container */
+        .slides-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            padding: 40px 30px 100px 30px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        /* Title Slide */
+        .title-slide {
+            background: var(--gradient-1);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            justify-content: center !important;
+        }
+
+        .title-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.03) 49%, rgba(255,255,255,0.03) 51%, transparent 51%),
+                linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.03) 49%, rgba(255,255,255,0.03) 51%, transparent 51%);
+            background-size: 30px 30px;
+            animation: backgroundScroll 20s linear infinite;
+        }
+
+        @keyframes backgroundScroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 30px 30px; }
+        }
+
+        .title-slide h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+            letter-spacing: -1px;
+        }
+
+        .title-slide .subtitle {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .title-slide .author {
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-top: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Content Slides */
+        .content-slide {
+            background: linear-gradient(to bottom right, #ffffff 0%, var(--light-accent) 100%);
+        }
+
+        .slide-header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-header h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            border-bottom: 4px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .slide-header .icon-header {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--accent-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .content-box h3 {
+            font-family: 'Lato', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .content-box h3 i {
+            color: var(--secondary-color);
+        }
+
+        .content-box p, .content-box ul {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .content-box ul {
+            padding-left: 1.5rem;
+        }
+
+        .content-box ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .content-box ul li strong {
+            color: var(--primary-color);
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Three Column Layout */
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        /* Diagram Box */
+        .diagram-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .diagram-box .diagram-icon {
+            font-size: 4rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .diagram-content {
+            background: var(--light-accent);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .nav-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .slide-counter {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 20px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            margin: 1rem auto;
+            display: block;
+        }
+
+        .quiz-question {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            min-height: 60px;
+            display: block;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .quiz-option {
+            background: var(--light-accent);
+            padding: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+            display: block;
+            width: 100%;
+        }
+
+        .quiz-option:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateX(10px);
+        }
+
+        .quiz-option.selected {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .quiz-progress {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-family: 'Fira Code', monospace;
+            display: block;
+        }
+
+        .quiz-btn {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: var(--gradient-2);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .highlight-box h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Icon Grid */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .icon-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .icon-item:hover {
+            transform: translateY(-10px);
+        }
+
+        .icon-item i {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.8rem;
+        }
+
+        .icon-item h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .icon-item p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        /* Process Flow */
+        .process-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 1.5rem;
+            background: var(--light-accent);
+            border-radius: 15px;
+            margin: 1rem 0;
+        }
+
+        .process-step {
+            text-align: center;
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .process-step i {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .process-step h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .process-arrow {
+            font-size: 2rem;
+            color: var(--accent-color);
+        }
+
+        /* Code Box */
+        .code-box {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 15px 90px 15px;
+            }
+
+            .title-slide h1 {
+                font-size: 2.5rem;
+            }
+
+            .slide-header h2 {
+                font-size: 2rem;
+            }
+
+            .two-column, .three-column {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation {
+                padding: 10px 20px;
+            }
+
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .process-flow {
+                flex-direction: column;
+            }
+
+            .process-arrow {
+                transform: rotate(90deg);
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Slides Container -->
+    <div class="slides-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide animate__animated animate__fadeIn">
+            <h1 class="animate__animated animate__fadeInDown">Ciclo de Vida del Software</h1>
+            <p class="subtitle animate__animated animate__fadeInUp animate__delay-1s">
+                Etapa de Análisis
+            </p>
+            <div class="animate__animated animate__fadeIn animate__delay-2s">
+                <i class="fas fa-chart-line" style="font-size: 5rem; margin: 2rem 0;"></i>
+            </div>
+            <p class="author animate__animated animate__fadeInUp animate__delay-3s">
+                <i class="fas fa-code"></i> Desarrollo de Software Profesional
+            </p>
+        </div>
+
+        <!-- Slide 2: Ciclo de Vida del Software -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <h2>Ciclo de Vida del Software</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-info-circle"></i> Definición</h3>
+                    <p>El <strong>Ciclo de Vida del Software (SDLC - Software Development Life Cycle)</strong> es un proceso estructurado que describe las etapas por las que pasa un sistema de software desde su concepción inicial hasta su retiro. Proporciona un marco de trabajo para planificar, crear, probar, implementar y mantener software de alta calidad.</p>
+                </div>
+
+                <div class="process-flow">
+                    <div class="process-step">
+                        <i class="fas fa-lightbulb"></i>
+                        <h5>Planificación</h5>
+                        <p>Viabilidad</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-search"></i>
+                        <h5>Análisis</h5>
+                        <p>Requisitos</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-pencil-ruler"></i>
+                        <h5>Diseño</h5>
+                        <p>Arquitectura</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-code"></i>
+                        <h5>Desarrollo</h5>
+                        <p>Codificación</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-vial"></i>
+                        <h5>Pruebas</h5>
+                        <p>Calidad</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-rocket"></i>
+                        <h5>Despliegue</h5>
+                        <p>Producción</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-tools"></i>
+                        <h5>Mantenimiento</h5>
+                        <p>Soporte</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-bullseye"></i> Objetivos del SDLC</h3>
+                        <ul>
+                            <li><strong>Calidad:</strong> Producir software confiable y eficiente</li>
+                            <li><strong>Tiempo:</strong> Entregar dentro del cronograma establecido</li>
+                            <li><strong>Costo:</strong> Mantenerse dentro del presupuesto</li>
+                            <li><strong>Satisfacción:</strong> Cumplir expectativas del cliente</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-project-diagram"></i> Modelos Populares</h3>
+                        <ul>
+                            <li><strong>Cascada:</strong> Secuencial y lineal</li>
+                            <li><strong>Incremental:</strong> Entregas por partes</li>
+                            <li><strong>Espiral:</strong> Iterativo con análisis de riesgos</li>
+                            <li><strong>Ágil:</strong> Iterativo y adaptativo</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Etapa de Análisis - Introducción -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+                <h2>Etapa de Análisis</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-book-open"></i> ¿Qué es la Etapa de Análisis?</h3>
+                    <p>La <strong>etapa de análisis</strong> es la segunda fase del ciclo de vida del software, donde se estudian en profundidad las necesidades del negocio y se definen los <strong>requisitos funcionales y no funcionales</strong> del sistema. Es el puente entre "¿qué queremos?" (planificación) y "¿cómo lo construimos?" (diseño).</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-quote-left"></i> Frase Clave</h4>
+                    <p>"El análisis no es adivinar lo que el cliente quiere, es <strong>descubrir</strong> lo que el cliente necesita, aunque él mismo no lo sepa expresar."</p>
+                </div>
+
+                <div class="three-column">
+                    <div class="icon-item">
+                        <i class="fas fa-user-friends"></i>
+                        <h5>Entender al Usuario</h5>
+                        <p>Conocer quién usará el sistema y cómo</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h5>Definir Requisitos</h5>
+                        <p>Especificar qué debe hacer el sistema</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-file-contract"></i>
+                        <h5>Documentar</h5>
+                        <p>Crear especificaciones claras</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-exclamation-triangle"></i> ¿Por qué es Crítica?</h3>
+                        <ul>
+                            <li>Los errores en análisis cuestan <strong>100x más</strong> corregir en producción</li>
+                            <li>68% de proyectos fallan por <strong>mala definición de requisitos</strong></li>
+                            <li>Un buen análisis previene <strong>retrabajos costosos</strong></li>
+                            <li>Establece las <strong>expectativas correctas</strong> desde el inicio</li>
+                        </ul>
+                    </div>
+
+                    <div class="diagram-box">
+                        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Costo del Error</h3>
+                        <div class="diagram-content">
+                            <p><strong>Análisis:</strong> $1</p>
+                            <p><strong>Diseño:</strong> $10</p>
+                            <p><strong>Desarrollo:</strong> $50</p>
+                            <p><strong>Producción:</strong> $100+</p>
+                            <p style="margin-top: 1rem; font-style: italic;">Detectar errores temprano es vital</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Objetivos del Análisis -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-crosshairs"></i>
+                </div>
+                <h2>Objetivos del Análisis</h2>
+            </div>
+            <div class="slide-content">
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-check-double"></i>
+                        <h5>Comprender el Problema</h5>
+                        <p>Entender completamente el dominio del negocio</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-list-check"></i>
+                        <h5>Identificar Requisitos</h5>
+                        <p>Descubrir necesidades explícitas e implícitas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-users"></i>
+                        <h5>Conocer Stakeholders</h5>
+                        <p>Identificar todos los interesados</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-border-all"></i>
+                        <h5>Delimitar Alcance</h5>
+                        <p>Establecer límites claros del sistema</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-handshake"></i>
+                        <h5>Lograr Consenso</h5>
+                        <p>Acordar requisitos con todas las partes</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-file-alt"></i>
+                        <h5>Crear Documentación</h5>
+                        <p>Producir especificaciones formales</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-star"></i> Resultado Esperado</h3>
+                    <p>Al finalizar el análisis, debe existir un <strong>documento de especificación de requisitos (SRS)</strong> que sirva como contrato entre el equipo de desarrollo y el cliente. Este documento debe ser:</p>
+                    <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                        <p>✓ <strong>Completo:</strong> Cubre todos los requisitos</p>
+                        <p>✓ <strong>Consistente:</strong> Sin contradicciones</p>
+                        <p>✓ <strong>Verificable:</strong> Se puede probar</p>
+                        <p>✓ <strong>Modificable:</strong> Fácil de actualizar</p>
+                        <p>✓ <strong>Trazable:</strong> Cada requisito tiene origen identificado</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Actividades Principales -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h2>Actividades Principales</h2>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-1"></i> Elicitación de Requisitos</h3>
+                        <p><strong>Objetivo:</strong> Extraer información de stakeholders</p>
+                        <ul>
+                            <li>Entrevistas individuales y grupales</li>
+                            <li>Talleres de requisitos</li>
+                            <li>Observación directa</li>
+                            <li>Análisis de documentos existentes</li>
+                            <li>Prototipos exploratorios</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-2"></i> Análisis de Requisitos</h3>
+                        <p><strong>Objetivo:</strong> Estudiar y refinar la información</p>
+                        <ul>
+                            <li>Clasificar requisitos</li>
+                            <li>Resolver conflictos</li>
+                            <li>Priorizar necesidades</li>
+                            <li>Evaluar viabilidad</li>
+                            <li>Identificar dependencias</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-3"></i> Modelado del Sistema</h3>
+                        <p><strong>Objetivo:</strong> Representar visualmente el sistema</p>
+                        <ul>
+                            <li>Diagramas de casos de uso</li>
+                            <li>Diagramas de flujo de datos</li>
+                            <li>Modelos de dominio</li>
+                            <li>Diagramas de estados</li>
+                            <li>Diagramas de contexto</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-4"></i> Especificación</h3>
+                        <p><strong>Objetivo:</strong> Documentar formalmente</p>
+                        <ul>
+                            <li>Redactar especificación de requisitos</li>
+                            <li>Definir criterios de aceptación</li>
+                            <li>Crear glosario de términos</li>
+                            <li>Establecer restricciones</li>
+                            <li>Documentar suposiciones</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-5"></i> Validación y Verificación</h3>
+                    <p><strong>Objetivo:</strong> Asegurar que los requisitos sean correctos</p>
+                    <div class="two-column" style="margin-top: 1rem;">
+                        <div>
+                            <p><strong>Validación:</strong> ¿Estamos construyendo el producto correcto?</p>
+                            <ul style="font-size: 0.95rem;">
+                                <li>Revisiones con stakeholders</li>
+                                <li>Prototipos de validación</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p><strong>Verificación:</strong> ¿Estamos construyendo el producto correctamente?</p>
+                            <ul style="font-size: 0.95rem;">
+                                <li>Checklists de requisitos</li>
+                                <li>Inspecciones formales</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Técnicas de Elicitación -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h2>Técnicas de Elicitación</h2>
+            </div>
+            <div class="slide-content">
+                <div class="three-column">
+                    <div class="icon-item">
+                        <i class="fas fa-user-tie"></i>
+                        <h5>Entrevistas</h5>
+                        <p>Conversaciones uno-a-uno estructuradas o abiertas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-users"></i>
+                        <h5>Grupos Focales</h5>
+                        <p>Sesiones con múltiples stakeholders</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-eye"></i>
+                        <h5>Observación</h5>
+                        <p>Ver cómo trabajan los usuarios</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-poll"></i>
+                        <h5>Encuestas</h5>
+                        <p>Cuestionarios a gran escala</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-project-diagram"></i>
+                        <h5>Talleres JAD</h5>
+                        <p>Joint Application Development</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <h5>Prototipos</h5>
+                        <p>Mockups interactivos</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-brain"></i>
+                        <h5>Brainstorming</h5>
+                        <p>Lluvia de ideas creativas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-file-alt"></i>
+                        <h5>Análisis Documental</h5>
+                        <p>Revisar documentos existentes</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-balance-scale"></i>
+                        <h5>Benchmarking</h5>
+                        <p>Estudiar sistemas similares</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-lightbulb"></i> ¿Cuál Técnica Elegir?</h3>
+                    <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                        <p><strong>Entrevistas:</strong> Cuando necesitas información detallada de expertos</p>
+                        <p><strong>Talleres:</strong> Cuando hay muchos stakeholders con necesidades diversas</p>
+                        <p><strong>Observación:</strong> Cuando los usuarios no pueden articular bien sus necesidades</p>
+                        <p><strong>Prototipos:</strong> Cuando el sistema es innovador y no hay referencias</p>
+                        <p><strong>Encuestas:</strong> Cuando necesitas validar ideas con muchos usuarios</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Tipos de Requisitos -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h2>Tipos de Requisitos</h2>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-cogs"></i> Requisitos Funcionales</h3>
+                        <p><strong>¿Qué debe hacer el sistema?</strong></p>
+                        <p>Describen las funciones y servicios que el sistema debe proporcionar.</p>
+                        <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                            <p><strong>Ejemplos:</strong></p>
+                            <p>• El sistema debe permitir login con email/contraseña</p>
+                            <p>• Debe generar reportes en PDF</p>
+                            <p>• Debe enviar notificaciones por email</p>
+                            <p>• Debe calcular el precio con impuestos</p>
+                        </div>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-shield-alt"></i> Requisitos No Funcionales</h3>
+                        <p><strong>¿Cómo debe funcionar el sistema?</strong></p>
+                        <p>Describen cualidades, restricciones y atributos de calidad.</p>
+                        <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                            <p><strong>Ejemplos:</strong></p>
+                            <p>• Tiempo de respuesta < 2 segundos</p>
+                            <p>• Disponibilidad 99.9%</p>
+                            <p>• Soportar 10,000 usuarios concurrentes</p>
+                            <p>• Compatible con Chrome, Firefox, Safari</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <h5>Rendimiento</h5>
+                        <p>Velocidad, throughput, latencia</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-lock"></i>
+                        <h5>Seguridad</h5>
+                        <p>Autenticación, autorización, encriptación</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                        <h5>Escalabilidad</h5>
+                        <p>Capacidad de crecimiento</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-universal-access"></i>
+                        <h5>Usabilidad</h5>
+                        <p>Facilidad de uso, UX</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-server"></i>
+                        <h5>Confiabilidad</h5>
+                        <p>Disponibilidad, tolerancia a fallos</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-sync-alt"></i>
+                        <h5>Mantenibilidad</h5>
+                        <p>Facilidad de actualización</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-exclamation-circle"></i> Importante</h4>
+                    <p>Los requisitos no funcionales son tan importantes como los funcionales. Un sistema que hace todo lo que debe pero es lento, inseguro o difícil de usar, es un sistema fallido.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Modelado del Sistema -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <h2>Modelado del Sistema</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-cube"></i> ¿Por qué Modelar?</h3>
+                    <p>Los modelos son <strong>representaciones abstractas</strong> del sistema que ayudan a visualizar, especificar y comunicar la estructura y el comportamiento. "Una imagen vale más que mil palabras."</p>
+                </div>
+
+                <div class="three-column">
+                    <div class="diagram-box">
+                        <i class="fas fa-user-circle diagram-icon" style="font-size: 3rem;"></i>
+                        <h5 style="color: var(--primary-color);">Casos de Uso</h5>
+                        <p>Describen interacciones usuario-sistema</p>
+                    </div>
+                    <div class="diagram-box">
+                        <i class="fas fa-project-diagram diagram-icon" style="font-size: 3rem;"></i>
+                        <h5 style="color: var(--primary-color);">DFD</h5>
+                        <p>Flujo de datos en el sistema</p>
+                    </div>
+                    <div class="diagram-box">
+                        <i class="fas fa-database diagram-icon" style="font-size: 3rem;"></i>
+                        <h5 style="color: var(--primary-color);">Modelo de Datos</h5>
+                        <p>Estructura de información</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-draw-polygon"></i> Principales Diagramas UML</h3>
+                    <div class="two-column" style="margin-top: 1rem;">
+                        <div>
+                            <h5 style="color: var(--secondary-color); margin-bottom: 0.5rem;">Diagramas Estructurales</h5>
+                            <ul>
+                                <li><strong>Clases:</strong> Estructura estática</li>
+                                <li><strong>Objetos:</strong> Instancias específicas</li>
+                                <li><strong>Componentes:</strong> Módulos del sistema</li>
+                                <li><strong>Despliegue:</strong> Infraestructura física</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: var(--secondary-color); margin-bottom: 0.5rem;">Diagramas de Comportamiento</h5>
+                            <ul>
+                                <li><strong>Casos de Uso:</strong> Funcionalidades</li>
+                                <li><strong>Secuencia:</strong> Interacciones temporales</li>
+                                <li><strong>Actividad:</strong> Flujos de trabajo</li>
+                                <li><strong>Estados:</strong> Ciclo de vida objetos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-tools"></i> Herramientas Populares</h4>
+                    <p>Lucidchart, Draw.io, StarUML, Enterprise Architect, Visual Paradigm, PlantUML, Miro</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Documentación -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <h2>Documentación de Análisis</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-book"></i> Documento SRS (Software Requirements Specification)</h3>
+                    <p>El SRS es el <strong>entregable principal</strong> de la etapa de análisis. Especifica completamente qué debe hacer el software sin describir cómo lo hará.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-list-ol"></i> Estructura Típica del SRS</h3>
+                        <ul>
+                            <li><strong>1. Introducción</strong>
+                                <ul style="font-size: 0.9rem; margin-top: 0.3rem;">
+                                    <li>Propósito y alcance</li>
+                                    <li>Definiciones y acrónimos</li>
+                                    <li>Referencias</li>
+                                </ul>
+                            </li>
+                            <li><strong>2. Descripción General</strong>
+                                <ul style="font-size: 0.9rem; margin-top: 0.3rem;">
+                                    <li>Perspectiva del producto</li>
+                                    <li>Funciones del producto</li>
+                                    <li>Características de usuarios</li>
+                                </ul>
+                            </li>
+                            <li><strong>3. Requisitos Específicos</strong>
+                                <ul style="font-size: 0.9rem; margin-top: 0.3rem;">
+                                    <li>Requisitos funcionales</li>
+                                    <li>Requisitos no funcionales</li>
+                                    <li>Restricciones</li>
+                                </ul>
+                            </li>
+                            <li><strong>4. Apéndices</strong>
+                                <ul style="font-size: 0.9rem; margin-top: 0.3rem;">
+                                    <li>Modelos y diagramas</li>
+                                    <li>Glosario</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-check-square"></i> Características del SRS</h3>
+                        <ul>
+                            <li><strong>Completo:</strong> No falta información</li>
+                            <li><strong>Correcto:</strong> Todos los requisitos son válidos</li>
+                            <li><strong>Consistente:</strong> Sin contradicciones</li>
+                            <li><strong>Inequívoco:</strong> Una sola interpretación</li>
+                            <li><strong>Verificable:</strong> Se puede comprobar</li>
+                            <li><strong>Modificable:</strong> Fácil de cambiar</li>
+                            <li><strong>Trazable:</strong> Origen y destino claros</li>
+                            <li><strong>Priorizado:</strong> Requisitos ordenados</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="code-box">
+                    <p><strong>Ejemplo de Requisito Bien Especificado:</strong></p>
+                    <p style="margin-top: 0.5rem;">REQ-001: El sistema debe validar que la contraseña del usuario</p>
+                    <p>contenga al menos 8 caracteres, incluyendo al menos una letra</p>
+                    <p>mayúscula, una minúscula, un número y un carácter especial.</p>
+                    <p>Si no cumple, debe mostrar un mensaje de error específico</p>
+                    <p>en menos de 0.5 segundos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Roles y Responsabilidades -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <h2>Roles en el Análisis</h2>
+            </div>
+            <div class="slide-content">
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-user-tie"></i>
+                        <h5>Analista de Sistemas</h5>
+                        <p>Lidera la elicitación y documentación</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-shield"></i>
+                        <h5>Product Owner</h5>
+                        <p>Representa al cliente y prioriza</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-users"></i>
+                        <h5>Stakeholders</h5>
+                        <p>Proporcionan requisitos y validan</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-check"></i>
+                        <h5>Subject Matter Expert</h5>
+                        <p>Experto en el dominio del negocio</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-laptop-code"></i>
+                        <h5>Arquitecto Técnico</h5>
+                        <p>Evalúa viabilidad técnica</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-vial"></i>
+                        <h5>QA/Tester</h5>
+                        <p>Define criterios de aceptación</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-star"></i> Responsabilidades del Analista</h3>
+                    <div class="two-column" style="margin-top: 1rem;">
+                        <ul>
+                            <li>Planificar actividades de análisis</li>
+                            <li>Conducir entrevistas y talleres</li>
+                            <li>Documentar requisitos</li>
+                            <li>Crear modelos del sistema</li>
+                        </ul>
+                        <ul>
+                            <li>Resolver conflictos entre requisitos</li>
+                            <li>Facilitar comunicación</li>
+                            <li>Validar con stakeholders</li>
+                            <li>Mantener trazabilidad</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-graduation-cap"></i> Habilidades Clave</h4>
+                    <p><strong>Técnicas:</strong> UML, modelado, herramientas | <strong>Blandas:</strong> Comunicación, escucha activa, negociación, pensamiento crítico, empatía</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Herramientas de Análisis -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-toolbox"></i>
+                </div>
+                <h2>Herramientas de Análisis</h2>
+            </div>
+            <div class="slide-content">
+                <div class="three-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-draw-polygon"></i> Modelado</h3>
+                        <ul>
+                            <li>Lucidchart</li>
+                            <li>Draw.io</li>
+                            <li>StarUML</li>
+                            <li>Visual Paradigm</li>
+                            <li>Enterprise Architect</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-clipboard-list"></i> Requisitos</h3>
+                        <ul>
+                            <li>Jira</li>
+                            <li>Azure DevOps</li>
+                            <li>IBM DOORS</li>
+                            <li>Confluence</li>
+                            <li>Notion</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-object-group"></i> Prototipos</h3>
+                        <ul>
+                            <li>Figma</li>
+                            <li>Adobe XD</li>
+                            <li>Balsamiq</li>
+                            <li>InVision</li>
+                            <li>Sketch</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-comments"></i> Colaboración y Comunicación</h3>
+                    <div class="icon-grid" style="margin-top: 1rem;">
+                        <div class="icon-item" style="padding: 1rem;">
+                            <i class="fab fa-slack"></i>
+                            <h5>Slack</h5>
+                        </div>
+                        <div class="icon-item" style="padding: 1rem;">
+                            <i class="fab fa-microsoft"></i>
+                            <h5>Teams</h5>
+                        </div>
+                        <div class="icon-item" style="padding: 1rem;">
+                            <i class="fas fa-video"></i>
+                            <h5>Zoom</h5>
+                        </div>
+                        <div class="icon-item" style="padding: 1rem;">
+                            <i class="fas fa-chalkboard"></i>
+                            <h5>Miro</h5>
+                        </div>
+                        <div class="icon-item" style="padding: 1rem;">
+                            <i class="fab fa-trello"></i>
+                            <h5>Trello</h5>
+                        </div>
+                        <div class="icon-item" style="padding: 1rem;">
+                            <i class="fab fa-google-drive"></i>
+                            <h5>Drive</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-lightbulb"></i> Consejo</h4>
+                    <p>La herramienta no hace al analista. Domina los conceptos primero, luego aprende las herramientas. Un buen analista puede trabajar incluso con papel y lápiz.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Mejores Prácticas -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <h2>Mejores Prácticas</h2>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-check-circle"></i> DO - Hacer</h3>
+                        <ul>
+                            <li>✓ Involucrar a stakeholders desde el inicio</li>
+                            <li>✓ Documentar decisiones y suposiciones</li>
+                            <li>✓ Usar múltiples técnicas de elicitación</li>
+                            <li>✓ Validar requisitos frecuentemente</li>
+                            <li>✓ Priorizar requisitos con el cliente</li>
+                            <li>✓ Mantener trazabilidad completa</li>
+                            <li>✓ Crear prototipos cuando sea necesario</li>
+                            <li>✓ Revisar requisitos en equipo</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-times-circle"></i> DON'T - Evitar</h3>
+                        <ul>
+                            <li>✗ Asumir que conoces todas las respuestas</li>
+                            <li>✗ Escribir requisitos ambiguos</li>
+                            <li>✗ Omitir requisitos no funcionales</li>
+                            <li>✗ Saltarse la validación con usuarios</li>
+                            <li>✗ Mezclar análisis con diseño prematuro</li>
+                            <li>✗ Ignorar las restricciones técnicas</li>
+                            <li>✗ Crear documentos que nadie lee</li>
+                            <li>✗ Trabajar en silos sin comunicación</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-quote-left"></i> Principios Fundamentales</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p style="margin-bottom: 0.8rem;"><strong>1. Escucha más, habla menos:</strong> El análisis es 80% escuchar</p>
+                        <p style="margin-bottom: 0.8rem;"><strong>2. Pregunta "¿Por qué?" 5 veces:</strong> Llega a la raíz del problema</p>
+                        <p style="margin-bottom: 0.8rem;"><strong>3. Busca el problema, no la solución:</strong> No asumas soluciones</p>
+                        <p style="margin-bottom: 0.8rem;"><strong>4. Documenta, documenta, documenta:</strong> La memoria es frágil</p>
+                        <p><strong>5. Valida temprano y frecuentemente:</strong> Falla rápido, aprende rápido</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-brain"></i> Recuerda</h4>
+                    <p>"El costo de corregir un error crece exponencialmente con cada fase del desarrollo. Invertir tiempo en el análisis ahorra dinero, tiempo y frustración más adelante."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Desafíos Comunes -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <h2>Desafíos Comunes</h2>
+            </div>
+            <div class="slide-content">
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-comments-dollar"></i>
+                        <h5>Requisitos Cambiantes</h5>
+                        <p>Los clientes cambian de opinión constantemente</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-friends"></i>
+                        <h5>Múltiples Stakeholders</h5>
+                        <p>Conflictos entre necesidades diferentes</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-question-circle"></i>
+                        <h5>Requisitos Vagos</h5>
+                        <p>"Hazlo intuitivo y fácil de usar"</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-eye-slash"></i>
+                        <h5>Requisitos Ocultos</h5>
+                        <p>Necesidades implícitas no expresadas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-clock"></i>
+                        <h5>Presión de Tiempo</h5>
+                        <p>"No hay tiempo para análisis, ¡a programar!"</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-language"></i>
+                        <h5>Problemas de Comunicación</h5>
+                        <p>Diferentes lenguajes entre TI y negocio</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Señales de Alarma</h3>
+                        <ul>
+                            <li>🚩 "Haz algo parecido a [competidor]"</li>
+                            <li>🚩 "Ya sabemos lo que queremos"</li>
+                            <li>🚩 "Es simple, no tardará mucho"</li>
+                            <li>🚩 "Después lo definimos mejor"</li>
+                            <li>🚩 "El usuario sabrá usarlo"</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-shield-alt"></i> Estrategias de Mitigación</h3>
+                        <ul>
+                            <li>✓ Gestión de cambios formal</li>
+                            <li>✓ Priorización clara (MoSCoW)</li>
+                            <li>✓ Prototipos y mockups</li>
+                            <li>✓ Sesiones de refinamiento continuo</li>
+                            <li>✓ Educación sobre impacto de cambios</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-user-graduate"></i> Lección Aprendida</h4>
+                    <p>El 80% de los proyectos fallidos tienen un análisis deficiente como causa raíz. No es el código malo, son los requisitos equivocados.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Quiz Introduction -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h2>Quiz Interactivo</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box" style="text-align: center;">
+                    <h3><i class="fas fa-trophy"></i> ¡Evalúa tu Conocimiento!</h3>
+                    <p style="font-size: 1.3rem; margin: 2rem 0;">
+                        Responde 20 preguntas de opción múltiple sobre el Ciclo de Vida del Software y la Etapa de Análisis.
+                    </p>
+                    <div style="margin: 3rem 0;">
+                        <i class="fas fa-chart-line" style="font-size: 4rem; color: var(--accent-color);"></i>
+                    </div>
+                    <p style="font-size: 1.2rem;">
+                        <strong>Instrucciones:</strong> Selecciona la respuesta correcta para cada pregunta. Al final recibirás tu puntuación y retroalimentación detallada.
+                    </p>
+                    <button class="quiz-btn" onclick="startQuiz()">
+                        <i class="fas fa-play-circle"></i> Comenzar Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Quiz -->
+        <div class="slide content-slide" id="quizSlide">
+            <div class="slide-content" style="justify-content: center; align-items: center;">
+                <div class="quiz-container">
+                    <div class="quiz-progress" id="quizProgress">Pregunta 1 de 20</div>
+                    <div class="quiz-question" id="quizQuestion">Cargando pregunta...</div>
+                    <div class="quiz-options" id="quizOptions"></div>
+                    <button class="quiz-btn" id="nextBtn" onclick="nextQuestion()">
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="previousSlide()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">15</span>
+        </div>
+        <button class="nav-btn" id="nextNavBtn" onclick="nextSlide()">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Quiz Data
+        const quizData = [
+            {
+                question: "¿Qué es el Ciclo de Vida del Software (SDLC)?",
+                options: [
+                    "Un lenguaje de programación",
+                    "Un proceso estructurado que describe las etapas de desarrollo de software",
+                    "Una metodología ágil específica",
+                    "Un framework de testing"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál es la principal función de la etapa de análisis?",
+                options: [
+                    "Escribir código",
+                    "Diseñar la base de datos",
+                    "Definir requisitos funcionales y no funcionales del sistema",
+                    "Realizar pruebas de integración"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuánto más costoso es corregir un error en producción comparado con encontrarlo en análisis?",
+                options: [
+                    "2 veces más",
+                    "10 veces más",
+                    "50 veces más",
+                    "100 veces más"
+                ],
+                correct: 3
+            },
+            {
+                question: "¿Qué porcentaje de proyectos fallan debido a mala definición de requisitos?",
+                options: [
+                    "25%",
+                    "40%",
+                    "68%",
+                    "90%"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuál NO es un objetivo de la etapa de análisis?",
+                options: [
+                    "Comprender el problema del negocio",
+                    "Escribir el código del sistema",
+                    "Identificar requisitos",
+                    "Delimitar el alcance"
+                ],
+                correct: 1
+            },
+            {
+                question: "El documento SRS significa:",
+                options: [
+                    "System Resource Specification",
+                    "Software Requirements Specification",
+                    "System Requirements Solution",
+                    "Software Resource Structure"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál de estas NO es una actividad principal del análisis?",
+                options: [
+                    "Elicitación de requisitos",
+                    "Modelado del sistema",
+                    "Codificación del software",
+                    "Validación de requisitos"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Qué técnica de elicitación es mejor cuando los usuarios no pueden articular bien sus necesidades?",
+                options: [
+                    "Encuestas",
+                    "Entrevistas telefónicas",
+                    "Observación directa",
+                    "Análisis documental"
+                ],
+                correct: 2
+            },
+            {
+                question: "Los requisitos funcionales describen:",
+                options: [
+                    "Cómo debe funcionar el sistema",
+                    "Qué debe hacer el sistema",
+                    "La velocidad del sistema",
+                    "La seguridad del sistema"
+                ],
+                correct: 1
+            },
+            {
+                question: "Un ejemplo de requisito NO funcional es:",
+                options: [
+                    "El sistema debe permitir login",
+                    "El sistema debe generar reportes",
+                    "El sistema debe responder en menos de 2 segundos",
+                    "El sistema debe enviar notificaciones"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuál de estos NO es un tipo de requisito no funcional?",
+                options: [
+                    "Rendimiento",
+                    "Seguridad",
+                    "Funcionalidad de login",
+                    "Escalabilidad"
+                ],
+                correct: 2
+            },
+            {
+                question: "UML significa:",
+                options: [
+                    "Universal Modeling Language",
+                    "Unified Modeling Language",
+                    "Ultimate Model Language",
+                    "User Management Language"
+                ],
+                correct: 1
+            },
+            {
+                question: "Los diagramas de casos de uso muestran:",
+                options: [
+                    "El código del sistema",
+                    "Interacciones usuario-sistema",
+                    "La base de datos",
+                    "El servidor de producción"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál característica NO debe tener un SRS?",
+                options: [
+                    "Completo",
+                    "Verificable",
+                    "Ambiguo",
+                    "Trazable"
+                ],
+                correct: 2
+            },
+            {
+                question: "El rol principal responsable de liderar el análisis es:",
+                options: [
+                    "El programador",
+                    "El analista de sistemas",
+                    "El diseñador gráfico",
+                    "El DBA"
+                ],
+                correct: 1
+            },
+            {
+                question: "JAD es una técnica que significa:",
+                options: [
+                    "Just Another Development",
+                    "Joint Application Development",
+                    "Java Application Design",
+                    "JavaScript and Data"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué significa validar requisitos?",
+                options: [
+                    "Escribir código de prueba",
+                    "Verificar que estamos construyendo el producto correcto",
+                    "Diseñar la interfaz",
+                    "Crear la base de datos"
+                ],
+                correct: 1
+            },
+            {
+                question: "Un requisito bien especificado debe ser todo EXCEPTO:",
+                options: [
+                    "Claro",
+                    "Completo",
+                    "Vago",
+                    "Verificable"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuál es una señal de alarma en el análisis?",
+                options: [
+                    "Documentar suposiciones",
+                    "Hacer preguntas frecuentes",
+                    "El cliente dice 'Ya sabemos lo que queremos, no hay que analizar'",
+                    "Crear prototipos"
+                ],
+                correct: 2
+            },
+            {
+                question: "El principio 'Pregunta ¿Por qué? 5 veces' sirve para:",
+                options: [
+                    "Molestar al cliente",
+                    "Llenar tiempo en reuniones",
+                    "Llegar a la raíz del problema real",
+                    "Crear más documentación"
+                ],
+                correct: 2
+            }
+        ];
+
+        // Presentation State
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        // Quiz State
+        let currentQuestionIndex = 0;
+        let selectedAnswers = [];
+        let quizStarted = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSlideCounter();
+            updateNavButtons();
+        });
+
+        // Slide Navigation
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            slides[index].classList.add('animate__animated', 'animate__fadeIn');
+            
+            currentSlideIndex = index;
+            updateSlideCounter();
+            updateNavButtons();
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+
+        function updateSlideCounter() {
+            document.getElementById('currentSlide').textContent = currentSlideIndex + 1;
+            document.getElementById('totalSlides').textContent = totalSlides;
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextNavBtn');
+            
+            prevBtn.disabled = currentSlideIndex === 0;
+            nextBtn.disabled = currentSlideIndex === totalSlides - 1;
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Quiz Functions
+        function startQuiz() {
+            console.log('Starting quiz...');
+            quizStarted = true;
+            currentQuestionIndex = 0;
+            selectedAnswers = [];
+            
+            showSlide(14);
+            
+            setTimeout(function() {
+                console.log('Timeout finished, loading question...');
+                loadQuestion();
+            }, 300);
+        }
+
+        function loadQuestion() {
+            console.log('Loading question', currentQuestionIndex);
+            
+            if (!quizData || quizData.length === 0) {
+                console.error('quizData is not defined or empty');
+                return;
+            }
+            
+            const question = quizData[currentQuestionIndex];
+            console.log('Question data:', question);
+            
+            const progressEl = document.getElementById('quizProgress');
+            const questionEl = document.getElementById('quizQuestion');
+            const optionsContainer = document.getElementById('quizOptions');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            console.log('Elements found:', {
+                progress: !!progressEl,
+                question: !!questionEl,
+                options: !!optionsContainer,
+                button: !!nextBtn
+            });
+            
+            if (!progressEl || !questionEl || !optionsContainer || !nextBtn) {
+                console.error('Quiz elements not found!');
+                alert('Error: No se pudieron cargar los elementos del quiz. Por favor recarga la página.');
+                return;
+            }
+            
+            progressEl.textContent = `Pregunta ${currentQuestionIndex + 1} de ${quizData.length}`;
+            progressEl.style.display = 'block';
+            
+            questionEl.textContent = question.question;
+            questionEl.style.display = 'block';
+            
+            optionsContainer.innerHTML = '';
+            optionsContainer.style.display = 'flex';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = function() {
+                    selectOption(index, optionDiv);
+                };
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            console.log('Options created:', question.options.length);
+            
+            if (selectedAnswers[currentQuestionIndex] !== undefined) {
+                const options = optionsContainer.querySelectorAll('.quiz-option');
+                if (options[selectedAnswers[currentQuestionIndex]]) {
+                    options[selectedAnswers[currentQuestionIndex]].classList.add('selected');
+                }
+            }
+            
+            nextBtn.style.display = 'block';
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.innerHTML = 'Finalizar Quiz <i class="fas fa-check-circle"></i>';
+            } else {
+                nextBtn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+            }
+            
+            console.log('Question loaded successfully');
+        }
+
+        function selectOption(index, element) {
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            selectedAnswers[currentQuestionIndex] = index;
+        }
+
+        function nextQuestion() {
+            if (selectedAnswers[currentQuestionIndex] === undefined) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selecciona una respuesta',
+                    text: 'Por favor selecciona una opción antes de continuar',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+            
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            let score = 0;
+            quizData.forEach((question, index) => {
+                if (selectedAnswers[index] === question.correct) {
+                    score++;
+                }
+            });
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            let icon = 'success';
+            let title = '¡Excelente trabajo!';
+            
+            if (percentage < 60) {
+                icon = 'warning';
+                title = 'Puedes mejorar';
+            } else if (percentage < 80) {
+                icon = 'info';
+                title = '¡Buen trabajo!';
+            }
+            
+            Swal.fire({
+                icon: icon,
+                title: title,
+                html: `
+                    <div style="font-size: 1.2rem; margin: 2rem 0;">
+                        <p>Has respondido correctamente <strong>${score}</strong> de <strong>${quizData.length}</strong> preguntas</p>
+                        <div style="font-size: 3rem; color: #3b82f6; margin: 2rem 0;">
+                            ${percentage}%
+                        </div>
+                        <p style="margin-top: 1.5rem;">
+                            ${percentage >= 80 ? 'Dominas muy bien los conceptos del Ciclo de Vida del Software y la Etapa de Análisis' : 
+                              percentage >= 60 ? 'Tienes un buen entendimiento. Revisa los temas donde tuviste dudas' : 
+                              'Te recomendamos revisar nuevamente la presentación'}
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'Volver al inicio',
+                confirmButtonColor: '#3b82f6',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showSlide(0);
+                    quizStarted = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
