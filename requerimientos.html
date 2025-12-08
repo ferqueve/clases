@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis y Diseño de Aplicaciones - Volere</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #0a4d68;
+            --secondary-color: #088395;
+            --accent-color: #05bfdb;
+            --dark-bg: #001524;
+            --light-accent: #e8f4f8;
+            --text-dark: #1a1a1a;
+            --gradient-1: linear-gradient(135deg, #0a4d68 0%, #088395 100%);
+            --gradient-2: linear-gradient(135deg, #088395 0%, #05bfdb 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: var(--light-accent);
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Slides Container */
+        .slides-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            padding: 40px 30px 100px 30px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        /* Title Slide */
+        .title-slide {
+            background: var(--gradient-1);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .title-slide::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .title-slide h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .title-slide .subtitle {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .title-slide .author {
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-top: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Content Slides */
+        .content-slide {
+            background: linear-gradient(to bottom right, #ffffff 0%, var(--light-accent) 100%);
+        }
+
+        .slide-header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            border-bottom: 4px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .slide-header .icon-header {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--accent-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .content-box h3 {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .content-box h3 i {
+            color: var(--secondary-color);
+        }
+
+        .content-box p, .content-box ul {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .content-box ul {
+            padding-left: 1.5rem;
+        }
+
+        .content-box ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .content-box ul li strong {
+            color: var(--primary-color);
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Diagram Box */
+        .diagram-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .diagram-box .diagram-icon {
+            font-size: 5rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .diagram-content {
+            background: var(--light-accent);
+            padding: 2rem;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(8, 131, 149, 0.4);
+        }
+
+        .nav-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .slide-counter {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 20px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            margin: 1rem auto;
+            display: block;
+        }
+
+        .quiz-question {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            min-height: 60px;
+            display: block;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .quiz-option {
+            background: var(--light-accent);
+            padding: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+            display: block;
+            width: 100%;
+        }
+
+        .quiz-option:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateX(10px);
+        }
+
+        .quiz-option.selected {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .quiz-progress {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-family: 'JetBrains Mono', monospace;
+            display: block;
+        }
+
+        .quiz-btn {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(8, 131, 149, 0.3);
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            box-shadow: 0 10px 30px rgba(5, 191, 219, 0.3);
+        }
+
+        .highlight-box h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Icon Grid */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .icon-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .icon-item:hover {
+            transform: translateY(-10px);
+        }
+
+        .icon-item i {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .icon-item h5 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 15px 90px 15px;
+            }
+
+            .title-slide h1 {
+                font-size: 2.5rem;
+            }
+
+            .slide-header h2 {
+                font-size: 2rem;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation {
+                padding: 10px 20px;
+            }
+
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Slides Container -->
+    <div class="slides-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide animate__animated animate__fadeIn">
+            <h1 class="animate__animated animate__fadeInDown">Análisis y Diseño de Aplicaciones</h1>
+            <p class="subtitle animate__animated animate__fadeInUp animate__delay-1s">
+                Metodología Volere y Gestión de Requerimientos
+            </p>
+            <div class="animate__animated animate__fadeIn animate__delay-2s">
+                <i class="fas fa-drafting-compass" style="font-size: 5rem; margin: 2rem 0;"></i>
+            </div>
+            <p class="author animate__animated animate__fadeInUp animate__delay-3s">
+                <i class="fas fa-user-graduate"></i> Presentación Educativa Interactiva
+            </p>
+        </div>
+
+        <!-- Slide 2: Volere -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h2>Volere</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-info-circle"></i> ¿Qué es Volere?</h3>
+                    <p>Volere es un <strong>marco de trabajo completo</strong> para la obtención, documentación y gestión de requerimientos de software. Fue desarrollado por Suzanne y James Robertson, y se ha convertido en un estándar de facto en la industria del análisis de sistemas.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-bullseye"></i> Objetivos Principales</h3>
+                        <ul>
+                            <li><strong>Completitud:</strong> Asegurar que todos los requerimientos sean identificados</li>
+                            <li><strong>Trazabilidad:</strong> Relacionar cada requisito con su origen</li>
+                            <li><strong>Calidad:</strong> Garantizar requerimientos claros y verificables</li>
+                            <li><strong>Gestión:</strong> Facilitar el control de cambios</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-layer-group"></i> Componentes Clave</h3>
+                        <ul>
+                            <li><strong>Plantilla de Especificación:</strong> Estructura estandarizada</li>
+                            <li><strong>Modelo de Contexto:</strong> Límites del sistema</li>
+                            <li><strong>Atributos de Calidad:</strong> Criterios de aceptación</li>
+                            <li><strong>Shell de Requisitos:</strong> Formato único</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-lightbulb"></i> Valor de Volere</h4>
+                    <p>Volere proporciona un lenguaje común entre stakeholders, desarrolladores y clientes, reduciendo ambigüedades y mejorando la comunicación en proyectos de software.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Requerimiento -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h2>Requerimiento</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-file-alt"></i> Definición</h3>
+                    <p>Un <strong>requerimiento</strong> es una declaración que identifica una capacidad, característica o factor de calidad necesario de un sistema para que sea útil y exitoso para sus stakeholders. Es una condición o capacidad que debe estar presente en un producto para satisfacer un contrato, estándar, especificación o documento formalmente impuesto.</p>
+                </div>
+
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-cogs"></i>
+                        <h5>Funcionales</h5>
+                        <p>Qué debe hacer el sistema</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <h5>No Funcionales</h5>
+                        <p>Cómo debe funcionar</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h5>Restricciones</h5>
+                        <p>Limitaciones del proyecto</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-database"></i>
+                        <h5>De Datos</h5>
+                        <p>Información a manejar</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-check-double"></i> Características</h3>
+                        <ul>
+                            <li><strong>Claro:</strong> Sin ambigüedades</li>
+                            <li><strong>Completo:</strong> Información suficiente</li>
+                            <li><strong>Consistente:</strong> No contradictorio</li>
+                            <li><strong>Verificable:</strong> Se puede probar</li>
+                            <li><strong>Trazable:</strong> Identificable origen y destino</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-pencil-alt"></i> Ejemplo Práctico</h3>
+                        <p><strong>Requerimiento Funcional:</strong></p>
+                        <p style="background: var(--light-accent); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                            "El sistema debe permitir que los usuarios registrados inicien sesión mediante correo electrónico y contraseña en un tiempo máximo de 3 segundos."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Checklist de Requerimientos -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h2>Checklist de Requerimientos</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-list-check"></i> Propósito del Checklist</h3>
+                    <p>El checklist de requerimientos es una <strong>herramienta de verificación</strong> que asegura que cada requerimiento cumple con estándares de calidad y completitud antes de ser implementado. Previene errores costosos y garantiza la trazabilidad.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-clipboard-check"></i> Verificación de Calidad</h3>
+                        <ul>
+                            <li>✓ <strong>Claridad:</strong> ¿Es comprensible?</li>
+                            <li>✓ <strong>Completitud:</strong> ¿Tiene toda la información?</li>
+                            <li>✓ <strong>Consistencia:</strong> ¿Es coherente con otros requisitos?</li>
+                            <li>✓ <strong>Verificabilidad:</strong> ¿Se puede probar?</li>
+                            <li>✓ <strong>Factibilidad:</strong> ¿Es técnicamente posible?</li>
+                            <li>✓ <strong>Prioridad:</strong> ¿Está clasificado correctamente?</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-tags"></i> Atributos Esenciales</h3>
+                        <ul>
+                            <li>✓ <strong>ID Único:</strong> Identificador de trazabilidad</li>
+                            <li>✓ <strong>Tipo:</strong> Funcional/No funcional</li>
+                            <li>✓ <strong>Fuente:</strong> Origen del requisito</li>
+                            <li>✓ <strong>Rationale:</strong> Justificación</li>
+                            <li>✓ <strong>Criterio de Aceptación:</strong> Condiciones de cumplimiento</li>
+                            <li>✓ <strong>Dependencias:</strong> Relaciones con otros requisitos</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-star"></i> Mejores Prácticas</h4>
+                    <p>Utiliza el checklist en cada revisión de requisitos. Un requisito que pasa todas las verificaciones tiene una probabilidad del 95% de ser implementado correctamente sin retrabajos significativos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Caso de Uso del Negocio -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h2>Caso de Uso del Negocio</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-building"></i> Definición</h3>
+                    <p>Un <strong>Caso de Uso del Negocio</strong> (Business Use Case) describe cómo el negocio responde a un evento externo o interno para lograr un objetivo de negocio. Se enfoca en el <strong>valor de negocio</strong> y los procesos organizacionales, no en los sistemas tecnológicos.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="diagram-box">
+                        <div class="diagram-icon">
+                            <i class="fas fa-sitemap"></i>
+                        </div>
+                        <h3 style="color: var(--primary-color);">Perspectiva de Negocio</h3>
+                        <div class="diagram-content">
+                            <p><strong>Actor de Negocio</strong></p>
+                            <p>↓</p>
+                            <p><strong>Evento de Negocio</strong></p>
+                            <p>↓</p>
+                            <p><strong>Proceso de Negocio</strong></p>
+                            <p>↓</p>
+                            <p><strong>Resultado/Valor</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-puzzle-piece"></i> Componentes</h3>
+                        <ul>
+                            <li><strong>Actor de Negocio:</strong> Rol que inicia o participa</li>
+                            <li><strong>Objetivo:</strong> Meta del negocio</li>
+                            <li><strong>Alcance:</strong> Límites del proceso</li>
+                            <li><strong>Precondiciones:</strong> Estado inicial</li>
+                            <li><strong>Flujo Principal:</strong> Secuencia normal</li>
+                            <li><strong>Flujos Alternativos:</strong> Variaciones</li>
+                            <li><strong>Postcondiciones:</strong> Estado final</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-store"></i> Ejemplo: Procesar Venta en Tienda</h4>
+                    <p><strong>Actor:</strong> Cliente | <strong>Objetivo:</strong> Completar compra | <strong>Flujo:</strong> Cliente selecciona productos → Cajero registra venta → Cliente paga → Sistema actualiza inventario → Cliente recibe comprobante</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Caso de Uso del Producto -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-laptop-code"></i>
+                </div>
+                <h2>Caso de Uso del Producto</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-microchip"></i> Definición</h3>
+                    <p>Un <strong>Caso de Uso del Producto</strong> (Product Use Case) describe cómo un usuario interactúa con el <strong>sistema de software</strong> para lograr un objetivo específico. Es más técnico que el caso de uso de negocio y se centra en la funcionalidad del sistema.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-user-cog"></i> Diferencias Clave</h3>
+                        <ul>
+                            <li><strong>Enfoque:</strong> Interacción usuario-sistema</li>
+                            <li><strong>Nivel:</strong> Más detallado y técnico</li>
+                            <li><strong>Actor:</strong> Usuario o sistema externo</li>
+                            <li><strong>Objetivo:</strong> Funcionalidad específica</li>
+                            <li><strong>Uso:</strong> Base para diseño y desarrollo</li>
+                        </ul>
+                    </div>
+
+                    <div class="diagram-box">
+                        <div class="diagram-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h3 style="color: var(--primary-color);">Estructura UML</h3>
+                        <div class="diagram-content">
+                            <p><strong>Usuario (Actor)</strong></p>
+                            <p>⟷</p>
+                            <p><strong>[Caso de Uso]</strong></p>
+                            <p>Descripción detallada de la interacción</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-edit"></i> Plantilla Estándar</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p><strong>CU-001: Iniciar Sesión</strong></p>
+                        <p><strong>Actor:</strong> Usuario Registrado</p>
+                        <p><strong>Precondición:</strong> Usuario tiene cuenta activa</p>
+                        <p><strong>Flujo Principal:</strong></p>
+                        <p>1. Usuario ingresa email y contraseña</p>
+                        <p>2. Sistema valida credenciales</p>
+                        <p>3. Sistema carga perfil del usuario</p>
+                        <p>4. Sistema redirige al dashboard</p>
+                        <p><strong>Postcondición:</strong> Usuario autenticado y en dashboard</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Interesado (Stakeholder) -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h2>Interesado (Stakeholder)</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-handshake"></i> Definición</h3>
+                    <p>Un <strong>interesado o stakeholder</strong> es cualquier persona, grupo u organización que puede afectar, verse afectado o percibirse como afectado por el proyecto de software. Son fundamentales para el éxito del proyecto porque definen requisitos y criterios de aceptación.</p>
+                </div>
+
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-user-tie"></i>
+                        <h5>Patrocinador</h5>
+                        <p>Financia el proyecto</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-check"></i>
+                        <h5>Usuario Final</h5>
+                        <p>Usa el sistema</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-shield"></i>
+                        <h5>Cliente</h5>
+                        <p>Paga por el producto</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-cog"></i>
+                        <h5>Equipo Técnico</h5>
+                        <p>Desarrolla la solución</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-graduate"></i>
+                        <h5>Analista</h5>
+                        <p>Documenta requisitos</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-balance-scale"></i>
+                        <h5>Regulador</h5>
+                        <p>Impone normativas</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-chart-line"></i> Análisis de Poder/Interés</h3>
+                        <ul>
+                            <li><strong>Alto Poder/Alto Interés:</strong> Gestionar de cerca</li>
+                            <li><strong>Alto Poder/Bajo Interés:</strong> Mantener satisfecho</li>
+                            <li><strong>Bajo Poder/Alto Interés:</strong> Mantener informado</li>
+                            <li><strong>Bajo Poder/Bajo Interés:</strong> Monitorear</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-exclamation-circle"></i> Importancia</h4>
+                        <p>Identificar y gestionar correctamente a todos los stakeholders reduce el riesgo de fracaso del proyecto en un 60%. Sus expectativas guían el desarrollo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Evento del Negocio -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h2>Evento del Negocio</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-bolt"></i> Definición</h3>
+                    <p>Un <strong>evento del negocio</strong> es un acontecimiento que ocurre fuera del sistema y que requiere que el sistema responda de alguna manera. Es el <strong>disparador</strong> que inicia un caso de uso del negocio y genera una reacción planificada.</p>
+                </div>
+
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-clock"></i>
+                        <h5>Temporal</h5>
+                        <p>Basado en tiempo (ej: fin de mes)</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-external-link-alt"></i>
+                        <h5>Externo</h5>
+                        <p>Iniciado por actor externo</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-server"></i>
+                        <h5>Interno</h5>
+                        <p>Generado por el sistema</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-list-ol"></i> Ejemplos de Eventos</h3>
+                        <ul>
+                            <li><strong>Temporal:</strong> "Llega fin de mes" → Generar reportes</li>
+                            <li><strong>Externo:</strong> "Cliente realiza pedido" → Procesar orden</li>
+                            <li><strong>Externo:</strong> "Proveedor envía factura" → Registrar compra</li>
+                            <li><strong>Interno:</strong> "Stock bajo de producto" → Alertar inventario</li>
+                            <li><strong>Temporal:</strong> "Vence período de prueba" → Solicitar pago</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-cogs"></i> Componentes del Evento</h3>
+                        <ul>
+                            <li><strong>Nombre:</strong> Descripción clara del evento</li>
+                            <li><strong>Tipo:</strong> Temporal, externo o interno</li>
+                            <li><strong>Origen:</strong> Quién o qué lo genera</li>
+                            <li><strong>Datos:</strong> Información asociada</li>
+                            <li><strong>Respuesta:</strong> Caso de uso que activa</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-project-diagram"></i> Relación Evento → Caso de Uso</h4>
+                    <p>Cada evento de negocio debe tener al menos un caso de uso asociado que describa cómo el sistema responde a ese evento. Esta relación es fundamental para la trazabilidad.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Escenario -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-film"></i>
+                </div>
+                <h2>Escenario</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-theater-masks"></i> Definición</h3>
+                    <p>Un <strong>escenario</strong> es una instancia específica de un caso de uso que describe una secuencia particular de eventos desde el inicio hasta el fin. Es una <strong>historia concreta</strong> de cómo un actor interactúa con el sistema para alcanzar un objetivo, incluyendo datos específicos.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-route"></i> Tipos de Escenarios</h3>
+                        <ul>
+                            <li><strong>Escenario Principal:</strong> Flujo exitoso ideal (happy path)</li>
+                            <li><strong>Escenario Alternativo:</strong> Variaciones del flujo principal</li>
+                            <li><strong>Escenario de Excepción:</strong> Manejo de errores</li>
+                            <li><strong>Escenario de Frontera:</strong> Casos límite o extremos</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-puzzle-piece"></i> Elementos Clave</h3>
+                        <ul>
+                            <li><strong>Actores:</strong> Participantes específicos</li>
+                            <li><strong>Contexto:</strong> Situación inicial</li>
+                            <li><strong>Pasos:</strong> Secuencia detallada</li>
+                            <li><strong>Datos:</strong> Valores concretos</li>
+                            <li><strong>Resultado:</strong> Salida específica</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-shopping-cart"></i> Ejemplo: Compra en Línea</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p><strong>Escenario Principal:</strong></p>
+                        <p>1. María accede a la tienda online a las 14:30</p>
+                        <p>2. Busca "zapatillas deportivas Nike"</p>
+                        <p>3. Selecciona modelo Air Max, talla 38, cantidad 1</p>
+                        <p>4. Agrega al carrito (precio: $120)</p>
+                        <p>5. Procede al checkout</p>
+                        <p>6. Ingresa dirección: Av. 18 de Julio 1234, Montevideo</p>
+                        <p>7. Selecciona pago con tarjeta Visa terminada en 4567</p>
+                        <p>8. Confirma pedido #ORD-2024-0845</p>
+                        <p>9. Recibe email de confirmación a maria@email.com</p>
+                        <p><strong>Resultado:</strong> Compra exitosa, entrega estimada en 3 días</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-vial"></i> Uso en Pruebas</h4>
+                    <p>Los escenarios son la base para crear casos de prueba. Un escenario bien definido se convierte directamente en un test case ejecutable.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Personas -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2>Personas</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-id-card"></i> Definición</h3>
+                    <p>Las <strong>personas</strong> son arquetipos ficticios pero realistas de usuarios que representan segmentos clave del público objetivo. Se crean basándose en investigación real de usuarios y ayudan al equipo a mantener el enfoque en las necesidades reales durante todo el desarrollo.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-user-tag"></i> Ejemplo: Persona Completa</h3>
+                        <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px;">
+                            <p><strong>📸 Laura Rodríguez - "La Gerente Eficiente"</strong></p>
+                            <p><strong>Edad:</strong> 38 años</p>
+                            <p><strong>Ocupación:</strong> Gerente de Marketing</p>
+                            <p><strong>Ubicación:</strong> Montevideo, Uruguay</p>
+                            <p><strong>Tecnología:</strong> Usuario avanzado, iPhone, MacBook</p>
+                            <p><strong>Objetivos:</strong> Optimizar campañas, analizar ROI rápidamente</p>
+                            <p><strong>Frustraciones:</strong> Sistemas lentos, reportes poco visuales</p>
+                            <p><strong>Comportamiento:</strong> Revisa métricas cada mañana, multitarea</p>
+                            <p><strong>Frase típica:</strong> "Necesito ver los números antes de la reunión"</p>
+                        </div>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-tools"></i> Componentes de una Persona</h3>
+                        <ul>
+                            <li><strong>Demográficos:</strong> Edad, ubicación, ocupación</li>
+                            <li><strong>Psicográficos:</strong> Valores, actitudes, estilo de vida</li>
+                            <li><strong>Objetivos:</strong> Qué quiere lograr</li>
+                            <li><strong>Frustraciones:</strong> Problemas actuales</li>
+                            <li><strong>Tecnología:</strong> Nivel de habilidad digital</li>
+                            <li><strong>Contexto:</strong> Cuándo y dónde usa el sistema</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-search"></i>
+                        <h5>Investigación</h5>
+                        <p>Entrevistas y observación</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-users-cog"></i>
+                        <h5>Segmentación</h5>
+                        <p>Agrupar similitudes</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-paint-brush"></i>
+                        <h5>Creación</h5>
+                        <p>Diseñar perfiles</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-check-circle"></i>
+                        <h5>Validación</h5>
+                        <p>Verificar con usuarios reales</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-heart"></i> Valor de las Personas</h4>
+                    <p>Las personas humanizan los datos y crean empatía en el equipo. Proyectos que usan personas tienen 2x más probabilidad de satisfacer necesidades reales de usuarios.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Diagramas de Contexto -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <h2>Diagramas de Contexto</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-border-all"></i> Definición</h3>
+                    <p>Un <strong>diagrama de contexto</strong> es una representación visual de alto nivel que muestra el sistema y su entorno. Define los <strong>límites del sistema</strong>, identifica entidades externas (actores) que interactúan con él, y muestra flujos de datos sin entrar en detalles internos.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="diagram-box">
+                        <div class="diagram-icon">
+                            <i class="fas fa-cube"></i>
+                        </div>
+                        <h3 style="color: var(--primary-color);">Estructura Básica</h3>
+                        <div class="diagram-content">
+                            <p><strong>Entidad Externa</strong></p>
+                            <p>↓ (datos de entrada)</p>
+                            <p><strong>[SISTEMA]</strong></p>
+                            <p>↓ (datos de salida)</p>
+                            <p><strong>Entidad Externa</strong></p>
+                            <p style="margin-top: 1rem; font-size: 0.9rem;">El sistema es una caja negra rodeada de actores y flujos</p>
+                        </div>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-layer-group"></i> Componentes</h3>
+                        <ul>
+                            <li><strong>Sistema:</strong> Círculo o rectángulo central</li>
+                            <li><strong>Actores Externos:</strong> Rectángulos fuera del sistema</li>
+                            <li><strong>Flujos de Datos:</strong> Flechas con etiquetas</li>
+                            <li><strong>Límite:</strong> Frontera visible del alcance</li>
+                            <li><strong>Interfaces:</strong> Puntos de conexión</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-graduation-cap"></i> Ejemplo: Sistema Académico</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p style="text-align: center;">
+                            <strong>Estudiante</strong> → [inscripciones, consultas] → <strong>SISTEMA ACADÉMICO</strong><br>
+                            <strong>Docente</strong> → [calificaciones, asistencias] → <strong>SISTEMA ACADÉMICO</strong><br>
+                            <strong>SISTEMA ACADÉMICO</strong> → [reportes, certificados] → <strong>Estudiante</strong><br>
+                            <strong>SISTEMA ACADÉMICO</strong> → [estadísticas] → <strong>Administración</strong><br>
+                            <strong>SISTEMA ACADÉMICO</strong> ↔ <strong>Sistema de Pagos</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-bullseye"></i> Beneficios</h4>
+                    <p>Clarifica el alcance del proyecto, facilita comunicación con stakeholders, identifica interfaces críticas y previene scope creep al establecer límites claros desde el inicio.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Entrevistas -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h2>Entrevistas</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-microphone-alt"></i> Definición</h3>
+                    <p>Las <strong>entrevistas</strong> son técnicas de elicitación de requisitos donde el analista mantiene conversaciones estructuradas con stakeholders para descubrir necesidades, expectativas y restricciones del sistema. Son la técnica más común y efectiva para obtener información de primera mano.</p>
+                </div>
+
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-list-alt"></i>
+                        <h5>Estructurada</h5>
+                        <p>Preguntas predefinidas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-stream"></i>
+                        <h5>Semi-estructurada</h5>
+                        <p>Guía flexible</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-comment-dots"></i>
+                        <h5>No Estructurada</h5>
+                        <p>Conversación abierta</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-check-circle"></i> Mejores Prácticas</h3>
+                        <ul>
+                            <li><strong>Preparación:</strong> Investigar al entrevistado y el dominio</li>
+                            <li><strong>Agenda:</strong> Enviar temas previamente</li>
+                            <li><strong>Escucha Activa:</strong> Preguntar "¿por qué?" frecuentemente</li>
+                            <li><strong>Registro:</strong> Grabar (con permiso) o tomar notas</li>
+                            <li><strong>Validación:</strong> Confirmar comprensión durante la entrevista</li>
+                            <li><strong>Seguimiento:</strong> Enviar resumen para validar</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-question-circle"></i> Tipos de Preguntas</h3>
+                        <ul>
+                            <li><strong>Abiertas:</strong> "¿Cómo maneja actualmente...?"</li>
+                            <li><strong>Cerradas:</strong> "¿Usa sistema actual?" (Sí/No)</li>
+                            <li><strong>Hipotéticas:</strong> "¿Qué pasaría si...?"</li>
+                            <li><strong>Prioritarias:</strong> "¿Qué es más importante?"</li>
+                            <li><strong>Seguimiento:</strong> "¿Puede dar un ejemplo?"</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-clipboard-list"></i> Plantilla de Guion</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p><strong>1. Introducción (5 min):</strong> Presentarse, explicar propósito</p>
+                        <p><strong>2. Contexto (10 min):</strong> Rol del entrevistado, proceso actual</p>
+                        <p><strong>3. Problemas (15 min):</strong> Dificultades, cuellos de botella</p>
+                        <p><strong>4. Expectativas (15 min):</strong> Solución ideal, funcionalidades deseadas</p>
+                        <p><strong>5. Restricciones (10 min):</strong> Limitaciones, integraciones necesarias</p>
+                        <p><strong>6. Cierre (5 min):</strong> Resumen, próximos pasos</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Errores Comunes</h4>
+                    <p>Evita: preguntas sesgadas, interrumpir, no escuchar, asumir soluciones, no documentar, hacer preguntas técnicas demasiado pronto, y entrevistar solo a un tipo de stakeholder.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Quiz Introduction -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h2>Quiz Interactivo</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box" style="text-align: center;">
+                    <h3><i class="fas fa-trophy"></i> ¡Pon a Prueba tus Conocimientos!</h3>
+                    <p style="font-size: 1.3rem; margin: 2rem 0;">
+                        Responde 20 preguntas de opción múltiple sobre todo lo que aprendiste en esta presentación.
+                    </p>
+                    <div style="margin: 3rem 0;">
+                        <i class="fas fa-lightbulb" style="font-size: 4rem; color: var(--accent-color);"></i>
+                    </div>
+                    <p style="font-size: 1.2rem;">
+                        <strong>Instrucciones:</strong> Selecciona la respuesta que consideres correcta para cada pregunta. Al final recibirás tu puntuación y feedback detallado.
+                    </p>
+                    <button class="quiz-btn" onclick="startQuiz()">
+                        <i class="fas fa-play-circle"></i> Comenzar Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Quiz -->
+        <div class="slide content-slide" id="quizSlide">
+            <div class="slide-content" style="justify-content: center; align-items: center;">
+                <div class="quiz-container">
+                    <div class="quiz-progress" id="quizProgress">Pregunta 1 de 20</div>
+                    <div class="quiz-question" id="quizQuestion">Cargando pregunta...</div>
+                    <div class="quiz-options" id="quizOptions"></div>
+                    <button class="quiz-btn" id="nextBtn" onclick="nextQuestion()">
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="previousSlide()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">14</span>
+        </div>
+        <button class="nav-btn" id="nextNavBtn" onclick="nextSlide()">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Quiz Data
+        const quizData = [
+            {
+                question: "¿Qué es Volere?",
+                options: [
+                    "Un lenguaje de programación para análisis de sistemas",
+                    "Un marco de trabajo completo para la obtención y gestión de requerimientos",
+                    "Una herramienta de diseño de interfaces de usuario",
+                    "Un método ágil de desarrollo de software"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál de los siguientes NO es un tipo de requerimiento?",
+                options: [
+                    "Funcional",
+                    "No funcional",
+                    "Estético",
+                    "De datos"
+                ],
+                correct: 2
+            },
+            {
+                question: "El checklist de requerimientos se utiliza para:",
+                options: [
+                    "Programar el sistema",
+                    "Verificar que cada requerimiento cumple estándares de calidad",
+                    "Diseñar la interfaz de usuario",
+                    "Realizar pruebas de integración"
+                ],
+                correct: 1
+            },
+            {
+                question: "Un Caso de Uso del Negocio se enfoca en:",
+                options: [
+                    "La tecnología a utilizar",
+                    "Los procesos organizacionales y el valor de negocio",
+                    "El diseño de la base de datos",
+                    "La arquitectura del software"
+                ],
+                correct: 1
+            },
+            {
+                question: "La diferencia principal entre Caso de Uso del Negocio y del Producto es:",
+                options: [
+                    "El idioma utilizado",
+                    "El nivel de detalle técnico",
+                    "El negocio se enfoca en procesos organizacionales, el producto en interacción usuario-sistema",
+                    "No hay diferencia real"
+                ],
+                correct: 2
+            },
+            {
+                question: "Un stakeholder es:",
+                options: [
+                    "Solo el cliente que paga por el proyecto",
+                    "Únicamente el equipo de desarrollo",
+                    "Cualquier persona u organización que puede afectar o verse afectada por el proyecto",
+                    "Solamente los usuarios finales del sistema"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuál NO es un tipo de evento del negocio?",
+                options: [
+                    "Temporal",
+                    "Externo",
+                    "Secuencial",
+                    "Interno"
+                ],
+                correct: 2
+            },
+            {
+                question: "Un escenario es:",
+                options: [
+                    "Un lugar físico donde se desarrolla el software",
+                    "Una instancia específica de un caso de uso con datos concretos",
+                    "Un tipo de diagrama UML",
+                    "Una metodología de desarrollo"
+                ],
+                correct: 1
+            },
+            {
+                question: "Las 'personas' en análisis de requerimientos son:",
+                options: [
+                    "Los desarrolladores del equipo",
+                    "Arquetipos ficticios pero realistas de usuarios objetivo",
+                    "Los stakeholders del proyecto",
+                    "Los administradores del sistema"
+                ],
+                correct: 1
+            },
+            {
+                question: "Un diagrama de contexto muestra:",
+                options: [
+                    "El código fuente del sistema",
+                    "Los límites del sistema y sus interacciones con entidades externas",
+                    "La arquitectura interna del software",
+                    "El flujo de trabajo del equipo de desarrollo"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál es la característica que NO debe tener un buen requerimiento?",
+                options: [
+                    "Claro",
+                    "Ambiguo",
+                    "Verificable",
+                    "Trazable"
+                ],
+                correct: 1
+            },
+            {
+                question: "En el análisis de poder/interés de stakeholders, aquellos con alto poder y alto interés deben ser:",
+                options: [
+                    "Monitoreados",
+                    "Mantenidos satisfechos",
+                    "Gestionados de cerca",
+                    "Mantenidos informados"
+                ],
+                correct: 2
+            },
+            {
+                question: "Un evento temporal del negocio se dispara por:",
+                options: [
+                    "Una acción de un usuario",
+                    "Una fecha u hora específica",
+                    "Una acción del sistema",
+                    "Un cambio en la base de datos"
+                ],
+                correct: 1
+            },
+            {
+                question: "El flujo principal de un caso de uso representa:",
+                options: [
+                    "Los errores del sistema",
+                    "La secuencia normal y exitosa de eventos",
+                    "Las excepciones del proceso",
+                    "Los casos límite"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál de estas NO es una técnica de entrevista?",
+                options: [
+                    "Estructurada",
+                    "Semi-estructurada",
+                    "No estructurada",
+                    "Algorítmica"
+                ],
+                correct: 3
+            },
+            {
+                question: "El propósito principal de crear personas es:",
+                options: [
+                    "Completar documentación obligatoria",
+                    "Humanizar los datos y crear empatía en el equipo",
+                    "Aumentar el presupuesto del proyecto",
+                    "Reducir el tiempo de desarrollo"
+                ],
+                correct: 1
+            },
+            {
+                question: "Un requerimiento funcional describe:",
+                options: [
+                    "Cómo debe funcionar el sistema",
+                    "Qué debe hacer el sistema",
+                    "Las limitaciones del proyecto",
+                    "El rendimiento esperado"
+                ],
+                correct: 1
+            },
+            {
+                question: "En una entrevista de requisitos, es importante:",
+                options: [
+                    "Hacer todas las preguntas sin escuchar",
+                    "Asumir que conoces todas las respuestas",
+                    "Practicar escucha activa y preguntar '¿por qué?'",
+                    "Evitar documentar la conversación"
+                ],
+                correct: 2
+            },
+            {
+                question: "Los Shell de requisitos en Volere se refieren a:",
+                options: [
+                    "Un tipo de base de datos",
+                    "Un formato único estandarizado para documentar requisitos",
+                    "Una herramienta de programación",
+                    "Un método de testing"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál es el beneficio principal de usar diagramas de contexto?",
+                options: [
+                    "Reemplazan la documentación escrita",
+                    "Clarifican el alcance y previenen scope creep",
+                    "Eliminan la necesidad de entrevistas",
+                    "Aceleran la codificación"
+                ],
+                correct: 1
+            }
+        ];
+
+        // Presentation State
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        // Quiz State
+        let currentQuestionIndex = 0;
+        let selectedAnswers = [];
+        let quizStarted = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSlideCounter();
+            updateNavButtons();
+        });
+
+        // Slide Navigation
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            slides[index].classList.add('animate__animated', 'animate__fadeIn');
+            
+            currentSlideIndex = index;
+            updateSlideCounter();
+            updateNavButtons();
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+
+        function updateSlideCounter() {
+            document.getElementById('currentSlide').textContent = currentSlideIndex + 1;
+            document.getElementById('totalSlides').textContent = totalSlides;
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextNavBtn');
+            
+            prevBtn.disabled = currentSlideIndex === 0;
+            nextBtn.disabled = currentSlideIndex === totalSlides - 1;
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Quiz Functions
+        function startQuiz() {
+            console.log('Starting quiz...');
+            quizStarted = true;
+            currentQuestionIndex = 0;
+            selectedAnswers = [];
+            
+            // Navigate to quiz slide (index 13, which is slide 14)
+            showSlide(13);
+            
+            // Wait for slide to be shown before loading question
+            setTimeout(function() {
+                console.log('Timeout finished, loading question...');
+                loadQuestion();
+            }, 300);
+        }
+
+        function loadQuestion() {
+            console.log('Loading question', currentQuestionIndex);
+            
+            if (!quizData || quizData.length === 0) {
+                console.error('quizData is not defined or empty');
+                return;
+            }
+            
+            const question = quizData[currentQuestionIndex];
+            console.log('Question data:', question);
+            
+            const progressEl = document.getElementById('quizProgress');
+            const questionEl = document.getElementById('quizQuestion');
+            const optionsContainer = document.getElementById('quizOptions');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            console.log('Elements found:', {
+                progress: !!progressEl,
+                question: !!questionEl,
+                options: !!optionsContainer,
+                button: !!nextBtn
+            });
+            
+            if (!progressEl || !questionEl || !optionsContainer || !nextBtn) {
+                console.error('Quiz elements not found!');
+                alert('Error: No se pudieron cargar los elementos del quiz. Por favor recarga la página.');
+                return;
+            }
+            
+            // Set progress
+            progressEl.textContent = `Pregunta ${currentQuestionIndex + 1} de ${quizData.length}`;
+            progressEl.style.display = 'block';
+            
+            // Set question
+            questionEl.textContent = question.question;
+            questionEl.style.display = 'block';
+            
+            // Clear and populate options
+            optionsContainer.innerHTML = '';
+            optionsContainer.style.display = 'flex';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = function() {
+                    selectOption(index, optionDiv);
+                };
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            console.log('Options created:', question.options.length);
+            
+            // Restore selected answer if returning to a question
+            if (selectedAnswers[currentQuestionIndex] !== undefined) {
+                const options = optionsContainer.querySelectorAll('.quiz-option');
+                if (options[selectedAnswers[currentQuestionIndex]]) {
+                    options[selectedAnswers[currentQuestionIndex]].classList.add('selected');
+                }
+            }
+            
+            // Update button text
+            nextBtn.style.display = 'block';
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.innerHTML = 'Finalizar Quiz <i class="fas fa-check-circle"></i>';
+            } else {
+                nextBtn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+            }
+            
+            console.log('Question loaded successfully');
+        }
+
+        function selectOption(index, element) {
+            // Remove previous selection
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add new selection
+            element.classList.add('selected');
+            selectedAnswers[currentQuestionIndex] = index;
+        }
+
+        function nextQuestion() {
+            if (selectedAnswers[currentQuestionIndex] === undefined) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selecciona una respuesta',
+                    text: 'Por favor selecciona una opción antes de continuar',
+                    confirmButtonColor: '#088395'
+                });
+                return;
+            }
+            
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            let score = 0;
+            quizData.forEach((question, index) => {
+                if (selectedAnswers[index] === question.correct) {
+                    score++;
+                }
+            });
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            let icon = 'success';
+            let title = '¡Excelente trabajo!';
+            
+            if (percentage < 60) {
+                icon = 'warning';
+                title = 'Puedes mejorar';
+            } else if (percentage < 80) {
+                icon = 'info';
+                title = '¡Buen trabajo!';
+            }
+            
+            Swal.fire({
+                icon: icon,
+                title: title,
+                html: `
+                    <div style="font-size: 1.2rem; margin: 2rem 0;">
+                        <p>Has respondido correctamente <strong>${score}</strong> de <strong>${quizData.length}</strong> preguntas</p>
+                        <div style="font-size: 3rem; color: #088395; margin: 2rem 0;">
+                            ${percentage}%
+                        </div>
+                        <p style="margin-top: 1.5rem;">
+                            ${percentage >= 80 ? 'Dominas muy bien los conceptos de Análisis y Diseño de Aplicaciones' : 
+                              percentage >= 60 ? 'Tienes un buen entendimiento. Revisa los temas donde tuviste dudas' : 
+                              'Te recomendamos revisar nuevamente la presentación'}
+                        </p>
+                    </div>
+                `,
+                confirmButtonText: 'Volver al inicio',
+                confirmButtonColor: '#088395',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showSlide(0);
+                    quizStarted = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
