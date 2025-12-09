@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relevamiento de Requerimientos - BEs, BUCs y PUCs</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&family=Nunito:wght@300;400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #ec4899;
+            --yellow-accent: #fbbf24;
+            --green-accent: #10b981;
+            --dark-bg: #1e1b4b;
+            --light-accent: #fef3c7;
+            --text-dark: #1f2937;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: var(--light-accent);
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Slides Container */
+        .slides-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            padding: 40px 30px 100px 30px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        /* Title Slide */
+        .title-slide {
+            background: var(--gradient-1);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            justify-content: center !important;
+        }
+
+        .title-slide::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.03) 10px,
+                rgba(255,255,255,0.03) 20px
+            );
+            animation: slideBackground 30s linear infinite;
+        }
+
+        @keyframes slideBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .title-slide h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+
+        .title-slide .subtitle {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .title-slide .author {
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-top: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Content Slides */
+        .content-slide {
+            background: linear-gradient(to bottom right, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+            position: relative;
+        }
+
+        .content-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .slide-header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-header h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            border-bottom: 5px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 10px;
+            position: relative;
+        }
+
+        .slide-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50%;
+            height: 5px;
+            background: var(--yellow-accent);
+        }
+
+        .slide-header .icon-header {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2), 0 0 0 3px rgba(236, 72, 153, 0.1);
+            border-left: 6px solid;
+            border-image: linear-gradient(180deg, #ec4899, #8b5cf6) 1;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .content-box:hover {
+            transform: translateY(-8px) rotate(-1deg);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3), 0 0 0 3px rgba(236, 72, 153, 0.2);
+        }
+
+        .content-box h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            position: relative;
+        }
+
+        .content-box h3 i {
+            color: var(--accent-color);
+            font-size: 1.3rem;
+        }
+
+        .content-box p, .content-box ul {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .content-box ul {
+            padding-left: 1.5rem;
+        }
+
+        .content-box ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .content-box ul li strong {
+            color: var(--primary-color);
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Three Column Layout */
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .nav-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .slide-counter {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 20px;
+            font-family: 'Courier Prime', monospace;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            margin: 1rem auto;
+            display: block;
+        }
+
+        .quiz-question {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            min-height: 60px;
+            display: block;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .quiz-option {
+            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+            padding: 1.3rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            font-size: 1.1rem;
+            display: block;
+            width: 100%;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            font-weight: 600;
+        }
+
+        .quiz-option:hover {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            transform: translateX(15px) scale(1.02);
+            border-color: #00f2fe;
+            box-shadow: 0 5px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .quiz-option.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #764ba2;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            transform: scale(1.03);
+        }
+
+        .quiz-progress {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-family: 'Courier Prime', monospace;
+            display: block;
+        }
+
+        .quiz-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.6);
+        }
+
+        /* Quiz Results */
+        .results-container {
+            max-height: 500px;
+            overflow-y: auto;
+            margin: 1.5rem 0;
+        }
+
+        .result-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .result-item.correct {
+            background: #e8f5e9;
+            border-color: var(--success-color);
+        }
+
+        .result-item.incorrect {
+            background: #ffebee;
+            border-color: var(--error-color);
+        }
+
+        .result-question {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .result-answer {
+            font-size: 0.95rem;
+            margin: 0.3rem 0;
+        }
+
+        .result-answer.your-answer {
+            color: var(--error-color);
+        }
+
+        .result-answer.correct-answer {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            margin: 1rem 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-box::before {
+            content: '✨';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        .highlight-box h4 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Icon Grid */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .icon-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .icon-item:hover {
+            transform: translateY(-15px) scale(1.05);
+            border-color: var(--accent-color);
+            box-shadow: 0 15px 35px rgba(236, 72, 153, 0.3);
+        }
+
+        .icon-item i {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.8rem;
+        }
+
+        .icon-item h5 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .icon-item p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        /* Example Box */
+        .example-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid var(--warning-color);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.2);
+            position: relative;
+        }
+
+        .example-box::before {
+            content: '💡';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+        }
+
+        .example-box h4 {
+            color: var(--warning-color);
+            margin-bottom: 0.8rem;
+            font-weight: 800;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Template Box */
+        .template-box {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border: 3px solid #667eea;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.2);
+            position: relative;
+        }
+
+        .template-box::before {
+            content: '📋';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+        }
+
+        .template-box h5 {
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+            font-weight: 800;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Process Flow */
+        .process-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 2rem;
+            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+            border-radius: 20px;
+            margin: 1rem 0;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+            border: 3px dashed var(--accent-color);
+        }
+
+        .process-step {
+            text-align: center;
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .process-step i {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .process-step h5 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .process-arrow {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .comparison-table td {
+            padding: 1rem;
+            border-bottom: 2px solid #fde68a;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table tr:hover {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #ffffff 100%);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 15px 90px 15px;
+            }
+
+            .title-slide h1 {
+                font-size: 2.5rem;
+            }
+
+            .slide-header h2 {
+                font-size: 2rem;
+            }
+
+            .two-column, .three-column {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation {
+                padding: 10px 20px;
+            }
+
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .process-flow {
+                flex-direction: column;
+            }
+
+            .process-arrow {
+                transform: rotate(90deg);
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Slides Container -->
+    <div class="slides-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide animate__animated animate__fadeIn">
+            <h1 class="animate__animated animate__fadeInDown">Relevamiento de Requerimientos</h1>
+            <p class="subtitle animate__animated animate__fadeInUp animate__delay-1s">
+                BEs, BUCs y PUCs
+            </p>
+            <div class="animate__animated animate__fadeIn animate__delay-2s">
+                <i class="fas fa-sitemap" style="font-size: 5rem; margin: 2rem 0;"></i>
+            </div>
+            <p class="author animate__animated animate__fadeInUp animate__delay-3s">
+                <i class="fas fa-book-open"></i> Análisis y Diseño de Sistemas
+            </p>
+        </div>
+
+        <!-- Slide 2: Relevamiento de Requerimientos -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h2>Relevamiento de Requerimientos 🔍</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-clipboard-list"></i> ¿Qué es el Relevamiento?</h3>
+                    <p>El <strong>relevamiento de requerimientos</strong> (también llamado elicitación) es el proceso sistemático de descubrir, documentar y comprender las necesidades de los stakeholders. Es la fase inicial y más crítica del análisis de sistemas, donde se establece <strong>qué</strong> debe hacer el sistema, no <strong>cómo</strong> lo hará.</p>
+                </div>
+
+                <div class="process-flow">
+                    <div class="process-step">
+                        <i class="fas fa-users"></i>
+                        <h5>Identificar Stakeholders</h5>
+                        <p>¿Quiénes?</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-comments"></i>
+                        <h5>Recopilar Información</h5>
+                        <p>Técnicas</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-filter"></i>
+                        <h5>Analizar y Validar</h5>
+                        <p>Refinar</p>
+                    </div>
+                    <i class="fas fa-arrow-right process-arrow"></i>
+                    <div class="process-step">
+                        <i class="fas fa-file-alt"></i>
+                        <h5>Documentar</h5>
+                        <p>BEs, BUCs, PUCs</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-bullseye"></i> Objetivos</h3>
+                        <ul>
+                            <li><strong>Comprender:</strong> El negocio y sus procesos</li>
+                            <li><strong>Identificar:</strong> Todos los requisitos necesarios</li>
+                            <li><strong>Priorizar:</strong> Qué es crítico vs deseable</li>
+                            <li><strong>Validar:</strong> Con todos los stakeholders</li>
+                            <li><strong>Documentar:</strong> De forma clara y trazable</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-tools"></i> Técnicas Principales</h3>
+                        <ul>
+                            <li><strong>Entrevistas:</strong> Conversaciones estructuradas</li>
+                            <li><strong>Talleres:</strong> Sesiones colaborativas</li>
+                            <li><strong>Observación:</strong> Ver procesos reales</li>
+                            <li><strong>Cuestionarios:</strong> Recopilación masiva</li>
+                            <li><strong>Análisis documental:</strong> Revisar material existente</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-exclamation-circle"></i> Importancia Crítica</h4>
+                    <p>Un relevamiento deficiente causa el <strong>68% de los fracasos</strong> en proyectos de software. Los errores aquí se multiplican exponencialmente en fases posteriores.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Business Events (BEs) -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h2>Business Events (BEs) ⚡</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-calendar-alt"></i> ¿Qué es un Business Event?</h3>
+                    <p>Un <strong>Evento de Negocio (BE)</strong> es un acontecimiento que ocurre en el mundo real y que <strong>requiere una respuesta</strong> del sistema o del negocio. Es el <strong>disparador</strong> que inicia un proceso. Los BEs son fundamentales porque ayudan a identificar todos los casos de uso necesarios.</p>
+                </div>
+
+                <div class="three-column">
+                    <div class="icon-item">
+                        <i class="fas fa-clock"></i>
+                        <h5>Eventos Temporales</h5>
+                        <p>Disparados por el tiempo</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-external-link-alt"></i>
+                        <h5>Eventos Externos</h5>
+                        <p>Iniciados por actores externos</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-server"></i>
+                        <h5>Eventos Internos</h5>
+                        <p>Generados por el sistema</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-list-ol"></i> Ejemplos por Tipo</h3>
+                    <div style="margin-top: 1rem;">
+                        <div class="example-box">
+                            <h4><i class="fas fa-clock"></i> Eventos Temporales</h4>
+                            <p>• <strong>Llega fin de mes</strong> → Generar reportes mensuales</p>
+                            <p>• <strong>Pasa 1 hora sin actividad</strong> → Cerrar sesión automáticamente</p>
+                            <p>• <strong>Vence plazo de pago</strong> → Enviar recordatorio al cliente</p>
+                            <p>• <strong>Es medianoche</strong> → Realizar backup automático</p>
+                        </div>
+
+                        <div class="example-box">
+                            <h4><i class="fas fa-external-link-alt"></i> Eventos Externos</h4>
+                            <p>• <strong>Cliente realiza pedido</strong> → Procesar orden de compra</p>
+                            <p>• <strong>Proveedor envía factura</strong> → Registrar cuenta por pagar</p>
+                            <p>• <strong>Usuario solicita registro</strong> → Crear nueva cuenta</p>
+                            <p>• <strong>Cliente solicita devolución</strong> → Iniciar proceso de reembolso</p>
+                        </div>
+
+                        <div class="example-box">
+                            <h4><i class="fas fa-server"></i> Eventos Internos</h4>
+                            <p>• <strong>Stock llega a mínimo</strong> → Generar orden de reposición</p>
+                            <p>• <strong>Pago es aprobado</strong> → Activar servicio del cliente</p>
+                            <p>• <strong>Proceso falla 3 veces</strong> → Alertar al administrador</p>
+                            <p>• <strong>Se completa la transacción</strong> → Actualizar inventario</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="template-box">
+                    <h5><i class="fas fa-file-alt"></i> Plantilla para Documentar BEs</h5>
+                    <p><strong>BE-001:</strong> Cliente realiza pedido</p>
+                    <p><strong>Tipo:</strong> Evento Externo</p>
+                    <p><strong>Origen:</strong> Cliente</p>
+                    <p><strong>Descripción:</strong> Un cliente selecciona productos y confirma su orden de compra</p>
+                    <p><strong>Datos asociados:</strong> ID Cliente, Lista de productos, Cantidad, Dirección entrega</p>
+                    <p><strong>Respuesta del sistema:</strong> Procesar orden (BUC-001)</p>
+                    <p><strong>Frecuencia:</strong> 100-150 veces por día</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Business Use Cases (BUCs) -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h2>Business Use Cases (BUCs) 💼</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-building"></i> ¿Qué es un Business Use Case?</h3>
+                    <p>Un <strong>Caso de Uso del Negocio (BUC)</strong> describe cómo el <strong>negocio responde</strong> a un Business Event para alcanzar un objetivo de negocio. Se enfoca en <strong>procesos organizacionales</strong>, no en sistemas tecnológicos. Responde a la pregunta: "¿Qué hace el negocio cuando ocurre este evento?"</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-key"></i> Característica Clave</h4>
+                    <p>Los BUCs son <strong>independientes de la tecnología</strong>. Describen procesos de negocio que podrían ejecutarse manualmente o con sistemas automatizados.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-puzzle-piece"></i> Componentes de un BUC</h3>
+                        <ul>
+                            <li><strong>ID único:</strong> BUC-001</li>
+                            <li><strong>Nombre:</strong> Verbo + Objeto (ej: Procesar Venta)</li>
+                            <li><strong>Evento disparador:</strong> BE que lo activa</li>
+                            <li><strong>Actor de negocio:</strong> Rol que ejecuta</li>
+                            <li><strong>Objetivo:</strong> Meta del negocio</li>
+                            <li><strong>Flujo de trabajo:</strong> Pasos del proceso</li>
+                            <li><strong>Resultado:</strong> Valor generado</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-sitemap"></i> Relación con BEs</h3>
+                        <p style="margin-bottom: 1rem;">Cada Business Event debe tener al menos un BUC asociado:</p>
+                        <div style="background: var(--light-accent); padding: 1rem; border-radius: 8px;">
+                            <p><strong>BE-001:</strong> Cliente realiza pedido</p>
+                            <p style="margin: 0.5rem 0;">↓</p>
+                            <p><strong>BUC-001:</strong> Procesar Orden de Compra</p>
+                            <p style="margin-top: 1rem; font-size: 0.9rem; font-style: italic;">
+                                El evento dispara el caso de uso del negocio
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="template-box">
+                    <h5><i class="fas fa-file-contract"></i> Plantilla BUC - Ejemplo Completo</h5>
+                    <p><strong>BUC-001:</strong> Procesar Orden de Compra</p>
+                    <p><strong>Evento disparador:</strong> BE-001 - Cliente realiza pedido</p>
+                    <p><strong>Actor de negocio:</strong> Departamento de Ventas</p>
+                    <p><strong>Objetivo:</strong> Registrar y validar la orden del cliente para iniciar el proceso de entrega</p>
+                    <p><strong>Precondiciones:</strong> Cliente registrado y con crédito disponible</p>
+                    
+                    <p style="margin-top: 1rem;"><strong>Flujo Principal:</strong></p>
+                    <p>1. Vendedor recibe solicitud del cliente</p>
+                    <p>2. Verificar disponibilidad de productos</p>
+                    <p>3. Validar crédito del cliente</p>
+                    <p>4. Calcular precio total con impuestos</p>
+                    <p>5. Generar orden de venta</p>
+                    <p>6. Notificar a almacén para preparar envío</p>
+                    <p>7. Enviar confirmación al cliente</p>
+                    
+                    <p style="margin-top: 1rem;"><strong>Postcondiciones:</strong> Orden registrada en el sistema, inventario reservado</p>
+                    <p><strong>Resultado de negocio:</strong> Venta confirmada, cliente satisfecho</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Product Use Cases (PUCs) -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-laptop-code"></i>
+                </div>
+                <h2>Product Use Cases (PUCs) 💻</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-microchip"></i> ¿Qué es un Product Use Case?</h3>
+                    <p>Un <strong>Caso de Uso del Producto (PUC)</strong> describe cómo un <strong>usuario interactúa con el sistema de software</strong> para lograr un objetivo específico. Es más técnico y detallado que un BUC, enfocándose en la <strong>funcionalidad del sistema</strong>. Responde a: "¿Qué debe hacer el software?"</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-exchange-alt"></i> De BUC a PUC</h4>
+                    <p>Los PUCs se derivan de los BUCs. Un BUC puede generar múltiples PUCs, ya que un proceso de negocio puede requerir varias funcionalidades del sistema.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-user-cog"></i> Componentes de un PUC</h3>
+                        <ul>
+                            <li><strong>ID único:</strong> PUC-001</li>
+                            <li><strong>Nombre:</strong> Acción del usuario</li>
+                            <li><strong>Actor:</strong> Usuario o sistema externo</li>
+                            <li><strong>Precondiciones:</strong> Estado inicial requerido</li>
+                            <li><strong>Flujo principal:</strong> Pasos detallados</li>
+                            <li><strong>Flujos alternativos:</strong> Variaciones</li>
+                            <li><strong>Flujos de excepción:</strong> Errores</li>
+                            <li><strong>Postcondiciones:</strong> Estado final</li>
+                            <li><strong>UI mockups:</strong> Si es necesario</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-layer-group"></i> Nivel de Detalle</h3>
+                        <p>Los PUCs son mucho más específicos:</p>
+                        <ul style="margin-top: 0.5rem;">
+                            <li>Incluyen validaciones técnicas</li>
+                            <li>Describen interacciones UI</li>
+                            <li>Especifican mensajes de error</li>
+                            <li>Definen tiempos de respuesta</li>
+                            <li>Incluyen reglas de negocio detalladas</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="template-box">
+                    <h5><i class="fas fa-code"></i> Plantilla PUC - Ejemplo Completo</h5>
+                    <p><strong>PUC-001:</strong> Registrar Orden de Compra en el Sistema</p>
+                    <p><strong>Deriva de:</strong> BUC-001 - Procesar Orden de Compra</p>
+                    <p><strong>Actor:</strong> Vendedor (Usuario del sistema)</p>
+                    <p><strong>Precondiciones:</strong> Usuario autenticado con permisos de ventas</p>
+                    
+                    <p style="margin-top: 1rem;"><strong>Flujo Principal:</strong></p>
+                    <p>1. Usuario accede al módulo de ventas</p>
+                    <p>2. Sistema muestra formulario de nueva orden</p>
+                    <p>3. Usuario ingresa ID del cliente</p>
+                    <p>4. Sistema valida cliente y muestra datos (nombre, crédito disponible)</p>
+                    <p>5. Usuario agrega productos (código, cantidad)</p>
+                    <p>6. Sistema verifica stock y calcula subtotal automáticamente</p>
+                    <p>7. Usuario confirma orden</p>
+                    <p>8. Sistema calcula impuestos y total final</p>
+                    <p>9. Sistema genera número de orden único</p>
+                    <p>10. Sistema muestra confirmación con número de orden</p>
+                    
+                    <p style="margin-top: 1rem;"><strong>Flujo Alternativo 3a:</strong> Cliente no existe</p>
+                    <p>3a.1. Sistema muestra mensaje "Cliente no encontrado"</p>
+                    <p>3a.2. Ofrece opción de registrar nuevo cliente</p>
+                    
+                    <p style="margin-top: 1rem;"><strong>Flujo de Excepción 6a:</strong> Producto sin stock</p>
+                    <p>6a.1. Sistema muestra alerta "Stock insuficiente"</p>
+                    <p>6a.2. Permite modificar cantidad o remover producto</p>
+                    
+                    <p style="margin-top: 1rem;"><strong>Postcondiciones:</strong> Orden almacenada en BD, inventario reservado</p>
+                    <p><strong>Reglas de negocio:</strong> RN-001: No permitir venta si crédito insuficiente</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Comparación BUC vs PUC -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h2>BUC vs PUC: Diferencias ⚖️</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-not-equal"></i> Entendiendo las Diferencias</h3>
+                    <p>Aunque relacionados, BUCs y PUCs tienen propósitos y audiencias diferentes. Comprender la diferencia es fundamental para un análisis correcto.</p>
+                </div>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Aspecto</th>
+                            <th style="width: 40%;">Business Use Case (BUC)</th>
+                            <th style="width: 40%;">Product Use Case (PUC)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Enfoque</strong></td>
+                            <td>Proceso de negocio completo</td>
+                            <td>Funcionalidad específica del sistema</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Perspectiva</strong></td>
+                            <td>Negocio / Organización</td>
+                            <td>Usuario / Sistema</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Actor</strong></td>
+                            <td>Rol de negocio (Departamento, Área)</td>
+                            <td>Usuario específico del sistema</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nivel</strong></td>
+                            <td>Alto nivel, abstracto</td>
+                            <td>Detallado, concreto</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tecnología</strong></td>
+                            <td>Independiente de tecnología</td>
+                            <td>Específico del sistema de software</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Audiencia</strong></td>
+                            <td>Stakeholders de negocio, gerencia</td>
+                            <td>Desarrolladores, testers, diseñadores UI</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Objetivo</strong></td>
+                            <td>Valor de negocio, resultado organizacional</td>
+                            <td>Funcionalidad, comportamiento del software</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ejemplo</strong></td>
+                            <td>"Procesar Venta al Cliente"</td>
+                            <td>"Registrar Orden en el Sistema"</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="example-box">
+                    <h4><i class="fas fa-lightbulb"></i> Ejemplo Comparativo</h4>
+                    <p><strong>Escenario:</strong> Una tienda online donde un cliente compra productos</p>
+                    
+                    <p style="margin-top: 1rem;"><strong>BUC:</strong> "Procesar Compra del Cliente"</p>
+                    <p style="padding-left: 1.5rem;">Describe todo el proceso de negocio: validar cliente, verificar stock, calcular precio, coordinar logística, gestionar pago, actualizar contabilidad.</p>
+                    
+                    <p style="margin-top: 1rem;"><strong>PUCs derivados:</strong></p>
+                    <p style="padding-left: 1.5rem;">• PUC-1: "Agregar Producto al Carrito"</p>
+                    <p style="padding-left: 1.5rem;">• PUC-2: "Aplicar Cupón de Descuento"</p>
+                    <p style="padding-left: 1.5rem;">• PUC-3: "Ingresar Dirección de Envío"</p>
+                    <p style="padding-left: 1.5rem;">• PUC-4: "Procesar Pago con Tarjeta"</p>
+                    <p style="padding-left: 1.5rem;">• PUC-5: "Confirmar Pedido"</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-arrow-right"></i> Flujo de Trabajo</h4>
+                    <p>BE (Evento) → BUC (Proceso Negocio) → PUCs (Funcionalidades del Sistema)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Proceso de Elaboración -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <h2>Proceso de Elaboración 🛠️</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-route"></i> Metodología Paso a Paso</h3>
+                    <p>La elaboración de BEs, BUCs y PUCs sigue un proceso lógico y secuencial que garantiza completitud y trazabilidad.</p>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-1"></i> Paso 1: Identificar Business Events</h3>
+                    <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-top: 0.8rem;">
+                        <p><strong>Técnicas:</strong></p>
+                        <ul style="font-size: 0.95rem;">
+                            <li>Entrevistas con stakeholders</li>
+                            <li>Observación de procesos actuales</li>
+                            <li>Análisis de documentos (facturas, reportes, formularios)</li>
+                            <li>Brainstorming con el equipo</li>
+                        </ul>
+                        <p style="margin-top: 0.8rem;"><strong>Pregunta clave:</strong> "¿Qué acontecimientos hacen que el negocio deba responder?"</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-2"></i> Paso 2: Definir Business Use Cases</h3>
+                    <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-top: 0.8rem;">
+                        <p>Para cada BE identificado:</p>
+                        <ul style="font-size: 0.95rem; margin-top: 0.5rem;">
+                            <li>Determinar qué proceso de negocio se activa</li>
+                            <li>Identificar el actor de negocio responsable</li>
+                            <li>Definir el objetivo de negocio</li>
+                            <li>Describir el flujo de trabajo general</li>
+                            <li>Especificar el valor de negocio generado</li>
+                        </ul>
+                        <p style="margin-top: 0.8rem;"><strong>Pregunta clave:</strong> "¿Cómo responde el negocio a este evento?"</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-3"></i> Paso 3: Derivar Product Use Cases</h3>
+                    <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-top: 0.8rem;">
+                        <p>Para cada BUC:</p>
+                        <ul style="font-size: 0.95rem; margin-top: 0.5rem;">
+                            <li>Identificar qué partes necesitan automatización</li>
+                            <li>Desglosar en funcionalidades específicas</li>
+                            <li>Definir interacciones usuario-sistema</li>
+                            <li>Especificar validaciones y reglas de negocio</li>
+                            <li>Documentar flujos alternativos y excepciones</li>
+                        </ul>
+                        <p style="margin-top: 0.8rem;"><strong>Pregunta clave:</strong> "¿Qué debe hacer el sistema para soportar este proceso?"</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-4"></i> Paso 4: Validar y Refinar</h3>
+                    <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-top: 0.8rem;">
+                        <ul style="font-size: 0.95rem;">
+                            <li>Revisar con stakeholders</li>
+                            <li>Verificar completitud (¿falta algún BE?)</li>
+                            <li>Validar trazabilidad (BE → BUC → PUC)</li>
+                            <li>Confirmar prioridades</li>
+                            <li>Iterar según feedback</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-link"></i> Trazabilidad</h4>
+                    <p>Cada PUC debe rastrearse hasta un BUC, y cada BUC hasta un BE. Esto asegura que todo el desarrollo está justificado por necesidades reales del negocio.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Diagrama de Casos de Uso -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-draw-polygon"></i>
+                </div>
+                <h2>Diagramas de Casos de Uso 📊</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-project-diagram"></i> Visualización con UML</h3>
+                    <p>Los casos de uso se representan visualmente mediante <strong>diagramas de casos de uso UML</strong>. Estos diagramas muestran las relaciones entre actores, casos de uso y el sistema.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-shapes"></i> Elementos del Diagrama</h3>
+                        <ul>
+                            <li><strong>Actor:</strong> Stick figure (usuario o sistema externo)</li>
+                            <li><strong>Caso de Uso:</strong> Óvalo con nombre</li>
+                            <li><strong>Sistema:</strong> Rectángulo que contiene los casos de uso</li>
+                            <li><strong>Asociación:</strong> Línea simple entre actor y caso de uso</li>
+                            <li><strong>Include:</strong> Flecha punteada con «include»</li>
+                            <li><strong>Extend:</strong> Flecha punteada con «extend»</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-sitemap"></i> Relaciones</h3>
+                        <ul>
+                            <li><strong>Asociación:</strong> Actor interactúa con caso de uso</li>
+                            <li><strong>Include:</strong> Un caso de uso incluye obligatoriamente otro</li>
+                            <li><strong>Extend:</strong> Un caso de uso extiende opcionalmente otro</li>
+                            <li><strong>Generalización:</strong> Herencia entre actores o casos de uso</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <h4><i class="fas fa-image"></i> Ejemplo de Diagrama (Descripción)</h4>
+                    <p><strong>Sistema:</strong> E-commerce</p>
+                    <p style="margin-top: 0.8rem;"><strong>Actores:</strong></p>
+                    <p>• Cliente (externo)</p>
+                    <p>• Administrador (externo)</p>
+                    <p>• Sistema de Pagos (externo)</p>
+                    
+                    <p style="margin-top: 0.8rem;"><strong>Casos de Uso:</strong></p>
+                    <p>• Buscar Productos (Cliente)</p>
+                    <p>• Agregar al Carrito (Cliente)</p>
+                    <p>• Realizar Compra (Cliente)</p>
+                    <p>  → «include» Validar Stock</p>
+                    <p>  → «include» Procesar Pago (interactúa con Sistema de Pagos)</p>
+                    <p>  → «extend» Aplicar Descuento</p>
+                    <p>• Gestionar Inventario (Administrador)</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-tools"></i> Herramientas</h4>
+                    <p><strong>Recomendadas:</strong> Lucidchart, Draw.io, Visual Paradigm, StarUML, PlantUML</p>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-check-circle"></i> Mejores Prácticas</h3>
+                    <ul>
+                        <li>Usa nombres claros con verbo + objeto</li>
+                        <li>No incluir demasiados casos de uso en un diagrama</li>
+                        <li>Agrupa por funcionalidad o módulo</li>
+                        <li>Mantén consistencia en nomenclatura</li>
+                        <li>Usa «include» para comportamiento común obligatorio</li>
+                        <li>Usa «extend» para comportamiento opcional</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Errores Comunes -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2>Errores Comunes ⚠️</h2>
+            </div>
+            <div class="slide-content">
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-random"></i>
+                        <h5>Confundir BUC con PUC</h5>
+                        <p>Mezclar perspectivas de negocio y sistema</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-layer-group"></i>
+                        <h5>Demasiado Detalle en BUC</h5>
+                        <p>Incluir detalles técnicos en casos de negocio</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-unlink"></i>
+                        <h5>Falta de Trazabilidad</h5>
+                        <p>No vincular PUCs con BUCs y BEs</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-slash"></i>
+                        <h5>Olvidar Actores</h5>
+                        <p>No identificar todos los stakeholders</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-code"></i>
+                        <h5>Detalles de Implementación</h5>
+                        <p>Especificar tecnología en lugar de requisitos</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-ban"></i>
+                        <h5>No Validar</h5>
+                        <p>No revisar con stakeholders</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-times-circle"></i> Ejemplos de Errores</h3>
+                    <div style="margin-top: 1rem;">
+                        <div style="background: #ffebee; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--error-color);">
+                            <p><strong>❌ Error:</strong> "El usuario hace click en el botón 'Guardar' y el sistema inserta un registro en la tabla 'Ordenes' usando MySQL"</p>
+                            <p style="margin-top: 0.5rem; color: var(--error-color);"><strong>Problema:</strong> Demasiado detalle técnico en un caso de uso</p>
+                        </div>
+                        
+                        <div style="background: #e8f5e9; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--success-color);">
+                            <p><strong>✅ Correcto:</strong> "El usuario confirma la orden y el sistema la registra en la base de datos"</p>
+                            <p style="margin-top: 0.5rem; color: var(--success-color);"><strong>Por qué:</strong> Describe qué hace, no cómo lo implementa</p>
+                        </div>
+
+                        <div style="background: #ffebee; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid var(--error-color);">
+                            <p><strong>❌ Error:</strong> BUC llamado "El sistema valida el formulario"</p>
+                            <p style="margin-top: 0.5rem; color: var(--error-color);"><strong>Problema:</strong> Es demasiado técnico para un caso de uso de negocio</p>
+                        </div>
+                        
+                        <div style="background: #e8f5e9; padding: 1rem; border-radius: 10px; border-left: 4px solid var(--success-color);">
+                            <p><strong>✅ Correcto BUC:</strong> "Procesar Solicitud de Crédito"</p>
+                            <p><strong>✅ Correcto PUC:</strong> "Validar Datos del Formulario de Crédito"</p>
+                            <p style="margin-top: 0.5rem; color: var(--success-color);"><strong>Por qué:</strong> BUC enfocado en negocio, PUC en funcionalidad del sistema</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-lightbulb"></i> Regla de Oro</h4>
+                    <p>Si un cliente de negocio (no técnico) no puede entender tu BUC, probablemente sea demasiado técnico. Si un desarrollador no puede implementar tu PUC porque falta detalle, probablemente sea demasiado vago.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Mejores Prácticas -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h2>Mejores Prácticas ⭐</h2>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-check-double"></i> Para Business Events</h3>
+                        <ul>
+                            <li>Usar nombres claros y concisos</li>
+                            <li>Evitar jerga técnica</li>
+                            <li>Identificar la fuente del evento</li>
+                            <li>Documentar frecuencia esperada</li>
+                            <li>Incluir datos asociados al evento</li>
+                            <li>Validar con stakeholders</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-briefcase"></i> Para Business Use Cases</h3>
+                        <ul>
+                            <li>Mantener perspectiva de negocio</li>
+                            <li>Enfocarse en el valor generado</li>
+                            <li>Independiente de tecnología</li>
+                            <li>Describir proceso completo</li>
+                            <li>Incluir actores de negocio</li>
+                            <li>Definir objetivo claro</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-laptop-code"></i> Para Product Use Cases</h3>
+                    <ul>
+                        <li>Ser específico y detallado</li>
+                        <li>Incluir todos los flujos (principal, alternativos, excepciones)</li>
+                        <li>Especificar validaciones y reglas de negocio</li>
+                        <li>Definir mensajes de error específicos</li>
+                        <li>Incluir criterios de aceptación</li>
+                        <li>Referenciar requisitos no funcionales si aplica</li>
+                        <li>Mantener formato consistente</li>
+                    </ul>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-users-cog"></i> Gestión General</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p><strong>1. Trazabilidad:</strong> Mantener matriz de trazabilidad BE → BUC → PUC</p>
+                        <p><strong>2. Versionado:</strong> Controlar versiones de cada documento</p>
+                        <p><strong>3. Revisiones:</strong> Hacer peer reviews con el equipo</p>
+                        <p><strong>4. Priorización:</strong> Usar MoSCoW (Must, Should, Could, Won't)</p>
+                        <p><strong>5. Herramientas:</strong> Usar software de gestión (Jira, Azure DevOps)</p>
+                        <p><strong>6. Comunicación:</strong> Compartir avances regularmente</p>
+                        <p><strong>7. Iteración:</strong> Refinar continuamente con feedback</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-award"></i> Consejo de Oro</h4>
+                    <p>La calidad de tus BEs, BUCs y PUCs determina la calidad del software final. Invierte tiempo aquí para ahorrar mucho tiempo y dinero después.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Quiz Introduction -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h2>Quiz Interactivo</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box" style="text-align: center;">
+                    <h3><i class="fas fa-trophy"></i> ¡Evalúa tu Comprensión!</h3>
+                    <p style="font-size: 1.3rem; margin: 2rem 0;">
+                        Responde 20 preguntas sobre relevamiento de requerimientos, BEs, BUCs y PUCs.
+                    </p>
+                    <div style="margin: 3rem 0;">
+                        <i class="fas fa-sitemap" style="font-size: 4rem; color: var(--accent-color);"></i>
+                    </div>
+                    <p style="font-size: 1.2rem;">
+                        <strong>Instrucciones:</strong> Selecciona la respuesta correcta. Al finalizar verás tu puntuación y podrás revisar las preguntas donde te equivocaste.
+                    </p>
+                    <button class="quiz-btn" onclick="startQuiz()">
+                        <i class="fas fa-play-circle"></i> Comenzar Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Quiz -->
+        <div class="slide content-slide" id="quizSlide">
+            <div class="slide-content" style="justify-content: center; align-items: center;">
+                <div class="quiz-container">
+                    <div class="quiz-progress" id="quizProgress">Pregunta 1 de 20</div>
+                    <div class="quiz-question" id="quizQuestion">Cargando pregunta...</div>
+                    <div class="quiz-options" id="quizOptions"></div>
+                    <button class="quiz-btn" id="nextBtn" onclick="nextQuestion()">
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="previousSlide()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">12</span>
+        </div>
+        <button class="nav-btn" id="nextNavBtn" onclick="nextSlide()">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Quiz Data
+        const quizData = [
+            {
+                question: "¿Qué es un Business Event (BE)?",
+                options: [
+                    "Una función del sistema de software",
+                    "Un acontecimiento que requiere una respuesta del negocio o sistema",
+                    "Un error en el proceso de negocio",
+                    "Una reunión de stakeholders"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál de los siguientes NO es un tipo de Business Event?",
+                options: [
+                    "Temporal",
+                    "Externo",
+                    "Secuencial",
+                    "Interno"
+                ],
+                correct: 2
+            },
+            {
+                question: "Un evento temporal se dispara por:",
+                options: [
+                    "Una acción de un usuario",
+                    "Una fecha u hora específica",
+                    "Un cambio en la base de datos",
+                    "Un error del sistema"
+                ],
+                correct: 1
+            },
+            {
+                question: "Un Business Use Case (BUC) describe:",
+                options: [
+                    "Cómo funciona el código del sistema",
+                    "Cómo el negocio responde a un evento para lograr un objetivo",
+                    "La arquitectura técnica del software",
+                    "Los requisitos no funcionales"
+                ],
+                correct: 1
+            },
+            {
+                question: "Los BUCs deben ser:",
+                options: [
+                    "Muy técnicos y detallados",
+                    "Independientes de la tecnología",
+                    "Escritos en código",
+                    "Solo para desarrolladores"
+                ],
+                correct: 1
+            },
+            {
+                question: "Un Product Use Case (PUC) describe:",
+                options: [
+                    "Procesos de negocio de alto nivel",
+                    "Cómo un usuario interactúa con el sistema de software",
+                    "La estrategia empresarial",
+                    "Eventos que disparan procesos"
+                ],
+                correct: 1
+            },
+            {
+                question: "La principal diferencia entre BUC y PUC es:",
+                options: [
+                    "El idioma utilizado",
+                    "BUC enfoca en negocio/procesos, PUC en funcionalidad del sistema",
+                    "BUC es más corto que PUC",
+                    "No hay diferencia real"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál es el actor en un BUC?",
+                options: [
+                    "El programador",
+                    "El usuario final del sistema",
+                    "Un rol de negocio (departamento, área)",
+                    "La base de datos"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuál es el actor en un PUC?",
+                options: [
+                    "El CEO de la empresa",
+                    "El usuario específico del sistema",
+                    "El departamento completo",
+                    "El analista de sistemas"
+                ],
+                correct: 1
+            },
+            {
+                question: "La trazabilidad significa:",
+                options: [
+                    "Hacer dibujos de los procesos",
+                    "Vincular cada PUC con un BUC y cada BUC con un BE",
+                    "Usar herramientas específicas",
+                    "Escribir mucha documentación"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué porcentaje de fracasos en proyectos se debe a mal relevamiento?",
+                options: [
+                    "20%",
+                    "40%",
+                    "68%",
+                    "90%"
+                ],
+                correct: 2
+            },
+            {
+                question: "Un BUC puede generar:",
+                options: [
+                    "Solo un PUC",
+                    "Múltiples PUCs",
+                    "Ningún PUC",
+                    "Solo eventos de negocio"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál es un ejemplo de evento externo?",
+                options: [
+                    "Llega fin de mes",
+                    "Stock llega a mínimo",
+                    "Cliente realiza pedido",
+                    "Sistema genera backup"
+                ],
+                correct: 2
+            },
+            {
+                question: "En un diagrama UML, los casos de uso se representan con:",
+                options: [
+                    "Rectángulos",
+                    "Óvalos",
+                    "Triángulos",
+                    "Círculos"
+                ],
+                correct: 1
+            },
+            {
+                question: "La relación «include» en casos de uso significa:",
+                options: [
+                    "Un caso de uso opcional",
+                    "Un caso de uso incluye obligatoriamente otro",
+                    "Un caso de uso extiende a otro",
+                    "Los casos de uso son independientes"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuál es un error común al escribir BUCs?",
+                options: [
+                    "Ser demasiado abstracto",
+                    "Incluir detalles técnicos de implementación",
+                    "Validar con stakeholders",
+                    "Identificar el objetivo de negocio"
+                ],
+                correct: 1
+            },
+            {
+                question: "Un PUC debe incluir:",
+                options: [
+                    "Solo el flujo principal",
+                    "Flujo principal, alternativos y excepciones",
+                    "Solo las excepciones",
+                    "Solo la interfaz gráfica"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué debe contener un BE documentado?",
+                options: [
+                    "Solo el nombre",
+                    "Tipo, origen, descripción, datos asociados y respuesta del sistema",
+                    "Solo la frecuencia",
+                    "Solo el código de implementación"
+                ],
+                correct: 1
+            },
+            {
+                question: "El flujo de trabajo correcto es:",
+                options: [
+                    "PUC → BUC → BE",
+                    "BUC → BE → PUC",
+                    "BE → BUC → PUC",
+                    "BE → PUC → BUC"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Para qué audiencia son principalmente los BUCs?",
+                options: [
+                    "Solo desarrolladores",
+                    "Stakeholders de negocio y gerencia",
+                    "Solo testers",
+                    "Solo diseñadores UI"
+                ],
+                correct: 1
+            }
+        ];
+
+        // Presentation State
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        // Quiz State
+        let currentQuestionIndex = 0;
+        let selectedAnswers = [];
+        let quizStarted = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSlideCounter();
+            updateNavButtons();
+        });
+
+        // Slide Navigation
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            slides[index].classList.add('animate__animated', 'animate__fadeIn');
+            
+            currentSlideIndex = index;
+            updateSlideCounter();
+            updateNavButtons();
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+
+        function updateSlideCounter() {
+            document.getElementById('currentSlide').textContent = currentSlideIndex + 1;
+            document.getElementById('totalSlides').textContent = totalSlides;
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextNavBtn');
+            
+            prevBtn.disabled = currentSlideIndex === 0;
+            nextBtn.disabled = currentSlideIndex === totalSlides - 1;
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Quiz Functions
+        function startQuiz() {
+            console.log('Starting quiz...');
+            quizStarted = true;
+            currentQuestionIndex = 0;
+            selectedAnswers = [];
+            
+            showSlide(11);
+            
+            setTimeout(function() {
+                console.log('Timeout finished, loading question...');
+                loadQuestion();
+            }, 300);
+        }
+
+        function loadQuestion() {
+            console.log('Loading question', currentQuestionIndex);
+            
+            if (!quizData || quizData.length === 0) {
+                console.error('quizData is not defined or empty');
+                return;
+            }
+            
+            const question = quizData[currentQuestionIndex];
+            console.log('Question data:', question);
+            
+            const progressEl = document.getElementById('quizProgress');
+            const questionEl = document.getElementById('quizQuestion');
+            const optionsContainer = document.getElementById('quizOptions');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (!progressEl || !questionEl || !optionsContainer || !nextBtn) {
+                console.error('Quiz elements not found!');
+                alert('Error: No se pudieron cargar los elementos del quiz.');
+                return;
+            }
+            
+            progressEl.textContent = `Pregunta ${currentQuestionIndex + 1} de ${quizData.length}`;
+            progressEl.style.display = 'block';
+            
+            questionEl.textContent = question.question;
+            questionEl.style.display = 'block';
+            
+            optionsContainer.innerHTML = '';
+            optionsContainer.style.display = 'flex';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = function() {
+                    selectOption(index, optionDiv);
+                };
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            if (selectedAnswers[currentQuestionIndex] !== undefined) {
+                const options = optionsContainer.querySelectorAll('.quiz-option');
+                if (options[selectedAnswers[currentQuestionIndex]]) {
+                    options[selectedAnswers[currentQuestionIndex]].classList.add('selected');
+                }
+            }
+            
+            nextBtn.style.display = 'block';
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.innerHTML = 'Finalizar Quiz <i class="fas fa-check-circle"></i>';
+            } else {
+                nextBtn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+            }
+            
+            console.log('Question loaded successfully');
+        }
+
+        function selectOption(index, element) {
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            selectedAnswers[currentQuestionIndex] = index;
+        }
+
+        function nextQuestion() {
+            if (selectedAnswers[currentQuestionIndex] === undefined) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selecciona una respuesta',
+                    text: 'Por favor selecciona una opción antes de continuar',
+                    confirmButtonColor: '#667eea'
+                });
+                return;
+            }
+            
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            let score = 0;
+            let resultsHTML = '';
+            
+            quizData.forEach((question, index) => {
+                const isCorrect = selectedAnswers[index] === question.correct;
+                if (isCorrect) {
+                    score++;
+                }
+                
+                const resultClass = isCorrect ? 'correct' : 'incorrect';
+                const icon = isCorrect ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>';
+                
+                resultsHTML += `
+                    <div class="result-item ${resultClass}">
+                        <div class="result-question">
+                            ${icon} <strong>Pregunta ${index + 1}:</strong> ${question.question}
+                        </div>
+                        ${!isCorrect ? `
+                            <div class="result-answer your-answer">
+                                <i class="fas fa-times"></i> Tu respuesta: ${question.options[selectedAnswers[index]]}
+                            </div>
+                            <div class="result-answer correct-answer">
+                                <i class="fas fa-check"></i> Respuesta correcta: ${question.options[question.correct]}
+                            </div>
+                        ` : `
+                            <div class="result-answer correct-answer">
+                                <i class="fas fa-check"></i> ¡Correcto! ${question.options[question.correct]}
+                            </div>
+                        `}
+                    </div>
+                `;
+            });
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            let icon = 'success';
+            let title = '¡Excelente trabajo!';
+            
+            if (percentage < 60) {
+                icon = 'warning';
+                title = 'Puedes mejorar';
+            } else if (percentage < 80) {
+                icon = 'info';
+                title = '¡Buen trabajo!';
+            }
+            
+            Swal.fire({
+                icon: icon,
+                title: title,
+                html: `
+                    <div style="font-size: 1.2rem; margin: 1rem 0;">
+                        <p>Has respondido correctamente <strong>${score}</strong> de <strong>${quizData.length}</strong> preguntas</p>
+                        <div style="font-size: 3rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 1.5rem 0; font-weight: 900;">
+                            ${percentage}%
+                        </div>
+                        <p style="margin-bottom: 1.5rem;">
+                            ${percentage >= 80 ? '¡Dominas muy bien los conceptos de BEs, BUCs y PUCs! 🎉' : 
+                              percentage >= 60 ? 'Tienes un buen entendimiento. Revisa los conceptos donde tuviste dudas 📚' : 
+                              'Te recomendamos revisar la presentación nuevamente 💪'}
+                        </p>
+                        <div style="text-align: left; max-height: 400px; overflow-y: auto; border: 3px solid #667eea; border-radius: 20px; padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);">
+                            <h4 style="color: #667eea; margin-bottom: 1rem; font-weight: 800;"><i class="fas fa-list-check"></i> Desglose de Respuestas:</h4>
+                            ${resultsHTML}
+                        </div>
+                    </div>
+                `,
+                width: '800px',
+                confirmButtonText: '🏠 Volver al inicio',
+                confirmButtonColor: '#667eea',
+                allowOutsideClick: false,
+                customClass: {
+                    popup: 'swal-wide'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showSlide(0);
+                    quizStarted = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
