@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrevistas a Clientes - Análisis de Requerimientos</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600;700&family=Work+Sans:wght@300;400;600;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2d5016;
+            --secondary-color: #4a7c24;
+            --accent-color: #7cb342;
+            --dark-bg: #1a2912;
+            --light-accent: #f1f8e9;
+            --text-dark: #263238;
+            --warning-color: #ff6f00;
+            --success-color: #43a047;
+            --error-color: #e53935;
+            --gradient-1: linear-gradient(135deg, #2d5016 0%, #4a7c24 100%);
+            --gradient-2: linear-gradient(135deg, #4a7c24 0%, #7cb342 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: var(--light-accent);
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Slides Container */
+        .slides-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            padding: 40px 30px 100px 30px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        /* Title Slide */
+        .title-slide {
+            background: var(--gradient-1);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            justify-content: center !important;
+        }
+
+        .title-slide::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.03) 10px,
+                rgba(255,255,255,0.03) 20px
+            );
+            animation: slideBackground 30s linear infinite;
+        }
+
+        @keyframes slideBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .title-slide h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+            line-height: 1.2;
+        }
+
+        .title-slide .subtitle {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .title-slide .author {
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-top: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Content Slides */
+        .content-slide {
+            background: linear-gradient(to bottom right, #ffffff 0%, var(--light-accent) 100%);
+        }
+
+        .slide-header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-header h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            border-bottom: 4px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .slide-header .icon-header {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .content-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--accent-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .content-box h3 {
+            font-family: 'Work Sans', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .content-box h3 i {
+            color: var(--secondary-color);
+        }
+
+        .content-box p, .content-box ul {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .content-box ul {
+            padding-left: 1.5rem;
+        }
+
+        .content-box ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .content-box ul li strong {
+            color: var(--primary-color);
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Three Column Layout */
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(74, 124, 36, 0.4);
+        }
+
+        .nav-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .slide-counter {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 20px;
+            font-family: 'Courier Prime', monospace;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            margin: 1rem auto;
+            display: block;
+        }
+
+        .quiz-question {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            min-height: 60px;
+            display: block;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .quiz-option {
+            background: var(--light-accent);
+            padding: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+            display: block;
+            width: 100%;
+        }
+
+        .quiz-option:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateX(10px);
+        }
+
+        .quiz-option.selected {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .quiz-progress {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-family: 'Courier Prime', monospace;
+            display: block;
+        }
+
+        .quiz-btn {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(74, 124, 36, 0.3);
+        }
+
+        /* Quiz Results */
+        .results-container {
+            max-height: 500px;
+            overflow-y: auto;
+            margin: 1.5rem 0;
+        }
+
+        .result-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .result-item.correct {
+            background: #e8f5e9;
+            border-color: var(--success-color);
+        }
+
+        .result-item.incorrect {
+            background: #ffebee;
+            border-color: var(--error-color);
+        }
+
+        .result-question {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .result-answer {
+            font-size: 0.95rem;
+            margin: 0.3rem 0;
+        }
+
+        .result-answer.your-answer {
+            color: var(--error-color);
+        }
+
+        .result-answer.correct-answer {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: var(--gradient-2);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            box-shadow: 0 10px 30px rgba(74, 124, 36, 0.3);
+        }
+
+        .highlight-box h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Icon Grid */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .icon-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .icon-item:hover {
+            transform: translateY(-10px);
+        }
+
+        .icon-item i {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.8rem;
+        }
+
+        .icon-item h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .icon-item p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        /* Example Box */
+        .example-box {
+            background: #fff8e1;
+            border-left: 4px solid var(--warning-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .example-box h4 {
+            color: var(--warning-color);
+            margin-bottom: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* Do/Don't Box */
+        .do-dont-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .do-box {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success-color);
+            padding: 1.2rem;
+            border-radius: 10px;
+        }
+
+        .dont-box {
+            background: #ffebee;
+            border-left: 4px solid var(--error-color);
+            padding: 1.2rem;
+            border-radius: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 15px 90px 15px;
+            }
+
+            .title-slide h1 {
+                font-size: 2.5rem;
+            }
+
+            .slide-header h2 {
+                font-size: 2rem;
+            }
+
+            .two-column, .three-column, .do-dont-box {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation {
+                padding: 10px 20px;
+            }
+
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Slides Container -->
+    <div class="slides-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide animate__animated animate__fadeIn">
+            <h1 class="animate__animated animate__fadeInDown">Entrevistas a Clientes</h1>
+            <p class="subtitle animate__animated animate__fadeInUp animate__delay-1s">
+                Técnicas para Análisis de Requerimientos
+            </p>
+            <div class="animate__animated animate__fadeIn animate__delay-2s">
+                <i class="fas fa-comments" style="font-size: 5rem; margin: 2rem 0;"></i>
+            </div>
+            <p class="author animate__animated animate__fadeInUp animate__delay-3s">
+                <i class="fas fa-user-graduate"></i> Ingeniería de Software Profesional
+            </p>
+        </div>
+
+        <!-- Slide 2: Introducción -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h2>¿Por qué Entrevistar?</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-quote-left"></i> La Importancia de las Entrevistas</h3>
+                    <p>Las <strong>entrevistas</strong> son la técnica más poderosa para la elicitación de requisitos porque permiten obtener información profunda, aclarar ambigüedades en tiempo real y construir rapport con los stakeholders. A diferencia de encuestas o documentos, las entrevistas capturan el <strong>contexto</strong> y las <strong>motivaciones</strong> detrás de las necesidades.</p>
+                </div>
+
+                <div class="three-column">
+                    <div class="icon-item">
+                        <i class="fas fa-ear-listen"></i>
+                        <h5>Escucha Profunda</h5>
+                        <p>Captar necesidades no expresadas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-question-circle"></i>
+                        <h5>Clarificación</h5>
+                        <p>Resolver dudas inmediatamente</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-lightbulb"></i>
+                        <h5>Insights</h5>
+                        <p>Descubrir información valiosa</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-chart-line"></i> Estadística Clave</h4>
+                    <p>Las entrevistas bien ejecutadas identifican hasta el <strong>80% de los requisitos críticos</strong> del proyecto, mientras que métodos pasivos solo capturan el 30-40%.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-check-circle"></i> Ventajas</h3>
+                        <ul>
+                            <li>Información rica y detallada</li>
+                            <li>Permite seguir líneas de investigación</li>
+                            <li>Genera confianza con stakeholders</li>
+                            <li>Captura lenguaje corporal y emociones</li>
+                            <li>Adaptable a diferentes contextos</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Desventajas</h3>
+                        <ul>
+                            <li>Requiere mucho tiempo</li>
+                            <li>Costosa en términos de recursos</li>
+                            <li>Requiere habilidades especializadas</li>
+                            <li>Puede haber sesgos del entrevistador</li>
+                            <li>Difícil de escalar a muchos usuarios</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Preparación -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h2>Preparación de la Entrevista</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-clipboard-check"></i> La Preparación es Clave</h3>
+                    <p>"Si fallas en prepararte, te estás preparando para fallar." La preparación puede representar hasta el <strong>60% del éxito</strong> de una entrevista efectiva.</p>
+                </div>
+
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-search"></i>
+                        <h5>1. Investigación</h5>
+                        <p>Conocer al entrevistado y su contexto</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-bullseye"></i>
+                        <h5>2. Objetivos</h5>
+                        <p>Definir qué información necesitas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-list"></i>
+                        <h5>3. Guion</h5>
+                        <p>Preparar preguntas estructuradas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h5>4. Agenda</h5>
+                        <p>Planificar tiempo y logística</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-tools"></i>
+                        <h5>5. Materiales</h5>
+                        <p>Preparar herramientas necesarias</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-paper-plane"></i>
+                        <h5>6. Comunicación</h5>
+                        <p>Enviar invitación y contexto previo</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-file-alt"></i> Checklist Pre-Entrevista</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p>✓ <strong>Investigar:</strong> Rol, responsabilidades, experiencia del entrevistado</p>
+                        <p>✓ <strong>Revisar:</strong> Documentación existente, sistemas actuales</p>
+                        <p>✓ <strong>Definir:</strong> 3-5 objetivos específicos de la entrevista</p>
+                        <p>✓ <strong>Preparar:</strong> 10-15 preguntas principales + seguimientos</p>
+                        <p>✓ <strong>Confirmar:</strong> Fecha, hora, lugar/plataforma</p>
+                        <p>✓ <strong>Enviar:</strong> Agenda con 2-3 días de anticipación</p>
+                        <p>✓ <strong>Probar:</strong> Tecnología (grabadora, videollamada)</p>
+                        <p>✓ <strong>Obtener:</strong> Permiso para grabar (si aplica)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Tipos de Preguntas -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-question"></i>
+                </div>
+                <h2>Tipos de Preguntas</h2>
+            </div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-door-open"></i> Preguntas Abiertas</h3>
+                        <p><strong>Propósito:</strong> Obtener respuestas detalladas y narrativas</p>
+                        <div class="example-box">
+                            <h4>Ejemplos:</h4>
+                            <p>• "¿Cómo maneja actualmente este proceso?"</p>
+                            <p>• "¿Qué desafíos enfrenta en su trabajo diario?"</p>
+                            <p>• "Cuénteme sobre la última vez que..."</p>
+                            <p>• "¿Qué cambiaría del sistema actual?"</p>
+                        </div>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-door-closed"></i> Preguntas Cerradas</h3>
+                        <p><strong>Propósito:</strong> Confirmar hechos específicos</p>
+                        <div class="example-box">
+                            <h4>Ejemplos:</h4>
+                            <p>• "¿Usa el sistema actual diariamente?"</p>
+                            <p>• "¿Cuántos usuarios acceden al sistema?"</p>
+                            <p>• "¿El reporte se genera automáticamente?"</p>
+                            <p>• "¿Necesita aprobación del supervisor?"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-question-circle"></i> Preguntas de Sondeo</h3>
+                        <p><strong>Propósito:</strong> Profundizar en respuestas superficiales</p>
+                        <div class="example-box">
+                            <h4>Ejemplos:</h4>
+                            <p>• "¿Puede darme un ejemplo específico?"</p>
+                            <p>• "¿Por qué es importante eso para usted?"</p>
+                            <p>• "¿Qué quiere decir con 'intuitivo'?"</p>
+                            <p>• "¿Qué pasaría si no tuviera esa función?"</p>
+                        </div>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-lightbulb"></i> Preguntas Hipotéticas</h3>
+                        <p><strong>Propósito:</strong> Explorar posibilidades y necesidades futuras</p>
+                        <div class="example-box">
+                            <h4>Ejemplos:</h4>
+                            <p>• "¿Qué haría si el volumen se duplicara?"</p>
+                            <p>• "Imagine que el proceso es automático..."</p>
+                            <p>• "¿Cómo manejaría esta situación excepcional?"</p>
+                            <p>• "Si pudiera cambiar una cosa, ¿cuál sería?"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-ban"></i> Evitar Preguntas Sesgadas</h4>
+                    <p><strong>Mal:</strong> "¿No cree que sería mejor si...?" | <strong>Bien:</strong> "¿Qué opina sobre...?"<br>
+                    <strong>Mal:</strong> "El sistema lento es un problema, ¿verdad?" | <strong>Bien:</strong> "¿Cómo describiría el rendimiento del sistema?"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Técnica de los 5 Por Qué -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h2>Técnica de los 5 Por Qué</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-search-plus"></i> Llegar a la Raíz del Problema</h3>
+                    <p>La técnica de los <strong>5 Por Qué</strong> es un método simple pero poderoso para descubrir la causa raíz de un problema o necesidad. Consiste en preguntar "¿Por qué?" sucesivamente hasta llegar al problema fundamental.</p>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-sitemap"></i> Ejemplo Práctico</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem; font-size: 1.05rem;">
+                        <p><strong>Problema inicial:</strong> "Necesitamos un sistema más rápido"</p>
+                        
+                        <p style="margin-top: 1rem;"><strong>¿Por qué #1?</strong> ¿Por qué necesitan un sistema más rápido?</p>
+                        <p style="padding-left: 2rem; color: var(--secondary-color);">→ "Porque los reportes tardan mucho en generarse"</p>
+                        
+                        <p style="margin-top: 0.8rem;"><strong>¿Por qué #2?</strong> ¿Por qué los reportes tardan mucho?</p>
+                        <p style="padding-left: 2rem; color: var(--secondary-color);">→ "Porque tenemos que consolidar datos de 5 sistemas diferentes manualmente"</p>
+                        
+                        <p style="margin-top: 0.8rem;"><strong>¿Por qué #3?</strong> ¿Por qué tienen que consolidar manualmente?</p>
+                        <p style="padding-left: 2rem; color: var(--secondary-color);">→ "Porque los sistemas no están integrados"</p>
+                        
+                        <p style="margin-top: 0.8rem;"><strong>¿Por qué #4?</strong> ¿Por qué no están integrados?</p>
+                        <p style="padding-left: 2rem; color: var(--secondary-color);">→ "Porque cada departamento compró su propio sistema"</p>
+                        
+                        <p style="margin-top: 0.8rem;"><strong>¿Por qué #5?</strong> ¿Por qué cada departamento compró por separado?</p>
+                        <p style="padding-left: 2rem; color: var(--secondary-color);">→ "Porque no hay una estrategia de TI centralizada"</p>
+                        
+                        <p style="margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 8px;">
+                            <strong><i class="fas fa-lightbulb"></i> Causa Raíz:</strong> El problema real no es la velocidad del sistema, sino la falta de integración causada por decisiones descentralizadas. La solución podría ser un bus de integración o API centralizada, no solo "un sistema más rápido".
+                        </p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-exclamation-circle"></i> Importante</h4>
+                    <p>No siempre son exactamente 5 "por qués". A veces necesitas 3, a veces 7. Lo importante es llegar a la causa raíz, no contar preguntas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Escucha Activa -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-ear-listen"></i>
+                </div>
+                <h2>Escucha Activa</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-volume-up"></i> El Arte de Escuchar</h3>
+                    <p>La <strong>escucha activa</strong> es una técnica de comunicación donde el entrevistador se concentra completamente en lo que dice el entrevistado, comprende el mensaje completo y responde de manera reflexiva. No es simplemente "oír", es <strong>entender profundamente</strong>.</p>
+                </div>
+
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-eye"></i>
+                        <h5>Contacto Visual</h5>
+                        <p>Mantener atención visual</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-head-side-virus"></i>
+                        <h5>Lenguaje Corporal</h5>
+                        <p>Postura abierta y receptiva</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-ban"></i>
+                        <h5>No Interrumpir</h5>
+                        <p>Dejar terminar las ideas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-check-double"></i>
+                        <h5>Parafrasear</h5>
+                        <p>Confirmar comprensión</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-comment-dots"></i>
+                        <h5>Feedback Verbal</h5>
+                        <p>"Entiendo", "Continúe"</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-brain"></i>
+                        <h5>Empatía</h5>
+                        <p>Comprender perspectivas</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-clipboard-list"></i> Técnicas Prácticas</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p><strong>1. Parafraseo:</strong> "Entonces, lo que me dice es que..."</p>
+                        <p><strong>2. Clarificación:</strong> "¿Podría explicar más sobre...?"</p>
+                        <p><strong>3. Resumen:</strong> "Hasta ahora hemos hablado de..."</p>
+                        <p><strong>4. Reflexión:</strong> "Percibo que esto es importante para usted porque..."</p>
+                        <p><strong>5. Silencio:</strong> Usar pausas para permitir reflexión</p>
+                    </div>
+                </div>
+
+                <div class="do-dont-box">
+                    <div class="do-box">
+                        <h4><i class="fas fa-check"></i> Hacer</h4>
+                        <ul style="font-size: 0.95rem;">
+                            <li>Tomar notas breves</li>
+                            <li>Asentir con la cabeza</li>
+                            <li>Hacer preguntas aclaratorias</li>
+                            <li>Mostrar interés genuino</li>
+                        </ul>
+                    </div>
+                    <div class="dont-box">
+                        <h4><i class="fas fa-times"></i> Evitar</h4>
+                        <ul style="font-size: 0.95rem;">
+                            <li>Mirar el teléfono</li>
+                            <li>Preparar tu respuesta mientras hablan</li>
+                            <li>Cambiar de tema abruptamente</li>
+                            <li>Juzgar o criticar</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Estructura de la Entrevista -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-stream"></i>
+                </div>
+                <h2>Estructura de la Entrevista</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-clock"></i> Gestión del Tiempo</h3>
+                    <p>Una entrevista típica de análisis de requerimientos dura entre <strong>45-90 minutos</strong>. Más allá de ese tiempo, la calidad de la información disminuye por fatiga.</p>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-list-ol"></i> Fases de la Entrevista</h3>
+                    <div style="margin-top: 1rem;">
+                        <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <h5 style="color: var(--primary-color); margin-bottom: 0.5rem;">
+                                <i class="fas fa-1"></i> Apertura (5-10 min)
+                            </h5>
+                            <ul style="font-size: 0.95rem;">
+                                <li>Presentaciones y contexto</li>
+                                <li>Explicar propósito y duración</li>
+                                <li>Obtener permiso para grabar</li>
+                                <li>Establecer rapport (crear confianza)</li>
+                                <li>Romper el hielo con preguntas sencillas</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <h5 style="color: var(--primary-color); margin-bottom: 0.5rem;">
+                                <i class="fas fa-2"></i> Calentamiento (10-15 min)
+                            </h5>
+                            <ul style="font-size: 0.95rem;">
+                                <li>Preguntas generales sobre su rol</li>
+                                <li>Contexto del negocio</li>
+                                <li>Procesos actuales</li>
+                                <li>Transición gradual a temas específicos</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <h5 style="color: var(--primary-color); margin-bottom: 0.5rem;">
+                                <i class="fas fa-3"></i> Cuerpo Principal (30-50 min)
+                            </h5>
+                            <ul style="font-size: 0.95rem;">
+                                <li>Preguntas principales del guion</li>
+                                <li>Exploración profunda de necesidades</li>
+                                <li>Seguimiento de temas emergentes</li>
+                                <li>Uso de técnicas como 5 por qués</li>
+                                <li>Clarificación de ambigüedades</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <h5 style="color: var(--primary-color); margin-bottom: 0.5rem;">
+                                <i class="fas fa-4"></i> Priorización (10-15 min)
+                            </h5>
+                            <ul style="font-size: 0.95rem;">
+                                <li>"¿Qué es lo más importante para usted?"</li>
+                                <li>Ranking de necesidades</li>
+                                <li>Must-have vs Nice-to-have</li>
+                                <li>Restricciones críticas</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: var(--light-accent); padding: 1rem; border-radius: 10px;">
+                            <h5 style="color: var(--primary-color); margin-bottom: 0.5rem;">
+                                <i class="fas fa-5"></i> Cierre (5-10 min)
+                            </h5>
+                            <ul style="font-size: 0.95rem;">
+                                <li>Resumen de puntos clave</li>
+                                <li>"¿Hay algo que no haya preguntado?"</li>
+                                <li>Siguientes pasos</li>
+                                <li>Agradecimiento</li>
+                                <li>Confirmación de contacto para seguimiento</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Documentación -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h2>Documentación</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-pen"></i> ¿Tomar Notas o Grabar?</h3>
+                    <p>La respuesta es: <strong>ambas</strong>. Las notas capturan los puntos clave en tiempo real, mientras que la grabación permite revisar detalles después sin perder fluidez en la conversación.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-pencil-alt"></i> Técnicas de Notas</h3>
+                        <ul>
+                            <li><strong>Método Cornell:</strong> Dividir página en notas, palabras clave y resumen</li>
+                            <li><strong>Mapas mentales:</strong> Para relaciones complejas</li>
+                            <li><strong>Bullet points:</strong> Hechos y citas clave</li>
+                            <li><strong>Símbolos:</strong> ⚠️ problema, 💡 idea, ❓ duda</li>
+                            <li><strong>Destacar:</strong> Usar colores para prioridades</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-microphone"></i> Grabación</h3>
+                        <ul>
+                            <li><strong>Siempre pedir permiso</strong> antes de grabar</li>
+                            <li>Usar grabadora de respaldo</li>
+                            <li>Probar equipo antes de la entrevista</li>
+                            <li>Transcribir dentro de 24-48 horas</li>
+                            <li>Herramientas: Otter.ai, Rev, Trint</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-clipboard-check"></i> Post-Entrevista (Crítico)</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p><strong>⏱️ Inmediatamente (primeros 30 min):</strong></p>
+                        <ul style="margin-top: 0.5rem;">
+                            <li>Completar notas mientras está fresco en tu memoria</li>
+                            <li>Anotar impresiones no verbales (tono, dudas, entusiasmo)</li>
+                            <li>Identificar temas que necesitan seguimiento</li>
+                        </ul>
+                        
+                        <p style="margin-top: 1rem;"><strong>📝 24-48 horas:</strong></p>
+                        <ul style="margin-top: 0.5rem;">
+                            <li>Transcribir o revisar grabación</li>
+                            <li>Organizar información por categorías</li>
+                            <li>Identificar requisitos preliminares</li>
+                            <li>Preparar preguntas de seguimiento</li>
+                        </ul>
+                        
+                        <p style="margin-top: 1rem;"><strong>✉️ 3-5 días:</strong></p>
+                        <ul style="margin-top: 0.5rem;">
+                            <li>Enviar resumen al entrevistado para validación</li>
+                            <li>Solicitar clarificación en puntos ambiguos</li>
+                            <li>Agradecer nuevamente su tiempo</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Regla de Oro</h4>
+                    <p>Si no está documentado, no sucedió. La memoria es frágil y selectiva. Documentar es tan importante como entrevistar.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Errores Comunes -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h2>Errores Comunes</h2>
+            </div>
+            <div class="slide-content">
+                <div class="icon-grid">
+                    <div class="icon-item">
+                        <i class="fas fa-comment-slash"></i>
+                        <h5>No Escuchar</h5>
+                        <p>Hablar más que el entrevistado</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-lightbulb"></i>
+                        <h5>Sugerir Soluciones</h5>
+                        <p>Ofrecer respuestas en lugar de preguntar</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-file-excel"></i>
+                        <h5>No Prepararse</h5>
+                        <p>Improvisar sin investigación previa</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-question"></i>
+                        <h5>Preguntas Cerradas</h5>
+                        <p>Usar solo preguntas sí/no</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-user-slash"></i>
+                        <h5>Ignorar Señales</h5>
+                        <p>No captar lenguaje corporal</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-balance-scale"></i>
+                        <h5>Sesgo Confirmatorio</h5>
+                        <p>Buscar solo respuestas que confirmen ideas</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-stopwatch"></i>
+                        <h5>Mala Gestión del Tiempo</h5>
+                        <p>No cubrir temas importantes</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-brain"></i>
+                        <h5>Asumir</h5>
+                        <p>Dar por sentado sin validar</p>
+                    </div>
+                    <div class="icon-item">
+                        <i class="fas fa-edit"></i>
+                        <h5>No Documentar</h5>
+                        <p>Confiar solo en la memoria</p>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <h3><i class="fas fa-skull-crossbones"></i> El Error Más Grave</h3>
+                    <div class="example-box">
+                        <h4><i class="fas fa-ban"></i> Escenario:</h4>
+                        <p style="margin-bottom: 1rem;">El entrevistador dice: "Entonces, lo que usted necesita es un sistema que haga X, Y, Z, ¿verdad?"</p>
+                        <p><strong>Problema:</strong> Está poniendo palabras en boca del entrevistado. En lugar de descubrir necesidades, está <strong>validando sus propias suposiciones</strong>.</p>
+                        <p style="margin-top: 1rem;"><strong>Correcto:</strong> "¿Qué funcionalidades necesitaría el sistema para resolver este problema?"</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-quote-left"></i> Recuerda</h4>
+                    <p>"Tu trabajo es entender el problema, no vender tu solución. Haz preguntas, no declaraciones."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Mejores Prácticas -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h2>Mejores Prácticas</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-trophy"></i> Principios de Oro</h3>
+                    <div style="background: var(--light-accent); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p style="margin-bottom: 0.8rem;"><strong>1. Regla 80/20:</strong> El entrevistado debe hablar 80% del tiempo, tú solo 20%</p>
+                        <p style="margin-bottom: 0.8rem;"><strong>2. Silencio es oro:</strong> No tengas miedo a las pausas. Permiten al entrevistado reflexionar</p>
+                        <p style="margin-bottom: 0.8rem;"><strong>3. Empieza amplio, luego específico:</strong> De lo general a lo particular</p>
+                        <p style="margin-bottom: 0.8rem;"><strong>4. Un tema a la vez:</strong> No saltes entre tópicos sin cerrar el anterior</p>
+                        <p style="margin-bottom: 0.8rem;"><strong>5. Validar continuamente:</strong> "¿Entendí correctamente que...?"</p>
+                        <p><strong>6. Termina con apertura:</strong> "¿Qué no he preguntado que debería?"</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-magic"></i> Técnicas Avanzadas</h3>
+                        <ul>
+                            <li><strong>Laddering:</strong> Ir de lo concreto a lo abstracto</li>
+                            <li><strong>Storytelling:</strong> "Cuénteme sobre un día típico..."</li>
+                            <li><strong>Card Sorting:</strong> Organizar prioridades visualmente</li>
+                            <li><strong>Show, don't tell:</strong> Pedir demostraciones</li>
+                            <li><strong>Worst case:</strong> "¿Qué es lo peor que podría pasar si...?"</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-users"></i> Rapport Building</h3>
+                        <ul>
+                            <li>Usar el nombre del entrevistado</li>
+                            <li>Encontrar puntos en común</li>
+                            <li>Mostrar apreciación genuina</li>
+                            <li>Ser humano, no robot</li>
+                            <li>Compartir contexto cuando sea apropiado</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-heart"></i> La Clave del Éxito</h4>
+                    <p>La mejor entrevista es aquella donde el entrevistado se siente <strong>escuchado</strong>, <strong>valorado</strong> y <strong>comprendido</strong>. No es un interrogatorio, es una conversación colaborativa.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Entrevistas Remotas -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h2>Entrevistas Remotas</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3><i class="fas fa-laptop"></i> La Nueva Normalidad</h3>
+                    <p>Las entrevistas remotas por videollamada son ahora comunes. Si bien tienen desventajas, también ofrecen beneficios como flexibilidad y acceso a entrevistados en cualquier ubicación.</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="content-box">
+                        <h3><i class="fas fa-check-circle"></i> Preparación Técnica</h3>
+                        <ul>
+                            <li>Probar plataforma 30 min antes</li>
+                            <li>Buena iluminación frontal</li>
+                            <li>Fondo profesional y neutral</li>
+                            <li>Cámara a la altura de los ojos</li>
+                            <li>Micrófono de calidad</li>
+                            <li>Internet estable (cable > WiFi)</li>
+                            <li>Cerrar otras aplicaciones</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3><i class="fas fa-comments"></i> Comunicación Virtual</h3>
+                        <ul>
+                            <li>Mirar a la cámara, no la pantalla</li>
+                            <li>Exagerar ligeramente gestos y expresiones</li>
+                            <li>Confirmar verbalmente comprensión</li>
+                            <li>Usar funciones de chat para links</li>
+                            <li>Compartir pantalla para aclarar conceptos</li>
+                            <li>Grabación con consentimiento</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="do-dont-box">
+                    <div class="do-box">
+                        <h4><i class="fas fa-thumbs-up"></i> Hacer</h4>
+                        <ul style="font-size: 0.95rem;">
+                            <li>Enviar link de reunión 24h antes</li>
+                            <li>Conectarse 5 min antes</li>
+                            <li>Tener plan B (teléfono)</li>
+                            <li>Usar headphones para mejor audio</li>
+                        </ul>
+                    </div>
+                    <div class="dont-box">
+                        <h4><i class="fas fa-thumbs-down"></i> Evitar</h4>
+                        <ul style="font-size: 0.95rem;">
+                            <li>Multitasking durante la llamada</li>
+                            <li>Comer o beber visiblemente</li>
+                            <li>Interrumpir (hay delay)</li>
+                            <li>Confiar solo en WiFi público</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4><i class="fas fa-info-circle"></i> Desafío Especial</h4>
+                    <p>Es más difícil captar señales no verbales en videollamadas. Compensa con preguntas directas: "¿Cómo se siente respecto a esta propuesta?" en lugar de asumir por expresiones.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Quiz Introduction -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon-header">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h2>Quiz Interactivo</h2>
+            </div>
+            <div class="slide-content">
+                <div class="content-box" style="text-align: center;">
+                    <h3><i class="fas fa-trophy"></i> ¡Pon a Prueba tus Conocimientos!</h3>
+                    <p style="font-size: 1.3rem; margin: 2rem 0;">
+                        Responde 15 preguntas sobre técnicas de entrevistas a clientes en análisis de requerimientos.
+                    </p>
+                    <div style="margin: 3rem 0;">
+                        <i class="fas fa-comments" style="font-size: 4rem; color: var(--accent-color);"></i>
+                    </div>
+                    <p style="font-size: 1.2rem;">
+                        <strong>Instrucciones:</strong> Selecciona la respuesta correcta para cada pregunta. Al final recibirás tu puntuación y podrás ver en cuáles te equivocaste.
+                    </p>
+                    <button class="quiz-btn" onclick="startQuiz()">
+                        <i class="fas fa-play-circle"></i> Comenzar Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Quiz -->
+        <div class="slide content-slide" id="quizSlide">
+            <div class="slide-content" style="justify-content: center; align-items: center;">
+                <div class="quiz-container">
+                    <div class="quiz-progress" id="quizProgress">Pregunta 1 de 15</div>
+                    <div class="quiz-question" id="quizQuestion">Cargando pregunta...</div>
+                    <div class="quiz-options" id="quizOptions"></div>
+                    <button class="quiz-btn" id="nextBtn" onclick="nextQuestion()">
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="previousSlide()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">13</span>
+        </div>
+        <button class="nav-btn" id="nextNavBtn" onclick="nextSlide()">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Quiz Data
+        const quizData = [
+            {
+                question: "¿Cuál es la principal ventaja de las entrevistas sobre otros métodos de elicitación?",
+                options: [
+                    "Son más baratas que las encuestas",
+                    "Permiten obtener información profunda y aclarar ambigüedades en tiempo real",
+                    "Se pueden hacer sin preparación",
+                    "No requieren habilidades especiales"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué porcentaje de requisitos críticos pueden identificar las entrevistas bien ejecutadas?",
+                options: [
+                    "30-40%",
+                    "50-60%",
+                    "80%",
+                    "100%"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuánto tiempo debe representar la preparación en el éxito de una entrevista?",
+                options: [
+                    "20%",
+                    "40%",
+                    "60%",
+                    "80%"
+                ],
+                correct: 2
+            },
+            {
+                question: "Las preguntas abiertas se utilizan para:",
+                options: [
+                    "Confirmar hechos específicos",
+                    "Obtener respuestas de sí o no",
+                    "Obtener respuestas detalladas y narrativas",
+                    "Cerrar rápidamente la entrevista"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuál es un ejemplo de pregunta sesgada?",
+                options: [
+                    "¿Qué opina sobre el sistema actual?",
+                    "¿Cómo describiría el rendimiento del sistema?",
+                    "¿No cree que sería mejor si el sistema fuera más rápido?",
+                    "¿Qué desafíos enfrenta diariamente?"
+                ],
+                correct: 2
+            },
+            {
+                question: "La técnica de los 5 Por Qué sirve para:",
+                options: [
+                    "Molestar al entrevistado",
+                    "Llenar tiempo en la entrevista",
+                    "Llegar a la causa raíz del problema",
+                    "Demostrar conocimiento técnico"
+                ],
+                correct: 2
+            },
+            {
+                question: "En la escucha activa, parafrasear significa:",
+                options: [
+                    "Interrumpir al entrevistado",
+                    "Repetir exactamente lo que dijo",
+                    "Reformular con tus palabras para confirmar comprensión",
+                    "Cambiar de tema"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuánto tiempo debe hablar el entrevistado en una entrevista efectiva?",
+                options: [
+                    "50% del tiempo",
+                    "60% del tiempo",
+                    "70% del tiempo",
+                    "80% del tiempo"
+                ],
+                correct: 3
+            },
+            {
+                question: "¿Cuál es la duración ideal de una entrevista de análisis de requerimientos?",
+                options: [
+                    "15-30 minutos",
+                    "45-90 minutos",
+                    "2-3 horas",
+                    "Todo el día"
+                ],
+                correct: 1
+            },
+            {
+                question: "La fase de 'Apertura' de una entrevista debe durar aproximadamente:",
+                options: [
+                    "1-2 minutos",
+                    "5-10 minutos",
+                    "20-30 minutos",
+                    "No es necesaria"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Cuándo se debe documentar la información de una entrevista?",
+                options: [
+                    "Solo durante la entrevista",
+                    "Una semana después",
+                    "Inmediatamente después y dentro de 24-48 horas",
+                    "No es necesario documentar"
+                ],
+                correct: 2
+            },
+            {
+                question: "El error más grave en una entrevista es:",
+                options: [
+                    "Tomar muchas notas",
+                    "Hacer demasiadas preguntas",
+                    "Poner palabras en boca del entrevistado y validar tus propias suposiciones",
+                    "Usar grabadora"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Qué se debe hacer antes de grabar una entrevista?",
+                options: [
+                    "Nada, es tu derecho grabar",
+                    "Avisar después de terminar",
+                    "Pedir permiso explícito al entrevistado",
+                    "Solo grabar en secreto si es necesario"
+                ],
+                correct: 2
+            },
+            {
+                question: "En entrevistas remotas, para mejor comunicación debes:",
+                options: [
+                    "Mirar a la pantalla constantemente",
+                    "Mirar a la cámara cuando hablas",
+                    "Apagar tu cámara",
+                    "Hacer multitasking"
+                ],
+                correct: 1
+            },
+            {
+                question: "La mejor pregunta para cerrar una entrevista es:",
+                options: [
+                    "¿Terminamos?",
+                    "¿Satisfecho con la reunión?",
+                    "¿Qué no he preguntado que debería?",
+                    "Nos vemos pronto"
+                ],
+                correct: 2
+            }
+        ];
+
+        // Presentation State
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        // Quiz State
+        let currentQuestionIndex = 0;
+        let selectedAnswers = [];
+        let quizStarted = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSlideCounter();
+            updateNavButtons();
+        });
+
+        // Slide Navigation
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            slides[index].classList.add('animate__animated', 'animate__fadeIn');
+            
+            currentSlideIndex = index;
+            updateSlideCounter();
+            updateNavButtons();
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+
+        function updateSlideCounter() {
+            document.getElementById('currentSlide').textContent = currentSlideIndex + 1;
+            document.getElementById('totalSlides').textContent = totalSlides;
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextNavBtn');
+            
+            prevBtn.disabled = currentSlideIndex === 0;
+            nextBtn.disabled = currentSlideIndex === totalSlides - 1;
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Quiz Functions
+        function startQuiz() {
+            console.log('Starting quiz...');
+            quizStarted = true;
+            currentQuestionIndex = 0;
+            selectedAnswers = [];
+            
+            showSlide(12);
+            
+            setTimeout(function() {
+                console.log('Timeout finished, loading question...');
+                loadQuestion();
+            }, 300);
+        }
+
+        function loadQuestion() {
+            console.log('Loading question', currentQuestionIndex);
+            
+            if (!quizData || quizData.length === 0) {
+                console.error('quizData is not defined or empty');
+                return;
+            }
+            
+            const question = quizData[currentQuestionIndex];
+            console.log('Question data:', question);
+            
+            const progressEl = document.getElementById('quizProgress');
+            const questionEl = document.getElementById('quizQuestion');
+            const optionsContainer = document.getElementById('quizOptions');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (!progressEl || !questionEl || !optionsContainer || !nextBtn) {
+                console.error('Quiz elements not found!');
+                alert('Error: No se pudieron cargar los elementos del quiz.');
+                return;
+            }
+            
+            progressEl.textContent = `Pregunta ${currentQuestionIndex + 1} de ${quizData.length}`;
+            progressEl.style.display = 'block';
+            
+            questionEl.textContent = question.question;
+            questionEl.style.display = 'block';
+            
+            optionsContainer.innerHTML = '';
+            optionsContainer.style.display = 'flex';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = function() {
+                    selectOption(index, optionDiv);
+                };
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            if (selectedAnswers[currentQuestionIndex] !== undefined) {
+                const options = optionsContainer.querySelectorAll('.quiz-option');
+                if (options[selectedAnswers[currentQuestionIndex]]) {
+                    options[selectedAnswers[currentQuestionIndex]].classList.add('selected');
+                }
+            }
+            
+            nextBtn.style.display = 'block';
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.innerHTML = 'Finalizar Quiz <i class="fas fa-check-circle"></i>';
+            } else {
+                nextBtn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+            }
+            
+            console.log('Question loaded successfully');
+        }
+
+        function selectOption(index, element) {
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            selectedAnswers[currentQuestionIndex] = index;
+        }
+
+        function nextQuestion() {
+            if (selectedAnswers[currentQuestionIndex] === undefined) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selecciona una respuesta',
+                    text: 'Por favor selecciona una opción antes de continuar',
+                    confirmButtonColor: '#4a7c24'
+                });
+                return;
+            }
+            
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            let score = 0;
+            let resultsHTML = '';
+            
+            quizData.forEach((question, index) => {
+                const isCorrect = selectedAnswers[index] === question.correct;
+                if (isCorrect) {
+                    score++;
+                }
+                
+                const resultClass = isCorrect ? 'correct' : 'incorrect';
+                const icon = isCorrect ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>';
+                
+                resultsHTML += `
+                    <div class="result-item ${resultClass}">
+                        <div class="result-question">
+                            ${icon} <strong>Pregunta ${index + 1}:</strong> ${question.question}
+                        </div>
+                        ${!isCorrect ? `
+                            <div class="result-answer your-answer">
+                                <i class="fas fa-times"></i> Tu respuesta: ${question.options[selectedAnswers[index]]}
+                            </div>
+                            <div class="result-answer correct-answer">
+                                <i class="fas fa-check"></i> Respuesta correcta: ${question.options[question.correct]}
+                            </div>
+                        ` : `
+                            <div class="result-answer correct-answer">
+                                <i class="fas fa-check"></i> ¡Correcto! ${question.options[question.correct]}
+                            </div>
+                        `}
+                    </div>
+                `;
+            });
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            let icon = 'success';
+            let title = '¡Excelente trabajo!';
+            
+            if (percentage < 60) {
+                icon = 'warning';
+                title = 'Puedes mejorar';
+            } else if (percentage < 80) {
+                icon = 'info';
+                title = '¡Buen trabajo!';
+            }
+            
+            Swal.fire({
+                icon: icon,
+                title: title,
+                html: `
+                    <div style="font-size: 1.2rem; margin: 1rem 0;">
+                        <p>Has respondido correctamente <strong>${score}</strong> de <strong>${quizData.length}</strong> preguntas</p>
+                        <div style="font-size: 3rem; color: #4a7c24; margin: 1.5rem 0;">
+                            ${percentage}%
+                        </div>
+                        <p style="margin-bottom: 1.5rem;">
+                            ${percentage >= 80 ? 'Dominas muy bien las técnicas de entrevistas' : 
+                              percentage >= 60 ? 'Tienes un buen entendimiento básico' : 
+                              'Te recomendamos revisar la presentación nuevamente'}
+                        </p>
+                        <div style="text-align: left; max-height: 400px; overflow-y: auto; border: 2px solid #e0e0e0; border-radius: 10px; padding: 1rem; background: #fafafa;">
+                            <h4 style="color: #2d5016; margin-bottom: 1rem;"><i class="fas fa-list-check"></i> Desglose de Respuestas:</h4>
+                            ${resultsHTML}
+                        </div>
+                    </div>
+                `,
+                width: '800px',
+                confirmButtonText: 'Volver al inicio',
+                confirmButtonColor: '#4a7c24',
+                allowOutsideClick: false,
+                customClass: {
+                    popup: 'swal-wide'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showSlide(0);
+                    quizStarted = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
