@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requerimientos de Software - Guía Completa</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Comic+Neue:wght@700&display=swap');
+        
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #5dade2;
+            --accent-color: #85c1e9;
+            --success-color: #48c9b0;
+            --warning-color: #74b9ff;
+            --danger-color: #6c5ce7;
+            --info-color: #a8dadc;
+            --dark-color: #2c3e50;
+            --purple: #667eea;
+            --light-blue: #aed6f1;
+            --teal: #1abc9c;
+            --blue: #2980b9;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #3498db 50%, #5dade2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(52, 152, 219, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(93, 173, 226, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(133, 193, 233, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 5px rgba(255, 255, 255, 0.1);
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide::before {
+            content: '🚀';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            font-size: 150px;
+            opacity: 0.05;
+            transform: rotate(25deg);
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 5px;
+            background: var(--accent-color);
+            border-radius: 5px;
+        }
+
+        .slide-header h1 {
+            color: white;
+            font-weight: 800;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 15px 0;
+        }
+
+        .slide-header .lead {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+            font-size: 1.2em;
+        }
+
+        .slide-header i {
+            font-size: 5em;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+        }
+
+        .content-section {
+            margin: 30px 0;
+        }
+
+        .content-section h2 {
+            color: var(--primary-color);
+            font-weight: 800;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 2em;
+        }
+
+        .content-section h3 {
+            color: var(--secondary-color);
+            font-weight: 700;
+            margin: 25px 0 20px 0;
+            font-size: 1.5em;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #5dade2 0%, #48c9b0 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin: 15px 0;
+            box-shadow: 0 8px 25px rgba(93, 173, 226, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .success-card {
+            background: linear-gradient(135deg, #74b9ff 0%, #a8dadc 100%);
+            color: #2c3e50;
+            padding: 25px;
+            border-radius: 20px;
+            margin: 15px 0;
+            box-shadow: 0 8px 25px rgba(116, 185, 255, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .success-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .warning-card {
+            background: linear-gradient(135deg, #85c1e9 0%, #aed6f1 100%);
+            color: #2c3e50;
+            padding: 25px;
+            border-radius: 20px;
+            margin: 15px 0;
+            box-shadow: 0 8px 25px rgba(133, 193, 233, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .warning-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 20px 25px;
+            margin: 15px 0;
+            background: linear-gradient(135deg, #3498db 0%, #5dade2 100%);
+            color: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+
+        .feature-list li:hover {
+            transform: translateX(15px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.5);
+        }
+
+        .feature-list li i {
+            font-size: 2em;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 50%;
+        }
+
+        .template-box {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-left: 8px solid var(--primary-color);
+            padding: 25px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .example-box {
+            background: linear-gradient(135deg, #d6eaf8, #aed6f1);
+            border-left: 8px solid var(--secondary-color);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(93, 173, 226, 0.3);
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 3px solid transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.1) rotate(-2deg);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #85c1e9, #aed6f1);
+            border: none;
+            color: #2c3e50;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            transform: scale(1.1) rotate(2deg);
+            box-shadow: 0 10px 30px rgba(133, 193, 233, 0.5);
+        }
+
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-bar-custom {
+            height: 100%;
+            background: linear-gradient(90deg, #85c1e9, #3498db, #5dade2);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            background: white;
+            border-radius: 30px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-container::before {
+            content: '🎯';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            font-size: 200px;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
+        }
+
+        .quiz-header h2 {
+            color: white;
+            font-weight: 800;
+            font-size: 2.5em;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .quiz-header .lead {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+        }
+
+        .quiz-header i {
+            color: var(--accent-color);
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border-left: 8px solid var(--primary-color);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .question-number {
+            color: white;
+            font-weight: 800;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .question-text {
+            color: var(--dark-color);
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+
+        .option {
+            background: white;
+            padding: 18px 25px;
+            margin: 12px 0;
+            border-radius: 15px;
+            border: 3px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+        }
+
+        .option:hover {
+            border-color: var(--secondary-color);
+            transform: translateX(10px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(93, 173, 226, 0.3);
+            background: linear-gradient(90deg, rgba(93, 173, 226, 0.1), white);
+        }
+
+        .option input[type="radio"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .option.selected {
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 700;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-submit-quiz {
+            background: linear-gradient(135deg, #48c9b0 0%, #1abc9c 100%);
+            color: white;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 1.3em;
+            margin-top: 30px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 30px rgba(72, 201, 176, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-submit-quiz:hover {
+            transform: scale(1.1) rotate(-2deg);
+            box-shadow: 0 15px 40px rgba(72, 201, 176, 0.6);
+        }
+
+        .results-container {
+            display: none;
+            background: white;
+            border-radius: 30px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .results-container::before {
+            content: '🏆';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            font-size: 200px;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+
+        .result-card {
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 15px;
+            border-left: 8px solid;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .result-card.correct {
+            background: linear-gradient(135deg, #a8dadc, #85c1e9);
+            border-color: #48c9b0;
+        }
+
+        .result-card.incorrect {
+            background: linear-gradient(135deg, #dfe6e9, #b2bec3);
+            border-color: #74b9ff;
+        }
+
+        .result-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+
+        .explanation {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 10px;
+            font-style: italic;
+            border-left: 4px solid rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
+            border: 4px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .score-display h2 {
+            font-size: 4em;
+            margin: 0;
+            font-weight: 800;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-display p {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .table-requirements {
+            margin: 25px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .table-requirements th {
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            color: white;
+            font-weight: 700;
+            padding: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .table-requirements td {
+            vertical-align: middle;
+            padding: 18px;
+            font-weight: 500;
+        }
+
+        .table-requirements tbody tr:nth-child(odd) {
+            background: linear-gradient(90deg, rgba(133, 193, 233, 0.1), white);
+        }
+
+        .table-requirements tbody tr:hover {
+            background: linear-gradient(90deg, rgba(93, 173, 226, 0.2), rgba(133, 193, 233, 0.2));
+            transform: scale(1.01);
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 20px;
+            }
+            
+            .slide-header h1 {
+                font-size: 1.8em;
+            }
+            
+            .navigation {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-container">
+        <div class="progress-bar-custom" id="progressBar"></div>
+    </div>
+
+    <div class="main-container">
+        <!-- Slide 1: Introducción -->
+        <div class="slide active animate__animated animate__fadeIn" data-slide="1">
+            <div class="slide-header">
+                <i class="fas fa-file-contract animate__animated animate__bounceIn"></i>
+                <h1>📋 Requerimientos de Software</h1>
+                <p class="lead">Guía Completa para Escribir Requisitos de Calidad 🚀</p>
+            </div>
+
+            <div class="content-section">
+                <h2><i class="fas fa-lightbulb"></i> ¿Qué son los Requerimientos de Software?</h2>
+                
+                <div class="highlight-box animate__animated animate__fadeInUp">
+                    <p class="lead">Los requerimientos de software son <strong>descripciones detalladas</strong> de lo que un sistema debe hacer, cómo debe comportarse y qué características debe tener para satisfacer las necesidades del usuario y del negocio.</p>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="info-card animate__animated animate__fadeInLeft">
+                            <h4><i class="fas fa-bullseye"></i> Importancia</h4>
+                            <ul>
+                                <li>Base para el diseño y desarrollo</li>
+                                <li>Contrato entre cliente y desarrolladores</li>
+                                <li>Criterio para validación y testing</li>
+                                <li>Reduce costos de mantenimiento</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="success-card animate__animated animate__fadeInRight">
+                            <h4><i class="fas fa-chart-line"></i> Beneficios</h4>
+                            <ul>
+                                <li>Comunicación clara entre stakeholders</li>
+                                <li>Reducción de errores y retrabajos</li>
+                                <li>Estimación más precisa de costos</li>
+                                <li>Mayor satisfacción del cliente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary btn-nav" disabled>
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button class="btn btn-primary btn-nav" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 2: Tipos de Requerimientos -->
+        <div class="slide animate__animated animate__fadeIn" data-slide="2">
+            <div class="slide-header">
+                <i class="fas fa-layer-group animate__animated animate__bounceIn"></i>
+                <h1>🎯 Tipos de Requerimientos</h1>
+            </div>
+
+            <div class="content-section">
+                <h2><i class="fas fa-cogs"></i> Requerimientos Funcionales</h2>
+                <div class="info-card">
+                    <p><strong>Describen QUÉ debe hacer el sistema</strong> - las funcionalidades y servicios específicos que debe proporcionar.</p>
+                    <div class="example-box mt-3">
+                        <h5><i class="fas fa-check-circle"></i> Ejemplos:</h5>
+                        <ul>
+                            <li>El sistema debe permitir a los usuarios registrarse con email y contraseña</li>
+                            <li>El sistema debe generar reportes en formato PDF y Excel</li>
+                            <li>El usuario debe poder buscar productos por nombre, categoría o precio</li>
+                            <li>El sistema debe enviar notificaciones por email cuando cambie el estado de un pedido</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h2 class="mt-4"><i class="fas fa-tachometer-alt"></i> Requerimientos No Funcionales</h2>
+                <div class="success-card">
+                    <p><strong>Describen CÓMO debe funcionar el sistema</strong> - características de calidad, restricciones y atributos del sistema.</p>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-rocket"></i> Rendimiento</h5>
+                            <ul>
+                                <li>Tiempo de respuesta</li>
+                                <li>Capacidad de usuarios concurrentes</li>
+                                <li>Throughput del sistema</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-shield-alt"></i> Seguridad</h5>
+                            <ul>
+                                <li>Autenticación y autorización</li>
+                                <li>Encriptación de datos</li>
+                                <li>Protección contra ataques</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <h5><i class="fas fa-sync"></i> Disponibilidad</h5>
+                            <ul>
+                                <li>Uptime del sistema</li>
+                                <li>Recuperación ante fallos</li>
+                                <li>Mantenimiento</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <h5><i class="fas fa-universal-access"></i> Usabilidad</h5>
+                            <ul>
+                                <li>Facilidad de uso</li>
+                                <li>Accesibilidad</li>
+                                <li>Experiencia de usuario</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary btn-nav" onclick="prevSlide()">
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button class="btn btn-primary btn-nav" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 3: Características de Buenos Requerimientos -->
+        <div class="slide animate__animated animate__fadeIn" data-slide="3">
+            <div class="slide-header">
+                <i class="fas fa-star animate__animated animate__bounceIn"></i>
+                <h1>⭐ Características de Buenos Requerimientos</h1>
+            </div>
+
+            <div class="content-section">
+                <ul class="feature-list">
+                    <li class="animate__animated animate__fadeInLeft">
+                        <i class="fas fa-check-double"></i>
+                        <div>
+                            <strong>COMPLETOS:</strong> Contienen toda la información necesaria para su implementación sin ambigüedades
+                        </div>
+                    </li>
+                    <li class="animate__animated animate__fadeInLeft" style="animation-delay: 0.1s">
+                        <i class="fas fa-eye"></i>
+                        <div>
+                            <strong>CLAROS Y NO AMBIGUOS:</strong> Pueden ser interpretados de una única manera por todos los stakeholders
+                        </div>
+                    </li>
+                    <li class="animate__animated animate__fadeInLeft" style="animation-delay: 0.2s">
+                        <i class="fas fa-balance-scale"></i>
+                        <div>
+                            <strong>CONSISTENTES:</strong> No se contradicen con otros requerimientos del sistema
+                        </div>
+                    </li>
+                    <li class="animate__animated animate__fadeInLeft" style="animation-delay: 0.3s">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>VERIFICABLES:</strong> Se puede comprobar mediante pruebas si se cumplen o no
+                        </div>
+                    </li>
+                    <li class="animate__animated animate__fadeInLeft" style="animation-delay: 0.4s">
+                        <i class="fas fa-edit"></i>
+                        <div>
+                            <strong>MODIFICABLES:</strong> Pueden ser cambiados de manera ordenada y controlada
+                        </div>
+                    </li>
+                    <li class="animate__animated animate__fadeInLeft" style="animation-delay: 0.5s">
+                        <i class="fas fa-search"></i>
+                        <div>
+                            <strong>RASTREABLES:</strong> Tienen un identificador único y se puede seguir su origen y evolución
+                        </div>
+                    </li>
+                    <li class="animate__animated animate__fadeInLeft" style="animation-delay: 0.6s">
+                        <i class="fas fa-layer-group"></i>
+                        <div>
+                            <strong>PRIORIZABLES:</strong> Se puede establecer su importancia relativa (crítico, importante, deseable)
+                        </div>
+                    </li>
+                    <li class="animate__animated animate__fadeInLeft" style="animation-delay: 0.7s">
+                        <i class="fas fa-rocket"></i>
+                        <div>
+                            <strong>FACTIBLES:</strong> Pueden ser implementados con los recursos, tiempo y tecnología disponibles
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="warning-card mt-4 animate__animated animate__fadeInUp">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Errores Comunes a Evitar</h4>
+                    <ul>
+                        <li><strong>Vaguedad:</strong> "El sistema debe ser rápido" - ¿Qué significa rápido?</li>
+                        <li><strong>Soluciones en lugar de necesidades:</strong> Describir "cómo" en lugar de "qué"</li>
+                        <li><strong>Múltiples requerimientos en uno:</strong> Separar cada requisito claramente</li>
+                        <li><strong>Lenguaje técnico excesivo:</strong> Debe ser comprensible para todos</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary btn-nav" onclick="prevSlide()">
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button class="btn btn-primary btn-nav" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 4: Estándares IEEE 830 -->
+        <div class="slide animate__animated animate__fadeIn" data-slide="4">
+            <div class="slide-header">
+                <i class="fas fa-book animate__animated animate__bounceIn"></i>
+                <h1>📚 Estándar IEEE 830</h1>
+                <p class="lead">Práctica Recomendada para Especificaciones de Requerimientos de Software 📖</p>
+            </div>
+
+            <div class="content-section">
+                <div class="highlight-box">
+                    <p class="lead">El estándar IEEE 830 proporciona una estructura y guías para crear documentos de especificación de requerimientos de software (SRS - Software Requirements Specification)</p>
+                </div>
+
+                <h3><i class="fas fa-list"></i> Estructura del Documento SRS según IEEE 830</h3>
+                
+                <table class="table table-requirements table-striped">
+                    <thead>
+                        <tr>
+                            <th>Sección</th>
+                            <th>Contenido</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1. Introducción</strong></td>
+                            <td>
+                                • Propósito del documento<br>
+                                • Alcance del producto<br>
+                                • Definiciones, acrónimos y abreviaturas<br>
+                                • Referencias<br>
+                                • Visión general del documento
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>2. Descripción General</strong></td>
+                            <td>
+                                • Perspectiva del producto<br>
+                                • Funciones del producto<br>
+                                • Características de usuarios<br>
+                                • Restricciones<br>
+                                • Suposiciones y dependencias
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>3. Requerimientos Específicos</strong></td>
+                            <td>
+                                • Requerimientos funcionales detallados<br>
+                                • Requerimientos de interfaz externa<br>
+                                • Requerimientos de rendimiento<br>
+                                • Restricciones de diseño<br>
+                                • Atributos del sistema<br>
+                                • Otros requerimientos
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>4. Apéndices</strong></td>
+                            <td>
+                                Información adicional, modelos, diagramas, etc.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-card mt-4">
+                    <h4><i class="fas fa-clipboard-check"></i> Beneficios del IEEE 830</h4>
+                    <ul>
+                        <li>Estructura estandarizada y reconocida mundialmente</li>
+                        <li>Facilita la comunicación entre equipos</li>
+                        <li>Reduce malentendidos y ambigüedades</li>
+                        <li>Base sólida para contratos y acuerdos</li>
+                        <li>Facilita el mantenimiento y evolución del software</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary btn-nav" onclick="prevSlide()">
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button class="btn btn-primary btn-nav" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 5: Método Volere -->
+        <div class="slide animate__animated animate__fadeIn" data-slide="5">
+            <div class="slide-header">
+                <i class="fas fa-project-diagram animate__animated animate__bounceIn"></i>
+                <h1>⚡ Método Volere</h1>
+                <p class="lead">Template para Requerimientos Atómicos 🔬</p>
+            </div>
+
+            <div class="content-section">
+                <div class="highlight-box">
+                    <p class="lead">Volere es un método estructurado para identificar, documentar y gestionar requerimientos de software de manera sistemática y completa.</p>
+                </div>
+
+                <h3><i class="fas fa-atom"></i> Shell de Requerimiento Atómico</h3>
+                
+                <div class="template-box">
+                    <strong>Número de Requerimiento:</strong> [Identificador único]<br>
+                    <strong>Tipo de Requerimiento:</strong> [Funcional/No Funcional/Restricción]<br>
+                    <strong>Evento/Caso de Uso:</strong> [Número del caso de uso relacionado]<br>
+                    <strong>Descripción:</strong> [Descripción clara y concisa del requerimiento]<br>
+                    <strong>Razón Fundamental:</strong> [Por qué este requerimiento es necesario]<br>
+                    <strong>Fuente:</strong> [Stakeholder que solicitó el requerimiento]<br>
+                    <strong>Criterio de Ajuste:</strong> [Métrica para medir el cumplimiento]<br>
+                    <strong>Satisfacción del Cliente:</strong> [1-5, importancia para el cliente]<br>
+                    <strong>Insatisfacción del Cliente:</strong> [1-5, si no se implementa]<br>
+                    <strong>Prioridad:</strong> [Alta/Media/Baja]<br>
+                    <strong>Conflictos:</strong> [Requerimientos con los que puede conflictuar]<br>
+                    <strong>Materiales de Apoyo:</strong> [Documentos, prototipos, etc.]<br>
+                    <strong>Historia:</strong> [Fecha de creación y cambios]
+                </div>
+
+                <h3 class="mt-4"><i class="fas fa-clipboard-list"></i> Ejemplo Práctico</h3>
+                
+                <div class="example-box">
+                    <strong>Número:</strong> REQ-001<br>
+                    <strong>Tipo:</strong> Funcional<br>
+                    <strong>Evento/Caso de Uso:</strong> UC-03 Búsqueda de Productos<br>
+                    <strong>Descripción:</strong> El sistema debe permitir a los usuarios buscar productos utilizando palabras clave y filtros por categoría, precio y disponibilidad.<br>
+                    <strong>Razón Fundamental:</strong> Los usuarios necesitan encontrar productos rápidamente para mejorar su experiencia de compra.<br>
+                    <strong>Fuente:</strong> Gerente de Marketing<br>
+                    <strong>Criterio de Ajuste:</strong> Los resultados de búsqueda deben mostrarse en menos de 2 segundos para el 95% de las búsquedas.<br>
+                    <strong>Satisfacción del Cliente:</strong> 5 (muy importante)<br>
+                    <strong>Insatisfacción:</strong> 5 (crítico si no se implementa)<br>
+                    <strong>Prioridad:</strong> Alta<br>
+                    <strong>Conflictos:</strong> Ninguno<br>
+                    <strong>Historia:</strong> Creado 15/01/2024, Aprobado 20/01/2024
+                </div>
+
+                <div class="success-card mt-4">
+                    <h4><i class="fas fa-lightbulb"></i> Ventajas del Método Volere</h4>
+                    <ul>
+                        <li>Documentación exhaustiva y estructurada</li>
+                        <li>Trazabilidad completa de cada requerimiento</li>
+                        <li>Facilita la priorización basada en valor</li>
+                        <li>Identifica conflictos tempranamente</li>
+                        <li>Base sólida para estimaciones y planificación</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary btn-nav" onclick="prevSlide()">
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button class="btn btn-primary btn-nav" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 6: Historias de Usuario -->
+        <div class="slide animate__animated animate__fadeIn" data-slide="6">
+            <div class="slide-header">
+                <i class="fas fa-users animate__animated animate__bounceIn"></i>
+                <h1>👥 Historias de Usuario</h1>
+                <p class="lead">Formato Ágil para Requerimientos 🏃‍♂️</p>
+            </div>
+
+            <div class="content-section">
+                <div class="highlight-box">
+                    <h3><i class="fas fa-pen"></i> Formato Estándar</h3>
+                    <p class="lead text-center">
+                        <strong>Como</strong> [tipo de usuario]<br>
+                        <strong>Quiero</strong> [realizar una acción]<br>
+                        <strong>Para</strong> [obtener un beneficio]
+                    </p>
+                </div>
+
+                <h3><i class="fas fa-check-double"></i> Criterios de Aceptación INVEST</h3>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <strong>I - Independent (Independiente):</strong>
+                            <p>La historia debe ser autónoma y no depender de otras</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <strong>N - Negotiable (Negociable):</strong>
+                            <p>Los detalles pueden discutirse y refinarse</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <strong>V - Valuable (Valiosa):</strong>
+                            <p>Debe aportar valor al usuario o negocio</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <strong>E - Estimable (Estimable):</strong>
+                            <p>Se puede estimar el esfuerzo requerido</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <strong>S - Small (Pequeña):</strong>
+                            <p>Completable en un sprint</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <strong>T - Testable (Verificable):</strong>
+                            <p>Se puede probar su cumplimiento</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="mt-4"><i class="fas fa-star"></i> Ejemplos de Historias de Usuario</h3>
+                
+                <div class="example-box">
+                    <h5>Historia 1:</h5>
+                    <p><strong>Como</strong> cliente registrado<br>
+                    <strong>Quiero</strong> poder guardar productos en una lista de deseos<br>
+                    <strong>Para</strong> poder comprarlos más tarde sin tener que buscarlos nuevamente</p>
+                    
+                    <strong>Criterios de Aceptación:</strong>
+                    <ul>
+                        <li>El usuario debe estar autenticado</li>
+                        <li>Debe haber un botón visible "Añadir a deseos" en cada producto</li>
+                        <li>Los productos guardados deben aparecer en "Mi Lista de Deseos"</li>
+                        <li>El usuario debe poder eliminar productos de la lista</li>
+                    </ul>
+                </div>
+
+                <div class="example-box">
+                    <h5>Historia 2:</h5>
+                    <p><strong>Como</strong> administrador del sistema<br>
+                    <strong>Quiero</strong> generar reportes de ventas mensuales<br>
+                    <strong>Para</strong> analizar el rendimiento del negocio y tomar decisiones estratégicas</p>
+                    
+                    <strong>Criterios de Aceptación:</strong>
+                    <ul>
+                        <li>El reporte debe incluir total de ventas, número de transacciones y producto más vendido</li>
+                        <li>Debe poder exportarse en PDF y Excel</li>
+                        <li>Debe generarse en menos de 5 segundos</li>
+                        <li>Debe incluir gráficos visuales de tendencias</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary btn-nav" onclick="prevSlide()">
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button class="btn btn-primary btn-nav" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 7: Técnicas de Elicitación -->
+        <div class="slide animate__animated animate__fadeIn" data-slide="7">
+            <div class="slide-header">
+                <i class="fas fa-comments animate__animated animate__bounceIn"></i>
+                <h1>💬 Técnicas de Elicitación</h1>
+                <p class="lead">Cómo Obtener Requerimientos 🔍</p>
+            </div>
+
+            <div class="content-section">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-card animate__animated animate__fadeInLeft">
+                            <h4><i class="fas fa-user-tie"></i> Entrevistas</h4>
+                            <p><strong>Ventajas:</strong></p>
+                            <ul>
+                                <li>Información detallada y profunda</li>
+                                <li>Clarificación inmediata de dudas</li>
+                                <li>Construye relación con stakeholders</li>
+                            </ul>
+                            <p><strong>Cuándo usar:</strong> Para obtener información específica de expertos o usuarios clave</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="success-card animate__animated animate__fadeInRight">
+                            <h4><i class="fas fa-users"></i> Talleres/Workshops</h4>
+                            <p><strong>Ventajas:</strong></p>
+                            <ul>
+                                <li>Colaboración entre stakeholders</li>
+                                <li>Resolución rápida de conflictos</li>
+                                <li>Consenso en tiempo real</li>
+                            </ul>
+                            <p><strong>Cuándo usar:</strong> Cuando hay múltiples stakeholders con diferentes perspectivas</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mt-3">
+                        <div class="warning-card animate__animated animate__fadeInLeft">
+                            <h4><i class="fas fa-eye"></i> Observación</h4>
+                            <p><strong>Ventajas:</strong></p>
+                            <ul>
+                                <li>Captura el proceso real</li>
+                                <li>Identifica tareas no documentadas</li>
+                                <li>Revela problemas ocultos</li>
+                            </ul>
+                            <p><strong>Cuándo usar:</strong> Para entender flujos de trabajo complejos o procesos operativos</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mt-3">
+                        <div class="info-card animate__animated animate__fadeInRight">
+                            <h4><i class="fas fa-poll"></i> Cuestionarios/Encuestas</h4>
+                            <p><strong>Ventajas:</strong></p>
+                            <ul>
+                                <li>Llega a muchos usuarios</li>
+                                <li>Datos cuantitativos</li>
+                                <li>Bajo costo</li>
+                            </ul>
+                            <p><strong>Cuándo usar:</strong> Para recopilar información de una gran base de usuarios</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mt-3">
+                        <div class="success-card animate__animated animate__fadeInLeft">
+                            <h4><i class="fas fa-pen-fancy"></i> Prototipos</h4>
+                            <p><strong>Ventajas:</strong></p>
+                            <ul>
+                                <li>Visualización temprana</li>
+                                <li>Feedback rápido</li>
+                                <li>Reduce malentendidos</li>
+                            </ul>
+                            <p><strong>Cuándo usar:</strong> Para interfaces de usuario o funcionalidades complejas</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mt-3">
+                        <div class="warning-card animate__animated animate__fadeInRight">
+                            <h4><i class="fas fa-file-alt"></i> Análisis de Documentos</h4>
+                            <p><strong>Ventajas:</strong></p>
+                            <ul>
+                                <li>Información existente</li>
+                                <li>No invasivo</li>
+                                <li>Contexto histórico</li>
+                            </ul>
+                            <p><strong>Cuándo usar:</strong> Para sistemas de reemplazo o cuando existe documentación previa</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box mt-4">
+                    <h4><i class="fas fa-exclamation-circle"></i> Mejores Prácticas</h4>
+                    <ul>
+                        <li>Combinar múltiples técnicas para validar información</li>
+                        <li>Documentar todo inmediatamente</li>
+                        <li>Validar requerimientos con los stakeholders</li>
+                        <li>Mantener comunicación constante</li>
+                        <li>Ser flexible y adaptar técnicas según el contexto</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary btn-nav" onclick="prevSlide()">
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button class="btn btn-primary btn-nav" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 8: Plantillas Prácticas -->
+        <div class="slide animate__animated animate__fadeIn" data-slide="8">
+            <div class="slide-header">
+                <i class="fas fa-file-code animate__animated animate__bounceIn"></i>
+                <h1>📝 Plantillas Prácticas</h1>
+                <p class="lead">Templates Listos para Usar ✨</p>
+            </div>
+
+            <div class="content-section">
+                <h3><i class="fas fa-clipboard"></i> Plantilla Simple de Requerimiento</h3>
+                
+                <div class="template-box">
+                    <strong>ID:</strong> REQ-XXX<br>
+                    <strong>Título:</strong> [Nombre descriptivo corto]<br>
+                    <strong>Descripción:</strong> [Descripción detallada del requerimiento]<br>
+                    <strong>Prioridad:</strong> [Alta / Media / Baja]<br>
+                    <strong>Tipo:</strong> [Funcional / No Funcional]<br>
+                    <strong>Estado:</strong> [Propuesto / Aprobado / Implementado / Verificado]<br>
+                    <strong>Fuente:</strong> [Quién lo solicitó]<br>
+                    <strong>Dependencias:</strong> [Requerimientos relacionados]<br>
+                    <strong>Criterio de Verificación:</strong> [Cómo se probará que se cumple]
+                </div>
+
+                <h3 class="mt-4"><i class="fas fa-rocket"></i> Plantilla de Requerimiento No Funcional</h3>
+                
+                <div class="template-box">
+                    <strong>ID:</strong> NFR-XXX<br>
+                    <strong>Categoría:</strong> [Rendimiento / Seguridad / Usabilidad / Mantenibilidad / Portabilidad]<br>
+                    <strong>Descripción:</strong> [Descripción específica y medible]<br>
+                    <strong>Métrica:</strong> [Cómo se mide el cumplimiento]<br>
+                    <strong>Valor Objetivo:</strong> [Meta a alcanzar]<br>
+                    <strong>Método de Prueba:</strong> [Cómo se verificará]<br>
+                    <strong>Prioridad:</strong> [Alta / Media / Baja]<br>
+                    <strong>Impacto:</strong> [Qué sucede si no se cumple]
+                </div>
+
+                <h3 class="mt-4"><i class="fas fa-list-check"></i> Plantilla de Caso de Uso</h3>
+                
+                <div class="template-box">
+                    <strong>ID:</strong> UC-XXX<br>
+                    <strong>Nombre:</strong> [Título del caso de uso]<br>
+                    <strong>Actor Principal:</strong> [Usuario que ejecuta]<br>
+                    <strong>Precondiciones:</strong> [Estado inicial del sistema]<br>
+                    <strong>Trigger:</strong> [Qué inicia el caso de uso]<br>
+                    <strong>Flujo Principal:</strong><br>
+                    1. [Paso 1]<br>
+                    2. [Paso 2]<br>
+                    3. [Paso 3]<br>
+                    <strong>Flujos Alternativos:</strong><br>
+                    • [Alternativa 1]<br>
+                    • [Alternativa 2]<br>
+                    <strong>Postcondiciones:</strong> [Estado final del sistema]<br>
+                    <strong>Excepciones:</strong> [Manejo de errores]
+                </div>
+
+                <div class="success-card mt-4">
+                    <h4><i class="fas fa-lightbulb"></i> Consejos para Usar las Plantillas</h4>
+                    <ul>
+                        <li>Adapta las plantillas a las necesidades de tu proyecto</li>
+                        <li>Mantén consistencia en toda la documentación</li>
+                        <li>Usa herramientas de gestión de requerimientos (JIRA, Azure DevOps, etc.)</li>
+                        <li>Revisa y actualiza regularmente</li>
+                        <li>Comparte con todo el equipo</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary btn-nav" onclick="prevSlide()">
+                    <i class="fas fa-arrow-left"></i> Anterior
+                </button>
+                <button class="btn btn-primary btn-nav" onclick="nextSlide()">
+                    Ir al Quiz <i class="fas fa-clipboard-question"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div class="quiz-container" id="quizContainer" style="display: none;">
+            <div class="quiz-header animate__animated animate__fadeInDown">
+                <i class="fas fa-clipboard-question" style="font-size: 3em; color: var(--primary-color);"></i>
+                <h2>Quiz de Evaluación</h2>
+                <p class="lead">Responde las siguientes 20 preguntas para evaluar tu comprensión</p>
+            </div>
+
+            <div id="questionsContainer"></div>
+
+            <div class="text-center">
+                <button class="btn btn-submit-quiz" onclick="submitQuiz()">
+                    <i class="fas fa-check-circle"></i> Enviar Respuestas
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-container" id="resultsContainer">
+            <div class="score-display animate__animated animate__bounceIn">
+                <h2 id="finalScore"></h2>
+                <p id="scoreMessage"></p>
+            </div>
+
+            <div id="detailedResults"></div>
+
+            <div class="text-center mt-4">
+                <button class="btn btn-primary btn-nav" onclick="restartPresentation()">
+                    <i class="fas fa-redo"></i> Volver a Empezar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="correctSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTaK0fPTgjMGHm7A7+OZRAE" type="audio/wav">
+    </audio>
+    <audio id="wrongSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==" type="audio/wav">
+    </audio>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+        let userAnswers = {};
+
+        // Quiz questions
+        const quizQuestions = [
+            {
+                question: "¿Qué son los requerimientos de software?",
+                options: [
+                    "El código fuente del programa",
+                    "Descripciones detalladas de lo que el sistema debe hacer y cómo debe comportarse",
+                    "Los errores del software",
+                    "Las herramientas de desarrollo"
+                ],
+                correct: 1,
+                explanation: "Los requerimientos de software son descripciones detalladas de las funcionalidades, comportamientos y características que un sistema debe tener para satisfacer las necesidades del usuario y del negococio."
+            },
+            {
+                question: "¿Cuál de los siguientes es un requerimiento funcional?",
+                options: [
+                    "El sistema debe responder en menos de 2 segundos",
+                    "El usuario debe poder registrarse con email y contraseña",
+                    "El sistema debe estar disponible 99.9% del tiempo",
+                    "La interfaz debe ser intuitiva"
+                ],
+                correct: 1,
+                explanation: "Un requerimiento funcional describe QUÉ debe hacer el sistema. Permitir el registro de usuarios es una funcionalidad específica del sistema."
+            },
+            {
+                question: "Los requerimientos no funcionales se enfocan en:",
+                options: [
+                    "Las funciones que el sistema debe realizar",
+                    "Cómo debe funcionar el sistema en términos de calidad y restricciones",
+                    "Los errores del sistema",
+                    "La documentación del código"
+                ],
+                correct: 1,
+                explanation: "Los requerimientos no funcionales describen CÓMO debe funcionar el sistema, incluyendo atributos de calidad como rendimiento, seguridad, usabilidad y mantenibilidad."
+            },
+            {
+                question: "¿Qué característica NO es esencial en un buen requerimiento?",
+                options: [
+                    "Verificable",
+                    "Completo",
+                    "Ambiguo",
+                    "Rastreable"
+                ],
+                correct: 2,
+                explanation: "Un buen requerimiento debe ser claro y NO ambiguo. La ambigüedad lleva a interpretaciones múltiples y errores en la implementación."
+            },
+            {
+                question: "¿Qué significa que un requerimiento sea 'verificable'?",
+                options: [
+                    "Que está escrito correctamente",
+                    "Que se puede comprobar mediante pruebas si se cumple o no",
+                    "Que todos lo entienden",
+                    "Que es importante"
+                ],
+                correct: 1,
+                explanation: "Un requerimiento verificable es aquel que se puede probar objetivamente para determinar si se ha cumplido o no, generalmente mediante casos de prueba específicos."
+            },
+            {
+                question: "El estándar IEEE 830 es:",
+                options: [
+                    "Un lenguaje de programación",
+                    "Una práctica recomendada para especificaciones de requerimientos de software",
+                    "Una herramienta de testing",
+                    "Un framework de desarrollo"
+                ],
+                correct: 1,
+                explanation: "IEEE 830 es un estándar internacional que proporciona estructura y guías para crear documentos de especificación de requerimientos de software (SRS)."
+            },
+            {
+                question: "¿Cuál NO es una sección principal del documento SRS según IEEE 830?",
+                options: [
+                    "Introducción",
+                    "Descripción General",
+                    "Presupuesto del Proyecto",
+                    "Requerimientos Específicos"
+                ],
+                correct: 2,
+                explanation: "El presupuesto del proyecto no forma parte del SRS según IEEE 830. Las secciones principales son: Introducción, Descripción General, Requerimientos Específicos y Apéndices."
+            },
+            {
+                question: "En el método Volere, el 'Shell de Requerimiento Atómico' incluye:",
+                options: [
+                    "Solo la descripción del requerimiento",
+                    "Múltiples campos como número, tipo, descripción, razón fundamental, criterio de ajuste, etc.",
+                    "Únicamente el código de implementación",
+                    "Solo la fecha de creación"
+                ],
+                correct: 1,
+                explanation: "El Shell de Volere es un template exhaustivo que incluye múltiples campos para documentar completamente cada requerimiento, incluyendo trazabilidad, métricas y gestión."
+            },
+            {
+                question: "¿Qué campo del Shell Volere define cómo se medirá el cumplimiento del requerimiento?",
+                options: [
+                    "Descripción",
+                    "Prioridad",
+                    "Criterio de Ajuste",
+                    "Conflictos"
+                ],
+                correct: 2,
+                explanation: "El Criterio de Ajuste (Fit Criterion) es el campo que especifica la métrica objetiva para medir si el requerimiento se ha cumplido satisfactoriamente."
+            },
+            {
+                question: "El formato estándar de una Historia de Usuario es:",
+                options: [
+                    "Problema - Solución - Resultado",
+                    "Como [usuario] Quiero [acción] Para [beneficio]",
+                    "Si [condición] Entonces [resultado]",
+                    "Dado [contexto] Cuando [acción] Entonces [resultado]"
+                ],
+                correct: 1,
+                explanation: "El formato estándar es 'Como [tipo de usuario] Quiero [realizar una acción] Para [obtener un beneficio]', enfocándose en el valor para el usuario."
+            },
+            {
+                question: "En INVEST, la 'V' representa que una historia debe ser:",
+                options: [
+                    "Verificable",
+                    "Válida",
+                    "Valiosa",
+                    "Variable"
+                ],
+                correct: 2,
+                explanation: "La 'V' en INVEST significa 'Valuable' (Valiosa), indicando que la historia debe aportar valor al usuario o al negocio."
+            },
+            {
+                question: "¿Qué característica de INVEST indica que una historia debe poder completarse en un sprint?",
+                options: [
+                    "Independent",
+                    "Negotiable",
+                    "Small",
+                    "Testable"
+                ],
+                correct: 2,
+                explanation: "Small (Pequeña) indica que la historia debe ser lo suficientemente pequeña para completarse en un sprint, facilitando la planificación y entrega."
+            },
+            {
+                question: "¿Cuál es una ventaja principal de las entrevistas como técnica de elicitación?",
+                options: [
+                    "Son económicas",
+                    "Llegan a muchos usuarios simultáneamente",
+                    "Permiten obtener información detallada y clarificar dudas inmediatamente",
+                    "No requieren preparación"
+                ],
+                correct: 2,
+                explanation: "Las entrevistas permiten profundizar en temas específicos, aclarar dudas en tiempo real y construir una relación directa con los stakeholders para obtener información detallada."
+            },
+            {
+                question: "Los talleres o workshops son más útiles cuando:",
+                options: [
+                    "Solo hay un stakeholder",
+                    "Hay múltiples stakeholders con diferentes perspectivas que necesitan llegar a consenso",
+                    "El proyecto ya está terminado",
+                    "No se necesita documentación"
+                ],
+                correct: 1,
+                explanation: "Los workshops son ideales cuando múltiples stakeholders deben colaborar, resolver conflictos y llegar a consensos en tiempo real sobre los requerimientos."
+            },
+            {
+                question: "La observación como técnica de elicitación es especialmente útil para:",
+                options: [
+                    "Proyectos sin usuarios",
+                    "Entender flujos de trabajo complejos y procesos operativos reales",
+                    "Definir el presupuesto",
+                    "Escribir código"
+                ],
+                correct: 1,
+                explanation: "La observación permite ver cómo los usuarios realmente trabajan, identificando procesos no documentados y problemas ocultos que podrían no mencionarse en entrevistas."
+            },
+            {
+                question: "¿Cuál NO es un beneficio de los prototipos en la elicitación de requerimientos?",
+                options: [
+                    "Visualización temprana de la solución",
+                    "Feedback rápido de usuarios",
+                    "Reducción de malentendidos",
+                    "Eliminación completa de todos los errores"
+                ],
+                correct: 3,
+                explanation: "Aunque los prototipos ayudan a reducir malentendidos y obtener feedback temprano, no eliminan completamente todos los errores. Siguen siendo necesarias otras técnicas de validación."
+            },
+            {
+                question: "En una plantilla simple de requerimiento, ¿qué campo describe cómo se probará que se cumple?",
+                options: [
+                    "Descripción",
+                    "Prioridad",
+                    "Criterio de Verificación",
+                    "Estado"
+                ],
+                correct: 2,
+                explanation: "El Criterio de Verificación especifica los métodos y pruebas que se utilizarán para comprobar que el requerimiento ha sido implementado correctamente."
+            },
+            {
+                question: "Un requerimiento con el estado 'Propuesto' significa que:",
+                options: [
+                    "Ya está implementado",
+                    "Ha sido sugerido pero aún no aprobado",
+                    "Fue rechazado",
+                    "Está siendo probado"
+                ],
+                correct: 1,
+                explanation: "El estado 'Propuesto' indica que el requerimiento ha sido identificado y documentado, pero aún está pendiente de revisión y aprobación por los stakeholders."
+            },
+            {
+                question: "¿Por qué es importante combinar múltiples técnicas de elicitación?",
+                options: [
+                    "Para hacer el proyecto más caro",
+                    "Para validar información desde diferentes perspectivas y obtener un entendimiento más completo",
+                    "No es importante, una técnica es suficiente",
+                    "Para confundir al equipo"
+                ],
+                correct: 1,
+                explanation: "Combinar técnicas permite validar información cruzada, obtener perspectivas complementarias y asegurar que no se pierdan aspectos importantes de los requerimientos."
+            },
+            {
+                question: "¿Cuál es el principal propósito de documentar la 'Razón Fundamental' de un requerimiento?",
+                options: [
+                    "Hacer el documento más largo",
+                    "Cumplir con un requisito burocrático",
+                    "Entender por qué el requerimiento es necesario y justificar su existencia",
+                    "Llenar espacio en blanco"
+                ],
+                correct: 2,
+                explanation: "La Razón Fundamental explica el valor y necesidad del requerimiento, ayudando a priorizar, tomar decisiones y entender el impacto si no se implementa."
+            }
+        ];
+
+        function updateProgress() {
+            const progress = (currentSlide / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                document.querySelectorAll('.slide')[currentSlide - 1].classList.remove('active');
+                currentSlide++;
+                document.querySelectorAll('.slide')[currentSlide - 1].classList.add('active');
+                updateProgress();
+                window.scrollTo(0, 0);
+                playSound('correct');
+            } else {
+                showQuiz();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                document.querySelectorAll('.slide')[currentSlide - 1].classList.remove('active');
+                currentSlide--;
+                document.querySelectorAll('.slide')[currentSlide - 1].classList.add('active');
+                updateProgress();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function showQuiz() {
+            document.querySelectorAll('.slide').forEach(slide => slide.style.display = 'none');
+            document.getElementById('quizContainer').style.display = 'block';
+            renderQuiz();
+            window.scrollTo(0, 0);
+            playSound('correct');
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            quizQuestions.forEach((q, index) => {
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card animate__animated animate__fadeInUp';
+                questionCard.style.animationDelay = (index * 0.05) + 's';
+
+                questionCard.innerHTML = `
+                    <div class="question-number">Pregunta ${index + 1} de ${quizQuestions.length}</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((option, optIndex) => `
+                            <label class="option" onclick="selectOption(${index}, ${optIndex})">
+                                <input type="radio" name="question${index}" value="${optIndex}">
+                                <span>${option}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+
+                container.appendChild(questionCard);
+            });
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            // Remove previous selection
+            const questionCard = document.querySelectorAll('.question-card')[questionIndex];
+            questionCard.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selection
+            const selectedOption = questionCard.querySelectorAll('.option')[optionIndex];
+            selectedOption.classList.add('selected');
+            selectedOption.querySelector('input').checked = true;
+            
+            userAnswers[questionIndex] = optionIndex;
+            playSound('correct');
+        }
+
+        function submitQuiz() {
+            if (Object.keys(userAnswers).length < quizQuestions.length) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Atención! 🤔',
+                    text: 'Por favor responde todas las preguntas antes de enviar.',
+                    confirmButtonColor: '#3498db',
+                    background: 'linear-gradient(135deg, #fff, #f8f9fa)',
+                    iconColor: '#74b9ff'
+                });
+                return;
+            }
+
+            calculateResults();
+        }
+
+        function calculateResults() {
+            let correct = 0;
+            const results = [];
+
+            quizQuestions.forEach((q, index) => {
+                const isCorrect = userAnswers[index] === q.correct;
+                if (isCorrect) correct++;
+
+                results.push({
+                    question: q.question,
+                    userAnswer: q.options[userAnswers[index]],
+                    correctAnswer: q.options[q.correct],
+                    isCorrect: isCorrect,
+                    explanation: q.explanation
+                });
+            });
+
+            showResults(correct, results);
+        }
+
+        function showResults(correct, results) {
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+
+            const percentage = (correct / quizQuestions.length) * 100;
+            const scoreDisplay = document.getElementById('finalScore');
+            const scoreMessage = document.getElementById('scoreMessage');
+
+            scoreDisplay.textContent = `${correct} / ${quizQuestions.length}`;
+            
+            let message = '';
+            let icon = '';
+            if (percentage >= 90) {
+                message = '¡Excelente! 🌟 Dominas perfectamente los requerimientos de software';
+                icon = '🏆';
+                playSound('correct');
+            } else if (percentage >= 70) {
+                message = '¡Muy bien! 👏 Tienes un buen entendimiento del tema';
+                icon = '⭐';
+                playSound('correct');
+            } else if (percentage >= 50) {
+                message = 'Bien 👍 Pero hay áreas que puedes mejorar';
+                icon = '📚';
+            } else {
+                message = 'Necesitas repasar más el material 📖';
+                icon = '💪';
+                playSound('wrong');
+            }
+
+            scoreMessage.innerHTML = `${icon} ${message}<br><strong>${percentage.toFixed(1)}%</strong>`;
+
+            // Show detailed results
+            const detailedContainer = document.getElementById('detailedResults');
+            detailedContainer.innerHTML = '<h3 style="color: var(--primary-color); margin-bottom: 20px;"><i class="fas fa-clipboard-list"></i> Resultados Detallados</h3>';
+
+            results.forEach((result, index) => {
+                const resultCard = document.createElement('div');
+                resultCard.className = `result-card ${result.isCorrect ? 'correct' : 'incorrect'} animate__animated animate__fadeInUp`;
+                resultCard.style.animationDelay = (index * 0.05) + 's';
+
+                resultCard.innerHTML = `
+                    <h5>
+                        <span class="result-icon">${result.isCorrect ? '✅' : '❌'}</span>
+                        Pregunta ${index + 1}: ${result.question}
+                    </h5>
+                    <p><strong>Tu respuesta:</strong> ${result.userAnswer}</p>
+                    ${!result.isCorrect ? `<p><strong>Respuesta correcta:</strong> ${result.correctAnswer}</p>` : ''}
+                    <div class="explanation">
+                        <strong><i class="fas fa-lightbulb"></i> Explicación:</strong> ${result.explanation}
+                    </div>
+                `;
+
+                detailedContainer.appendChild(resultCard);
+            });
+
+            window.scrollTo(0, 0);
+
+            Swal.fire({
+                icon: percentage >= 70 ? 'success' : 'info',
+                title: percentage >= 70 ? '¡Quiz Completado! 🎉' : 'Quiz Completado 📝',
+                text: `Obtuviste ${correct} respuestas correctas de ${quizQuestions.length}`,
+                confirmButtonColor: '#3498db',
+                background: 'linear-gradient(135deg, #fff, #f8f9fa)',
+                iconColor: percentage >= 70 ? '#48c9b0' : '#74b9ff'
+            });
+        }
+
+        function restartPresentation() {
+            currentSlide = 1;
+            userAnswers = {};
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.querySelectorAll('.slide').forEach((slide, index) => {
+                slide.style.display = 'none';
+                if (index === 0) {
+                    slide.classList.add('active');
+                    slide.style.display = 'block';
+                }
+            });
+            updateProgress();
+            window.scrollTo(0, 0);
+            playSound('correct');
+        }
+
+        function playSound(type) {
+            try {
+                const sound = document.getElementById(type + 'Sound');
+                if (sound) {
+                    sound.currentTime = 0;
+                    sound.play().catch(e => console.log('Audio play prevented:', e));
+                }
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        // Initialize
+        updateProgress();
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' && currentSlide < totalSlides) {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' && currentSlide > 1) {
+                prevSlide();
+            }
+        });
+    </script>
+</body>
+</html>
