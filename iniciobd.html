@@ -1,0 +1,2533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis y Requerimientos - Diagramas y Diccionarios</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .slide {
+            min-height: 100vh;
+            display: none;
+            padding: 60px 20px;
+            position: relative;
+        }
+        
+        .slide.active {
+            display: block;
+            animation: fadeIn 0.8s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .slide-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .slide-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--secondary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .nav-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .nav-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .slide-counter {
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 15px;
+        }
+        
+        .example-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 5px solid var(--secondary-color);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .diagram-container {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .icon-box {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            color: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-right: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid var(--secondary-color);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .table-custom {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .table-custom thead {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+        }
+        
+        .table-custom tbody tr:hover {
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .quiz-option:hover {
+            background: #f8f9fa;
+            border-color: var(--secondary-color);
+            transform: translateX(10px);
+        }
+        
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: var(--success-color);
+        }
+        
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: var(--accent-color);
+        }
+        
+        .progress-container {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar-custom {
+            height: 100%;
+            background: linear-gradient(to right, var(--success-color), var(--secondary-color));
+            transition: width 0.5s ease;
+        }
+        
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .badge-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .badge-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .badge-danger {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .home-hero {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+        }
+        
+        .home-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .home-hero p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .start-btn {
+            background: white;
+            color: var(--primary-color);
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        
+        .diagram-svg {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        ul.custom-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        ul.custom-list li {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+        }
+        
+        ul.custom-list li::before {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .slide-title {
+                font-size: 1.8rem;
+            }
+            
+            .home-hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .content-card {
+                padding: 25px;
+            }
+            
+            .navigation {
+                bottom: 15px;
+                padding: 10px 15px;
+            }
+            
+            .nav-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 0: Portada -->
+    <div class="slide active" id="slide-0">
+        <div class="home-hero animate__animated animate__fadeInDown">
+            <i class="fas fa-project-diagram fa-5x mb-4"></i>
+            <h1>Análisis y Requerimientos</h1>
+            <p>Diagramas y Diccionarios de Datos</p>
+            <p><i class="fas fa-graduation-cap"></i> Presentación Educativa Completa</p>
+            <button class="start-btn animate__animated animate__bounceIn animate__delay-1s" onclick="nextSlide()">
+                <i class="fas fa-rocket"></i> Comenzar Presentación
+            </button>
+        </div>
+    </div>
+
+    <!-- Slide 1: Índice -->
+    <div class="slide" id="slide-1">
+        <div class="content-card animate__animated animate__fadeIn">
+            <h2 class="slide-title"><i class="fas fa-list"></i> Contenido de la Presentación</h2>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="feature-card animate__animated animate__fadeInLeft">
+                        <h4><i class="fas fa-cube text-primary"></i> Módulo 1: Diagramas</h4>
+                        <ul class="custom-list mt-3">
+                            <li>Diagramas de Clases UML</li>
+                            <li>Diagramas de Paquetes</li>
+                            <li>Modelo Entidad-Relación (MER)</li>
+                            <li>Modelo de Datos Relacional (MDR)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card animate__animated animate__fadeInRight">
+                        <h4><i class="fas fa-book text-success"></i> Módulo 2: Diccionarios</h4>
+                        <ul class="custom-list mt-3">
+                            <li>Diccionario de Clases</li>
+                            <li>Diccionario de Datos</li>
+                            <li>Mejores Prácticas</li>
+                            <li>Ejemplos Prácticos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4 animate__animated animate__fadeInUp animate__delay-1s">
+                <i class="fas fa-lightbulb"></i> <strong>Incluye:</strong> Ejemplos prácticos, casos de uso reales y un quiz de 20 preguntas para evaluar tu aprendizaje.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: Introducción a Diagramas de Clases -->
+    <div class="slide" id="slide-2">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-sitemap"></i> Diagrama de Clases UML</h2>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead">El <span class="highlight">Diagrama de Clases</span> es el diagrama más utilizado en UML. Representa la estructura estática del sistema mostrando las clases, sus atributos, métodos y las relaciones entre ellas.</p>
+                    
+                    <h4 class="mt-4"><i class="fas fa-puzzle-piece"></i> Componentes Principales:</h4>
+                    <ul class="custom-list">
+                        <li><strong>Clase:</strong> Plantilla para crear objetos</li>
+                        <li><strong>Atributos:</strong> Propiedades de la clase</li>
+                        <li><strong>Métodos:</strong> Comportamientos de la clase</li>
+                        <li><strong>Relaciones:</strong> Asociación, Herencia, Composición, Agregación</li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="example-box text-center">
+                        <h5><i class="fas fa-book-open"></i> Notación</h5>
+                        <div class="diagram-container">
+                            <svg width="200" height="180" class="diagram-svg">
+                                <rect x="10" y="10" width="180" height="160" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+                                <line x1="10" y1="50" x2="190" y2="50" stroke="#1976d2" stroke-width="2"/>
+                                <line x1="10" y1="110" x2="190" y2="110" stroke="#1976d2" stroke-width="2"/>
+                                <text x="100" y="35" text-anchor="middle" font-weight="bold">Clase</text>
+                                <text x="20" y="75" font-size="12">- atributo1: tipo</text>
+                                <text x="20" y="95" font-size="12">- atributo2: tipo</text>
+                                <text x="20" y="135" font-size="12">+ metodo1()</text>
+                                <text x="20" y="155" font-size="12">+ metodo2()</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning mt-4">
+                <i class="fas fa-info-circle"></i> <strong>Importante:</strong> La visibilidad se indica con símbolos: <code>+</code> público, <code>-</code> privado, <code>#</code> protegido, <code>~</code> paquete.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Ejemplo Práctico Diagrama de Clases -->
+    <div class="slide" id="slide-3">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-code"></i> Ejemplo Práctico: Sistema de Biblioteca</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-project-diagram"></i> Diagrama de Clases</h4>
+                <div class="diagram-container bg-white">
+                    <svg width="100%" height="400" viewBox="0 0 900 400" class="diagram-svg">
+                        <!-- Clase Libro -->
+                        <rect x="50" y="50" width="200" height="150" fill="#fff3cd" stroke="#856404" stroke-width="2"/>
+                        <line x1="50" y1="90" x2="250" y2="90" stroke="#856404" stroke-width="2"/>
+                        <line x1="50" y1="150" x2="250" y2="150" stroke="#856404" stroke-width="2"/>
+                        <text x="150" y="75" text-anchor="middle" font-weight="bold" font-size="16">Libro</text>
+                        <text x="60" y="115" font-size="13">- isbn: String</text>
+                        <text x="60" y="135" font-size="13">- titulo: String</text>
+                        <text x="60" y="175" font-size="13">+ prestar(): boolean</text>
+                        <text x="60" y="190" font-size="13">+ devolver(): void</text>
+                        
+                        <!-- Clase Usuario -->
+                        <rect x="350" y="50" width="200" height="150" fill="#d1ecf1" stroke="#0c5460" stroke-width="2"/>
+                        <line x1="350" y1="90" x2="550" y2="90" stroke="#0c5460" stroke-width="2"/>
+                        <line x1="350" y1="150" x2="550" y2="150" stroke="#0c5460" stroke-width="2"/>
+                        <text x="450" y="75" text-anchor="middle" font-weight="bold" font-size="16">Usuario</text>
+                        <text x="360" y="115" font-size="13">- id: int</text>
+                        <text x="360" y="135" font-size="13">- nombre: String</text>
+                        <text x="360" y="175" font-size="13">+ registrar(): void</text>
+                        <text x="360" y="190" font-size="13">+ consultarLibros()</text>
+                        
+                        <!-- Clase Prestamo -->
+                        <rect x="650" y="50" width="200" height="150" fill="#d4edda" stroke="#155724" stroke-width="2"/>
+                        <line x1="650" y1="90" x2="850" y2="90" stroke="#155724" stroke-width="2"/>
+                        <line x1="650" y1="150" x2="850" y2="150" stroke="#155724" stroke-width="2"/>
+                        <text x="750" y="75" text-anchor="middle" font-weight="bold" font-size="16">Prestamo</text>
+                        <text x="660" y="115" font-size="13">- fechaPrestamo: Date</text>
+                        <text x="660" y="135" font-size="13">- fechaDevolucion: Date</text>
+                        <text x="660" y="175" font-size="13">+ calcularMulta()</text>
+                        <text x="660" y="190" font-size="13">+ extenderPlazo()</text>
+                        
+                        <!-- Relaciones -->
+                        <!-- Usuario -> Prestamo -->
+                        <line x1="550" y1="125" x2="650" y2="125" stroke="#000" stroke-width="2"/>
+                        <text x="600" y="115" text-anchor="middle" font-size="12">realiza</text>
+                        <text x="600" y="145" text-anchor="middle" font-size="11">1..*</text>
+                        
+                        <!-- Prestamo -> Libro -->
+                        <path d="M 650 80 Q 450 20 250 80" stroke="#000" stroke-width="2" fill="none"/>
+                        <text x="450" y="40" text-anchor="middle" font-size="12">incluye</text>
+                        <text x="270" y="70" font-size="11">1..*</text>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <h5><i class="fas fa-lightbulb"></i> Interpretación:</h5>
+                    <ul class="custom-list">
+                        <li>Un <strong>Usuario</strong> puede realizar uno o más <strong>Préstamos</strong></li>
+                        <li>Cada <strong>Préstamo</strong> incluye uno o más <strong>Libros</strong></li>
+                        <li>Los atributos privados (-) solo son accesibles dentro de la clase</li>
+                        <li>Los métodos públicos (+) pueden ser llamados desde otras clases</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Diagramas de Paquetes -->
+    <div class="slide" id="slide-4">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-box"></i> Diagramas de Paquetes</h2>
+            
+            <p class="lead">Los <span class="highlight">Diagramas de Paquetes</span> organizan elementos del modelo en grupos relacionados, mostrando la arquitectura de alto nivel del sistema.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-check-circle"></i> Características:</h4>
+                    <ul class="custom-list">
+                        <li>Agrupan clases relacionadas</li>
+                        <li>Definen la estructura modular</li>
+                        <li>Muestran dependencias entre paquetes</li>
+                        <li>Facilitan la organización del código</li>
+                        <li>Mejoran la mantenibilidad</li>
+                    </ul>
+                    
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-star"></i> <strong>Ventaja:</strong> Permiten visualizar la arquitectura del sistema de forma clara y organizada.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="example-box">
+                        <h5><i class="fas fa-folder-open"></i> Notación de Paquete</h5>
+                        <div class="diagram-container">
+                            <svg width="280" height="200" class="diagram-svg">
+                                <!-- Paquete -->
+                                <rect x="40" y="40" width="200" height="30" fill="#ffc107" stroke="#856404" stroke-width="2"/>
+                                <rect x="40" y="70" width="200" height="100" fill="#fff3cd" stroke="#856404" stroke-width="2"/>
+                                <text x="140" y="60" text-anchor="middle" font-weight="bold">NombrePaquete</text>
+                                <text x="60" y="100" font-size="13">+ Clase1</text>
+                                <text x="60" y="125" font-size="13">+ Clase2</text>
+                                <text x="60" y="150" font-size="13">+ Clase3</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Ejemplo Práctico Diagrama de Paquetes -->
+    <div class="slide" id="slide-5">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-layer-group"></i> Ejemplo: Sistema E-Commerce</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-boxes"></i> Estructura de Paquetes</h4>
+                <div class="diagram-container bg-white">
+                    <svg width="100%" height="450" viewBox="0 0 800 450" class="diagram-svg">
+                        <!-- Paquete Presentación -->
+                        <rect x="50" y="30" width="150" height="30" fill="#3498db" stroke="#2c3e50" stroke-width="2"/>
+                        <rect x="50" y="60" width="150" height="100" fill="#ebf5fb" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="125" y="50" text-anchor="middle" font-weight="bold" fill="white">Presentación</text>
+                        <text x="70" y="85" font-size="12">VistaProducto</text>
+                        <text x="70" y="105" font-size="12">VistaCarrito</text>
+                        <text x="70" y="125" font-size="12">VistaPago</text>
+                        <text x="70" y="145" font-size="12">VistaUsuario</text>
+                        
+                        <!-- Paquete Lógica de Negocio -->
+                        <rect x="325" y="30" width="150" height="30" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+                        <rect x="325" y="60" width="150" height="100" fill="#d5f4e6" stroke="#1e8449" stroke-width="2"/>
+                        <text x="400" y="50" text-anchor="middle" font-weight="bold" fill="white">Lógica Negocio</text>
+                        <text x="345" y="85" font-size="12">GestorProductos</text>
+                        <text x="345" y="105" font-size="12">GestorCarrito</text>
+                        <text x="345" y="125" font-size="12">GestorPagos</text>
+                        <text x="345" y="145" font-size="12">GestorUsuarios</text>
+                        
+                        <!-- Paquete Acceso a Datos -->
+                        <rect x="600" y="30" width="150" height="30" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+                        <rect x="600" y="60" width="150" height="100" fill="#fadbd8" stroke="#c0392b" stroke-width="2"/>
+                        <text x="675" y="50" text-anchor="middle" font-weight="bold" fill="white">Acceso a Datos</text>
+                        <text x="620" y="85" font-size="12">DAOProducto</text>
+                        <text x="620" y="105" font-size="12">DAOCarrito</text>
+                        <text x="620" y="125" font-size="12">DAOPago</text>
+                        <text x="620" y="145" font-size="12">DAOUsuario</text>
+                        
+                        <!-- Paquete Modelos -->
+                        <rect x="325" y="230" width="150" height="30" fill="#9b59b6" stroke="#6c3483" stroke-width="2"/>
+                        <rect x="325" y="260" width="150" height="100" fill="#ebdef0" stroke="#6c3483" stroke-width="2"/>
+                        <text x="400" y="250" text-anchor="middle" font-weight="bold" fill="white">Modelos</text>
+                        <text x="345" y="285" font-size="12">Producto</text>
+                        <text x="345" y="305" font-size="12">Carrito</text>
+                        <text x="345" y="325" font-size="12">Pago</text>
+                        <text x="345" y="345" font-size="12">Usuario</text>
+                        
+                        <!-- Dependencias -->
+                        <line x1="200" y1="110" x2="325" y2="110" stroke="#2c3e50" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+                        <line x1="475" y1="110" x2="600" y2="110" stroke="#2c3e50" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+                        <line x1="400" y1="160" x2="400" y2="230" stroke="#2c3e50" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+                        <line x1="675" y1="160" x2="450" y2="230" stroke="#2c3e50" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- Arrow marker -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#2c3e50"/>
+                            </marker>
+                        </defs>
+                        
+                        <text x="250" y="100" font-size="11" fill="#e74c3c">«usa»</text>
+                        <text x="520" y="100" font-size="11" fill="#e74c3c">«usa»</text>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle"></i> Las flechas discontinuas (- - ->) indican dependencias entre paquetes. La arquitectura en capas facilita el mantenimiento y la escalabilidad.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: Modelo Entidad-Relación (MER) -->
+    <div class="slide" id="slide-6">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-database"></i> Modelo Entidad-Relación (MER)</h2>
+            
+            <p class="lead">El <span class="highlight">MER</span> es un modelo conceptual para diseñar bases de datos. Representa entidades, atributos y relaciones entre datos.</p>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <h4><i class="fas fa-shapes"></i> Componentes del MER:</h4>
+                    
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-primary">1</span> Entidades</h5>
+                        <p>Objetos o conceptos del mundo real que tienen existencia independiente. Se representan con rectángulos.</p>
+                        <p><strong>Ejemplo:</strong> Cliente, Producto, Pedido</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-success">2</span> Atributos</h5>
+                        <p>Propiedades o características de las entidades. Se representan con óvalos.</p>
+                        <p><strong>Tipos:</strong> Simples, Compuestos, Derivados, Multivaluados</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-warning">3</span> Relaciones</h5>
+                        <p>Asociaciones entre entidades. Se representan con rombos.</p>
+                        <p><strong>Cardinalidad:</strong> 1:1, 1:N, N:M</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="example-box">
+                        <h5><i class="fas fa-icons"></i> Símbolos MER</h5>
+                        <div class="diagram-container">
+                            <svg width="200" height="280" class="diagram-svg">
+                                <!-- Entidad -->
+                                <rect x="50" y="20" width="100" height="40" fill="#3498db" stroke="#2c3e50" stroke-width="2"/>
+                                <text x="100" y="45" text-anchor="middle" fill="white" font-weight="bold">Entidad</text>
+                                
+                                <!-- Atributo -->
+                                <ellipse cx="100" cy="100" rx="50" ry="25" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+                                <text x="100" y="105" text-anchor="middle" fill="white" font-weight="bold">Atributo</text>
+                                
+                                <!-- Relación -->
+                                <polygon points="100,140 150,170 100,200 50,170" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+                                <text x="100" y="175" text-anchor="middle" fill="white" font-weight="bold">Relación</text>
+                                
+                                <!-- Atributo Clave -->
+                                <ellipse cx="100" cy="240" rx="50" ry="25" fill="#f39c12" stroke="#d68910" stroke-width="2"/>
+                                <text x="100" y="245" text-anchor="middle" fill="white" font-weight="bold" text-decoration="underline">Clave</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Ejemplo MER -->
+    <div class="slide" id="slide-7">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-chart-network"></i> Ejemplo MER: Sistema de Ventas</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-project-diagram"></i> Diagrama Entidad-Relación</h4>
+                <div class="diagram-container bg-white">
+                    <svg width="100%" height="350" viewBox="0 0 900 350" class="diagram-svg">
+                        <!-- Entidad Cliente -->
+                        <rect x="50" y="100" width="140" height="60" fill="#3498db" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="120" y="135" text-anchor="middle" fill="white" font-weight="bold" font-size="16">CLIENTE</text>
+                        
+                        <!-- Atributos Cliente -->
+                        <ellipse cx="80" cy="40" rx="45" ry="20" fill="#ecf0f1" stroke="#2c3e50" stroke-width="1.5"/>
+                        <text x="80" y="45" text-anchor="middle" font-size="11" text-decoration="underline">id_cliente</text>
+                        
+                        <ellipse cx="160" cy="40" rx="35" ry="20" fill="#ecf0f1" stroke="#2c3e50" stroke-width="1.5"/>
+                        <text x="160" y="45" text-anchor="middle" font-size="11">nombre</text>
+                        
+                        <line x1="80" y1="60" x2="90" y2="100" stroke="#2c3e50" stroke-width="1.5"/>
+                        <line x1="160" y1="60" x2="150" y2="100" stroke="#2c3e50" stroke-width="1.5"/>
+                        
+                        <!-- Relación Realiza -->
+                        <polygon points="300,130 370,100 440,130 370,160" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+                        <text x="370" y="135" text-anchor="middle" fill="white" font-weight="bold">realiza</text>
+                        
+                        <line x1="190" y1="130" x2="300" y2="130" stroke="#2c3e50" stroke-width="2"/>
+                        <line x1="440" y1="130" x2="550" y2="130" stroke="#2c3e50" stroke-width="2"/>
+                        
+                        <text x="240" y="120" font-size="12" font-weight="bold">1</text>
+                        <text x="490" y="120" font-size="12" font-weight="bold">N</text>
+                        
+                        <!-- Entidad Pedido -->
+                        <rect x="550" y="100" width="140" height="60" fill="#3498db" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="620" y="135" text-anchor="middle" fill="white" font-weight="bold" font-size="16">PEDIDO</text>
+                        
+                        <!-- Atributos Pedido -->
+                        <ellipse cx="620" cy="40" rx="45" ry="20" fill="#ecf0f1" stroke="#2c3e50" stroke-width="1.5"/>
+                        <text x="620" y="45" text-anchor="middle" font-size="11" text-decoration="underline">id_pedido</text>
+                        
+                        <ellipse cx="710" cy="60" rx="30" ry="20" fill="#ecf0f1" stroke="#2c3e50" stroke-width="1.5"/>
+                        <text x="710" y="65" text-anchor="middle" font-size="11">fecha</text>
+                        
+                        <line x1="620" y1="60" x2="620" y2="100" stroke="#2c3e50" stroke-width="1.5"/>
+                        <line x1="700" y1="75" x2="680" y2="105" stroke="#2c3e50" stroke-width="1.5"/>
+                        
+                        <!-- Relación Contiene -->
+                        <polygon points="620,220 690,190 760,220 690,250" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+                        <text x="690" y="225" text-anchor="middle" fill="white" font-weight="bold">contiene</text>
+                        
+                        <line x1="620" y1="160" x2="620" y2="190" stroke="#2c3e50" stroke-width="2"/>
+                        <line x1="620" y1="250" x2="620" y2="280" stroke="#2c3e50" stroke-width="2"/>
+                        
+                        <text x="640" y="180" font-size="12" font-weight="bold">1</text>
+                        <text x="640" y="270" font-size="12" font-weight="bold">N</text>
+                        
+                        <!-- Entidad Producto -->
+                        <rect x="550" y="280" width="140" height="60" fill="#3498db" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="620" y="315" text-anchor="middle" fill="white" font-weight="bold" font-size="16">PRODUCTO</text>
+                        
+                        <!-- Atributos Producto -->
+                        <ellipse cx="760" cy="300" rx="50" ry="20" fill="#ecf0f1" stroke="#2c3e50" stroke-width="1.5"/>
+                        <text x="760" y="305" text-anchor="middle" font-size="11" text-decoration="underline">id_producto</text>
+                        
+                        <ellipse cx="760" cy="340" rx="35" ry="20" fill="#ecf0f1" stroke="#2c3e50" stroke-width="1.5"/>
+                        <text x="760" y="345" text-anchor="middle" font-size="11">precio</text>
+                        
+                        <line x1="690" y1="300" x2="710" y2="300" stroke="#2c3e50" stroke-width="1.5"/>
+                        <line x1="690" y1="320" x2="725" y2="337" stroke="#2c3e50" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <h5><i class="fas fa-comments"></i> Interpretación:</h5>
+                    <ul class="custom-list">
+                        <li>Un CLIENTE puede realizar muchos (N) PEDIDOS → Relación 1:N</li>
+                        <li>Un PEDIDO pertenece a un (1) CLIENTE</li>
+                        <li>Un PEDIDO puede contener muchos (N) PRODUCTOS → Relación 1:N</li>
+                        <li>Los atributos subrayados representan las claves primarias</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Modelo de Datos Relacional (MDR) -->
+    <div class="slide" id="slide-8">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-table"></i> Modelo de Datos Relacional (MDR)</h2>
+            
+            <p class="lead">El <span class="highlight">MDR</span> transforma el MER en un esquema de tablas relacionales implementable en una base de datos.</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-list-check"></i> Conceptos Clave:</h4>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-table"></i> Tabla (Relación)</h5>
+                        <p>Estructura bidimensional compuesta por filas y columnas.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-key"></i> Clave Primaria (PK)</h5>
+                        <p>Atributo o conjunto de atributos que identifican únicamente cada fila.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-link"></i> Clave Foránea (FK)</h5>
+                        <p>Atributo que referencia la clave primaria de otra tabla.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4><i class="fas fa-code-branch"></i> Reglas de Transformación:</h4>
+                    
+                    <ul class="custom-list">
+                        <li>Cada entidad → una tabla</li>
+                        <li>Atributos simples → columnas</li>
+                        <li>Relación 1:N → FK en lado "N"</li>
+                        <li>Relación N:M → tabla intermedia</li>
+                        <li>Atributos multivaluados → tabla separada</li>
+                    </ul>
+                    
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-lightbulb"></i> <strong>Consejo:</strong> Normalizar las tablas para eliminar redundancias y mantener integridad de datos.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: Ejemplo MDR -->
+    <div class="slide" id="slide-9">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-database"></i> Ejemplo MDR: Sistema de Ventas</h2>
+            
+            <p class="lead">Transformación del MER anterior al Modelo Relacional:</p>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-table"></i> Esquema de Tablas</h4>
+                
+                <div class="table-responsive mt-4">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th colspan="4" class="text-center">CLIENTE</th>
+                            </tr>
+                            <tr class="table-light">
+                                <th><u>id_cliente</u> (PK)</th>
+                                <th>nombre</th>
+                                <th>email</th>
+                                <th>telefono</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Juan Pérez</td>
+                                <td>juan@email.com</td>
+                                <td>099123456</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>María García</td>
+                                <td>maria@email.com</td>
+                                <td>098765432</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="table-responsive mt-4">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th colspan="4" class="text-center">PEDIDO</th>
+                            </tr>
+                            <tr class="table-light">
+                                <th><u>id_pedido</u> (PK)</th>
+                                <th>fecha</th>
+                                <th>total</th>
+                                <th>id_cliente (FK)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>101</td>
+                                <td>2024-12-15</td>
+                                <td>1500</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>102</td>
+                                <td>2024-12-16</td>
+                                <td>2300</td>
+                                <td>2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="table-responsive mt-4">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th colspan="4" class="text-center">PRODUCTO</th>
+                            </tr>
+                            <tr class="table-light">
+                                <th><u>id_producto</u> (PK)</th>
+                                <th>nombre</th>
+                                <th>precio</th>
+                                <th>stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>201</td>
+                                <td>Laptop HP</td>
+                                <td>1200</td>
+                                <td>15</td>
+                            </tr>
+                            <tr>
+                                <td>202</td>
+                                <td>Mouse Logitech</td>
+                                <td>25</td>
+                                <td>50</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="table-responsive mt-4">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th colspan="4" class="text-center">DETALLE_PEDIDO (Tabla Intermedia N:M)</th>
+                            </tr>
+                            <tr class="table-light">
+                                <th>id_pedido (FK)</th>
+                                <th>id_producto (FK)</th>
+                                <th>cantidad</th>
+                                <th>subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>101</td>
+                                <td>201</td>
+                                <td>1</td>
+                                <td>1200</td>
+                            </tr>
+                            <tr>
+                                <td>101</td>
+                                <td>202</td>
+                                <td>2</td>
+                                <td>50</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle"></i> <strong>Nota:</strong> La tabla DETALLE_PEDIDO resuelve la relación N:M entre PEDIDO y PRODUCTO. Las claves primarias están subrayadas y las foráneas marcadas con (FK).
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: Diccionario de Clases -->
+    <div class="slide" id="slide-10">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-book"></i> Diccionario de Clases</h2>
+            
+            <p class="lead">El <span class="highlight">Diccionario de Clases</span> es una documentación detallada que describe cada clase del sistema, sus responsabilidades, atributos y métodos.</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-clipboard-list"></i> ¿Qué incluye?</h4>
+                    
+                    <ul class="custom-list">
+                        <li><strong>Nombre de la clase:</strong> Identificador único</li>
+                        <li><strong>Descripción:</strong> Propósito y responsabilidad</li>
+                        <li><strong>Atributos:</strong> Nombre, tipo, visibilidad, descripción</li>
+                        <li><strong>Métodos:</strong> Firma, parámetros, retorno, descripción</li>
+                        <li><strong>Relaciones:</strong> Asociaciones con otras clases</li>
+                        <li><strong>Restricciones:</strong> Reglas de negocio</li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4><i class="fas fa-star"></i> Beneficios:</h4>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-check-circle text-success"></i> <strong>Comunicación clara</strong>
+                        <p class="mb-0 mt-2">Facilita el entendimiento entre desarrolladores</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-wrench text-primary"></i> <strong>Mantenibilidad</strong>
+                        <p class="mb-0 mt-2">Simplifica modificaciones futuras</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-users text-warning"></i> <strong>Onboarding</strong>
+                        <p class="mb-0 mt-2">Ayuda a nuevos miembros del equipo</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-primary mt-4">
+                <i class="fas fa-info-circle"></i> El diccionario de clases debe mantenerse actualizado durante todo el ciclo de vida del proyecto.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Ejemplo Diccionario de Clases -->
+    <div class="slide" id="slide-11">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-file-alt"></i> Ejemplo: Diccionario de Clase "Producto"</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-cube"></i> Clase: Producto</h4>
+                
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="25%" class="table-primary">Nombre</th>
+                            <td><strong>Producto</strong></td>
+                        </tr>
+                        <tr>
+                            <th class="table-primary">Descripción</th>
+                            <td>Representa un producto del catálogo disponible para la venta en el sistema</td>
+                        </tr>
+                        <tr>
+                            <th class="table-primary">Paquete</th>
+                            <td>com.sistema.modelo</td>
+                        </tr>
+                        <tr>
+                            <th class="table-primary">Hereda de</th>
+                            <td>Ninguna (clase base)</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <h5 class="mt-4"><i class="fas fa-list"></i> Atributos:</h5>
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Visibilidad</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>id</td>
+                                <td>int</td>
+                                <td>private (-)</td>
+                                <td>Identificador único del producto</td>
+                            </tr>
+                            <tr>
+                                <td>nombre</td>
+                                <td>String</td>
+                                <td>private (-)</td>
+                                <td>Nombre comercial del producto</td>
+                            </tr>
+                            <tr>
+                                <td>precio</td>
+                                <td>double</td>
+                                <td>private (-)</td>
+                                <td>Precio de venta unitario (debe ser > 0)</td>
+                            </tr>
+                            <tr>
+                                <td>stock</td>
+                                <td>int</td>
+                                <td>private (-)</td>
+                                <td>Cantidad disponible en inventario</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h5 class="mt-4"><i class="fas fa-cogs"></i> Métodos:</h5>
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Método</th>
+                                <th>Parámetros</th>
+                                <th>Retorno</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>+ calcularDescuento()</td>
+                                <td>porcentaje: double</td>
+                                <td>double</td>
+                                <td>Calcula el precio con descuento aplicado</td>
+                            </tr>
+                            <tr>
+                                <td>+ estaDisponible()</td>
+                                <td>-</td>
+                                <td>boolean</td>
+                                <td>Verifica si hay stock disponible (stock > 0)</td>
+                            </tr>
+                            <tr>
+                                <td>+ reducirStock()</td>
+                                <td>cantidad: int</td>
+                                <td>boolean</td>
+                                <td>Reduce el stock. Retorna false si no hay suficiente</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h5 class="mt-4"><i class="fas fa-link"></i> Relaciones:</h5>
+                <ul class="custom-list">
+                    <li>Es referenciado por <strong>DetallePedido</strong> (asociación N:M a través de tabla intermedia)</li>
+                    <li>Puede tener múltiples <strong>Categoria</strong> (asociación 1:N)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: Diccionario de Datos -->
+    <div class="slide" id="slide-12">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-database"></i> Diccionario de Datos</h2>
+            
+            <p class="lead">El <span class="highlight">Diccionario de Datos</span> documenta la estructura de la base de datos: tablas, columnas, tipos de datos, restricciones y relaciones.</p>
+            
+            <div class="row">
+                <div class="col-md-7">
+                    <h4><i class="fas fa-list-ul"></i> Información que contiene:</h4>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-table text-primary"></i> Tablas</h5>
+                        <ul class="custom-list">
+                            <li>Nombre de la tabla</li>
+                            <li>Descripción y propósito</li>
+                            <li>Lista de columnas</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-columns text-success"></i> Columnas</h5>
+                        <ul class="custom-list">
+                            <li>Nombre, tipo de dato, longitud</li>
+                            <li>Nulabilidad (NULL / NOT NULL)</li>
+                            <li>Valores por defecto</li>
+                            <li>Restricciones (CHECK, UNIQUE)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-key text-warning"></i> Claves y Relaciones</h5>
+                        <ul class="custom-list">
+                            <li>Claves primarias (PK)</li>
+                            <li>Claves foráneas (FK)</li>
+                            <li>Índices</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-5">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-lightbulb"></i> ¿Por qué es importante?</h5>
+                        <ul class="custom-list">
+                            <li>Documentación centralizada</li>
+                            <li>Facilita el desarrollo</li>
+                            <li>Estandarización de nomenclatura</li>
+                            <li>Base para migraciones</li>
+                            <li>Auditoría y cumplimiento</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Importante:</strong> Debe actualizarse con cada cambio en el esquema de la base de datos.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 13: Ejemplo Diccionario de Datos -->
+    <div class="slide" id="slide-13">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-table"></i> Ejemplo: Diccionario Tabla "PRODUCTO"</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-database"></i> Tabla: PRODUCTO</h4>
+                
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="20%" class="table-primary">Tabla</th>
+                            <td><strong>PRODUCTO</strong></td>
+                        </tr>
+                        <tr>
+                            <th class="table-primary">Descripción</th>
+                            <td>Almacena información de los productos disponibles en el catálogo del sistema</td>
+                        </tr>
+                        <tr>
+                            <th class="table-primary">Motor</th>
+                            <td>InnoDB (MySQL) / PostgreSQL</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <h5 class="mt-4"><i class="fas fa-columns"></i> Estructura de Columnas:</h5>
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Columna</th>
+                                <th>Tipo</th>
+                                <th>Longitud</th>
+                                <th>Nulo</th>
+                                <th>Default</th>
+                                <th>Restricción</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-warning">
+                                <td><strong>id_producto</strong></td>
+                                <td>INT</td>
+                                <td>-</td>
+                                <td>NO</td>
+                                <td>AUTO_INCREMENT</td>
+                                <td>PK</td>
+                                <td>Identificador único del producto</td>
+                            </tr>
+                            <tr>
+                                <td>nombre</td>
+                                <td>VARCHAR</td>
+                                <td>100</td>
+                                <td>NO</td>
+                                <td>-</td>
+                                <td>NOT NULL</td>
+                                <td>Nombre comercial del producto</td>
+                            </tr>
+                            <tr>
+                                <td>descripcion</td>
+                                <td>TEXT</td>
+                                <td>-</td>
+                                <td>SÍ</td>
+                                <td>NULL</td>
+                                <td>-</td>
+                                <td>Descripción detallada del producto</td>
+                            </tr>
+                            <tr>
+                                <td>precio</td>
+                                <td>DECIMAL</td>
+                                <td>10,2</td>
+                                <td>NO</td>
+                                <td>0.00</td>
+                                <td>CHECK > 0</td>
+                                <td>Precio unitario de venta</td>
+                            </tr>
+                            <tr>
+                                <td>stock</td>
+                                <td>INT</td>
+                                <td>-</td>
+                                <td>NO</td>
+                                <td>0</td>
+                                <td>CHECK >= 0</td>
+                                <td>Cantidad disponible en inventario</td>
+                            </tr>
+                            <tr>
+                                <td>activo</td>
+                                <td>BOOLEAN</td>
+                                <td>-</td>
+                                <td>NO</td>
+                                <td>TRUE</td>
+                                <td>-</td>
+                                <td>Indica si el producto está activo para venta</td>
+                            </tr>
+                            <tr class="table-info">
+                                <td>id_categoria</td>
+                                <td>INT</td>
+                                <td>-</td>
+                                <td>SÍ</td>
+                                <td>NULL</td>
+                                <td>FK</td>
+                                <td>Referencia a tabla CATEGORIA</td>
+                            </tr>
+                            <tr>
+                                <td>fecha_creacion</td>
+                                <td>DATETIME</td>
+                                <td>-</td>
+                                <td>NO</td>
+                                <td>CURRENT_TIMESTAMP</td>
+                                <td>-</td>
+                                <td>Fecha y hora de creación del registro</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-key"></i> Claves:</h5>
+                        <ul class="custom-list">
+                            <li><strong>PK:</strong> id_producto</li>
+                            <li><strong>FK:</strong> id_categoria → CATEGORIA(id_categoria)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-bolt"></i> Índices:</h5>
+                        <ul class="custom-list">
+                            <li>idx_producto_nombre (nombre)</li>
+                            <li>idx_producto_categoria (id_categoria)</li>
+                            <li>idx_producto_activo (activo)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 14: Mejores Prácticas -->
+    <div class="slide" id="slide-14">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-medal"></i> Mejores Prácticas</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-sitemap"></i> Para Diagramas:</h4>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-primary">1</span>
+                        <strong>Claridad y Simplicidad</strong>
+                        <p class="mt-2">Evita diagramas sobrecargados. Si es complejo, divídelo en varios diagramas.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">2</span>
+                        <strong>Nomenclatura Consistente</strong>
+                        <p class="mt-2">Usa convenciones de nombres estándar (CamelCase para clases, snake_case para BD).</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-warning">3</span>
+                        <strong>Documentación Actualizada</strong>
+                        <p class="mt-2">Mantén los diagramas sincronizados con el código y la base de datos.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">4</span>
+                        <strong>Usa Herramientas Apropiadas</strong>
+                        <p class="mt-2">Enterprise Architect, Draw.io, Lucidchart, PlantUML, dbdiagram.io</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4><i class="fas fa-book"></i> Para Diccionarios:</h4>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-primary">1</span>
+                        <strong>Descripciones Claras</strong>
+                        <p class="mt-2">Cada elemento debe tener una descripción que cualquiera pueda entender.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">2</span>
+                        <strong>Completitud</strong>
+                        <p class="mt-2">No omitas información. Incluye todos los atributos, restricciones y relaciones.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-warning">3</span>
+                        <strong>Versionado</strong>
+                        <p class="mt-2">Mantén un historial de cambios con fechas y responsables.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">4</span>
+                        <strong>Accesibilidad</strong>
+                        <p class="mt-2">Guarda en repositorio compartido (Git, Confluence, Wiki interna).</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-success mt-4">
+                <i class="fas fa-quote-left"></i> <em>"El mejor código es aquel que está bien documentado. Los diagramas y diccionarios son parte fundamental de esa documentación."</em>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 15: Caso Práctico Integrado -->
+    <div class="slide" id="slide-15">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-project-diagram"></i> Caso Práctico: Sistema de Biblioteca Digital</h2>
+            
+            <p class="lead">Desarrollemos un ejemplo completo integrando todos los conceptos aprendidos.</p>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-info-circle"></i> Requisitos del Sistema:</h4>
+                <ul class="custom-list">
+                    <li>Los usuarios pueden registrarse y autenticarse</li>
+                    <li>Existen libros físicos y digitales</li>
+                    <li>Los usuarios pueden realizar préstamos de libros</li>
+                    <li>Se registra el historial de préstamos</li>
+                    <li>Los libros pertenecen a categorías</li>
+                    <li>Se calculan multas por retrasos</li>
+                </ul>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-cubes"></i> Clases Principales:</h5>
+                        <ul class="custom-list">
+                            <li>Usuario</li>
+                            <li>Libro (clase abstracta)</li>
+                            <li>LibroFisico (hereda de Libro)</li>
+                            <li>LibroDigital (hereda de Libro)</li>
+                            <li>Prestamo</li>
+                            <li>Categoria</li>
+                            <li>Multa</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-database"></i> Tablas Principales:</h5>
+                        <ul class="custom-list">
+                            <li>USUARIO</li>
+                            <li>LIBRO</li>
+                            <li>PRESTAMO</li>
+                            <li>CATEGORIA</li>
+                            <li>MULTA</li>
+                            <li>LIBRO_CATEGORIA (N:M)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-arrow-right"></i> En las siguientes slides veremos el diagrama de clases, MER, MDR y los diccionarios correspondientes.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 16: SQL de Ejemplo -->
+    <div class="slide" id="slide-16">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-code"></i> Código SQL de Implementación</h2>
+            
+            <p class="lead">Ejemplo de creación de tablas basado en el MDR:</p>
+            
+            <div class="code-block">
+<pre>-- Crear tabla USUARIO
+CREATE TABLE USUARIO (
+    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+-- Crear tabla CATEGORIA
+CREATE TABLE CATEGORIA (
+    id_categoria INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT
+);
+
+-- Crear tabla LIBRO
+CREATE TABLE LIBRO (
+    id_libro INT PRIMARY KEY AUTO_INCREMENT,
+    isbn VARCHAR(20) UNIQUE NOT NULL,
+    titulo VARCHAR(200) NOT NULL,
+    autor VARCHAR(100) NOT NULL,
+    editorial VARCHAR(100),
+    anio_publicacion INT,
+    tipo ENUM('fisico', 'digital') NOT NULL,
+    -- Para libros físicos:
+    ubicacion VARCHAR(50),
+    estado VARCHAR(20),
+    -- Para libros digitales:
+    formato VARCHAR(10),
+    tamanio_mb DECIMAL(10,2),
+    url_descarga VARCHAR(255),
+    disponible BOOLEAN DEFAULT TRUE,
+    CONSTRAINT chk_anio CHECK (anio_publicacion > 1000)
+);
+
+-- Crear tabla PRESTAMO
+CREATE TABLE PRESTAMO (
+    id_prestamo INT PRIMARY KEY AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    id_libro INT NOT NULL,
+    fecha_prestamo DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_devolucion_esperada DATE NOT NULL,
+    fecha_devolucion_real DATETIME,
+    estado ENUM('activo', 'devuelto', 'vencido') DEFAULT 'activo',
+    FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario),
+    FOREIGN KEY (id_libro) REFERENCES LIBRO(id_libro)
+);
+
+-- Crear tabla MULTA
+CREATE TABLE MULTA (
+    id_multa INT PRIMARY KEY AUTO_INCREMENT,
+    id_prestamo INT NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    fecha_generacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    pagada BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (id_prestamo) REFERENCES PRESTAMO(id_prestamo)
+);
+
+-- Tabla intermedia para relación N:M
+CREATE TABLE LIBRO_CATEGORIA (
+    id_libro INT,
+    id_categoria INT,
+    PRIMARY KEY (id_libro, id_categoria),
+    FOREIGN KEY (id_libro) REFERENCES LIBRO(id_libro),
+    FOREIGN KEY (id_categoria) REFERENCES CATEGORIA(id_categoria)
+);
+
+-- Crear índices para mejorar rendimiento
+CREATE INDEX idx_usuario_email ON USUARIO(email);
+CREATE INDEX idx_libro_titulo ON LIBRO(titulo);
+CREATE INDEX idx_prestamo_usuario ON PRESTAMO(id_usuario);
+CREATE INDEX idx_prestamo_estado ON PRESTAMO(estado);</pre>
+            </div>
+            
+            <div class="alert alert-success mt-3">
+                <i class="fas fa-check-circle"></i> <strong>Listo!</strong> Este esquema implementa todas las relaciones y restricciones definidas en el modelo.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 17: Herramientas Recomendadas -->
+    <div class="slide" id="slide-17">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-tools"></i> Herramientas Recomendadas</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-pencil-ruler"></i> Para Diagramas UML:</h4>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-star text-warning"></i> <strong>Draw.io (diagrams.net)</strong>
+                        <p class="mt-2">Gratuito, online, muy completo. Ideal para estudiantes.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-code text-primary"></i> <strong>PlantUML</strong>
+                        <p class="mt-2">Diagramas mediante código. Perfecto para versionado en Git.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-building text-info"></i> <strong>Enterprise Architect</strong>
+                        <p class="mt-2">Herramienta profesional completa. Uso empresarial.</p>
+                        <span class="badge-custom badge-warning">Pago</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-palette text-danger"></i> <strong>Lucidchart</strong>
+                        <p class="mt-2">Interfaz intuitiva, colaboración en tiempo real.</p>
+                        <span class="badge-custom badge-warning">Freemium</span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4><i class="fas fa-database"></i> Para MER y MDR:</h4>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-diagram-project text-success"></i> <strong>dbdiagram.io</strong>
+                        <p class="mt-2">Diseño de BD mediante código. Genera SQL automáticamente.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-database text-primary"></i> <strong>MySQL Workbench</strong>
+                        <p class="mt-2">Diseño visual de BD, ingeniería inversa, scripts SQL.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-server text-info"></i> <strong>pgAdmin (PostgreSQL)</strong>
+                        <p class="mt-2">Herramienta completa para PostgreSQL con diseñador ER.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-cloud text-warning"></i> <strong>QuickDBD</strong>
+                        <p class="mt-2">Rápido diseño de esquemas, exporta a múltiples formatos.</p>
+                        <span class="badge-custom badge-warning">Freemium</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-primary mt-4">
+                <i class="fas fa-graduation-cap"></i> <strong>Recomendación para estudiantes:</strong> Comienza con Draw.io y dbdiagram.io - son gratuitas, potentes y fáciles de aprender.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 18: Resumen -->
+    <div class="slide" id="slide-18">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-check-double"></i> Resumen de Contenidos</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-sitemap"></i> Diagramas Estudiados:</h4>
+                    
+                    <div class="feature-card">
+                        <h5>1. Diagrama de Clases UML</h5>
+                        <ul class="custom-list">
+                            <li>Representa estructura del sistema OO</li>
+                            <li>Clases, atributos, métodos, relaciones</li>
+                            <li>Base para la implementación del código</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5>2. Diagrama de Paquetes</h5>
+                        <ul class="custom-list">
+                            <li>Organización modular del sistema</li>
+                            <li>Dependencias entre módulos</li>
+                            <li>Arquitectura de alto nivel</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5>3. MER (Modelo Entidad-Relación)</h5>
+                        <ul class="custom-list">
+                            <li>Modelo conceptual de datos</li>
+                            <li>Entidades, atributos, relaciones</li>
+                            <li>Cardinalidades y restricciones</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5>4. MDR (Modelo Datos Relacional)</h5>
+                        <ul class="custom-list">
+                            <li>Implementación del MER en tablas</li>
+                            <li>Claves primarias y foráneas</li>
+                            <li>Normalización de datos</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4><i class="fas fa-book"></i> Diccionarios:</h4>
+                    
+                    <div class="feature-card">
+                        <h5>Diccionario de Clases</h5>
+                        <ul class="custom-list">
+                            <li>Documentación detallada de clases</li>
+                            <li>Atributos, métodos, relaciones</li>
+                            <li>Responsabilidades y restricciones</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5>Diccionario de Datos</h5>
+                        <ul class="custom-list">
+                            <li>Estructura de base de datos</li>
+                            <li>Tablas, columnas, tipos de datos</li>
+                            <li>Claves, índices, restricciones</li>
+                        </ul>
+                    </div>
+                    
+                    <h4 class="mt-4"><i class="fas fa-lightbulb"></i> Mejores Prácticas:</h4>
+                    <ul class="custom-list">
+                        <li>Mantener documentación actualizada</li>
+                        <li>Usar nomenclatura consistente</li>
+                        <li>Priorizar claridad sobre complejidad</li>
+                        <li>Versionar los cambios</li>
+                        <li>Usar herramientas apropiadas</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="alert alert-success mt-4 text-center">
+                <h4><i class="fas fa-trophy"></i> ¡Excelente! Ahora estás listo para el Quiz Final</h4>
+                <p class="mb-0">Evalúa tu comprensión con 20 preguntas sobre todos los temas vistos</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 19: Inicio del Quiz -->
+    <div class="slide" id="slide-19">
+        <div class="content-card text-center">
+            <h2 class="slide-title"><i class="fas fa-graduation-cap"></i> Quiz Final - 20 Preguntas</h2>
+            
+            <div class="home-hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 50px; margin: 30px 0;">
+                <i class="fas fa-clipboard-list fa-5x mb-4 text-white"></i>
+                <h3 class="text-white">¡Es hora de evaluar tu aprendizaje!</h3>
+                <p class="text-white">Responde 20 preguntas sobre análisis y requerimientos</p>
+                
+                <div class="alert alert-light mt-4 text-start">
+                    <h5><i class="fas fa-info-circle"></i> Instrucciones:</h5>
+                    <ul class="custom-list">
+                        <li>Selecciona la respuesta que consideres correcta</li>
+                        <li>Recibirás retroalimentación inmediata</li>
+                        <li>Al final verás tu puntuación total</li>
+                        <li>Cada pregunta vale 1 punto (total: 20 puntos)</li>
+                    </ul>
+                </div>
+                
+                <button class="start-btn mt-4" onclick="startQuiz()">
+                    <i class="fas fa-play-circle"></i> Comenzar Quiz
+                </button>
+            </div>
+            
+            <div id="quiz-score" style="display:none;" class="mt-4">
+                <h4>Puntuación: <span id="current-score">0</span> / 20</h4>
+                <div class="progress-container">
+                    <div id="quiz-progress" class="progress-bar-custom" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Slides (20 preguntas) -->
+    <div class="slide" id="slide-20">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 1 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué símbolo se utiliza para representar una clase en UML?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="1" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Un rectángulo dividido en tres secciones</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Un rombo</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Un óvalo</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Un círculo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-21">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 2 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál símbolo indica un atributo privado en UML?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="2" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>+ (más)</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>- (menos)</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span># (numeral)</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>~ (virgulilla)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-22">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 3 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué representa un Diagrama de Paquetes en UML?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="3" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>La secuencia de ejecución de métodos</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>La organización modular del sistema y dependencias entre paquetes</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>El flujo de datos entre procesos</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Las interacciones entre usuarios y sistema</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-23">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 4 de 20</h2>
+            
+            <div class="example-box">
+                <h4>En un MER, ¿cómo se representa una entidad?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="4" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Con un rectángulo</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Con un rombo</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Con un óvalo</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Con un hexágono</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-24">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 5 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué símbolo se usa para representar una relación en un MER?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="5" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Rectángulo</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Rombo</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Óvalo</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Triángulo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-25">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 6 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué significa la cardinalidad 1:N en una relación?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="6" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Uno a uno</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Uno a muchos</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Muchos a muchos</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Ninguno a muchos</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-26">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 7 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cómo se indica un atributo clave (primaria) en un MER?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="7" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Se subraya</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Se pone en negrita</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Se marca con asterisco (*)</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Se colorea de rojo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-27">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 8 de 20</h2>
+            
+            <div class="example-box">
+                <h4>En el MDR, ¿qué es una clave foránea (FK)?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="8" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Un atributo que identifica únicamente cada fila de la tabla</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Un atributo que referencia la clave primaria de otra tabla</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Un índice de búsqueda</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Un atributo opcional que puede ser NULL</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-28">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 9 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cómo se resuelve una relación N:M en el modelo relacional?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="9" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Se ignora la relación</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Se agrega una columna en una de las tablas</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Se crea una tabla intermedia con las claves foráneas de ambas tablas</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Se fusionan ambas tablas en una sola</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-29">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 10 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué documenta un Diccionario de Clases?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="10" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Solo los nombres de las clases</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Las clases, atributos, métodos, responsabilidades y relaciones</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Solo el código fuente</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Los requisitos funcionales del sistema</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-30">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 11 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué información NO suele incluirse en un Diccionario de Datos?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="11" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Nombres de columnas y tipos de datos</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Restricciones y claves</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>El código fuente de las funciones de negocio</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Descripción de tablas</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-31">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 12 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué ventaja proporciona usar nomenclatura consistente en diagramas?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="12" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Hace los diagramas más coloridos</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Facilita la comprensión y mantenimiento del sistema</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Reduce el tamaño de los archivos</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Aumenta la velocidad de ejecución</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-32">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 13 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es el propósito principal del MDR?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="13" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Diseñar la interfaz de usuario</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Transformar el modelo conceptual en un esquema implementable en BD</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Documentar los requisitos del sistema</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Crear el diagrama de casos de uso</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-33">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 14 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué tipo de atributo en un MER puede tener múltiples valores?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="14" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Atributo simple</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Atributo multivaluado</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Atributo derivado</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Atributo compuesto</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-34">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 15 de 20</h2>
+            
+            <div class="example-box">
+                <h4>En UML, ¿qué representa una línea continua con una flecha abierta entre clases?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="15" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Herencia</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Asociación simple</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Composición</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Dependencia</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-35">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 16 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál de estas NO es una herramienta para crear diagramas UML?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="16" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Draw.io</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>PlantUML</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Microsoft Excel</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Lucidchart</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-36">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 17 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué beneficio NO proporciona mantener un Diccionario de Clases actualizado?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="17" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Facilita la comunicación entre desarrolladores</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Mejora el onboarding de nuevos miembros</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Aumenta automáticamente la velocidad del código</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Simplifica el mantenimiento futuro</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-37">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 18 de 20</h2>
+            
+            <div class="example-box">
+                <h4>En una relación 1:N, ¿dónde se coloca la clave foránea en el MDR?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="18" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>En el lado "1" de la relación</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>En el lado "N" de la relación</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>En una tabla intermedia</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>No se usa clave foránea</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-38">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 19 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué herramienta es específica para diseño de bases de datos relacionales?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="19" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Enterprise Architect</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>dbdiagram.io</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>PlantUML</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Figma</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-39">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 20 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es la mejor práctica al crear diagramas complejos?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="20" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Incluir todos los detalles en un solo diagrama</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Dividirlo en múltiples diagramas más simples y enfocados</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Usar colores aleatorios para cada elemento</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Omitir la documentación para simplificar</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide Final: Resultados -->
+    <div class="slide" id="slide-40">
+        <div class="content-card text-center">
+            <h2 class="slide-title"><i class="fas fa-trophy"></i> ¡Quiz Completado!</h2>
+            
+            <div id="final-results" class="home-hero" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); border-radius: 15px; padding: 50px; margin: 30px 0;">
+                <i class="fas fa-check-circle fa-5x mb-4 text-white"></i>
+                <h3 class="text-white">Tu Puntuación Final</h3>
+                <h1 class="text-white display-1 my-4"><span id="final-score">0</span> / 20</h1>
+                <h4 class="text-white" id="result-message"></h4>
+                
+                <div class="progress-container mt-4">
+                    <div id="final-progress" class="progress-bar-custom" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-check-double text-success fa-3x"></i>
+                        <h4 class="mt-3">Respuestas Correctas</h4>
+                        <h2 id="correct-count">0</h2>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-times text-danger fa-3x"></i>
+                        <h4 class="mt-3">Respuestas Incorrectas</h4>
+                        <h2 id="incorrect-count">0</h2>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-percentage text-primary fa-3x"></i>
+                        <h4 class="mt-3">Porcentaje</h4>
+                        <h2 id="percentage">0%</h2>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-lightbulb"></i> Repasa los temas donde tuviste dificultades para mejorar tu comprensión.
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>
+            <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">41</span>
+        </span>
+        <button class="nav-btn" id="nextBtn" onclick="nextSlide()">
+            Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let currentSlideIndex = 0;
+        const totalSlides = 41;
+        let quizScore = 0;
+        let quizStarted = false;
+        
+        // Respuestas correctas del quiz
+        const correctAnswers = {
+            1: 'a',  // Rectángulo dividido en tres secciones
+            2: 'b',  // - (menos)
+            3: 'b',  // Organización modular
+            4: 'a',  // Rectángulo
+            5: 'b',  // Rombo
+            6: 'b',  // Uno a muchos
+            7: 'a',  // Se subraya
+            8: 'b',  // Referencia a PK de otra tabla
+            9: 'c',  // Tabla intermedia
+            10: 'b', // Clases, atributos, métodos, etc.
+            11: 'c', // Código fuente de funciones
+            12: 'b', // Facilita comprensión
+            13: 'b', // Transformar a implementable
+            14: 'b', // Atributo multivaluado
+            15: 'a', // Herencia
+            16: 'c', // Excel
+            17: 'c', // Aumenta velocidad del código
+            18: 'b', // En el lado "N"
+            19: 'b', // dbdiagram.io
+            20: 'b'  // Dividir en múltiples diagramas
+        };
+        
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                currentSlideIndex = index;
+                
+                document.getElementById('currentSlide').textContent = index + 1;
+                document.getElementById('prevBtn').disabled = index === 0;
+                document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+        
+        function startQuiz() {
+            quizStarted = true;
+            document.getElementById('quiz-score').style.display = 'block';
+            nextSlide();
+        }
+        
+        // Event listeners para las opciones del quiz
+        document.addEventListener('DOMContentLoaded', function() {
+            const quizOptions = document.querySelectorAll('.quiz-option');
+            
+            quizOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const question = this.dataset.question;
+                    const answer = this.dataset.answer;
+                    const correctAnswer = correctAnswers[question];
+                    
+                    // Obtener todas las opciones de esta pregunta
+                    const allOptions = document.querySelectorAll(`[data-question="${question}"]`);
+                    
+                    // Deshabilitar todas las opciones de esta pregunta
+                    allOptions.forEach(opt => {
+                        opt.style.pointerEvents = 'none';
+                    });
+                    
+                    // Verificar respuesta
+                    if (answer === correctAnswer) {
+                        this.classList.add('correct');
+                        quizScore++;
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Correcto!',
+                            text: 'Excelente respuesta',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        this.classList.add('incorrect');
+                        // Mostrar la respuesta correcta
+                        allOptions.forEach(opt => {
+                            if (opt.dataset.answer === correctAnswer) {
+                                opt.classList.add('correct');
+                            }
+                        });
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Incorrecto',
+                            text: 'La respuesta correcta está marcada en verde',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    
+                    // Actualizar puntuación
+                    document.getElementById('current-score').textContent = quizScore;
+                    const progress = (quizScore / 20) * 100;
+                    document.getElementById('quiz-progress').style.width = progress + '%';
+                    
+                    // Si es la última pregunta, mostrar resultados
+                    if (question == 20) {
+                        setTimeout(() => {
+                            showFinalResults();
+                        }, 2000);
+                    } else {
+                        // Avanzar automáticamente después de 2 segundos
+                        setTimeout(() => {
+                            nextSlide();
+                        }, 2000);
+                    }
+                });
+            });
+        });
+        
+        function showFinalResults() {
+            const finalScore = quizScore;
+            const percentage = (finalScore / 20) * 100;
+            const incorrect = 20 - finalScore;
+            
+            document.getElementById('final-score').textContent = finalScore;
+            document.getElementById('correct-count').textContent = finalScore;
+            document.getElementById('incorrect-count').textContent = incorrect;
+            document.getElementById('percentage').textContent = percentage.toFixed(0) + '%';
+            document.getElementById('final-progress').style.width = percentage + '%';
+            
+            // Mensaje según puntuación
+            let message = '';
+            let icon = 'success';
+            
+            if (percentage >= 90) {
+                message = '¡Excelente! Dominas completamente el tema';
+                icon = 'success';
+            } else if (percentage >= 70) {
+                message = '¡Muy bien! Tienes un buen conocimiento';
+                icon = 'success';
+            } else if (percentage >= 50) {
+                message = 'Bien, pero puedes mejorar repasando algunos temas';
+                icon = 'info';
+            } else {
+                message = 'Te recomendamos repasar el material nuevamente';
+                icon = 'warning';
+            }
+            
+            document.getElementById('result-message').textContent = message;
+            
+            // Cambiar color del fondo según resultado
+            const resultsDiv = document.getElementById('final-results');
+            if (percentage >= 70) {
+                resultsDiv.style.background = 'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)';
+            } else if (percentage >= 50) {
+                resultsDiv.style.background = 'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)';
+            } else {
+                resultsDiv.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+            }
+            
+            nextSlide();
+            
+            Swal.fire({
+                icon: icon,
+                title: 'Quiz Completado',
+                text: `Has obtenido ${finalScore} de 20 puntos (${percentage.toFixed(0)}%)`,
+                confirmButtonText: 'Ver Resultados Detallados',
+                confirmButtonColor: '#3498db'
+            });
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+        
+        // Initialize
+        showSlide(0);
+        document.getElementById('totalSlides').textContent = totalSlides;
+    </script>
+</body>
+</html>
