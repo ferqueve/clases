@@ -1,0 +1,2565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagramas de Secuencia - UML</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --info-color: #9b59b6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .slide {
+            min-height: 100vh;
+            display: none;
+            padding: 60px 20px;
+            position: relative;
+        }
+        
+        .slide.active {
+            display: block;
+            animation: fadeIn 0.8s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .slide-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .slide-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--secondary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .nav-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .nav-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .slide-counter {
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 15px;
+        }
+        
+        .example-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 5px solid var(--secondary-color);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .diagram-container {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid var(--secondary-color);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .table-custom {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .table-custom thead {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+        }
+        
+        .table-custom tbody tr:hover {
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .quiz-option:hover {
+            background: #f8f9fa;
+            border-color: var(--secondary-color);
+            transform: translateX(10px);
+        }
+        
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: var(--success-color);
+        }
+        
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: var(--accent-color);
+        }
+        
+        .progress-container {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar-custom {
+            height: 100%;
+            background: linear-gradient(to right, var(--success-color), var(--secondary-color));
+            transition: width 0.5s ease;
+        }
+        
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .badge-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .badge-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .badge-danger {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .badge-info {
+            background: var(--info-color);
+            color: white;
+        }
+        
+        .home-hero {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+        }
+        
+        .home-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .home-hero p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .start-btn {
+            background: white;
+            color: var(--primary-color);
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        
+        .diagram-svg {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        ul.custom-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        ul.custom-list li {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+        }
+        
+        ul.custom-list li::before {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-size: 1.2rem;
+        }
+        
+        .sequence-lifeline {
+            stroke: #2c3e50;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+        }
+        
+        .sequence-activation {
+            fill: #3498db;
+            stroke: #2c3e50;
+            stroke-width: 2;
+        }
+        
+        .sequence-message {
+            stroke: #2c3e50;
+            stroke-width: 2;
+            marker-end: url(#arrowhead);
+        }
+        
+        .sequence-return {
+            stroke: #27ae60;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            marker-end: url(#arrowhead-return);
+        }
+        
+        @media (max-width: 768px) {
+            .slide-title {
+                font-size: 1.8rem;
+            }
+            
+            .home-hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .content-card {
+                padding: 25px;
+            }
+            
+            .navigation {
+                bottom: 15px;
+                padding: 10px 15px;
+            }
+            
+            .nav-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 0: Portada -->
+    <div class="slide active" id="slide-0">
+        <div class="home-hero animate__animated animate__fadeInDown">
+            <i class="fas fa-project-diagram fa-5x mb-4"></i>
+            <h1>Diagramas de Secuencia</h1>
+            <p>Modelado de Interacciones en UML</p>
+            <p><i class="fas fa-graduation-cap"></i> Presentación Educativa Completa</p>
+            <button class="start-btn animate__animated animate__bounceIn animate__delay-1s" onclick="nextSlide()">
+                <i class="fas fa-rocket"></i> Comenzar Presentación
+            </button>
+        </div>
+    </div>
+
+    <!-- Slide 1: Índice -->
+    <div class="slide" id="slide-1">
+        <div class="content-card animate__animated animate__fadeIn">
+            <h2 class="slide-title"><i class="fas fa-list"></i> Contenido de la Presentación</h2>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="feature-card animate__animated animate__fadeInLeft">
+                        <h4><i class="fas fa-info-circle text-primary"></i> Fundamentos</h4>
+                        <ul class="custom-list mt-3">
+                            <li>¿Qué es un Diagrama de Secuencia?</li>
+                            <li>Propósito y Beneficios</li>
+                            <li>Cuándo Utilizarlos</li>
+                            <li>Elementos Principales</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card animate__animated animate__fadeInLeft animate__delay-1s">
+                        <h4><i class="fas fa-shapes text-success"></i> Notación UML</h4>
+                        <ul class="custom-list mt-3">
+                            <li>Objetos y Actores</li>
+                            <li>Líneas de Vida</li>
+                            <li>Mensajes y Llamadas</li>
+                            <li>Fragmentos de Interacción</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card animate__animated animate__fadeInRight">
+                        <h4><i class="fas fa-code text-warning"></i> Ejemplos Prácticos</h4>
+                        <ul class="custom-list mt-3">
+                            <li>Autenticación de Usuario</li>
+                            <li>Procesamiento de Pedidos</li>
+                            <li>Sistema Bancario</li>
+                            <li>API REST</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card animate__animated animate__fadeInRight animate__delay-1s">
+                        <h4><i class="fas fa-lightbulb text-danger"></i> Mejores Prácticas</h4>
+                        <ul class="custom-list mt-3">
+                            <li>Consejos de Diseño</li>
+                            <li>Errores Comunes</li>
+                            <li>Herramientas</li>
+                            <li>Quiz de 20 Preguntas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4 animate__animated animate__fadeInUp animate__delay-1s">
+                <i class="fas fa-star"></i> <strong>Incluye:</strong> Diagramas interactivos, casos de uso reales y evaluación completa.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: ¿Qué es un Diagrama de Secuencia? -->
+    <div class="slide" id="slide-2">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> ¿Qué es un Diagrama de Secuencia?</h2>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead">Un <span class="highlight">Diagrama de Secuencia</span> es un diagrama de interacción UML que muestra cómo los objetos colaboran en un escenario particular, enfocándose en el <strong>orden temporal</strong> de los mensajes.</p>
+                    
+                    <h4 class="mt-4"><i class="fas fa-bullseye"></i> Características Principales:</h4>
+                    <ul class="custom-list">
+                        <li><strong>Temporal:</strong> Muestra la secuencia de eventos en el tiempo</li>
+                        <li><strong>Interacción:</strong> Representa la comunicación entre objetos</li>
+                        <li><strong>Comportamiento:</strong> Describe cómo se ejecuta un caso de uso</li>
+                        <li><strong>Dinámico:</strong> Captura el flujo de control del sistema</li>
+                    </ul>
+                    
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Los diagramas de secuencia son parte de los diagramas de comportamiento en UML.
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="example-box">
+                        <h5><i class="fas fa-chart-line"></i> Perspectiva</h5>
+                        <p class="text-center"><strong>Vertical = Tiempo</strong></p>
+                        <div class="diagram-container">
+                            <svg width="200" height="250" class="diagram-svg">
+                                <!-- Arrow pointing down -->
+                                <defs>
+                                    <marker id="time-arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                        <polygon points="0 0, 10 5, 0 10" fill="#e74c3c"/>
+                                    </marker>
+                                </defs>
+                                <line x1="100" y1="20" x2="100" y2="220" stroke="#e74c3c" stroke-width="3" marker-end="url(#time-arrow)"/>
+                                <text x="100" y="15" text-anchor="middle" font-size="14" font-weight="bold">Tiempo</text>
+                                <text x="130" y="60" font-size="12">t0</text>
+                                <text x="130" y="120" font-size="12">t1</text>
+                                <text x="130" y="180" font-size="12">t2</text>
+                                <!-- Horizontal dashed lines -->
+                                <line x1="20" y1="50" x2="180" y2="50" stroke="#95a5a6" stroke-dasharray="5,5" stroke-width="1"/>
+                                <line x1="20" y1="110" x2="180" y2="110" stroke="#95a5a6" stroke-dasharray="5,5" stroke-width="1"/>
+                                <line x1="20" y1="170" x2="180" y2="170" stroke="#95a5a6" stroke-dasharray="5,5" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <p class="text-center mt-2"><strong>Horizontal = Objetos</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Propósito y Beneficios -->
+    <div class="slide" id="slide-3">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-target"></i> Propósito y Beneficios</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-crosshairs text-primary"></i> Propósito:</h4>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-eye"></i> Visualización</h5>
+                        <p>Mostrar cómo los objetos interactúan entre sí en un escenario específico.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-clock"></i> Orden Temporal</h5>
+                        <p>Documentar la secuencia exacta de mensajes y eventos.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-code-branch"></i> Flujo de Control</h5>
+                        <p>Capturar la lógica de ejecución de un caso de uso.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4><i class="fas fa-star text-warning"></i> Beneficios:</h4>
+                    
+                    <ul class="custom-list">
+                        <li><strong>Claridad:</strong> Fácil de entender incluso para no técnicos</li>
+                        <li><strong>Diseño:</strong> Ayuda a identificar métodos necesarios en cada clase</li>
+                        <li><strong>Documentación:</strong> Excelente para documentar APIs y servicios</li>
+                        <li><strong>Testing:</strong> Base para crear casos de prueba</li>
+                        <li><strong>Comunicación:</strong> Facilita discusiones entre desarrolladores</li>
+                        <li><strong>Detección temprana:</strong> Identifica problemas de diseño antes de codificar</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-lightbulb"></i> <strong>Consejo:</strong> Úsalos al inicio del desarrollo para validar el diseño con el equipo.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Cuándo Utilizarlos -->
+    <div class="slide" id="slide-4">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-calendar-check"></i> ¿Cuándo Utilizar Diagramas de Secuencia?</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="text-success"><i class="fas fa-check-circle"></i> Úsalos cuando:</h4>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">1</span>
+                        <strong>Diseño de nuevas funcionalidades</strong>
+                        <p class="mt-2">Para planificar cómo se implementará un caso de uso.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">2</span>
+                        <strong>Documentación de APIs</strong>
+                        <p class="mt-2">Mostrar el flujo de llamadas entre servicios.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">3</span>
+                        <strong>Análisis de sistemas existentes</strong>
+                        <p class="mt-2">Entender cómo funciona código legacy.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">4</span>
+                        <strong>Resolución de bugs complejos</strong>
+                        <p class="mt-2">Identificar dónde falla el flujo de ejecución.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4 class="text-danger"><i class="fas fa-times-circle"></i> No los uses cuando:</h4>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">1</span>
+                        <strong>Solo necesitas estructura</strong>
+                        <p class="mt-2">Usa diagramas de clases para la arquitectura estática.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">2</span>
+                        <strong>El flujo es muy simple</strong>
+                        <p class="mt-2">No sobrecompliques con diagramas innecesarios.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">3</span>
+                        <strong>Documentación de datos</strong>
+                        <p class="mt-2">Usa diagramas ER o de base de datos.</p>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle"></i> <strong>Regla de oro:</strong> Si el comportamiento temporal es importante, usa diagramas de secuencia.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Elementos Principales -->
+    <div class="slide" id="slide-5">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-shapes"></i> Elementos Principales</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-user text-primary"></i> 1. Actor / Objeto</h5>
+                        <p>Participante en la interacción. Puede ser un usuario, sistema o componente.</p>
+                        <div class="diagram-container">
+                            <svg width="250" height="80">
+                                <!-- Actor -->
+                                <rect x="20" y="10" width="80" height="50" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                                <text x="60" y="40" text-anchor="middle" fill="white" font-weight="bold">:Usuario</text>
+                                
+                                <!-- Objeto -->
+                                <rect x="150" y="10" width="80" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                                <text x="190" y="40" text-anchor="middle" font-weight="bold">:Sistema</text>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-grip-lines-vertical text-success"></i> 2. Línea de Vida</h5>
+                        <p>Línea vertical discontinua que representa el tiempo de existencia del objeto.</p>
+                        <div class="diagram-container">
+                            <svg width="100" height="120">
+                                <rect x="30" y="10" width="60" height="30" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                                <text x="60" y="30" text-anchor="middle" font-weight="bold">Objeto</text>
+                                <line x1="60" y1="40" x2="60" y2="110" class="sequence-lifeline"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-arrow-right text-warning"></i> 3. Mensajes</h5>
+                        <p>Comunicación entre objetos. Tipos:</p>
+                        <div class="diagram-container">
+                            <svg width="280" height="120">
+                                <!-- Síncrono -->
+                                <line x1="20" y1="20" x2="250" y2="20" stroke="#2c3e50" stroke-width="2"/>
+                                <polygon points="250,20 240,15 240,25" fill="#2c3e50"/>
+                                <text x="135" y="15" text-anchor="middle" font-size="11">Síncrono (completo)</text>
+                                
+                                <!-- Asíncrono -->
+                                <line x1="20" y1="50" x2="250" y2="50" stroke="#2c3e50" stroke-width="2"/>
+                                <polygon points="250,50 245,45 245,55 250,50" fill="none" stroke="#2c3e50" stroke-width="2"/>
+                                <text x="135" y="45" text-anchor="middle" font-size="11">Asíncrono (abierto)</text>
+                                
+                                <!-- Retorno -->
+                                <line x1="20" y1="80" x2="250" y2="80" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5"/>
+                                <polygon points="20,80 30,75 30,85" fill="#27ae60"/>
+                                <text x="135" y="75" text-anchor="middle" font-size="11">Retorno (discontinuo)</text>
+                                
+                                <!-- Creación -->
+                                <line x1="20" y1="110" x2="250" y2="110" stroke="#e74c3c" stroke-width="2"/>
+                                <polygon points="250,110 240,105 240,115" fill="#e74c3c"/>
+                                <text x="135" y="105" text-anchor="middle" font-size="11">Creación/Destrucción</text>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-rectangle-wide text-info"></i> 4. Activación</h5>
+                        <p>Rectángulo delgado que indica cuándo un objeto está procesando.</p>
+                        <div class="diagram-container">
+                            <svg width="100" height="120">
+                                <line x1="50" y1="10" x2="50" y2="110" class="sequence-lifeline"/>
+                                <rect x="40" y="30" width="20" height="60" class="sequence-activation"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: Notación Básica -->
+    <div class="slide" id="slide-6">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-pen-ruler"></i> Notación UML Básica</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-book-open"></i> Guía de Referencia Rápida</h4>
+                
+                <div class="table-responsive mt-3">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th width="25%">Elemento</th>
+                                <th width="35%">Notación</th>
+                                <th width="40%">Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Actor</strong></td>
+                                <td>
+                                    <svg width="60" height="40">
+                                        <rect x="5" y="5" width="50" height="30" fill="#3498db" stroke="#2c3e50" stroke-width="1" rx="3"/>
+                                        <text x="30" y="25" text-anchor="middle" fill="white" font-size="10">Actor</text>
+                                    </svg>
+                                </td>
+                                <td>Usuario o sistema externo</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Objeto</strong></td>
+                                <td>
+                                    <svg width="80" height="40">
+                                        <rect x="5" y="5" width="70" height="30" fill="#ecf0f1" stroke="#2c3e50" stroke-width="1" rx="3"/>
+                                        <text x="40" y="25" text-anchor="middle" font-size="10">:Clase</text>
+                                    </svg>
+                                </td>
+                                <td>Instancia de una clase</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Línea de Vida</strong></td>
+                                <td>
+                                    <svg width="40" height="50">
+                                        <line x1="20" y1="5" x2="20" y2="45" stroke="#2c3e50" stroke-width="1" stroke-dasharray="3,3"/>
+                                    </svg>
+                                </td>
+                                <td>Existencia temporal del objeto</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mensaje Síncrono</strong></td>
+                                <td>
+                                    <svg width="120" height="30">
+                                        <line x1="10" y1="15" x2="100" y2="15" stroke="#2c3e50" stroke-width="2"/>
+                                        <polygon points="100,15 90,10 90,20" fill="#2c3e50"/>
+                                        <text x="55" y="12" text-anchor="middle" font-size="9">método()</text>
+                                    </svg>
+                                </td>
+                                <td>Llamada que espera respuesta</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mensaje Asíncrono</strong></td>
+                                <td>
+                                    <svg width="120" height="30">
+                                        <line x1="10" y1="15" x2="100" y2="15" stroke="#2c3e50" stroke-width="2"/>
+                                        <polygon points="100,15 95,10 95,20 100,15" fill="none" stroke="#2c3e50" stroke-width="1"/>
+                                        <text x="55" y="12" text-anchor="middle" font-size="9">enviar()</text>
+                                    </svg>
+                                </td>
+                                <td>Llamada sin esperar respuesta</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mensaje de Retorno</strong></td>
+                                <td>
+                                    <svg width="120" height="30">
+                                        <line x1="10" y1="15" x2="100" y2="15" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5"/>
+                                        <polygon points="10,15 20,10 20,20" fill="#27ae60"/>
+                                        <text x="55" y="12" text-anchor="middle" font-size="9">return</text>
+                                    </svg>
+                                </td>
+                                <td>Valor de retorno (opcional)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Activación</strong></td>
+                                <td>
+                                    <svg width="40" height="60">
+                                        <line x1="20" y1="5" x2="20" y2="55" stroke-dasharray="3,3" stroke="#2c3e50"/>
+                                        <rect x="15" y="15" width="10" height="30" fill="#3498db" stroke="#2c3e50" stroke-width="1"/>
+                                    </svg>
+                                </td>
+                                <td>Período de procesamiento activo</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Auto-llamada</strong></td>
+                                <td>
+                                    <svg width="60" height="50">
+                                        <line x1="20" y1="5" x2="20" y2="45" stroke-dasharray="3,3" stroke="#2c3e50"/>
+                                        <rect x="15" y="15" width="10" height="20" fill="#3498db" stroke="#2c3e50" stroke-width="1"/>
+                                        <path d="M 25 20 L 45 20 L 45 30 L 25 30" stroke="#2c3e50" stroke-width="1" fill="none"/>
+                                        <polygon points="25,30 30,28 30,32" fill="#2c3e50"/>
+                                    </svg>
+                                </td>
+                                <td>Llamada a sí mismo</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Ejemplo Simple -->
+    <div class="slide" id="slide-7">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-play-circle"></i> Ejemplo Simple: Login de Usuario</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-diagram-project"></i> Diagrama de Secuencia</h4>
+                <div class="diagram-container bg-white">
+                    <svg width="100%" height="500" viewBox="0 0 800 500" class="diagram-svg">
+                        <!-- Definiciones -->
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#2c3e50"/>
+                            </marker>
+                            <marker id="arrow-return" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto">
+                                <polygon points="0 3, 10 0, 10 6" fill="#27ae60"/>
+                            </marker>
+                        </defs>
+                        
+                        <!-- Objetos -->
+                        <!-- Usuario -->
+                        <rect x="50" y="20" width="100" height="50" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-weight="bold">:Usuario</text>
+                        <line x1="100" y1="70" x2="100" y2="480" class="sequence-lifeline"/>
+                        
+                        <!-- Interfaz -->
+                        <rect x="250" y="20" width="100" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="300" y="50" text-anchor="middle" font-weight="bold">:Interfaz</text>
+                        <line x1="300" y1="70" x2="300" y2="480" class="sequence-lifeline"/>
+                        
+                        <!-- Sistema -->
+                        <rect x="450" y="20" width="100" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="500" y="50" text-anchor="middle" font-weight="bold">:Sistema</text>
+                        <line x1="500" y1="70" x2="500" y2="480" class="sequence-lifeline"/>
+                        
+                        <!-- BaseDatos -->
+                        <rect x="650" y="20" width="100" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="700" y="50" text-anchor="middle" font-weight="bold">:BaseDatos</text>
+                        <line x1="700" y1="70" x2="700" y2="480" class="sequence-lifeline"/>
+                        
+                        <!-- Mensajes -->
+                        <!-- 1. Ingresar credenciales -->
+                        <line x1="100" y1="100" x2="290" y2="100" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow)"/>
+                        <text x="195" y="95" text-anchor="middle" font-size="12">1: ingresarCredenciales()</text>
+                        <rect x="295" y="100" width="10" height="60" class="sequence-activation"/>
+                        
+                        <!-- 2. Validar formato -->
+                        <line x1="300" y1="130" x2="490" y2="130" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow)"/>
+                        <text x="395" y="125" text-anchor="middle" font-size="12">2: validarFormato()</text>
+                        <rect x="495" y="130" width="10" height="140" class="sequence-activation"/>
+                        
+                        <!-- 3. Consultar usuario -->
+                        <line x1="500" y1="170" x2="690" y2="170" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow)"/>
+                        <text x="595" y="165" text-anchor="middle" font-size="12">3: buscarUsuario(email)</text>
+                        <rect x="695" y="170" width="10" height="60" class="sequence-activation"/>
+                        
+                        <!-- 4. Return datos usuario -->
+                        <line x1="700" y1="220" x2="510" y2="220" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-return)"/>
+                        <text x="605" y="215" text-anchor="middle" font-size="12">4: datosUsuario</text>
+                        
+                        <!-- 5. Verificar password -->
+                        <path d="M 505 240 L 530 240 L 530 260 L 505 260" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+                        <text x="540" y="250" font-size="12">5: verificarPassword()</text>
+                        
+                        <!-- 6. Return resultado -->
+                        <line x1="500" y1="280" x2="310" y2="280" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-return)"/>
+                        <text x="405" y="275" text-anchor="middle" font-size="12">6: resultado</text>
+                        
+                        <!-- 7. Mostrar resultado -->
+                        <line x1="300" y1="310" x2="110" y2="310" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow)"/>
+                        <text x="205" y="305" text-anchor="middle" font-size="12">7: mostrarResultado()</text>
+                        
+                        <!-- Alt frame -->
+                        <rect x="30" y="350" width="730" height="110" fill="none" stroke="#e74c3c" stroke-width="2" stroke-dasharray="10,5"/>
+                        <rect x="30" y="350" width="80" height="25" fill="#e74c3c"/>
+                        <text x="70" y="367" text-anchor="middle" fill="white" font-weight="bold" font-size="12">alt</text>
+                        
+                        <!-- Condición éxito -->
+                        <text x="50" y="385" font-size="11" font-style="italic">[login exitoso]</text>
+                        <line x1="100" y1="400" x2="290" y2="400" stroke="#27ae60" stroke-width="2" marker-end="url(#arrow)"/>
+                        <text x="195" y="395" text-anchor="middle" font-size="11" fill="#27ae60">acceso concedido</text>
+                        
+                        <!-- Línea divisoria -->
+                        <line x1="30" y1="420" x2="760" y2="420" stroke="#e74c3c" stroke-width="1" stroke-dasharray="5,5"/>
+                        
+                        <!-- Condición fallo -->
+                        <text x="50" y="437" font-size="11" font-style="italic">[credenciales inválidas]</text>
+                        <line x1="300" y1="450" x2="110" y2="450" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrow)"/>
+                        <text x="205" y="445" text-anchor="middle" font-size="11" fill="#e74c3c">mostrarError()</text>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-lightbulb"></i> <strong>Nota:</strong> El fragmento "alt" (alternativo) muestra dos flujos posibles según la condición: éxito o fallo en el login.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Fragmentos de Interacción -->
+    <div class="slide" id="slide-8">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-puzzle-piece"></i> Fragmentos de Interacción</h2>
+            
+            <p class="lead">Los <span class="highlight">fragmentos</span> permiten expresar estructuras de control como condicionales y bucles.</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-primary">alt</span> Alternativa</h5>
+                        <p>Equivalente a <code>if-else</code>. Define flujos mutuamente excluyentes.</p>
+                        <div class="code-block">
+<pre>alt [condición1]
+    // flujo 1
+else [condición2]
+    // flujo 2
+else
+    // flujo por defecto</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-success">opt</span> Opcional</h5>
+                        <p>Equivalente a <code>if</code>. Se ejecuta solo si se cumple la condición.</p>
+                        <div class="code-block">
+<pre>opt [condición]
+    // se ejecuta solo si es true</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-warning">loop</span> Bucle</h5>
+                        <p>Equivalente a <code>while/for</code>. Repite un conjunto de mensajes.</p>
+                        <div class="code-block">
+<pre>loop [condición o rango]
+    // se repite mientras sea true
+    // ejemplo: [i=1..10]</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-danger">par</span> Paralelo</h5>
+                        <p>Mensajes que se ejecutan en paralelo, sin orden específico.</p>
+                        <div class="code-block">
+<pre>par
+    // flujo paralelo 1
+and
+    // flujo paralelo 2</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-info">ref</span> Referencia</h5>
+                        <p>Referencia a otro diagrama de secuencia para evitar redundancia.</p>
+                        <div class="code-block">
+<pre>ref
+    // Nombre del diagrama
+    // procesarPago()</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><span class="badge-custom badge-primary">critical</span> Región Crítica</h5>
+                        <p>Sección que no puede ser interrumpida (operación atómica).</p>
+                        <div class="code-block">
+<pre>critical
+    // operaciones atómicas
+    // sin interrupciones</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: Ejemplo con Loop -->
+    <div class="slide" id="slide-9">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-repeat"></i> Ejemplo: Procesamiento de Pedidos</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-shopping-cart"></i> Diagrama con fragmento LOOP</h4>
+                <div class="diagram-container bg-white">
+                    <svg width="100%" height="500" viewBox="0 0 700 500" class="diagram-svg">
+                        <defs>
+                            <marker id="arrow2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#2c3e50"/>
+                            </marker>
+                            <marker id="arrow-ret" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto">
+                                <polygon points="0 3, 10 0, 10 6" fill="#27ae60"/>
+                            </marker>
+                        </defs>
+                        
+                        <!-- Objetos -->
+                        <rect x="50" y="20" width="100" height="50" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-weight="bold">:Cliente</text>
+                        <line x1="100" y1="70" x2="100" y2="480" class="sequence-lifeline"/>
+                        
+                        <rect x="250" y="20" width="120" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="310" y="50" text-anchor="middle" font-weight="bold">:GestorPedidos</text>
+                        <line x1="310" y1="70" x2="310" y2="480" class="sequence-lifeline"/>
+                        
+                        <rect x="500" y="20" width="120" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="560" y="50" text-anchor="middle" font-weight="bold">:Inventario</text>
+                        <line x1="560" y1="70" x2="560" y2="480" class="sequence-lifeline"/>
+                        
+                        <!-- 1. Crear pedido -->
+                        <line x1="100" y1="100" x2="300" y2="100" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <text x="200" y="95" text-anchor="middle" font-size="12">1: crearPedido()</text>
+                        <rect x="305" y="100" width="10" height="320" class="sequence-activation"/>
+                        
+                        <!-- Loop frame -->
+                        <rect x="30" y="140" width="650" height="240" fill="none" stroke="#f39c12" stroke-width="2" stroke-dasharray="10,5"/>
+                        <rect x="30" y="140" width="100" height="25" fill="#f39c12"/>
+                        <text x="80" y="157" text-anchor="middle" fill="white" font-weight="bold" font-size="12">loop</text>
+                        <text x="140" y="157" font-size="11" font-style="italic">[para cada item]</text>
+                        
+                        <!-- 2. Verificar stock -->
+                        <line x1="310" y1="180" x2="550" y2="180" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <text x="430" y="175" text-anchor="middle" font-size="12">2: verificarStock(item)</text>
+                        <rect x="555" y="180" width="10" height="60" class="sequence-activation"/>
+                        
+                        <!-- 3. Return disponibilidad -->
+                        <line x1="560" y1="230" x2="320" y2="230" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret)"/>
+                        <text x="440" y="225" text-anchor="middle" font-size="12">3: disponible</text>
+                        
+                        <!-- Opt frame -->
+                        <rect x="270" y="250" width="390" height="110" fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5"/>
+                        <rect x="270" y="250" width="50" height="20" fill="#27ae60"/>
+                        <text x="295" y="264" text-anchor="middle" fill="white" font-weight="bold" font-size="11">opt</text>
+                        <text x="330" y="264" font-size="10" font-style="italic">[disponible]</text>
+                        
+                        <!-- 4. Reservar -->
+                        <line x1="310" y1="290" x2="550" y2="290" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <text x="430" y="285" text-anchor="middle" font-size="11">4: reservarItem(item)</text>
+                        <rect x="555" y="290" width="10" height="50" class="sequence-activation"/>
+                        
+                        <!-- 5. Return confirmación -->
+                        <line x1="560" y1="330" x2="320" y2="330" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret)"/>
+                        <text x="440" y="325" text-anchor="middle" font-size="11">5: confirmación</text>
+                        
+                        <!-- 6. Return pedido -->
+                        <line x1="310" y1="410" x2="110" y2="410" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret)"/>
+                        <text x="210" y="405" text-anchor="middle" font-size="12">6: pedidoCreado</text>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h5><i class="fas fa-lightbulb"></i> Interpretación:</h5>
+                    <ul class="custom-list">
+                        <li>El fragmento <strong>loop</strong> indica que los pasos 2-5 se repiten para cada ítem del pedido</li>
+                        <li>El fragmento <strong>opt</strong> anidado solo ejecuta la reserva si hay stock disponible</li>
+                        <li>Las barras de activación muestran qué objeto está procesando en cada momento</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: Ejemplo Sistema Bancario -->
+    <div class="slide" id="slide-10">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-university"></i> Ejemplo: Transferencia Bancaria</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-exchange-alt"></i> Caso con Fragmento CRITICAL</h4>
+                <div class="diagram-container bg-white">
+                    <svg width="100%" height="550" viewBox="0 0 900 550" class="diagram-svg">
+                        <defs>
+                            <marker id="arrow3" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#2c3e50"/>
+                            </marker>
+                            <marker id="arrow-ret3" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto">
+                                <polygon points="0 3, 10 0, 10 6" fill="#27ae60"/>
+                            </marker>
+                        </defs>
+                        
+                        <!-- Objetos -->
+                        <rect x="50" y="20" width="100" height="50" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-weight="bold">:Cliente</text>
+                        <line x1="100" y1="70" x2="100" y2="530" class="sequence-lifeline"/>
+                        
+                        <rect x="250" y="20" width="120" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="310" y="50" text-anchor="middle" font-weight="bold">:Aplicación</text>
+                        <line x1="310" y1="70" x2="310" y2="530" class="sequence-lifeline"/>
+                        
+                        <rect x="480" y="20" width="120" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="540" y="50" text-anchor="middle" font-weight="bold">:ServicioBanco</text>
+                        <line x1="540" y1="70" x2="540" y2="530" class="sequence-lifeline"/>
+                        
+                        <rect x="720" y="20" width="120" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="780" y="50" text-anchor="middle" font-weight="bold">:BaseDatos</text>
+                        <line x1="780" y1="70" x2="780" y2="530" class="sequence-lifeline"/>
+                        
+                        <!-- 1. Solicitar transferencia -->
+                        <line x1="100" y1="100" x2="300" y2="100" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow3)"/>
+                        <text x="200" y="95" text-anchor="middle" font-size="12">1: solicitarTransferencia()</text>
+                        <rect x="305" y="100" width="10" height="80" class="sequence-activation"/>
+                        
+                        <!-- 2. Validar datos -->
+                        <line x1="310" y1="130" x2="530" y2="130" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow3)"/>
+                        <text x="420" y="125" text-anchor="middle" font-size="12">2: validarDatos()</text>
+                        <rect x="535" y="130" width="10" height="340" class="sequence-activation"/>
+                        
+                        <!-- 3. Return OK -->
+                        <line x1="540" y1="160" x2="320" y2="160" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret3)"/>
+                        <text x="430" y="155" text-anchor="middle" font-size="12">3: OK</text>
+                        
+                        <!-- Critical frame -->
+                        <rect x="470" y="190" width="420" height="260" fill="none" stroke="#e74c3c" stroke-width="3" stroke-dasharray="10,5"/>
+                        <rect x="470" y="190" width="80" height="25" fill="#e74c3c"/>
+                        <text x="510" y="207" text-anchor="middle" fill="white" font-weight="bold" font-size="12">critical</text>
+                        <text x="555" y="207" font-size="11" font-style="italic">[transacción atómica]</text>
+                        
+                        <!-- 4. Verificar saldo -->
+                        <line x1="540" y1="230" x2="770" y2="230" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow3)"/>
+                        <text x="655" y="225" text-anchor="middle" font-size="11">4: verificarSaldo(origen)</text>
+                        <rect x="775" y="230" width="10" height="50" class="sequence-activation"/>
+                        
+                        <!-- 5. Return saldo -->
+                        <line x1="780" y1="270" x2="550" y2="270" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret3)"/>
+                        <text x="665" y="265" text-anchor="middle" font-size="11">5: saldo</text>
+                        
+                        <!-- 6. Debitar cuenta origen -->
+                        <line x1="540" y1="300" x2="770" y2="300" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow3)"/>
+                        <text x="655" y="295" text-anchor="middle" font-size="11">6: debitarCuenta(monto)</text>
+                        <rect x="775" y="300" width="10" height="50" class="sequence-activation"/>
+                        
+                        <!-- 7. Return confirmación -->
+                        <line x1="780" y1="340" x2="550" y2="340" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret3)"/>
+                        <text x="665" y="335" text-anchor="middle" font-size="11">7: confirmación</text>
+                        
+                        <!-- 8. Acreditar cuenta destino -->
+                        <line x1="540" y1="370" x2="770" y2="370" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow3)"/>
+                        <text x="655" y="365" text-anchor="middle" font-size="11">8: acreditarCuenta(monto)</text>
+                        <rect x="775" y="370" width="10" height="50" class="sequence-activation"/>
+                        
+                        <!-- 9. Return confirmación -->
+                        <line x1="780" y1="410" x2="550" y2="410" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret3)"/>
+                        <text x="665" y="405" text-anchor="middle" font-size="11">9: confirmación</text>
+                        
+                        <!-- 10. Registrar transacción -->
+                        <line x1="540" y1="430" x2="770" y2="430" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow3)"/>
+                        <text x="655" y="425" text-anchor="middle" font-size="11">10: registrarTransacción()</text>
+                        <rect x="775" y="430" width="10" height="30" class="sequence-activation"/>
+                        
+                        <!-- Fin critical -->
+                        
+                        <!-- 11. Return resultado -->
+                        <line x1="540" y1="490" x2="320" y2="490" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret3)"/>
+                        <text x="430" y="485" text-anchor="middle" font-size="12">11: transferenciaExitosa</text>
+                        
+                        <!-- 12. Mostrar confirmación -->
+                        <line x1="310" y1="510" x2="110" y2="510" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow3)"/>
+                        <text x="210" y="505" text-anchor="middle" font-size="12">12: mostrarConfirmación()</text>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="alert alert-danger mt-3">
+                <i class="fas fa-lock"></i> <strong>Región Crítica:</strong> Los pasos 4-10 forman una transacción atómica. Si alguno falla, todos se revierten (rollback). No puede ser interrumpida.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Creación y Destrucción de Objetos -->
+    <div class="slide" id="slide-11">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-plus-circle"></i> Creación y Destrucción de Objetos</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-play text-success"></i> Creación de Objetos</h4>
+                    <div class="example-box">
+                        <p>Se representa con un mensaje estereotipado <code>&lt;&lt;create&gt;&gt;</code> o simplemente una flecha que llega al objeto.</p>
+                        <div class="diagram-container">
+                            <svg width="350" height="200">
+                                <defs>
+                                    <marker id="arrow-create" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                        <polygon points="0 0, 10 3, 0 6" fill="#27ae60"/>
+                                    </marker>
+                                </defs>
+                                
+                                <rect x="20" y="20" width="100" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                                <text x="70" y="50" text-anchor="middle" font-weight="bold">:Factoría</text>
+                                <line x1="70" y1="70" x2="70" y2="180" class="sequence-lifeline"/>
+                                <rect x="65" y="90" width="10" height="80" class="sequence-activation"/>
+                                
+                                <!-- Mensaje de creación -->
+                                <line x1="75" y1="110" x2="210" y2="110" stroke="#27ae60" stroke-width="2" marker-end="url(#arrow-create)"/>
+                                <text x="142" y="105" text-anchor="middle" font-size="11" fill="#27ae60">&lt;&lt;create&gt;&gt;</text>
+                                
+                                <!-- Objeto creado -->
+                                <rect x="210" y="110" width="120" height="50" fill="#d5f4e6" stroke="#27ae60" stroke-width="2" rx="5"/>
+                                <text x="270" y="140" text-anchor="middle" font-weight="bold">:NuevoObjeto</text>
+                                <line x1="270" y1="160" x2="270" y2="180" class="sequence-lifeline"/>
+                            </svg>
+                        </div>
+                        <p class="mt-2"><small>El objeto aparece en el momento de su creación, no al inicio del diagrama.</small></p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4><i class="fas fa-times-circle text-danger"></i> Destrucción de Objetos</h4>
+                    <div class="example-box">
+                        <p>Se representa con una "X" grande al final de la línea de vida del objeto.</p>
+                        <div class="diagram-container">
+                            <svg width="350" height="200">
+                                <defs>
+                                    <marker id="arrow-destroy" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                        <polygon points="0 0, 10 3, 0 6" fill="#e74c3c"/>
+                                    </marker>
+                                </defs>
+                                
+                                <rect x="20" y="20" width="100" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                                <text x="70" y="50" text-anchor="middle" font-weight="bold">:Gestor</text>
+                                <line x1="70" y1="70" x2="70" y2="180" class="sequence-lifeline"/>
+                                <rect x="65" y="90" width="10" height="80" class="sequence-activation"/>
+                                
+                                <rect x="210" y="20" width="120" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                                <text x="270" y="50" text-anchor="middle" font-weight="bold">:ObjetoTemp</text>
+                                <line x1="270" y1="70" x2="270" y2="150" class="sequence-lifeline"/>
+                                
+                                <!-- Mensaje de destrucción -->
+                                <line x1="75" y1="130" x2="260" y2="130" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrow-destroy)"/>
+                                <text x="167" y="125" text-anchor="middle" font-size="11" fill="#e74c3c">&lt;&lt;destroy&gt;&gt;</text>
+                                
+                                <!-- X de destrucción -->
+                                <line x1="260" y1="140" x2="280" y2="160" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="280" y1="140" x2="260" y2="160" stroke="#e74c3c" stroke-width="3"/>
+                            </svg>
+                        </div>
+                        <p class="mt-2"><small>La "X" indica que el objeto deja de existir en ese punto.</small></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle"></i> <strong>Nota:</strong> En lenguajes con recolección de basura (Java, C#, Python), la destrucción explícita es menos común, pero sigue siendo útil para modelar.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: Ejemplo API REST -->
+    <div class="slide" id="slide-12">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-cloud"></i> Ejemplo: Consumo de API REST</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-server"></i> GET Request a una API</h4>
+                <div class="diagram-container bg-white">
+                    <svg width="100%" height="450" viewBox="0 0 800 450" class="diagram-svg">
+                        <defs>
+                            <marker id="arrow4" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#2c3e50"/>
+                            </marker>
+                            <marker id="arrow-async" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="none" stroke="#2c3e50" stroke-width="2"/>
+                            </marker>
+                            <marker id="arrow-ret4" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto">
+                                <polygon points="0 3, 10 0, 10 6" fill="#27ae60"/>
+                            </marker>
+                        </defs>
+                        
+                        <!-- Objetos -->
+                        <rect x="50" y="20" width="100" height="50" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-weight="bold">:Cliente</text>
+                        <line x1="100" y1="70" x2="100" y2="430" class="sequence-lifeline"/>
+                        
+                        <rect x="250" y="20" width="120" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="310" y="50" text-anchor="middle" font-weight="bold">:Frontend</text>
+                        <line x1="310" y1="70" x2="310" y2="430" class="sequence-lifeline"/>
+                        
+                        <rect x="480" y="20" width="120" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="540" y="50" text-anchor="middle" font-weight="bold">:APIRest</text>
+                        <line x1="540" y1="70" x2="540" y2="430" class="sequence-lifeline"/>
+                        
+                        <rect x="710" y="20" width="100" height="50" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                        <text x="760" y="50" text-anchor="middle" font-weight="bold">:DB</text>
+                        <line x1="760" y1="70" x2="760" y2="430" class="sequence-lifeline"/>
+                        
+                        <!-- 1. Click en botón -->
+                        <line x1="100" y1="100" x2="300" y2="100" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow4)"/>
+                        <text x="200" y="95" text-anchor="middle" font-size="12">1: clickBuscar()</text>
+                        <rect x="305" y="100" width="10" height="300" class="sequence-activation"/>
+                        
+                        <!-- 2. GET request (asíncrono) -->
+                        <line x1="310" y1="130" x2="530" y2="130" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow-async)"/>
+                        <text x="420" y="125" text-anchor="middle" font-size="12">2: GET /api/productos</text>
+                        <rect x="535" y="130" width="10" height="220" class="sequence-activation"/>
+                        
+                        <!-- 3. Autenticar -->
+                        <path d="M 540 160 L 570 160 L 570 190 L 540 190" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow4)"/>
+                        <text x="580" y="175" font-size="11">3: autenticar(token)</text>
+                        
+                        <!-- 4. Query DB -->
+                        <line x1="540" y1="210" x2="750" y2="210" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow4)"/>
+                        <text x="645" y="205" text-anchor="middle" font-size="11">4: SELECT * FROM productos</text>
+                        <rect x="755" y="210" width="10" height="60" class="sequence-activation"/>
+                        
+                        <!-- 5. Return data -->
+                        <line x1="760" y1="260" x2="550" y2="260" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret4)"/>
+                        <text x="655" y="255" text-anchor="middle" font-size="11">5: rows</text>
+                        
+                        <!-- 6. Formatear JSON -->
+                        <path d="M 540 280 L 570 280 L 570 310 L 540 310" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow4)"/>
+                        <text x="580" y="295" font-size="11">6: formatearJSON()</text>
+                        
+                        <!-- 7. Response 200 OK -->
+                        <line x1="540" y1="340" x2="320" y2="340" stroke="#27ae60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-ret4)"/>
+                        <text x="430" y="335" text-anchor="middle" font-size="12">7: HTTP 200 OK + JSON</text>
+                        
+                        <!-- 8. Renderizar -->
+                        <path d="M 310 360 L 340 360 L 340 390 L 310 390" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrow4)"/>
+                        <text x="350" y="375" font-size="11">8: renderizar(productos)</text>
+                        
+                        <!-- 9. Mostrar -->
+                        <line x1="310" y1="410" x2="110" y2="410" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow4)"/>
+                        <text x="210" y="405" text-anchor="middle" font-size="12">9: mostrarProductos()</text>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check"></i> Aspectos Destacados:</h6>
+                        <ul class="custom-list">
+                            <li>Mensaje asíncrono (flecha abierta) en el GET</li>
+                            <li>Auto-llamadas para procesamiento interno</li>
+                            <li>Retornos con líneas discontinuas</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="code-block">
+<pre>// Equivalente en código
+frontend.onclick = () => {
+  const response = await fetch(
+    '/api/productos'
+  );
+  const json = await response.json();
+  render(json);
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 13: Mejores Prácticas -->
+    <div class="slide" id="slide-13">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-award"></i> Mejores Prácticas</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="text-success"><i class="fas fa-thumbs-up"></i> Haz esto:</h4>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">1</span>
+                        <strong>Enfoque en un escenario</strong>
+                        <p class="mt-2">Un diagrama por caso de uso o flujo específico. No mezcles múltiples escenarios.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">2</span>
+                        <strong>Nombres descriptivos</strong>
+                        <p class="mt-2">Usa nombres claros para mensajes: <code>validarCredenciales()</code> mejor que <code>validar()</code>.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">3</span>
+                        <strong>Ordena de izquierda a derecha</strong>
+                        <p class="mt-2">Coloca el iniciador a la izquierda y sigue el flujo natural de lectura.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">4</span>
+                        <strong>Indica parámetros importantes</strong>
+                        <p class="mt-2">Si un parámetro es clave para entender el flujo, inclúyelo: <code>buscar(id)</code>.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-success">5</span>
+                        <strong>Usa fragmentos cuando ayuden</strong>
+                        <p class="mt-2">Los fragmentos (alt, loop, opt) clarifican la lógica, pero no abuses de ellos.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4 class="text-danger"><i class="fas fa-thumbs-down"></i> Evita esto:</h4>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">1</span>
+                        <strong>Diagramas sobrecargados</strong>
+                        <p class="mt-2">Si necesitas más de 10-12 objetos, probablemente debas dividirlo.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">2</span>
+                        <strong>Omitir retornos importantes</strong>
+                        <p class="mt-2">Si el valor de retorno es relevante para el flujo, muéstralo.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">3</span>
+                        <strong>Demasiados detalles</strong>
+                        <p class="mt-2">No modeles cada línea de código. Mantén el nivel de abstracción adecuado.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">4</span>
+                        <strong>Olvidar numerar mensajes</strong>
+                        <p class="mt-2">La numeración ayuda a seguir el orden, especialmente en diagramas complejos.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <span class="badge-custom badge-danger">5</span>
+                        <strong>Crear y no usar objetos</strong>
+                        <p class="mt-2">Si creas un objeto, debe tener un propósito en el diagrama.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 14: Errores Comunes -->
+    <div class="slide" id="slide-14">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-exclamation-triangle"></i> Errores Comunes</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5 class="text-danger"><i class="fas fa-times"></i> Error 1: Flechas Incorrectas</h5>
+                        <p><strong>Mal:</strong> Usar flechas síncronas para operaciones asíncronas</p>
+                        <div class="example-box">
+                            <p class="text-danger"><i class="fas fa-times-circle"></i> Incorrecto:</p>
+                            <svg width="200" height="50">
+                                <line x1="20" y1="25" x2="180" y2="25" stroke="#e74c3c" stroke-width="2"/>
+                                <polygon points="180,25 170,20 170,30" fill="#e74c3c"/>
+                                <text x="100" y="20" text-anchor="middle" font-size="10">enviarEmail()</text>
+                            </svg>
+                            <p class="text-success mt-3"><i class="fas fa-check-circle"></i> Correcto:</p>
+                            <svg width="200" height="50">
+                                <line x1="20" y1="25" x2="180" y2="25" stroke="#27ae60" stroke-width="2"/>
+                                <polygon points="180,25 175,20 175,30 180,25" fill="none" stroke="#27ae60" stroke-width="2"/>
+                                <text x="100" y="20" text-anchor="middle" font-size="10">enviarEmail()</text>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5 class="text-danger"><i class="fas fa-times"></i> Error 2: Líneas de Vida Mal Ubicadas</h5>
+                        <p><strong>Mal:</strong> Líneas de vida que empiezan antes del objeto o no son verticales</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-lightbulb"></i> Las líneas de vida deben ser verticales, comenzar justo debajo del objeto y ser discontinuas.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5 class="text-danger"><i class="fas fa-times"></i> Error 3: Mensajes sin Sentido Temporal</h5>
+                        <p><strong>Mal:</strong> Líneas de mensajes que van hacia arriba en el tiempo</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> El tiempo siempre fluye de arriba hacia abajo. Los mensajes deben seguir esta dirección.
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5 class="text-danger"><i class="fas fa-times"></i> Error 4: Confundir Objetos con Clases</h5>
+                        <div class="example-box">
+                            <p class="text-danger"><i class="fas fa-times-circle"></i> Incorrecto: <code>Usuario</code></p>
+                            <p class="text-success"><i class="fas fa-check-circle"></i> Correcto: <code>:Usuario</code> o <code>juan:Usuario</code></p>
+                            <p class="mt-2"><small>Los objetos llevan dos puntos (:) antes del nombre de la clase.</small></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5 class="text-danger"><i class="fas fa-times"></i> Error 5: Activaciones Incorrectas</h5>
+                        <p><strong>Mal:</strong> Barras de activación que no cubren todo el período de procesamiento</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> La barra debe comenzar cuando se recibe el mensaje y terminar cuando se devuelve el control.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 15: Herramientas -->
+    <div class="slide" id="slide-15">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-tools"></i> Herramientas para Diagramas de Secuencia</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-star text-warning"></i> Herramientas Visuales:</h4>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-pencil-ruler text-primary"></i> <strong>Lucidchart</strong>
+                        <p class="mt-2">Editor en línea, colaborativo, fácil de usar. Ideal para equipos.</p>
+                        <span class="badge-custom badge-warning">Freemium</span>
+                        <span class="badge-custom badge-info">Web</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-diagram-project text-success"></i> <strong>Draw.io (diagrams.net)</strong>
+                        <p class="mt-2">Gratuito, potente, sin registro. Excelente para estudiantes.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                        <span class="badge-custom badge-info">Web/Desktop</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-building text-warning"></i> <strong>Enterprise Architect</strong>
+                        <p class="mt-2">Herramienta profesional completa. Uso empresarial.</p>
+                        <span class="badge-custom badge-danger">Pago</span>
+                        <span class="badge-custom badge-primary">Desktop</span>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-palette text-danger"></i> <strong>Visual Paradigm</strong>
+                        <p class="mt-2">Completo, soporta ingeniería inversa desde código.</p>
+                        <span class="badge-custom badge-warning">Freemium</span>
+                        <span class="badge-custom badge-primary">Desktop</span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4><i class="fas fa-code text-info"></i> Herramientas Basadas en Texto:</h4>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-file-code text-success"></i> <strong>PlantUML</strong>
+                        <p class="mt-2">Genera diagramas desde texto. Perfecto para control de versiones.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                        <div class="code-block mt-2">
+<pre>@startuml
+Usuario -> Sistema: login()
+Sistema -> BD: verificar()
+BD --> Sistema: OK
+@enduml</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-terminal text-primary"></i> <strong>Mermaid</strong>
+                        <p class="mt-2">Sintaxis simple, integrado en GitHub, GitLab y Notion.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                        <div class="code-block mt-2">
+<pre>sequenceDiagram
+  Usuario->>Sistema: login()
+  Sistema->>BD: verificar()
+  BD-->>Sistema: OK</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-network-wired text-warning"></i> <strong>WebSequenceDiagrams</strong>
+                        <p class="mt-2">Generador online simple y rápido.</p>
+                        <span class="badge-custom badge-warning">Freemium</span>
+                        <span class="badge-custom badge-info">Web</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-primary mt-4">
+                <i class="fas fa-graduation-cap"></i> <strong>Recomendación:</strong> Para estudiantes, empieza con <strong>Draw.io</strong> (visual) o <strong>PlantUML</strong> (texto). Ambas son gratuitas y profesionales.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 16: Comparación con Otros Diagramas -->
+    <div class="slide" id="slide-16">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-balance-scale"></i> Comparación con Otros Diagramas UML</h2>
+            
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Diagrama</th>
+                            <th>Propósito</th>
+                            <th>Enfoque</th>
+                            <th>Cuándo Usar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Secuencia</strong></td>
+                            <td>Mostrar interacciones temporales entre objetos</td>
+                            <td>Orden temporal de mensajes</td>
+                            <td>Para documentar flujos y APIs, diseñar comportamiento</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Clases</strong></td>
+                            <td>Mostrar estructura estática del sistema</td>
+                            <td>Atributos, métodos, relaciones</td>
+                            <td>Para diseñar arquitectura y estructura de datos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Casos de Uso</strong></td>
+                            <td>Capturar requisitos funcionales</td>
+                            <td>Interacciones usuario-sistema</td>
+                            <td>Para análisis de requisitos y comunicación con stakeholders</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Actividades</strong></td>
+                            <td>Modelar flujo de trabajo o algoritmos</td>
+                            <td>Flujo de control y decisiones</td>
+                            <td>Para procesos de negocio y lógica compleja</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Colaboración</strong></td>
+                            <td>Mostrar organización estructural</td>
+                            <td>Roles y responsabilidades</td>
+                            <td>Para enfatizar la estructura más que el tiempo</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Estados</strong></td>
+                            <td>Modelar ciclo de vida de un objeto</td>
+                            <td>Estados y transiciones</td>
+                            <td>Para objetos con comportamiento complejo basado en estados</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Componentes</strong></td>
+                            <td>Mostrar organización física del sistema</td>
+                            <td>Módulos, librerías, archivos</td>
+                            <td>Para arquitectura de software y deployment</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle"></i> Diagrama de Secuencia es ideal para:</h6>
+                        <ul class="custom-list">
+                            <li>Diseño detallado de casos de uso</li>
+                            <li>Documentación de APIs</li>
+                            <li>Comunicación entre desarrolladores</li>
+                            <li>Debugging y análisis de comportamiento</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Combina con otros diagramas:</h6>
+                        <ul class="custom-list">
+                            <li><strong>Casos de Uso</strong> → Define QUÉ</li>
+                            <li><strong>Secuencia</strong> → Define CÓMO</li>
+                            <li><strong>Clases</strong> → Define CON QUÉ</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 17: Resumen -->
+    <div class="slide" id="slide-17">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-check-double"></i> Resumen</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-book-open text-primary"></i> Conceptos Clave</h5>
+                        <ul class="custom-list">
+                            <li>Los diagramas de secuencia modelan <strong>interacciones temporales</strong></li>
+                            <li>Muestran <strong>cómo</strong> colaboran los objetos</li>
+                            <li>El tiempo fluye de <strong>arriba hacia abajo</strong></li>
+                            <li>Los objetos se disponen de <strong>izquierda a derecha</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-shapes text-success"></i> Elementos Principales</h5>
+                        <ul class="custom-list">
+                            <li><strong>Objetos/Actores:</strong> Participantes</li>
+                            <li><strong>Líneas de Vida:</strong> Existencia temporal</li>
+                            <li><strong>Mensajes:</strong> Comunicación</li>
+                            <li><strong>Activaciones:</strong> Procesamiento</li>
+                            <li><strong>Fragmentos:</strong> Estructuras de control</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-lightbulb text-warning"></i> Mejores Prácticas</h5>
+                        <ul class="custom-list">
+                            <li>Un diagrama = un escenario específico</li>
+                            <li>Nombres de mensajes descriptivos</li>
+                            <li>Numerar mensajes en orden</li>
+                            <li>No sobrecargar con detalles</li>
+                            <li>Usar fragmentos cuando clarifiquen</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-tools text-danger"></i> Herramientas</h5>
+                        <ul class="custom-list">
+                            <li><strong>Visuales:</strong> Draw.io, Lucidchart</li>
+                            <li><strong>Texto:</strong> PlantUML, Mermaid</li>
+                            <li><strong>Profesionales:</strong> Enterprise Architect</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-success mt-4 text-center">
+                <h4><i class="fas fa-trophy"></i> ¡Ahora estás listo para crear tus propios diagramas de secuencia!</h4>
+                <p class="mb-0">Practica con casos reales y verás cómo mejora tu diseño de software</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 18: Inicio del Quiz -->
+    <div class="slide" id="slide-18">
+        <div class="content-card text-center">
+            <h2 class="slide-title"><i class="fas fa-graduation-cap"></i> Quiz Final - 20 Preguntas</h2>
+            
+            <div class="home-hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 50px; margin: 30px 0;">
+                <i class="fas fa-clipboard-list fa-5x mb-4 text-white"></i>
+                <h3 class="text-white">¡Evalúa tu conocimiento!</h3>
+                <p class="text-white">20 preguntas sobre Diagramas de Secuencia</p>
+                
+                <div class="alert alert-light mt-4 text-start">
+                    <h5><i class="fas fa-info-circle"></i> Instrucciones:</h5>
+                    <ul class="custom-list">
+                        <li>Selecciona la respuesta que consideres correcta</li>
+                        <li>Recibirás retroalimentación inmediata</li>
+                        <li>Al final verás tu puntuación total</li>
+                        <li>Cada pregunta vale 1 punto (total: 20 puntos)</li>
+                    </ul>
+                </div>
+                
+                <button class="start-btn mt-4" onclick="startQuiz()">
+                    <i class="fas fa-play-circle"></i> Comenzar Quiz
+                </button>
+            </div>
+            
+            <div id="quiz-score" style="display:none;" class="mt-4">
+                <h4>Puntuación: <span id="current-score">0</span> / 20</h4>
+                <div class="progress-container">
+                    <div id="quiz-progress" class="progress-bar-custom" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Questions (Slides 19-38) -->
+    <div class="slide" id="slide-19">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 1 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué representa la dirección vertical en un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="1" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>El flujo del tiempo (de arriba hacia abajo)</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>La jerarquía de clases</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>La importancia de los objetos</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>El número de mensajes enviados</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-20">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 2 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué tipo de línea se usa para la línea de vida de un objeto?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="2" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Línea continua gruesa</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Línea discontinua vertical</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Línea punteada horizontal</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Línea curva</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-21">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 3 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cómo se representa un mensaje síncrono en UML?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="3" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Línea continua con flecha completa (triángulo relleno)</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Línea discontinua con flecha abierta</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Línea continua con flecha abierta</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Línea punteada con flecha completa</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-22">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 4 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué indica una barra de activación en un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="4" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>El objeto está siendo creado</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>El objeto está procesando activamente</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>El objeto está siendo destruido</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>El objeto está inactivo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-23">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 5 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué fragmento se usa para representar un bucle en un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="5" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>alt</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>loop</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>opt</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>par</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-24">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 6 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué fragmento es equivalente a un if-else en programación?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="6" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>alt (alternativa)</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>opt (opcional)</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>loop</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>critical</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-25">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 7 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cómo se representa un mensaje de retorno en un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="7" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Línea continua con flecha completa</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Línea discontinua con flecha apuntando hacia atrás</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Línea curva</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>No se representan los retornos</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-26">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 8 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué símbolo indica la destrucción de un objeto?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="8" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Un círculo negro</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Una X grande</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Un rectángulo relleno</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Una flecha hacia abajo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-27">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 9 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cómo se denota un objeto en un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="9" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>NombreClase</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>:NombreClase o nombreObjeto:NombreClase</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>#NombreClase</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>@NombreClase</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-28">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 10 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es el propósito principal de un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="10" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Mostrar la estructura estática de las clases</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Mostrar cómo los objetos interactúan en el tiempo</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Definir los casos de uso del sistema</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Modelar el ciclo de vida de objetos</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-29">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 11 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué indica el fragmento "opt" en un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="11" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Una sección que se ejecuta en paralelo</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Una sección opcional que solo se ejecuta si se cumple la condición</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Una alternativa entre dos o más flujos</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Un bucle que se repite</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-30">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 12 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es la diferencia entre un mensaje síncrono y uno asíncrono?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="12" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>El síncrono espera respuesta, el asíncrono no</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>El asíncrono espera respuesta, el síncrono no</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>No hay diferencia</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Solo se diferencian en la velocidad</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-31">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 13 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cómo se representa una auto-llamada (self-call)?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="13" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Con una flecha que sale y vuelve al mismo objeto</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Con una línea discontinua</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Con un círculo</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>No se pueden representar auto-llamadas</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-32">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 14 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué fragmento se usa para operaciones que no pueden ser interrumpidas?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="14" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>loop</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>alt</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>critical</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>par</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-33">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 15 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es una mejor práctica al crear diagramas de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="15" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Incluir todos los casos posibles en un solo diagrama</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Crear un diagrama por cada escenario o caso de uso</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>No numerar los mensajes</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Usar siempre mensajes asíncronos</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-34">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 16 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuándo se debe usar un mensaje asíncrono?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="16" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Cuando el emisor no espera respuesta inmediata</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Cuando el emisor debe esperar la respuesta</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Solo para operaciones muy rápidas</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Nunca se deben usar</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-35">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 17 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué herramienta permite crear diagramas de secuencia mediante código?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="17" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Microsoft Word</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>PlantUML</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Adobe Photoshop</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Excel</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-36">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 18 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué indica el fragmento "ref" en un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="18" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Una referencia a otro diagrama de secuencia</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Una región crítica</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Un bucle</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Una alternativa</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-37">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 19 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿En qué dirección fluye el tiempo en un diagrama de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="19" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>De izquierda a derecha</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>De derecha a izquierda</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>De arriba hacia abajo</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>De abajo hacia arriba</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-38">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 20 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué error común se debe evitar en diagramas de secuencia?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="20" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Numerar los mensajes</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Incluir demasiados objetos en un solo diagrama</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Usar líneas de vida discontinuas</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Mostrar retornos de métodos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 39: Resultados -->
+    <div class="slide" id="slide-39">
+        <div class="content-card text-center">
+            <h2 class="slide-title"><i class="fas fa-trophy"></i> ¡Quiz Completado!</h2>
+            
+            <div id="final-results" class="home-hero" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); border-radius: 15px; padding: 50px; margin: 30px 0;">
+                <i class="fas fa-check-circle fa-5x mb-4 text-white"></i>
+                <h3 class="text-white">Tu Puntuación Final</h3>
+                <h1 class="text-white display-1 my-4"><span id="final-score">0</span> / 20</h1>
+                <h4 class="text-white" id="result-message"></h4>
+                
+                <div class="progress-container mt-4">
+                    <div id="final-progress" class="progress-bar-custom" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-check-double text-success fa-3x"></i>
+                        <h4 class="mt-3">Respuestas Correctas</h4>
+                        <h2 id="correct-count">0</h2>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-times text-danger fa-3x"></i>
+                        <h4 class="mt-3">Respuestas Incorrectas</h4>
+                        <h2 id="incorrect-count">0</h2>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-percentage text-primary fa-3x"></i>
+                        <h4 class="mt-3">Porcentaje</h4>
+                        <h2 id="percentage">0%</h2>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-lightbulb"></i> <strong>Consejo:</strong> Repasa los temas donde tuviste dificultades para dominar completamente los diagramas de secuencia.
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>
+            <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">40</span>
+        </span>
+        <button class="nav-btn" id="nextBtn" onclick="nextSlide()">
+            Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let currentSlideIndex = 0;
+        const totalSlides = 40;
+        let quizScore = 0;
+        let quizStarted = false;
+        
+        // Respuestas correctas del quiz
+        const correctAnswers = {
+            1: 'a',  // Tiempo de arriba hacia abajo
+            2: 'b',  // Línea discontinua vertical
+            3: 'a',  // Línea continua con flecha completa
+            4: 'b',  // El objeto está procesando
+            5: 'b',  // loop
+            6: 'a',  // alt (alternativa)
+            7: 'b',  // Línea discontinua hacia atrás
+            8: 'b',  // Una X grande
+            9: 'b',  // :NombreClase o nombreObjeto:NombreClase
+            10: 'b', // Mostrar cómo los objetos interactúan en el tiempo
+            11: 'b', // Sección opcional
+            12: 'a', // El síncrono espera respuesta
+            13: 'a', // Flecha que sale y vuelve
+            14: 'c', // critical
+            15: 'b', // Un diagrama por escenario
+            16: 'a', // Cuando no espera respuesta inmediata
+            17: 'b', // PlantUML
+            18: 'a', // Referencia a otro diagrama
+            19: 'c', // De arriba hacia abajo
+            20: 'b'  // Demasiados objetos
+        };
+        
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                currentSlideIndex = index;
+                
+                document.getElementById('currentSlide').textContent = index + 1;
+                document.getElementById('prevBtn').disabled = index === 0;
+                document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+        
+        function startQuiz() {
+            quizStarted = true;
+            document.getElementById('quiz-score').style.display = 'block';
+            nextSlide();
+        }
+        
+        // Event listeners para las opciones del quiz
+        document.addEventListener('DOMContentLoaded', function() {
+            const quizOptions = document.querySelectorAll('.quiz-option');
+            
+            quizOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const question = this.dataset.question;
+                    const answer = this.dataset.answer;
+                    const correctAnswer = correctAnswers[question];
+                    
+                    // Obtener todas las opciones de esta pregunta
+                    const allOptions = document.querySelectorAll(`[data-question="${question}"]`);
+                    
+                    // Deshabilitar todas las opciones de esta pregunta
+                    allOptions.forEach(opt => {
+                        opt.style.pointerEvents = 'none';
+                    });
+                    
+                    // Verificar respuesta
+                    if (answer === correctAnswer) {
+                        this.classList.add('correct');
+                        quizScore++;
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Correcto!',
+                            text: 'Excelente respuesta',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        this.classList.add('incorrect');
+                        // Mostrar la respuesta correcta
+                        allOptions.forEach(opt => {
+                            if (opt.dataset.answer === correctAnswer) {
+                                opt.classList.add('correct');
+                            }
+                        });
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Incorrecto',
+                            text: 'La respuesta correcta está marcada en verde',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    
+                    // Actualizar puntuación
+                    document.getElementById('current-score').textContent = quizScore;
+                    const progress = (quizScore / 20) * 100;
+                    document.getElementById('quiz-progress').style.width = progress + '%';
+                    
+                    // Si es la última pregunta, mostrar resultados
+                    if (question == 20) {
+                        setTimeout(() => {
+                            showFinalResults();
+                        }, 2000);
+                    } else {
+                        // Avanzar automáticamente después de 2 segundos
+                        setTimeout(() => {
+                            nextSlide();
+                        }, 2000);
+                    }
+                });
+            });
+        });
+        
+        function showFinalResults() {
+            const finalScore = quizScore;
+            const percentage = (finalScore / 20) * 100;
+            const incorrect = 20 - finalScore;
+            
+            document.getElementById('final-score').textContent = finalScore;
+            document.getElementById('correct-count').textContent = finalScore;
+            document.getElementById('incorrect-count').textContent = incorrect;
+            document.getElementById('percentage').textContent = percentage.toFixed(0) + '%';
+            document.getElementById('final-progress').style.width = percentage + '%';
+            
+            // Mensaje según puntuación
+            let message = '';
+            let icon = 'success';
+            
+            if (percentage >= 90) {
+                message = '¡Excelente! Dominas los diagramas de secuencia';
+                icon = 'success';
+            } else if (percentage >= 70) {
+                message = '¡Muy bien! Tienes un buen conocimiento';
+                icon = 'success';
+            } else if (percentage >= 50) {
+                message = 'Bien, pero puedes mejorar repasando algunos conceptos';
+                icon = 'info';
+            } else {
+                message = 'Te recomendamos repasar el material nuevamente';
+                icon = 'warning';
+            }
+            
+            document.getElementById('result-message').textContent = message;
+            
+            // Cambiar color del fondo según resultado
+            const resultsDiv = document.getElementById('final-results');
+            if (percentage >= 70) {
+                resultsDiv.style.background = 'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)';
+            } else if (percentage >= 50) {
+                resultsDiv.style.background = 'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)';
+            } else {
+                resultsDiv.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+            }
+            
+            nextSlide();
+            
+            Swal.fire({
+                icon: icon,
+                title: 'Quiz Completado',
+                text: `Has obtenido ${finalScore} de 20 puntos (${percentage.toFixed(0)}%)`,
+                confirmButtonText: 'Ver Resultados Detallados',
+                confirmButtonColor: '#3498db'
+            });
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+        
+        // Initialize
+        showSlide(0);
+        document.getElementById('totalSlides').textContent = totalSlides;
+    </script>
+</body>
+</html>
