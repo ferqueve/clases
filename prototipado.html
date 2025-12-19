@@ -1,0 +1,2590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipado en Design Thinking</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --info-color: #9b59b6;
+            --design-color: #e67e22;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .slide {
+            min-height: 100vh;
+            display: none;
+            padding: 60px 20px;
+            position: relative;
+        }
+        
+        .slide.active {
+            display: block;
+            animation: fadeIn 0.8s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .slide-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .slide-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--secondary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .nav-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .nav-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .slide-counter {
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 0 15px;
+        }
+        
+        .example-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 5px solid var(--design-color);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .prototype-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+        
+        .prototype-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-color: var(--design-color);
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid var(--secondary-color);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .table-custom {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .table-custom thead {
+            background: linear-gradient(135deg, var(--design-color), var(--primary-color));
+            color: white;
+        }
+        
+        .table-custom tbody tr:hover {
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .quiz-option:hover {
+            background: #f8f9fa;
+            border-color: var(--secondary-color);
+            transform: translateX(10px);
+        }
+        
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: var(--success-color);
+        }
+        
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: var(--accent-color);
+        }
+        
+        .quiz-option.selected {
+            border-width: 3px;
+        }
+        
+        .progress-container {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar-custom {
+            height: 100%;
+            background: linear-gradient(to right, var(--success-color), var(--secondary-color));
+            transition: width 0.5s ease;
+        }
+        
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .badge-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .badge-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .badge-danger {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .badge-info {
+            background: var(--info-color);
+            color: white;
+        }
+        
+        .badge-design {
+            background: var(--design-color);
+            color: white;
+        }
+        
+        .home-hero {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+        }
+        
+        .home-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .home-hero p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .start-btn {
+            background: white;
+            color: var(--primary-color);
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        
+        ul.custom-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        ul.custom-list li {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+        }
+        
+        ul.custom-list li::before {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-size: 1.2rem;
+        }
+        
+        .dt-phase {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin: 10px 0;
+            display: inline-block;
+            font-weight: 600;
+        }
+        
+        .prototype-example {
+            border: 3px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            background: #f8f9fa;
+        }
+        
+        .prototype-example img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .answer-review {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .answer-review.correct-answer {
+            border-left: 5px solid var(--success-color);
+        }
+        
+        .answer-review.incorrect-answer {
+            border-left: 5px solid var(--accent-color);
+        }
+        
+        @media (max-width: 768px) {
+            .slide-title {
+                font-size: 1.8rem;
+            }
+            
+            .home-hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .content-card {
+                padding: 25px;
+            }
+            
+            .navigation {
+                bottom: 15px;
+                padding: 10px 15px;
+            }
+            
+            .nav-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 0: Portada -->
+    <div class="slide active" id="slide-0">
+        <div class="home-hero animate__animated animate__fadeInDown">
+            <i class="fas fa-lightbulb fa-5x mb-4"></i>
+            <h1>Prototipado en Design Thinking</h1>
+            <p>De la Idea al Producto Tangible</p>
+            <p><i class="fas fa-graduation-cap"></i> Presentación Educativa Completa</p>
+            <button class="start-btn animate__animated animate__bounceIn animate__delay-1s" onclick="nextSlide()">
+                <i class="fas fa-rocket"></i> Comenzar Presentación
+            </button>
+        </div>
+    </div>
+
+    <!-- Slide 1: Índice -->
+    <div class="slide" id="slide-1">
+        <div class="content-card animate__animated animate__fadeIn">
+            <h2 class="slide-title"><i class="fas fa-list"></i> Contenido de la Presentación</h2>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="feature-card animate__animated animate__fadeInLeft">
+                        <h4><i class="fas fa-brain text-primary"></i> Fundamentos</h4>
+                        <ul class="custom-list mt-3">
+                            <li>¿Qué es Design Thinking?</li>
+                            <li>El Proceso de Design Thinking</li>
+                            <li>¿Qué es un Prototipo?</li>
+                            <li>Importancia del Prototipado</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card animate__animated animate__fadeInLeft animate__delay-1s">
+                        <h4><i class="fas fa-layer-group text-success"></i> Tipos de Prototipos</h4>
+                        <ul class="custom-list mt-3">
+                            <li>Prototipos de Baja Fidelidad</li>
+                            <li>Prototipos de Alta Fidelidad</li>
+                            <li>Clasificación por Objetivo</li>
+                            <li>Clasificación por Técnica</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card animate__animated animate__fadeInRight">
+                        <h4><i class="fas fa-tools text-warning"></i> Ejemplos Prácticos</h4>
+                        <ul class="custom-list mt-3">
+                            <li>Prototipos en Papel</li>
+                            <li>Wireframes Digitales</li>
+                            <li>Mockups Interactivos</li>
+                            <li>Prototipos Funcionales</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card animate__animated animate__fadeInRight animate__delay-1s">
+                        <h4><i class="fas fa-check-double text-danger"></i> Evaluación</h4>
+                        <ul class="custom-list mt-3">
+                            <li>Mejores Prácticas</li>
+                            <li>Errores Comunes</li>
+                            <li>Herramientas</li>
+                            <li>Quiz de 20 Preguntas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4 animate__animated animate__fadeInUp animate__delay-1s">
+                <i class="fas fa-star"></i> <strong>Incluye:</strong> Ejemplos visuales, casos prácticos y evaluación completa con revisión de respuestas.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: ¿Qué es Design Thinking? -->
+    <div class="slide" id="slide-2">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-brain"></i> ¿Qué es Design Thinking?</h2>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead"><span class="highlight">Design Thinking</span> es una metodología de innovación centrada en el ser humano que utiliza herramientas del diseño para integrar las necesidades de las personas, las posibilidades de la tecnología y los requisitos del éxito empresarial.</p>
+                    
+                    <h4 class="mt-4"><i class="fas fa-bullseye"></i> Principios Fundamentales:</h4>
+                    <ul class="custom-list">
+                        <li><strong>Centrado en el usuario:</strong> Las soluciones se diseñan pensando en las personas</li>
+                        <li><strong>Colaborativo:</strong> Trabajo en equipo multidisciplinario</li>
+                        <li><strong>Iterativo:</strong> Proceso cíclico de prueba y mejora</li>
+                        <li><strong>Visual y tangible:</strong> Ideas expresadas de forma concreta</li>
+                        <li><strong>Experimental:</strong> Aprender haciendo y probando</li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="example-box text-center">
+                        <h5><i class="fas fa-quote-left"></i> Origen</h5>
+                        <p class="mt-3">Popularizado por la consultora <strong>IDEO</strong> y la Universidad de Stanford (d.school)</p>
+                        <div class="mt-4">
+                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                            <p><small>Enfoque centrado en las personas y sus necesidades</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-success mt-4">
+                <i class="fas fa-lightbulb"></i> <strong>Clave:</strong> Design Thinking no es solo para diseñadores, es para cualquier persona que busque soluciones innovadoras.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Proceso Design Thinking -->
+    <div class="slide" id="slide-3">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-project-diagram"></i> El Proceso de Design Thinking</h2>
+            
+            <p class="lead text-center">Design Thinking consta de 5 fases interconectadas:</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="prototype-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                <div class="dt-phase" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                                    <i class="fas fa-user-friends fa-2x"></i>
+                                    <h5 class="mt-2">1. EMPATIZAR</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Empatizar con el Usuario</h5>
+                                <p>Comprender profundamente las necesidades, deseos y problemas de los usuarios a través de observación, entrevistas e inmersión.</p>
+                                <span class="badge-custom badge-danger">Investigación</span>
+                                <span class="badge-custom badge-danger">Observación</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                <div class="dt-phase" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);">
+                                    <i class="fas fa-bullseye fa-2x"></i>
+                                    <h5 class="mt-2">2. DEFINIR</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Definir el Problema</h5>
+                                <p>Sintetizar la información recopilada para definir claramente el problema o reto a resolver desde la perspectiva del usuario.</p>
+                                <span class="badge-custom badge-warning">Análisis</span>
+                                <span class="badge-custom badge-warning">Síntesis</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                <div class="dt-phase" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                                    <i class="fas fa-lightbulb fa-2x"></i>
+                                    <h5 class="mt-2">3. IDEAR</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Idear Soluciones</h5>
+                                <p>Generar un amplio abanico de ideas y soluciones posibles mediante técnicas creativas como brainstorming, mapas mentales, etc.</p>
+                                <span class="badge-custom badge-design">Creatividad</span>
+                                <span class="badge-custom badge-design">Divergencia</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card" style="border: 3px solid var(--success-color);">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                <div class="dt-phase" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
+                                    <i class="fas fa-hammer fa-2x"></i>
+                                    <h5 class="mt-2">4. PROTOTIPAR</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Crear Prototipos <i class="fas fa-star text-warning"></i></h5>
+                                <p><strong>Construir representaciones tangibles de las ideas</strong> para explorar, comunicar y validar las soluciones propuestas.</p>
+                                <span class="badge-custom badge-success">Materializar</span>
+                                <span class="badge-custom badge-success">Experimentar</span>
+                                <span class="badge-custom badge-success">¡FOCO DE ESTA PRESENTACIÓN!</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                <div class="dt-phase" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                                    <i class="fas fa-vial fa-2x"></i>
+                                    <h5 class="mt-2">5. EVALUAR</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5>Evaluar y Testear</h5>
+                                <p>Probar los prototipos con usuarios reales, recoger feedback y refinar las soluciones basándose en los aprendizajes.</p>
+                                <span class="badge-custom badge-primary">Validación</span>
+                                <span class="badge-custom badge-primary">Iteración</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-sync-alt"></i> <strong>Proceso Iterativo:</strong> Las fases no son lineales. Se puede volver atrás y repetir pasos según los aprendizajes.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: ¿Qué es un Prototipo? -->
+    <div class="slide" id="slide-4">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-cube"></i> ¿Qué es un Prototipo?</h2>
+            
+            <div class="row">
+                <div class="col-md-7">
+                    <p class="lead">Un <span class="highlight">prototipo</span> es una <strong>representación tangible</strong> de una idea o concepto que permite explorar, comunicar y evaluar aspectos de una solución de diseño.</p>
+                    
+                    <h4 class="mt-4"><i class="fas fa-list-check"></i> Características:</h4>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-hand-pointer text-primary"></i> Tangible</h5>
+                        <p>Algo que se puede ver, tocar o interactuar con él.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-rocket text-success"></i> Rápido</h5>
+                        <p>Se crea rápidamente para probar ideas sin invertir mucho tiempo o recursos.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-lightbulb text-warning"></i> Evolutivo</h5>
+                        <p>No es la solución final, sino una versión que se mejorará iterativamente.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-comments text-info"></i> Comunicativo</h5>
+                        <p>Facilita la comunicación de ideas con el equipo y usuarios.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-5">
+                    <div class="example-box">
+                        <h5><i class="fas fa-quote-left"></i> Filosofía del Prototipado</h5>
+                        <blockquote class="mt-3">
+                            <p class="fst-italic">"Si una imagen vale más que mil palabras, un prototipo vale más que mil reuniones"</p>
+                            <footer class="blockquote-footer mt-2">Proverbio del diseño</footer>
+                        </blockquote>
+                        
+                        <div class="mt-4 text-center">
+                            <i class="fas fa-sync-alt fa-3x text-success mb-3"></i>
+                            <p><strong>Prototipar → Testear → Aprender → Iterar</strong></p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Importante:</strong> Un prototipo NO es el producto final. Es una herramienta de aprendizaje.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Importancia del Prototipado -->
+    <div class="slide" id="slide-5">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-star"></i> ¿Por qué Prototipar?</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="text-success"><i class="fas fa-check-circle"></i> Beneficios del Prototipado:</h4>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">1</span> Validación Temprana</h5>
+                        <p>Permite detectar errores y problemas antes de invertir en desarrollo completo.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">2</span> Reducción de Riesgos</h5>
+                        <p>Minimiza la inversión en ideas que no funcionan o no resuelven el problema.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">3</span> Facilita la Comunicación</h5>
+                        <p>Hace que las ideas abstractas sean concretas y fáciles de entender para todos.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">4</span> Feedback Rápido</h5>
+                        <p>Permite obtener retroalimentación de usuarios reales de forma temprana.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">5</span> Ahorro de Tiempo y Dinero</h5>
+                        <p>Identificar problemas en una fase temprana es mucho más económico que corregirlos después del lanzamiento.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">6</span> Exploración de Alternativas</h5>
+                        <p>Permite probar múltiples soluciones en paralelo sin comprometerse con una sola.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">7</span> Mejora la Colaboración</h5>
+                        <p>Da al equipo algo tangible sobre lo cual discutir y mejorar juntos.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">8</span> Aprendizaje Continuo</h5>
+                        <p>Cada prototipo es una oportunidad para aprender sobre los usuarios y el problema.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-primary mt-4 text-center">
+                <h5><i class="fas fa-chart-line"></i> Regla de Oro</h5>
+                <p class="mb-0">"Falla rápido, falla barato, aprende rápido" - Cuanto antes prototipes, antes aprenderás qué funciona y qué no.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: Tipos de Prototipos - Introducción -->
+    <div class="slide" id="slide-6">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-layer-group"></i> Tipos de Prototipos</h2>
+            
+            <p class="lead text-center">Los prototipos pueden clasificarse según diferentes criterios:</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="example-box" style="border-left-color: var(--success-color);">
+                        <h4><i class="fas fa-signal text-success"></i> Por Nivel de Fidelidad</h4>
+                        <ul class="custom-list mt-3">
+                            <li><strong>Baja Fidelidad:</strong> Rápidos, simples, económicos</li>
+                            <li><strong>Media Fidelidad:</strong> Mayor detalle, digitales</li>
+                            <li><strong>Alta Fidelidad:</strong> Realistas, funcionales</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="example-box" style="border-left-color: var(--warning-color);">
+                        <h4><i class="fas fa-bullseye text-warning"></i> Por Objetivo</h4>
+                        <ul class="custom-list mt-3">
+                            <li><strong>Exploración:</strong> Probar múltiples ideas</li>
+                            <li><strong>Validación:</strong> Confirmar hipótesis</li>
+                            <li><strong>Comunicación:</strong> Mostrar a stakeholders</li>
+                            <li><strong>Refinamiento:</strong> Mejorar detalles</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="example-box" style="border-left-color: var(--primary-color);">
+                        <h4><i class="fas fa-tools text-primary"></i> Por Técnica</h4>
+                        <ul class="custom-list mt-3">
+                            <li><strong>Papel y Lápiz:</strong> Bocetos, sketches</li>
+                            <li><strong>Digitales:</strong> Wireframes, mockups</li>
+                            <li><strong>Interactivos:</strong> Clickables, funcionales</li>
+                            <li><strong>Físicos:</strong> Modelos 3D, maquetas</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="example-box" style="border-left-color: var(--info-color);">
+                        <h4><i class="fas fa-cogs text-info"></i> Por Funcionalidad</h4>
+                        <ul class="custom-list mt-3">
+                            <li><strong>Visuales:</strong> Solo apariencia</li>
+                            <li><strong>Funcionales:</strong> Con interacción real</li>
+                            <li><strong>Híbridos:</strong> Mezcla de ambos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle"></i> <strong>Importante:</strong> No existe un tipo de prototipo "mejor". La elección depende del objetivo, recursos y fase del proyecto.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Prototipos de Baja Fidelidad -->
+    <div class="slide" id="slide-7">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-pen"></i> Prototipos de Baja Fidelidad</h2>
+            
+            <div class="row">
+                <div class="col-md-5">
+                    <p class="lead">Representaciones <span class="highlight">simples y rápidas</span> que se enfocan en conceptos generales más que en detalles visuales.</p>
+                    
+                    <h5 class="mt-4"><i class="fas fa-check-circle text-success"></i> Características:</h5>
+                    <ul class="custom-list">
+                        <li>Rápidos de crear (minutos a horas)</li>
+                        <li>Económicos (papel, post-its, marcadores)</li>
+                        <li>Fáciles de modificar</li>
+                        <li>Ideales para exploración inicial</li>
+                        <li>No requieren habilidades técnicas</li>
+                    </ul>
+                    
+                    <h5 class="mt-4"><i class="fas fa-lightbulb text-warning"></i> Cuándo usar:</h5>
+                    <ul class="custom-list">
+                        <li>Fases iniciales del proyecto</li>
+                        <li>Brainstorming de ideas</li>
+                        <li>Validación rápida de conceptos</li>
+                        <li>Presupuesto o tiempo limitado</li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-7">
+                    <h5><i class="fas fa-list"></i> Ejemplos Comunes:</h5>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-pencil-alt text-primary"></i> 1. Bocetos (Sketches)</h5>
+                        <p>Dibujos a mano alzada de interfaces, flujos o conceptos.</p>
+                        <div class="prototype-example">
+                            <div style="background: white; padding: 20px; border: 2px dashed #666;">
+                                <div style="text-align: center; padding: 10px; background: #e9ecef;">
+                                    <strong>[Logo]</strong>
+                                </div>
+                                <div style="margin: 10px 0; padding: 15px; border: 1px solid #999;">
+                                    <div>☐ Campo de búsqueda</div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div style="border: 1px solid #999; padding: 15px; text-align: center;">
+                                        [Imagen]<br>Producto 1
+                                    </div>
+                                    <div style="border: 1px solid #999; padding: 15px; text-align: center;">
+                                        [Imagen]<br>Producto 2
+                                    </div>
+                                </div>
+                                <div style="margin-top: 10px; padding: 10px; background: #3498db; color: white; text-align: center;">
+                                    [ Botón Comprar ]
+                                </div>
+                            </div>
+                            <p class="text-center mt-2"><small>Ejemplo de boceto de interfaz e-commerce</small></p>
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-sticky-note text-warning"></i> 2. Paper Prototypes</h5>
+                        <p>Prototipos físicos hechos con papel, cartón, post-its que simulan interfaces interactivas.</p>
+                        <span class="badge-custom badge-success">Interactivo</span>
+                        <span class="badge-custom badge-primary">Económico</span>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-project-diagram text-success"></i> 3. Storyboards</h5>
+                        <p>Secuencia visual de viñetas que muestra el flujo de uso o experiencia del usuario.</p>
+                        <span class="badge-custom badge-info">Narrativo</span>
+                        <span class="badge-custom badge-warning">Contextual</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Ejemplo Paper Prototype -->
+    <div class="slide" id="slide-8">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-file"></i> Ejemplo: Paper Prototype de App Móvil</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-mobile-alt"></i> Prototipo de App de Delivery</h4>
+                
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="prototype-example">
+                            <h6 class="text-center mb-3">Pantalla 1: Home</h6>
+                            <div style="border: 3px solid #333; border-radius: 20px; padding: 15px; background: white; min-height: 400px;">
+                                <div style="text-align: center; padding: 10px; background: #e74c3c; color: white; border-radius: 5px; margin-bottom: 15px;">
+                                    <strong>🍕 FoodApp</strong>
+                                </div>
+                                <div style="padding: 10px; border: 2px dashed #999; margin-bottom: 10px;">
+                                    🔍 Buscar restaurantes...
+                                </div>
+                                <div style="padding: 15px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 5px;">
+                                    <strong>🍔 Hamburguesas</strong><br>
+                                    <small>15-20 min • $$$</small>
+                                </div>
+                                <div style="padding: 15px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 5px;">
+                                    <strong>🍕 Pizzería</strong><br>
+                                    <small>20-25 min • $$</small>
+                                </div>
+                                <div style="padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+                                    <strong>🍣 Sushi Bar</strong><br>
+                                    <small>30-35 min • $$$$</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="prototype-example">
+                            <h6 class="text-center mb-3">Pantalla 2: Menú</h6>
+                            <div style="border: 3px solid #333; border-radius: 20px; padding: 15px; background: white; min-height: 400px;">
+                                <div style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin-bottom: 15px;">
+                                    <strong>← 🍕 Pizzería Roma</strong>
+                                </div>
+                                <div style="padding: 15px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 5px;">
+                                    <strong>Pizza Margherita</strong><br>
+                                    <small>Tomate, mozzarella, albahaca</small><br>
+                                    <strong>$12.00</strong>
+                                    <button style="float: right; padding: 5px 10px; background: #27ae60; color: white; border: none; border-radius: 3px;">+</button>
+                                </div>
+                                <div style="padding: 15px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 5px;">
+                                    <strong>Pizza Pepperoni</strong><br>
+                                    <small>Tomate, mozzarella, pepperoni</small><br>
+                                    <strong>$14.00</strong>
+                                    <button style="float: right; padding: 5px 10px; background: #27ae60; color: white; border: none; border-radius: 3px;">+</button>
+                                </div>
+                                <div style="position: absolute; bottom: 25px; left: 15px; right: 15px; padding: 15px; background: #3498db; color: white; text-align: center; border-radius: 5px;">
+                                    <strong>Ver Carrito (2) - $26.00</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="prototype-example">
+                            <h6 class="text-center mb-3">Pantalla 3: Checkout</h6>
+                            <div style="border: 3px solid #333; border-radius: 20px; padding: 15px; background: white; min-height: 400px;">
+                                <div style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin-bottom: 15px;">
+                                    <strong>← Tu Pedido</strong>
+                                </div>
+                                <div style="padding: 10px; border-bottom: 1px solid #ddd; margin-bottom: 10px;">
+                                    <strong>📍 Dirección de entrega</strong><br>
+                                    <small>Calle Principal 123, Apt 4B</small>
+                                </div>
+                                <div style="padding: 10px; border-bottom: 1px solid #ddd; margin-bottom: 10px;">
+                                    <strong>🍕 Pizzería Roma</strong><br>
+                                    <small>1x Pizza Margherita - $12.00</small><br>
+                                    <small>1x Pizza Pepperoni - $14.00</small>
+                                </div>
+                                <div style="padding: 10px; border-bottom: 1px solid #ddd; margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span>Subtotal:</span>
+                                        <span>$26.00</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span>Envío:</span>
+                                        <span>$2.50</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 5px;">
+                                        <span>Total:</span>
+                                        <span>$28.50</span>
+                                    </div>
+                                </div>
+                                <div style="padding: 15px; background: #27ae60; color: white; text-align: center; border-radius: 5px; margin-top: 15px;">
+                                    <strong>Confirmar Pedido</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-success mt-4">
+                <i class="fas fa-check-circle"></i> <strong>Ventaja:</strong> Este prototipo se puede crear en 15-30 minutos y permite testear el flujo completo de la app sin escribir una línea de código.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: Prototipos de Media Fidelidad -->
+    <div class="slide" id="slide-9">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-desktop"></i> Prototipos de Media Fidelidad</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="lead">Representaciones digitales que incluyen <span class="highlight">más detalles</span> que los de baja fidelidad, pero aún no son versiones finales.</p>
+                    
+                    <h5 class="mt-4"><i class="fas fa-list-check"></i> Características:</h5>
+                    <ul class="custom-list">
+                        <li>Creados con herramientas digitales</li>
+                        <li>Mayor claridad en la estructura</li>
+                        <li>Pueden incluir interacciones básicas</li>
+                        <li>Tiempo de creación: horas a días</li>
+                        <li>Requieren habilidades básicas de diseño</li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i> <strong>Uso común:</strong> Wireframes y mockups básicos para validar estructura y flujo.
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5><i class="fas fa-layer-group"></i> Tipos Comunes:</h5>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-border-all text-primary"></i> 1. Wireframes</h5>
+                        <p>Esquemas estructurales que muestran la disposición de elementos sin diseño visual detallado.</p>
+                        <span class="badge-custom badge-primary">Estructura</span>
+                        <span class="badge-custom badge-info">Jerarquía</span>
+                        <div class="mt-2">
+                            <strong>Herramientas:</strong> Figma, Balsamiq, Sketch, Adobe XD
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-mouse-pointer text-success"></i> 2. Prototipos Clickables</h5>
+                        <p>Wireframes con navegación básica que permiten simular el flujo de usuario.</p>
+                        <span class="badge-custom badge-success">Interactivo</span>
+                        <span class="badge-custom badge-warning">Navegable</span>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-paint-brush text-warning"></i> 3. Mockups Básicos</h5>
+                        <p>Representaciones visuales con algunos elementos de diseño (colores básicos, tipografía).</p>
+                        <span class="badge-custom badge-design">Visual</span>
+                        <span class="badge-custom badge-primary">Estático</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: Ejemplo Wireframe -->
+    <div class="slide" id="slide-10">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-border-all"></i> Ejemplo: Wireframe de E-commerce</h2>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-shopping-cart"></i> Wireframe de Página de Producto</h4>
+                
+                <div class="prototype-example">
+                    <div style="background: white; padding: 20px; border: 2px solid #666;">
+                        <!-- Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 2px solid #333; background: #f8f9fa;">
+                            <div style="font-weight: bold; font-size: 1.2em;">🏪 TiendaOnline</div>
+                            <div style="display: flex; gap: 15px;">
+                                <span>🔍 Buscar</span>
+                                <span>👤 Cuenta</span>
+                                <span>🛒 Carrito (3)</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Navigation -->
+                        <div style="padding: 10px 15px; background: #e9ecef; border-bottom: 1px solid #999;">
+                            Inicio > Electrónica > Smartphones > iPhone 15
+                        </div>
+                        
+                        <!-- Main Content -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 30px 15px;">
+                            <!-- Left Column - Images -->
+                            <div>
+                                <div style="border: 2px dashed #999; height: 300px; display: flex; align-items: center; justify-content: center; background: #f0f0f0; margin-bottom: 15px;">
+                                    <div style="text-align: center;">
+                                        <i class="fas fa-image fa-3x" style="color: #999;"></i>
+                                        <p style="margin-top: 10px; color: #666;">Imagen Principal</p>
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                                    <div style="border: 1px solid #999; height: 60px; background: #f0f0f0;"></div>
+                                    <div style="border: 1px solid #999; height: 60px; background: #f0f0f0;"></div>
+                                    <div style="border: 1px solid #999; height: 60px; background: #f0f0f0;"></div>
+                                    <div style="border: 1px solid #999; height: 60px; background: #f0f0f0;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column - Details -->
+                            <div>
+                                <h2 style="margin: 0 0 10px 0; color: #333;">iPhone 15 Pro Max 256GB</h2>
+                                <div style="margin: 10px 0;">
+                                    ⭐⭐⭐⭐⭐ (4.8) 1,234 reseñas
+                                </div>
+                                <div style="font-size: 2em; font-weight: bold; color: #e74c3c; margin: 20px 0;">
+                                    $1,299.00
+                                </div>
+                                <div style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin: 20px 0; background: #f8f9fa;">
+                                    <strong>Color:</strong><br>
+                                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                        <div style="width: 40px; height: 40px; background: #000; border: 2px solid #333; border-radius: 5px;"></div>
+                                        <div style="width: 40px; height: 40px; background: #4169E1; border: 2px solid #999; border-radius: 5px;"></div>
+                                        <div style="width: 40px; height: 40px; background: #C0C0C0; border: 2px solid #999; border-radius: 5px;"></div>
+                                    </div>
+                                </div>
+                                <div style="padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin: 20px 0; background: #f8f9fa;">
+                                    <strong>Almacenamiento:</strong><br>
+                                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                        <button style="padding: 10px 20px; border: 2px solid #999; background: white; border-radius: 5px;">128GB</button>
+                                        <button style="padding: 10px 20px; border: 2px solid #3498db; background: #e3f2fd; border-radius: 5px; font-weight: bold;">256GB</button>
+                                        <button style="padding: 10px 20px; border: 2px solid #999; background: white; border-radius: 5px;">512GB</button>
+                                    </div>
+                                </div>
+                                <button style="width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin: 10px 0;">
+                                    🛒 Agregar al Carrito
+                                </button>
+                                <button style="width: 100%; padding: 15px; background: white; color: #333; border: 2px solid #333; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
+                                    ❤️ Agregar a Favoritos
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabs -->
+                        <div style="border-top: 2px solid #ddd; padding-top: 20px; margin-top: 20px;">
+                            <div style="display: flex; gap: 20px; border-bottom: 2px solid #ddd;">
+                                <div style="padding: 10px 20px; border-bottom: 3px solid #3498db; font-weight: bold;">Descripción</div>
+                                <div style="padding: 10px 20px;">Especificaciones</div>
+                                <div style="padding: 10px 20px;">Reseñas</div>
+                            </div>
+                            <div style="padding: 20px; min-height: 150px; background: #f8f9fa; border: 1px solid #ddd; border-top: none;">
+                                <p style="margin: 0;">Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+                                <p>[Contenido de descripción del producto]</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check"></i> Ventajas del Wireframe:</h6>
+                        <ul class="custom-list">
+                            <li>Enfoque en estructura y funcionalidad</li>
+                            <li>Fácil de modificar basado en feedback</li>
+                            <li>No se distrae con el diseño visual</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-tools"></i> Herramientas Recomendadas:</h6>
+                        <ul class="custom-list">
+                            <li><strong>Figma:</strong> Gratuito, colaborativo</li>
+                            <li><strong>Balsamiq:</strong> Estilo sketch rápido</li>
+                            <li><strong>Adobe XD:</strong> Profesional</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Prototipos de Alta Fidelidad -->
+    <div class="slide" id="slide-11">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-magic"></i> Prototipos de Alta Fidelidad</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="lead">Representaciones <span class="highlight">muy cercanas al producto final</span> con diseño visual completo e interacciones funcionales.</p>
+                    
+                    <h5 class="mt-4"><i class="fas fa-star text-warning"></i> Características:</h5>
+                    <ul class="custom-list">
+                        <li>Diseño visual completo y pulido</li>
+                        <li>Colores, tipografías, imágenes reales</li>
+                        <li>Interacciones y animaciones</li>
+                        <li>Parecen y funcionan como el producto real</li>
+                        <li>Tiempo: días a semanas</li>
+                        <li>Requieren habilidades avanzadas</li>
+                    </ul>
+                    
+                    <h5 class="mt-4"><i class="fas fa-bullseye text-success"></i> Cuándo usar:</h5>
+                    <ul class="custom-list">
+                        <li>Fases finales del proyecto</li>
+                        <li>Presentaciones a stakeholders</li>
+                        <li>Testing de usabilidad detallado</li>
+                        <li>Validación antes del desarrollo</li>
+                        <li>Pitches a inversores</li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5><i class="fas fa-layer-group"></i> Tipos Comunes:</h5>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-palette text-primary"></i> 1. Mockups de Alta Fidelidad</h5>
+                        <p>Diseños visuales completos con todos los elementos gráficos finales.</p>
+                        <span class="badge-custom badge-primary">Diseño Final</span>
+                        <span class="badge-custom badge-success">Branding</span>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-hand-pointer text-success"></i> 2. Prototipos Interactivos</h5>
+                        <p>Mockups con interacciones reales, transiciones y animaciones.</p>
+                        <span class="badge-custom badge-success">Funcional</span>
+                        <span class="badge-custom badge-warning">Navegable</span>
+                        <div class="mt-2">
+                            <strong>Herramientas:</strong> Figma, Framer, ProtoPie, Principle
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-code text-warning"></i> 3. Prototipos Funcionales</h5>
+                        <p>Versiones codificadas que funcionan con datos reales (parcialmente).</p>
+                        <span class="badge-custom badge-danger">Código</span>
+                        <span class="badge-custom badge-info">Backend</span>
+                        <div class="mt-2">
+                            <strong>Tecnologías:</strong> HTML/CSS/JS, React, Vue, Angular
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Cuidado:</strong> No invertir demasiado antes de validar. Los prototipos de alta fidelidad pueden crear apego emocional.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: Prototipos por Objetivo -->
+    <div class="slide" id="slide-12">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-bullseye"></i> Clasificación por Objetivo</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-primary">1</span> Prototipo de Exploración</h5>
+                        <p><strong>Objetivo:</strong> Explorar múltiples ideas y conceptos rápidamente.</p>
+                        <p><strong>Características:</strong></p>
+                        <ul>
+                            <li>Baja fidelidad</li>
+                            <li>Múltiples versiones en paralelo</li>
+                            <li>Rápidos y desechables</li>
+                        </ul>
+                        <p><strong>Ejemplo:</strong> 5 bocetos diferentes de la misma pantalla para ver qué enfoque funciona mejor.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">2</span> Prototipo de Validación</h5>
+                        <p><strong>Objetivo:</strong> Validar hipótesis específicas sobre el diseño o funcionalidad.</p>
+                        <p><strong>Características:</strong></p>
+                        <ul>
+                            <li>Media/alta fidelidad</li>
+                            <li>Enfocado en aspectos específicos</li>
+                            <li>Listo para testear con usuarios</li>
+                        </ul>
+                        <p><strong>Ejemplo:</strong> Prototipo clickable para validar si los usuarios entienden el proceso de checkout.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-warning">3</span> Prototipo de Comunicación</h5>
+                        <p><strong>Objetivo:</strong> Comunicar la visión del producto a stakeholders o el equipo.</p>
+                        <p><strong>Características:</strong></p>
+                        <ul>
+                            <li>Alta fidelidad visual</li>
+                            <li>Pulido y profesional</li>
+                            <li>Puede ser menos funcional</li>
+                        </ul>
+                        <p><strong>Ejemplo:</strong> Mockups de alta calidad para presentación a directivos o inversores.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-info">4</span> Prototipo de Refinamiento</h5>
+                        <p><strong>Objetivo:</strong> Refinar detalles específicos de interacción o diseño.</p>
+                        <p><strong>Características:</strong></p>
+                        <ul>
+                            <li>Alta fidelidad</li>
+                            <li>Enfoque en microinteracciones</li>
+                            <li>Detalles de animación y timing</li>
+                        </ul>
+                        <p><strong>Ejemplo:</strong> Prototipo para perfeccionar la animación de un menú desplegable.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-primary mt-4">
+                <i class="fas fa-info-circle"></i> <strong>Consejo:</strong> El objetivo determina la fidelidad. No uses alta fidelidad para explorar, ni baja fidelidad para presentar a inversores.
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 13: Prototipos Físicos vs Digitales -->
+    <div class="slide" id="slide-13">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-balance-scale"></i> Prototipos Físicos vs Digitales</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="example-box" style="border-left-color: var(--design-color);">
+                        <h4><i class="fas fa-cube text-design"></i> Prototipos Físicos</h4>
+                        
+                        <h5 class="mt-3">Cuándo usar:</h5>
+                        <ul class="custom-list">
+                            <li>Productos tangibles (hardware, packaging)</li>
+                            <li>Espacios físicos (retail, oficinas)</li>
+                            <li>Dispositivos wearables</li>
+                            <li>Ergonomía y tamaño importan</li>
+                        </ul>
+                        
+                        <h5 class="mt-3">Ejemplos:</h5>
+                        <div class="prototype-card">
+                            <h6><i class="fas fa-box"></i> Maquetas de Empaque</h6>
+                            <p>Prototipos de cartón o impresión 3D para validar diseño de packaging.</p>
+                        </div>
+                        
+                        <div class="prototype-card">
+                            <h6><i class="fas fa-chair"></i> Modelos de Espacio</h6>
+                            <p>Maquetas de tiendas o espacios de trabajo.</p>
+                        </div>
+                        
+                        <div class="prototype-card">
+                            <h6><i class="fas fa-print"></i> Impresión 3D</h6>
+                            <p>Prototipos funcionales de productos físicos.</p>
+                        </div>
+                        
+                        <h5 class="mt-3">Ventajas:</h5>
+                        <ul class="custom-list">
+                            <li>Experiencia táctil real</li>
+                            <li>Valida tamaño y peso</li>
+                            <li>Útil para productos físicos</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="example-box" style="border-left-color: var(--secondary-color);">
+                        <h4><i class="fas fa-laptop text-primary"></i> Prototipos Digitales</h4>
+                        
+                        <h5 class="mt-3">Cuándo usar:</h5>
+                        <ul class="custom-list">
+                            <li>Apps móviles y web</li>
+                            <li>Software y SaaS</li>
+                            <li>Interfaces digitales</li>
+                            <li>Servicios online</li>
+                        </ul>
+                        
+                        <h5 class="mt-3">Ejemplos:</h5>
+                        <div class="prototype-card">
+                            <h6><i class="fas fa-mobile-alt"></i> Apps Móviles</h6>
+                            <p>Prototipos interactivos en Figma, Adobe XD, Framer.</p>
+                        </div>
+                        
+                        <div class="prototype-card">
+                            <h6><i class="fas fa-desktop"></i> Web Apps</h6>
+                            <p>Wireframes y mockups de sitios web o aplicaciones.</p>
+                        </div>
+                        
+                        <div class="prototype-card">
+                            <h6><i class="fas fa-code"></i> Prototipos en Código</h6>
+                            <p>HTML/CSS/JS para prototipos funcionales.</p>
+                        </div>
+                        
+                        <h5 class="mt-3">Ventajas:</h5>
+                        <ul class="custom-list">
+                            <li>Rápidos de crear y modificar</li>
+                            <li>Fáciles de compartir remotamente</li>
+                            <li>Pueden simular interacciones</li>
+                            <li>Versionado y colaboración online</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 14: Herramientas de Prototipado -->
+    <div class="slide" id="slide-14">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-tools"></i> Herramientas de Prototipado</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="fas fa-star text-warning"></i> Herramientas Populares:</h4>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fab fa-figma text-primary"></i> Figma</h5>
+                        <p>Herramienta colaborativa en la nube para diseño y prototipado.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                        <span class="badge-custom badge-primary">Colaborativo</span>
+                        <span class="badge-custom badge-info">Web</span>
+                        <p class="mt-2"><strong>Ideal para:</strong> Todo tipo de prototipos, trabajo en equipo</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-shapes text-danger"></i> Adobe XD</h5>
+                        <p>Suite de diseño y prototipado de Adobe.</p>
+                        <span class="badge-custom badge-warning">Freemium</span>
+                        <span class="badge-custom badge-danger">Adobe</span>
+                        <p class="mt-2"><strong>Ideal para:</strong> Usuarios de Adobe, prototipos interactivos</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-gem text-success"></i> Sketch</h5>
+                        <p>Herramienta de diseño para macOS, estándar en la industria.</p>
+                        <span class="badge-custom badge-danger">Pago</span>
+                        <span class="badge-custom badge-warning">macOS</span>
+                        <p class="mt-2"><strong>Ideal para:</strong> Diseñadores profesionales en Mac</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-cube text-warning"></i> Framer</h5>
+                        <p>Herramienta avanzada para prototipos interactivos y código.</p>
+                        <span class="badge-custom badge-warning">Freemium</span>
+                        <span class="badge-custom badge-success">Código</span>
+                        <p class="mt-2"><strong>Ideal para:</strong> Interacciones complejas, animaciones</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-pencil-ruler text-info"></i> Balsamiq</h5>
+                        <p>Wireframes rápidos con estilo sketch.</p>
+                        <span class="badge-custom badge-danger">Pago</span>
+                        <span class="badge-custom badge-info">Wireframes</span>
+                        <p class="mt-2"><strong>Ideal para:</strong> Prototipos de baja fidelidad rápidos</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-magic text-primary"></i> Marvel</h5>
+                        <p>Prototipado simple y rápido, ideal para principiantes.</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                        <span class="badge-custom badge-primary">Simple</span>
+                        <p class="mt-2"><strong>Ideal para:</strong> Prototipos rápidos sin diseño complejo</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-layer-group text-success"></i> InVision</h5>
+                        <p>Plataforma de colaboración y prototipado.</p>
+                        <span class="badge-custom badge-warning">Freemium</span>
+                        <span class="badge-custom badge-primary">Colaborativo</span>
+                        <p class="mt-2"><strong>Ideal para:</strong> Feedback de equipo, presentaciones</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><i class="fas fa-code text-danger"></i> Prototipos en Código</h5>
+                        <p>HTML, CSS, JavaScript, React, Vue, Angular</p>
+                        <span class="badge-custom badge-success">Gratis</span>
+                        <span class="badge-custom badge-danger">Técnico</span>
+                        <p class="mt-2"><strong>Ideal para:</strong> Prototipos funcionales, testing real</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-primary mt-4">
+                <i class="fas fa-graduation-cap"></i> <strong>Recomendación:</strong> Para estudiantes, comenzar con <strong>Figma</strong> (gratis, potente y usado en la industria).
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 15: Mejores Prácticas -->
+    <div class="slide" id="slide-15">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-award"></i> Mejores Prácticas de Prototipado</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="text-success"><i class="fas fa-thumbs-up"></i> Haz esto:</h4>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">1</span> Empieza Simple</h5>
+                        <p>Comienza con baja fidelidad y aumenta gradualmente el detalle.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">2</span> Define el Objetivo</h5>
+                        <p>Antes de prototipar, pregúntate: ¿Qué quiero aprender o validar?</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">3</span> Testea Temprano</h5>
+                        <p>Prueba con usuarios reales lo antes posible, incluso con papel.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">4</span> Itera Rápido</h5>
+                        <p>Usa el feedback para mejorar y crear nuevas versiones rápidamente.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-success">5</span> Prototipa Múltiples Ideas</h5>
+                        <p>No te cases con una sola solución. Explora alternativas.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4 class="text-danger"><i class="fas fa-thumbs-down"></i> Evita esto:</h4>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-danger">1</span> Perfeccionismo Prematuro</h5>
+                        <p>No pierdas tiempo puliendo detalles visuales antes de validar la idea.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-danger">2</span> Prototipar Todo</h5>
+                        <p>Enfócate en las partes críticas o riesgosas, no necesitas prototipar todo.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-danger">3</span> Enamorarse del Prototipo</h5>
+                        <p>Recuerda: es desechable. Está bien tirar prototipos y empezar de nuevo.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-danger">4</span> Prototipar sin Objetivo</h5>
+                        <p>Cada prototipo debe tener un propósito claro de aprendizaje.</p>
+                    </div>
+                    
+                    <div class="prototype-card">
+                        <h5><span class="badge-custom badge-danger">5</span> Ignorar el Feedback</h5>
+                        <p>El prototipo no sirve de nada si no escuchas lo que te dicen los usuarios.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning mt-4 text-center">
+                <i class="fas fa-quote-left"></i> <em>"El mejor prototipo es aquel que responde tus preguntas más importantes de la manera más rápida y económica posible"</em>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 16: Errores Comunes -->
+    <div class="slide" id="slide-16">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-exclamation-triangle"></i> Errores Comunes en Prototipado</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="prototype-card" style="border-left-color: var(--accent-color);">
+                        <h5 class="text-danger"><i class="fas fa-times-circle"></i> Error 1: Fidelidad Incorrecta</h5>
+                        <p><strong>Problema:</strong> Usar alta fidelidad demasiado pronto o baja fidelidad demasiado tarde.</p>
+                        <p><strong>Solución:</strong> Adapta la fidelidad a la fase del proyecto y el objetivo del prototipo.</p>
+                        <div class="alert alert-warning mt-2">
+                            <small><strong>Ejemplo:</strong> No gastes días diseñando colores perfectos si aún no sabes si el flujo funciona.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card" style="border-left-color: var(--accent-color);">
+                        <h5 class="text-danger"><i class="fas fa-times-circle"></i> Error 2: Testear con el Equipo</h5>
+                        <p><strong>Problema:</strong> Solo probar prototipos internamente, sin usuarios reales.</p>
+                        <p><strong>Solución:</strong> Siempre testea con personas que representen a tus usuarios objetivo.</p>
+                        <div class="alert alert-warning mt-2">
+                            <small><strong>Recuerda:</strong> Tu equipo no piensa como tus usuarios.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card" style="border-left-color: var(--accent-color);">
+                        <h5 class="text-danger"><i class="fas fa-times-circle"></i> Error 3: Prototipos sin Contexto</h5>
+                        <p><strong>Problema:</strong> Mostrar pantallas aisladas sin explicar el flujo o contexto de uso.</p>
+                        <p><strong>Solución:</strong> Presenta el prototipo dentro de un escenario o historia de usuario.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="prototype-card" style="border-left-color: var(--accent-color);">
+                        <h5 class="text-danger"><i class="fas fa-times-circle"></i> Error 4: Datos Irrealistas</h5>
+                        <p><strong>Problema:</strong> Usar "Lorem ipsum", "Usuario 1", o datos genéricos.</p>
+                        <p><strong>Solución:</strong> Usa datos realistas que ayuden a los usuarios a entender el contexto.</p>
+                        <div class="alert alert-success mt-2">
+                            <small><strong>Mejor:</strong> "María González" en lugar de "Usuario 123"</small>
+                        </div>
+                    </div>
+                    
+                    <div class="prototype-card" style="border-left-color: var(--accent-color);">
+                        <h5 class="text-danger"><i class="fas fa-times-circle"></i> Error 5: No Documentar Aprendizajes</h5>
+                        <p><strong>Problema:</strong> Testear prototipos pero no registrar lo aprendido.</p>
+                        <p><strong>Solución:</strong> Documenta hallazgos clave, problemas encontrados y decisiones tomadas.</p>
+                    </div>
+                    
+                    <div class="prototype-card" style="border-left-color: var(--accent-color);">
+                        <h5 class="text-danger"><i class="fas fa-times-circle"></i> Error 6: Esperar a "Tenerlo Todo"</h5>
+                        <p><strong>Problema:</strong> Postergar el prototipado hasta tener toda la información.</p>
+                        <p><strong>Solución:</strong> Prototipa con lo que tienes. Los vacíos se llenarán iterando.</p>
+                        <div class="alert alert-info mt-2">
+                            <small>"Done is better than perfect" - Facebook motto</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 17: Resumen -->
+    <div class="slide" id="slide-17">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-check-double"></i> Resumen</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-brain text-primary"></i> Design Thinking</h5>
+                        <ul class="custom-list">
+                            <li>Metodología centrada en el usuario</li>
+                            <li>5 fases: Empatizar, Definir, Idear, <strong>Prototipar</strong>, Evaluar</li>
+                            <li>Proceso iterativo y colaborativo</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-cube text-success"></i> Prototipos</h5>
+                        <ul class="custom-list">
+                            <li>Representaciones tangibles de ideas</li>
+                            <li>Herramientas de aprendizaje, no productos finales</li>
+                            <li>Permiten validar, comunicar y refinar</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-layer-group text-warning"></i> Tipos de Prototipos</h5>
+                        <ul class="custom-list">
+                            <li><strong>Baja fidelidad:</strong> Rápidos, simples (papel, sketches)</li>
+                            <li><strong>Media fidelidad:</strong> Digitales, wireframes</li>
+                            <li><strong>Alta fidelidad:</strong> Realistas, interactivos</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h5><i class="fas fa-bullseye text-danger"></i> Clasificaciones</h5>
+                        <ul class="custom-list">
+                            <li><strong>Por objetivo:</strong> Exploración, Validación, Comunicación, Refinamiento</li>
+                            <li><strong>Por técnica:</strong> Papel, Digitales, Interactivos, Físicos</li>
+                            <li><strong>Por funcionalidad:</strong> Visuales, Funcionales, Híbridos</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-tools text-info"></i> Herramientas</h5>
+                        <ul class="custom-list">
+                            <li><strong>Figma:</strong> Colaborativo, gratuito</li>
+                            <li><strong>Adobe XD:</strong> Suite Adobe</li>
+                            <li><strong>Sketch:</strong> Estándar macOS</li>
+                            <li><strong>Balsamiq:</strong> Wireframes rápidos</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h5><i class="fas fa-award text-design"></i> Mejores Prácticas</h5>
+                        <ul class="custom-list">
+                            <li>Empieza simple, itera rápido</li>
+                            <li>Testea temprano con usuarios reales</li>
+                            <li>No te enamores del prototipo</li>
+                            <li>Documenta aprendizajes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-success mt-4 text-center">
+                <h4><i class="fas fa-trophy"></i> ¡Ahora estás listo para crear prototipos efectivos!</h4>
+                <p class="mb-0">Recuerda: El mejor prototipo es el que te ayuda a aprender más rápido</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 18: Inicio del Quiz -->
+    <div class="slide" id="slide-18">
+        <div class="content-card text-center">
+            <h2 class="slide-title"><i class="fas fa-graduation-cap"></i> Quiz Final - 20 Preguntas</h2>
+            
+            <div class="home-hero" style="background: linear-gradient(135deg, #e67e22 0%, #e74c3c 100%); border-radius: 15px; padding: 50px; margin: 30px 0;">
+                <i class="fas fa-clipboard-list fa-5x mb-4 text-white"></i>
+                <h3 class="text-white">¡Evalúa tu conocimiento!</h3>
+                <p class="text-white">20 preguntas sobre Prototipado en Design Thinking</p>
+                
+                <div class="alert alert-light mt-4 text-start">
+                    <h5><i class="fas fa-info-circle"></i> Instrucciones:</h5>
+                    <ul class="custom-list">
+                        <li>Selecciona la respuesta que consideres correcta</li>
+                        <li>Recibirás retroalimentación inmediata</li>
+                        <li>Al final verás tu puntuación total</li>
+                        <li>Podrás revisar todas las respuestas correctas e incorrectas</li>
+                        <li>Cada pregunta vale 1 punto (total: 20 puntos)</li>
+                    </ul>
+                </div>
+                
+                <button class="start-btn mt-4" onclick="startQuiz()">
+                    <i class="fas fa-play-circle"></i> Comenzar Quiz
+                </button>
+            </div>
+            
+            <div id="quiz-score" style="display:none;" class="mt-4">
+                <h4>Puntuación: <span id="current-score">0</span> / 20</h4>
+                <div class="progress-container">
+                    <div id="quiz-progress" class="progress-bar-custom" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Questions (Slides 19-38) -->
+    <div class="slide" id="slide-19">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 1 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuántas fases tiene el proceso de Design Thinking?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="1" data-answer="b">
+                <span class="badge-custom badge-primary">A</span>
+                <span>3 fases</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>5 fases</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>7 fases</span>
+            </div>
+            <div class="quiz-option" data-question="1" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>10 fases</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-20">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 2 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿En qué fase del Design Thinking se crean prototipos?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="2" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Empatizar</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Idear</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Prototipar</span>
+            </div>
+            <div class="quiz-option" data-question="2" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Evaluar</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-21">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 3 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué es un prototipo en Design Thinking?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="3" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>El producto final listo para lanzar</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Una representación tangible de una idea para explorar y validar</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Un documento de requisitos técnicos</span>
+            </div>
+            <div class="quiz-option" data-question="3" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Una presentación para inversores</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-22">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 4 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál NO es una característica de un prototipo?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="4" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Tangible</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Rápido de crear</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Perfecto y sin errores</span>
+            </div>
+            <div class="quiz-option" data-question="4" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Evolutivo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-23">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 5 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es el principal beneficio de prototipar?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="5" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Hacer el producto más caro</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Validar ideas tempranamente y reducir riesgos</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Impresionar a los inversores</span>
+            </div>
+            <div class="quiz-option" data-question="5" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Alargar el tiempo de desarrollo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-24">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 6 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué caracteriza a un prototipo de baja fidelidad?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="6" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Es rápido, simple y económico de crear</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Tiene diseño visual completo y pulido</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Requiere programación avanzada</span>
+            </div>
+            <div class="quiz-option" data-question="6" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Tarda semanas en crearse</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-25">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 7 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es un ejemplo de prototipo de baja fidelidad?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="7" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Un boceto en papel</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Una app funcional en el App Store</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Un mockup de alta fidelidad en Figma</span>
+            </div>
+            <div class="quiz-option" data-question="7" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Un prototipo con código React completo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-26">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 8 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué es un wireframe?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="8" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Un esquema estructural que muestra la disposición de elementos</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Un diseño visual completo con colores y fotos</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Un documento de requisitos</span>
+            </div>
+            <div class="quiz-option" data-question="8" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Una herramienta de programación</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-27">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 9 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuándo se deben usar prototipos de alta fidelidad?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="9" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Al inicio del proyecto para explorar ideas</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>En fases finales, para validar detalles y presentar</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Nunca, solo baja fidelidad es necesaria</span>
+            </div>
+            <div class="quiz-option" data-question="9" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Solo para apps móviles</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-28">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 10 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué herramienta es más recomendada para estudiantes según la presentación?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="10" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Microsoft Word</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Figma</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Adobe Photoshop</span>
+            </div>
+            <div class="quiz-option" data-question="10" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>PowerPoint</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-29">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 11 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es el objetivo de un prototipo de exploración?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="11" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Explorar múltiples ideas rápidamente</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Presentar a inversores</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Validar detalles finales</span>
+            </div>
+            <div class="quiz-option" data-question="11" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Programar el producto final</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-30">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 12 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué significa que el proceso de Design Thinking es iterativo?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="12" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Que es lineal y se hace una sola vez</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Que se puede volver atrás y repetir fases según aprendizajes</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Que solo se hace digitalmente</span>
+            </div>
+            <div class="quiz-option" data-question="12" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Que requiere muchos recursos</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-31">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 13 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es una mejor práctica al prototipar?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="13" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Perfeccionar todos los detalles antes de testear</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Testear temprano con usuarios reales</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Solo testear internamente con el equipo</span>
+            </div>
+            <div class="quiz-option" data-question="13" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Prototipar todo el sistema a la vez</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-32">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 14 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué error común se debe evitar al prototipar?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="14" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Testear con usuarios</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Enamorarse del prototipo y no querer cambiarlo</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Empezar simple</span>
+            </div>
+            <div class="quiz-option" data-question="14" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Iterar rápidamente</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-33">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 15 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué tipo de prototipo es más adecuado para validar el flujo de una app?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="15" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Un boceto estático</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Un prototipo clickable o interactivo</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Un documento de texto</span>
+            </div>
+            <div class="quiz-option" data-question="15" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Una presentación de PowerPoint</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-34">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 16 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál NO es una fase del Design Thinking?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="16" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Empatizar</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Programar</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Prototipar</span>
+            </div>
+            <div class="quiz-option" data-question="16" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Idear</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-35">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 17 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué principio fundamental caracteriza al Design Thinking?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="17" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Centrado en la tecnología</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Centrado en el usuario</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Centrado en las ganancias</span>
+            </div>
+            <div class="quiz-option" data-question="17" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Centrado en la competencia</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-36">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 18 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál es la principal ventaja de usar datos realistas en prototipos?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="18" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Hace el prototipo más pesado</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Ayuda a los usuarios a entender mejor el contexto</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Es más difícil de crear</span>
+            </div>
+            <div class="quiz-option" data-question="18" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>No tiene ninguna ventaja</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-37">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 19 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Qué se debe hacer PRIMERO antes de crear un prototipo?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="19" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Programar el backend</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Definir el objetivo: qué quiero aprender o validar</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Diseñar todos los colores y tipografías</span>
+            </div>
+            <div class="quiz-option" data-question="19" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Contratar a un diseñador profesional</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-38">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-question-circle"></i> Pregunta 20 de 20</h2>
+            
+            <div class="example-box">
+                <h4>¿Cuál afirmación es correcta sobre los prototipos?</h4>
+            </div>
+            
+            <div class="quiz-option" data-question="20" data-answer="a">
+                <span class="badge-custom badge-primary">A</span>
+                <span>Los prototipos son el producto final</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="b">
+                <span class="badge-custom badge-primary">B</span>
+                <span>Los prototipos deben ser perfectos antes de mostrarlos</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="c">
+                <span class="badge-custom badge-primary">C</span>
+                <span>Los prototipos son herramientas de aprendizaje desechables</span>
+            </div>
+            <div class="quiz-option" data-question="20" data-answer="d">
+                <span class="badge-custom badge-primary">D</span>
+                <span>Solo los diseñadores deben crear prototipos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 39: Resultados y Revisión -->
+    <div class="slide" id="slide-39">
+        <div class="content-card text-center">
+            <h2 class="slide-title"><i class="fas fa-trophy"></i> ¡Quiz Completado!</h2>
+            
+            <div id="final-results" class="home-hero" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); border-radius: 15px; padding: 50px; margin: 30px 0;">
+                <i class="fas fa-check-circle fa-5x mb-4 text-white"></i>
+                <h3 class="text-white">Tu Puntuación Final</h3>
+                <h1 class="text-white display-1 my-4"><span id="final-score">0</span> / 20</h1>
+                <h4 class="text-white" id="result-message"></h4>
+                
+                <div class="progress-container mt-4">
+                    <div id="final-progress" class="progress-bar-custom" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-check-double text-success fa-3x"></i>
+                        <h4 class="mt-3">Respuestas Correctas</h4>
+                        <h2 id="correct-count">0</h2>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-times text-danger fa-3x"></i>
+                        <h4 class="mt-3">Respuestas Incorrectas</h4>
+                        <h2 id="incorrect-count">0</h2>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-percentage text-primary fa-3x"></i>
+                        <h4 class="mt-3">Porcentaje</h4>
+                        <h2 id="percentage">0%</h2>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-arrow-right"></i> <strong>¡Avanza para revisar todas tus respuestas!</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 40: Revisión de Respuestas -->
+    <div class="slide" id="slide-40">
+        <div class="content-card">
+            <h2 class="slide-title"><i class="fas fa-clipboard-check"></i> Revisión de Respuestas</h2>
+            
+            <div id="answers-review"></div>
+            
+            <div class="alert alert-success mt-4 text-center">
+                <h5><i class="fas fa-graduation-cap"></i> ¡Felicitaciones por completar el quiz!</h5>
+                <p class="mb-0">Repasa las respuestas incorrectas para reforzar tu aprendizaje sobre prototipado en Design Thinking.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>
+            <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">41</span>
+        </span>
+        <button class="nav-btn" id="nextBtn" onclick="nextSlide()">
+            Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let currentSlideIndex = 0;
+        const totalSlides = 41;
+        let quizScore = 0;
+        let quizStarted = false;
+        let userAnswers = {}; // Almacenar respuestas del usuario
+        
+        // Respuestas correctas del quiz
+        const correctAnswers = {
+            1: 'b',  // 5 fases
+            2: 'c',  // Prototipar
+            3: 'b',  // Representación tangible
+            4: 'c',  // Perfecto y sin errores
+            5: 'b',  // Validar ideas tempranamente
+            6: 'a',  // Rápido, simple y económico
+            7: 'a',  // Boceto en papel
+            8: 'a',  // Esquema estructural
+            9: 'b',  // Fases finales
+            10: 'b', // Figma
+            11: 'a', // Explorar múltiples ideas
+            12: 'b', // Volver atrás y repetir
+            13: 'b', // Testear temprano
+            14: 'b', // Enamorarse del prototipo
+            15: 'b', // Prototipo clickable
+            16: 'b', // Programar
+            17: 'b', // Centrado en el usuario
+            18: 'b', // Ayuda a entender contexto
+            19: 'b', // Definir el objetivo
+            20: 'c'  // Herramientas de aprendizaje
+        };
+        
+        // Preguntas para la revisión
+        const questions = {
+            1: "¿Cuántas fases tiene el proceso de Design Thinking?",
+            2: "¿En qué fase del Design Thinking se crean prototipos?",
+            3: "¿Qué es un prototipo en Design Thinking?",
+            4: "¿Cuál NO es una característica de un prototipo?",
+            5: "¿Cuál es el principal beneficio de prototipar?",
+            6: "¿Qué caracteriza a un prototipo de baja fidelidad?",
+            7: "¿Cuál es un ejemplo de prototipo de baja fidelidad?",
+            8: "¿Qué es un wireframe?",
+            9: "¿Cuándo se deben usar prototipos de alta fidelidad?",
+            10: "¿Qué herramienta es más recomendada para estudiantes según la presentación?",
+            11: "¿Cuál es el objetivo de un prototipo de exploración?",
+            12: "¿Qué significa que el proceso de Design Thinking es iterativo?",
+            13: "¿Cuál es una mejor práctica al prototipar?",
+            14: "¿Qué error común se debe evitar al prototipar?",
+            15: "¿Qué tipo de prototipo es más adecuado para validar el flujo de una app?",
+            16: "¿Cuál NO es una fase del Design Thinking?",
+            17: "¿Qué principio fundamental caracteriza al Design Thinking?",
+            18: "¿Cuál es la principal ventaja de usar datos realistas en prototipos?",
+            19: "¿Qué se debe hacer PRIMERO antes de crear un prototipo?",
+            20: "¿Cuál afirmación es correcta sobre los prototipos?"
+        };
+        
+        // Opciones para la revisión
+        const options = {
+            1: {a: "3 fases", b: "5 fases", c: "7 fases", d: "10 fases"},
+            2: {a: "Empatizar", b: "Idear", c: "Prototipar", d: "Evaluar"},
+            3: {a: "El producto final listo para lanzar", b: "Una representación tangible de una idea para explorar y validar", c: "Un documento de requisitos técnicos", d: "Una presentación para inversores"},
+            4: {a: "Tangible", b: "Rápido de crear", c: "Perfecto y sin errores", d: "Evolutivo"},
+            5: {a: "Hacer el producto más caro", b: "Validar ideas tempranamente y reducir riesgos", c: "Impresionar a los inversores", d: "Alargar el tiempo de desarrollo"},
+            6: {a: "Es rápido, simple y económico de crear", b: "Tiene diseño visual completo y pulido", c: "Requiere programación avanzada", d: "Tarda semanas en crearse"},
+            7: {a: "Un boceto en papel", b: "Una app funcional en el App Store", c: "Un mockup de alta fidelidad en Figma", d: "Un prototipo con código React completo"},
+            8: {a: "Un esquema estructural que muestra la disposición de elementos", b: "Un diseño visual completo con colores y fotos", c: "Un documento de requisitos", d: "Una herramienta de programación"},
+            9: {a: "Al inicio del proyecto para explorar ideas", b: "En fases finales, para validar detalles y presentar", c: "Nunca, solo baja fidelidad es necesaria", d: "Solo para apps móviles"},
+            10: {a: "Microsoft Word", b: "Figma", c: "Adobe Photoshop", d: "PowerPoint"},
+            11: {a: "Explorar múltiples ideas rápidamente", b: "Presentar a inversores", c: "Validar detalles finales", d: "Programar el producto final"},
+            12: {a: "Que es lineal y se hace una sola vez", b: "Que se puede volver atrás y repetir fases según aprendizajes", c: "Que solo se hace digitalmente", d: "Que requiere muchos recursos"},
+            13: {a: "Perfeccionar todos los detalles antes de testear", b: "Testear temprano con usuarios reales", c: "Solo testear internamente con el equipo", d: "Prototipar todo el sistema a la vez"},
+            14: {a: "Testear con usuarios", b: "Enamorarse del prototipo y no querer cambiarlo", c: "Empezar simple", d: "Iterar rápidamente"},
+            15: {a: "Un boceto estático", b: "Un prototipo clickable o interactivo", c: "Un documento de texto", d: "Una presentación de PowerPoint"},
+            16: {a: "Empatizar", b: "Programar", c: "Prototipar", d: "Idear"},
+            17: {a: "Centrado en la tecnología", b: "Centrado en el usuario", c: "Centrado en las ganancias", d: "Centrado en la competencia"},
+            18: {a: "Hace el prototipo más pesado", b: "Ayuda a los usuarios a entender mejor el contexto", c: "Es más difícil de crear", d: "No tiene ninguna ventaja"},
+            19: {a: "Programar el backend", b: "Definir el objetivo: qué quiero aprender o validar", c: "Diseñar todos los colores y tipografías", d: "Contratar a un diseñador profesional"},
+            20: {a: "Los prototipos son el producto final", b: "Los prototipos deben ser perfectos antes de mostrarlos", c: "Los prototipos son herramientas de aprendizaje desechables", d: "Solo los diseñadores deben crear prototipos"}
+        };
+        
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                currentSlideIndex = index;
+                
+                document.getElementById('currentSlide').textContent = index + 1;
+                document.getElementById('prevBtn').disabled = index === 0;
+                document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+        
+        function startQuiz() {
+            quizStarted = true;
+            document.getElementById('quiz-score').style.display = 'block';
+            nextSlide();
+        }
+        
+        // Event listeners para las opciones del quiz
+        document.addEventListener('DOMContentLoaded', function() {
+            const quizOptions = document.querySelectorAll('.quiz-option');
+            
+            quizOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const question = this.dataset.question;
+                    const answer = this.dataset.answer;
+                    const correctAnswer = correctAnswers[question];
+                    
+                    // Guardar respuesta del usuario
+                    userAnswers[question] = answer;
+                    
+                    // Obtener todas las opciones de esta pregunta
+                    const allOptions = document.querySelectorAll(`[data-question="${question}"]`);
+                    
+                    // Deshabilitar todas las opciones de esta pregunta
+                    allOptions.forEach(opt => {
+                        opt.style.pointerEvents = 'none';
+                        opt.classList.add('selected');
+                    });
+                    
+                    // Verificar respuesta
+                    if (answer === correctAnswer) {
+                        this.classList.add('correct');
+                        quizScore++;
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Correcto!',
+                            text: 'Excelente respuesta',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        this.classList.add('incorrect');
+                        // Mostrar la respuesta correcta
+                        allOptions.forEach(opt => {
+                            if (opt.dataset.answer === correctAnswer) {
+                                opt.classList.add('correct');
+                            }
+                        });
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Incorrecto',
+                            text: 'La respuesta correcta está marcada en verde',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    
+                    // Actualizar puntuación
+                    document.getElementById('current-score').textContent = quizScore;
+                    const progress = (quizScore / 20) * 100;
+                    document.getElementById('quiz-progress').style.width = progress + '%';
+                    
+                    // Si es la última pregunta, mostrar resultados
+                    if (question == 20) {
+                        setTimeout(() => {
+                            showFinalResults();
+                        }, 2000);
+                    } else {
+                        // Avanzar automáticamente después de 2 segundos
+                        setTimeout(() => {
+                            nextSlide();
+                        }, 2000);
+                    }
+                });
+            });
+        });
+        
+        function showFinalResults() {
+            const finalScore = quizScore;
+            const percentage = (finalScore / 20) * 100;
+            const incorrect = 20 - finalScore;
+            
+            document.getElementById('final-score').textContent = finalScore;
+            document.getElementById('correct-count').textContent = finalScore;
+            document.getElementById('incorrect-count').textContent = incorrect;
+            document.getElementById('percentage').textContent = percentage.toFixed(0) + '%';
+            document.getElementById('final-progress').style.width = percentage + '%';
+            
+            // Mensaje según puntuación
+            let message = '';
+            let icon = 'success';
+            
+            if (percentage >= 90) {
+                message = '¡Excelente! Dominas el prototipado en Design Thinking';
+                icon = 'success';
+            } else if (percentage >= 70) {
+                message = '¡Muy bien! Tienes un buen conocimiento del tema';
+                icon = 'success';
+            } else if (percentage >= 50) {
+                message = 'Bien, pero puedes mejorar repasando algunos conceptos';
+                icon = 'info';
+            } else {
+                message = 'Te recomendamos repasar el material nuevamente';
+                icon = 'warning';
+            }
+            
+            document.getElementById('result-message').textContent = message;
+            
+            // Cambiar color del fondo según resultado
+            const resultsDiv = document.getElementById('final-results');
+            if (percentage >= 70) {
+                resultsDiv.style.background = 'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)';
+            } else if (percentage >= 50) {
+                resultsDiv.style.background = 'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)';
+            } else {
+                resultsDiv.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+            }
+            
+            // Generar revisión de respuestas
+            generateAnswersReview();
+            
+            nextSlide();
+            
+            Swal.fire({
+                icon: icon,
+                title: 'Quiz Completado',
+                text: `Has obtenido ${finalScore} de 20 puntos (${percentage.toFixed(0)}%)`,
+                confirmButtonText: 'Ver Resultados y Revisión',
+                confirmButtonColor: '#e67e22'
+            });
+        }
+        
+        function generateAnswersReview() {
+            const reviewContainer = document.getElementById('answers-review');
+            let reviewHTML = '';
+            
+            for (let i = 1; i <= 20; i++) {
+                const userAnswer = userAnswers[i];
+                const correctAnswer = correctAnswers[i];
+                const isCorrect = userAnswer === correctAnswer;
+                const answerClass = isCorrect ? 'correct-answer' : 'incorrect-answer';
+                const icon = isCorrect ? 'fa-check-circle text-success' : 'fa-times-circle text-danger';
+                const statusText = isCorrect ? 'Correcta' : 'Incorrecta';
+                
+                reviewHTML += `
+                    <div class="answer-review ${answerClass}">
+                        <div class="row align-items-center">
+                            <div class="col-md-1 text-center">
+                                <h3><i class="fas ${icon}"></i></h3>
+                            </div>
+                            <div class="col-md-11">
+                                <h5><span class="badge-custom badge-primary">${i}</span> ${questions[i]}</h5>
+                                <p class="mb-2"><strong>Tu respuesta:</strong> <span class="${isCorrect ? 'text-success' : 'text-danger'}">${userAnswer ? options[i][userAnswer] : 'No respondida'}</span> - <strong>${statusText}</strong></p>
+                                ${!isCorrect ? `<p class="mb-0"><strong>Respuesta correcta:</strong> <span class="text-success">${options[i][correctAnswer]}</span></p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            reviewContainer.innerHTML = reviewHTML;
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+        
+        // Initialize
+        showSlide(0);
+        document.getElementById('totalSlides').textContent = totalSlides;
+    </script>
+</body>
+</html>
