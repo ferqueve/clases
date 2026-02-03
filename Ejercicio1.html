@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis y Obtención de Requerimientos - Caso Práctico</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .presentation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .section {
+            display: none;
+            padding: 40px;
+            min-height: 500px;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .navigation {
+            background: #f8f9fa;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 3px solid var(--secondary-color);
+        }
+
+        .btn-custom {
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .card-custom {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .stakeholder-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        .requirement-item {
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .requirement-item.functional {
+            border-left-color: var(--success-color);
+        }
+
+        .requirement-item.non-functional {
+            border-left-color: var(--warning-color);
+        }
+
+        .quiz-question {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .quiz-option {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .quiz-option:hover {
+            background: #e9ecef;
+            border-color: var(--secondary-color);
+        }
+
+        .quiz-option.selected {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .quiz-option.correct {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .quiz-option.incorrect {
+            background: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+
+        .progress-bar-custom {
+            height: 30px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .icon-large {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+
+        .case-study-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .results-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-container">
+    <!-- Header -->
+    <div class="header animate__animated animate__fadeInDown">
+        <i class="fas fa-clipboard-list icon-large"></i>
+        <h1>Análisis y Obtención de Requerimientos</h1>
+        <p class="lead">Caso Práctico: Sistema de Reservas de Salas de Estudio</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="px-4 pt-3">
+        <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-success progress-bar-animated" id="progressBar" role="progressbar" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Section 1: Introducción -->
+    <div class="section active animate__animated animate__fadeIn" id="section1">
+        <h2 class="section-title"><i class="fas fa-book-open"></i> Introducción al Análisis de Requerimientos</h2>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <div class="card-body">
+                        <h4><i class="fas fa-bullseye text-primary"></i> ¿Qué es un Requerimiento?</h4>
+                        <p>Un requerimiento es una necesidad documentada sobre el contenido, forma o funcionalidad de un producto o servicio.</p>
+                        <ul>
+                            <li><strong>Describe QUÉ debe hacer el sistema</strong></li>
+                            <li><strong>No describe CÓMO lo hará</strong></li>
+                            <li><strong>Debe ser verificable y medible</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <div class="card-body">
+                        <h4><i class="fas fa-users text-success"></i> Stakeholders</h4>
+                        <p>Personas o grupos que tienen interés en el proyecto y pueden influir o ser afectados por él.</p>
+                        <ul>
+                            <li>Usuarios finales</li>
+                            <li>Clientes/Patrocinadores</li>
+                            <li>Desarrolladores</li>
+                            <li>Gerentes/Administradores</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cogs icon-large text-success"></i>
+                        <h4>Requerimientos Funcionales</h4>
+                        <p>Describen las funciones y servicios que el sistema debe proporcionar.</p>
+                        <span class="badge bg-success badge-custom">FUNCIONES</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tachometer-alt icon-large text-warning"></i>
+                        <h4>Requerimientos No Funcionales</h4>
+                        <p>Describen las restricciones y cualidades del sistema (rendimiento, seguridad, usabilidad).</p>
+                        <span class="badge bg-warning badge-custom">CUALIDADES</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Presentación del Caso -->
+    <div class="section" id="section2">
+        <h2 class="section-title"><i class="fas fa-briefcase"></i> Caso Práctico</h2>
+        
+        <div class="case-study-box animate__animated animate__bounceIn">
+            <h3><i class="fas fa-university"></i> Sistema de Reservas de Salas de Estudio Universitarias</h3>
+            <p class="lead">Universidad Nacional del Progreso</p>
+        </div>
+
+        <div class="card card-custom">
+            <div class="card-body">
+                <h4><i class="fas fa-info-circle text-primary"></i> Situación Actual</h4>
+                <p>La Universidad Nacional del Progreso cuenta con 15 salas de estudio distribuidas en 3 edificios diferentes. Actualmente, los estudiantes deben ir físicamente a cada edificio para verificar la disponibilidad de las salas, lo que genera:</p>
+                <ul>
+                    <li><i class="fas fa-times text-danger"></i> Pérdida de tiempo de los estudiantes</li>
+                    <li><i class="fas fa-times text-danger"></i> Conflictos por uso simultáneo de las salas</li>
+                    <li><i class="fas fa-times text-danger"></i> Falta de control sobre el uso de los espacios</li>
+                    <li><i class="fas fa-times text-danger"></i> Imposibilidad de obtener estadísticas de uso</li>
+                    <li><i class="fas fa-times text-danger"></i> Dificultad para planificar mantenimiento</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card card-custom mt-4">
+            <div class="card-body">
+                <h4><i class="fas fa-lightbulb text-warning"></i> Solución Propuesta</h4>
+                <p>Desarrollar un <strong>sistema web de reservas</strong> que permita a los estudiantes consultar la disponibilidad de salas en tiempo real, realizar reservas, y a los administradores gestionar el uso de los espacios.</p>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-star"></i> <strong>Objetivo:</strong> Optimizar el uso de las salas de estudio y mejorar la experiencia de los estudiantes mediante un sistema digital de reservas.
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-custom mt-4">
+            <div class="card-body">
+                <h4><i class="fas fa-building text-primary"></i> Información Adicional</h4>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-door-open"></i> Salas Disponibles</h6>
+                        <ul class="list-unstyled">
+                            <li>• Edificio A: 6 salas (4-8 personas)</li>
+                            <li>• Edificio B: 5 salas (6-12 personas)</li>
+                            <li>• Edificio C: 4 salas (8-15 personas)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-clock"></i> Horarios</h6>
+                        <ul class="list-unstyled">
+                            <li>• Lunes a Viernes: 7:00 - 22:00</li>
+                            <li>• Sábados: 8:00 - 18:00</li>
+                            <li>• Domingos: Cerrado</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-users"></i> Usuarios</h6>
+                        <ul class="list-unstyled">
+                            <li>• 5,000 estudiantes activos</li>
+                            <li>• 200 docentes</li>
+                            <li>• 3 administradores</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Identificación de Stakeholders -->
+    <div class="section" id="section3">
+        <h2 class="section-title"><i class="fas fa-users"></i> Identificación de Stakeholders</h2>
+        
+        <p class="lead">Los stakeholders son todas las personas o grupos que tienen interés en el proyecto. Identifiquemos quiénes son en nuestro caso:</p>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="stakeholder-card animate__animated animate__fadeInLeft">
+                    <h4><i class="fas fa-user-graduate"></i> Estudiantes</h4>
+                    <p><strong>Rol:</strong> Usuarios principales del sistema</p>
+                    <p><strong>Intereses:</strong></p>
+                    <ul>
+                        <li>Reservar salas fácilmente</li>
+                        <li>Ver disponibilidad en tiempo real</li>
+                        <li>Cancelar reservas si es necesario</li>
+                        <li>Sistema intuitivo y rápido</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="stakeholder-card animate__animated animate__fadeInRight">
+                    <h4><i class="fas fa-user-tie"></i> Administradores</h4>
+                    <p><strong>Rol:</strong> Gestión del sistema y recursos</p>
+                    <p><strong>Intereses:</strong></p>
+                    <ul>
+                        <li>Control total sobre reservas</li>
+                        <li>Estadísticas de uso</li>
+                        <li>Gestión de salas y horarios</li>
+                        <li>Reportes administrativos</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 mt-3">
+                <div class="stakeholder-card animate__animated animate__fadeInLeft">
+                    <h4><i class="fas fa-chalkboard-teacher"></i> Docentes</h4>
+                    <p><strong>Rol:</strong> Usuarios secundarios</p>
+                    <p><strong>Intereses:</strong></p>
+                    <ul>
+                        <li>Reservar salas para tutorías</li>
+                        <li>Prioridad en ciertas reservas</li>
+                        <li>Facilidad de uso</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 mt-3">
+                <div class="stakeholder-card animate__animated animate__fadeInRight">
+                    <h4><i class="fas fa-tools"></i> Equipo de Mantenimiento</h4>
+                    <p><strong>Rol:</strong> Mantenimiento de salas</p>
+                    <p><strong>Intereses:</strong></p>
+                    <ul>
+                        <li>Bloquear salas para mantenimiento</li>
+                        <li>Programación de limpieza</li>
+                        <li>Reportes de problemas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 mt-3">
+                <div class="stakeholder-card animate__animated animate__fadeInLeft">
+                    <h4><i class="fas fa-laptop-code"></i> Equipo de Desarrollo</h4>
+                    <p><strong>Rol:</strong> Construcción del sistema</p>
+                    <p><strong>Intereses:</strong></p>
+                    <ul>
+                        <li>Requerimientos claros</li>
+                        <li>Tecnología apropiada</li>
+                        <li>Mantenibilidad del código</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 mt-3">
+                <div class="stakeholder-card animate__animated animate__fadeInRight">
+                    <h4><i class="fas fa-university"></i> Autoridades Universitarias</h4>
+                    <p><strong>Rol:</strong> Patrocinadores del proyecto</p>
+                    <p><strong>Intereses:</strong></p>
+                    <ul>
+                        <li>Optimización de recursos</li>
+                        <li>Mejora del servicio estudiantil</li>
+                        <li>Retorno de inversión</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Requerimientos Funcionales -->
+    <div class="section" id="section4">
+        <h2 class="section-title"><i class="fas fa-cogs"></i> Requerimientos Funcionales</h2>
+        
+        <p class="lead">Los requerimientos funcionales describen las funciones específicas que el sistema debe realizar:</p>
+
+        <h4 class="mt-4"><i class="fas fa-user-circle"></i> Gestión de Usuarios</h4>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-01:</strong> El sistema debe permitir el registro de usuarios con credenciales universitarias (email institucional).
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-02:</strong> El sistema debe autenticar usuarios mediante usuario y contraseña.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-03:</strong> El sistema debe diferenciar entre tres tipos de usuarios: Estudiante, Docente y Administrador.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-calendar-check"></i> Gestión de Reservas</h4>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-04:</strong> El sistema debe mostrar la disponibilidad de salas en tiempo real.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-05:</strong> El sistema debe permitir a los usuarios reservar una sala especificando fecha, hora de inicio y hora de fin.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-06:</strong> El sistema debe permitir cancelar reservas con al menos 2 horas de anticipación.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-07:</strong> El sistema debe limitar a los estudiantes a un máximo de 2 reservas activas simultáneas.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-08:</strong> El sistema debe enviar notificaciones por email de confirmación de reserva.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-09:</strong> El sistema debe enviar recordatorios 30 minutos antes de la reserva.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-door-open"></i> Gestión de Salas</h4>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-10:</strong> El sistema debe permitir a los administradores agregar, modificar y eliminar salas.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-11:</strong> El sistema debe permitir bloquear salas por mantenimiento.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-12:</strong> El sistema debe registrar la capacidad de cada sala.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-chart-bar"></i> Reportes y Estadísticas</h4>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-13:</strong> El sistema debe generar reportes de uso de salas por período.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-14:</strong> El sistema debe mostrar estadísticas de usuarios más activos.
+        </div>
+        <div class="requirement-item functional animate__animated animate__fadeInUp">
+            <strong>RF-15:</strong> El sistema debe permitir exportar reportes en formato PDF y Excel.
+        </div>
+    </div>
+
+    <!-- Section 5: Requerimientos No Funcionales -->
+    <div class="section" id="section5">
+        <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> Requerimientos No Funcionales</h2>
+        
+        <p class="lead">Los requerimientos no funcionales describen las cualidades y restricciones del sistema:</p>
+
+        <h4 class="mt-4"><i class="fas fa-rocket"></i> Rendimiento</h4>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-01:</strong> El sistema debe cargar la interfaz principal en menos de 2 segundos.
+        </div>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-02:</strong> El sistema debe soportar al menos 500 usuarios concurrentes.
+        </div>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-03:</strong> El tiempo de respuesta para consultas de disponibilidad debe ser menor a 1 segundo.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-shield-alt"></i> Seguridad</h4>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-04:</strong> El sistema debe cifrar las contraseñas usando algoritmos de hash seguros (bcrypt o similar).
+        </div>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-05:</strong> El sistema debe implementar protección contra ataques de inyección SQL.
+        </div>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-06:</strong> El sistema debe cerrar sesiones automáticamente después de 30 minutos de inactividad.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-laptop-code"></i> Usabilidad</h4>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-07:</strong> El sistema debe ser intuitivo y no requerir capacitación para usuarios finales.
+        </div>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-08:</strong> El sistema debe ser responsive y funcionar en dispositivos móviles.
+        </div>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-09:</strong> El sistema debe cumplir con estándares de accesibilidad WCAG 2.1.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-sync-alt"></i> Disponibilidad</h4>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-10:</strong> El sistema debe tener una disponibilidad del 99.5% mensual.
+        </div>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-11:</strong> El sistema debe realizar respaldos automáticos diarios de la base de datos.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-expand-arrows-alt"></i> Escalabilidad</h4>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-12:</strong> El sistema debe poder escalar para soportar hasta 10,000 usuarios sin degradación significativa.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-tools"></i> Mantenibilidad</h4>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-13:</strong> El código debe estar documentado siguiendo estándares de la industria.
+        </div>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-14:</strong> El sistema debe usar arquitectura modular para facilitar actualizaciones.
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-gavel"></i> Legales y Regulatorios</h4>
+        <div class="requirement-item non-functional animate__animated animate__fadeInUp">
+            <strong>RNF-15:</strong> El sistema debe cumplir con leyes de protección de datos personales.
+        </div>
+    </div>
+
+    <!-- Section 6: Quiz Introduction -->
+    <div class="section" id="section6">
+        <div class="text-center">
+            <i class="fas fa-graduation-cap icon-large text-primary pulse-animation"></i>
+            <h2 class="section-title">¡Hora de Evaluar tus Conocimientos!</h2>
+            
+            <div class="card card-custom mt-5">
+                <div class="card-body">
+                    <h4>Instrucciones del Quiz</h4>
+                    <div class="text-start mt-4">
+                        <p><i class="fas fa-check-circle text-success"></i> El quiz consta de <strong>20 preguntas</strong></p>
+                        <p><i class="fas fa-check-circle text-success"></i> Las preguntas abarcan conceptos teóricos y el caso práctico</p>
+                        <p><i class="fas fa-check-circle text-success"></i> Selecciona la respuesta que consideres correcta</p>
+                        <p><i class="fas fa-check-circle text-success"></i> Recibirás retroalimentación inmediata después de responder</p>
+                        <p><i class="fas fa-check-circle text-success"></i> Al final verás tu puntuación y podrás revisar las respuestas</p>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Lee cuidadosamente cada pregunta y justifica mentalmente tu respuesta.
+                    </div>
+                    
+                    <button class="btn btn-primary btn-lg btn-custom mt-3" onclick="startQuiz()">
+                        <i class="fas fa-play-circle"></i> Comenzar Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 7: Quiz Questions -->
+    <div class="section" id="section7">
+        <h2 class="section-title"><i class="fas fa-question-circle"></i> Quiz de Evaluación</h2>
+        <div id="quizContainer"></div>
+        <div class="text-center mt-4">
+            <button class="btn btn-success btn-lg btn-custom" id="submitQuizBtn" onclick="submitQuiz()" style="display: none;">
+                <i class="fas fa-check-circle"></i> Enviar Respuestas
+            </button>
+        </div>
+    </div>
+
+    <!-- Section 8: Results -->
+    <div class="section" id="section8">
+        <div class="results-container">
+            <i class="fas fa-trophy icon-large text-warning animate__animated animate__bounceIn"></i>
+            <h2 class="section-title">Resultados del Quiz</h2>
+            
+            <div class="score-display animate__animated animate__zoomIn" id="scoreDisplay">0/20</div>
+            
+            <div class="card card-custom mt-4">
+                <div class="card-body">
+                    <h4 id="resultMessage"></h4>
+                    <div class="progress mt-3" style="height: 30px;">
+                        <div class="progress-bar progress-bar-custom" id="resultProgressBar" role="progressbar"></div>
+                    </div>
+                    <div id="resultDetails" class="mt-4"></div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary btn-lg btn-custom mt-4" onclick="reviewAnswers()">
+                <i class="fas fa-eye"></i> Revisar Respuestas
+            </button>
+            <button class="btn btn-secondary btn-lg btn-custom mt-4" onclick="restartPresentation()">
+                <i class="fas fa-redo"></i> Reiniciar Presentación
+            </button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="btn btn-secondary btn-custom" id="prevBtn" onclick="prevSection()">
+            <i class="fas fa-arrow-left"></i> Anterior
+        </button>
+        <span id="sectionIndicator" class="badge bg-primary" style="font-size: 1.1rem; padding: 10px 20px;">
+            Sección 1 de 8
+        </span>
+        <button class="btn btn-primary btn-custom" id="nextBtn" onclick="nextSection()">
+            Siguiente <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Variables globales
+let currentSection = 1;
+const totalSections = 8;
+let quizAnswers = [];
+let quizStarted = false;
+
+// Sonidos
+const sounds = {
+    click: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCd0yO3UjDYKGWSt6+KdUw4MUKXh7bllHAU2jdT0yn0qByhtyO3ajD0IFmS06+WhUQ8PU6fh7bNiGgU0iNDzzX0uCCZuyO/XiTUIGWWr6+OVVBEOUano77hiFgU2htH0yH0vCC5syPDbhzYKGmOp7OKVVBMPUqnl77hiFwU2h9H0yH0xCzFuyPDbhjYKG2Kp7OGUVRQQUavl77ZiGAY3hdLzx3wwDDBuyPHYhTYLGmGp7OCTVRURUKzl7rdjGAY2hNLzxnsxCy9tyO/VhDYLG2Gp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGmGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdiFwU='),
+    correct: new Audio('data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQoFAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCd0yO3UjDYKGWSt6+KdUw4MUKXh7bllHAU2jdT0yn0qByhtyO3ajD0IFmS06+WhUQ8PU6fh7bNiGgU0iNDzzX0uCCZuyO/XiTUIGWWr6+OVVBEOUano77hiFgU2htH0yH0vCC5syPDbhzYKGmOp7OKVVBMPUqnl77hiFwU2h9H0yH0xCzFuyPDbhjYKG2Kp7OGUVRQQUavl77ZiGAY3hdLzx3wwDDBuyPHYhTYLGmGp7OCTVRURUKzl7rdjGAY2hNLzxnsxCy9tyO/VhDYLG2Gp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGmGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdjGAY2hNLzxXowCy9tyO/VhDYLGWGp6+CTVhYSUKzk7rdiFwU='),
+    incorrect: new Audio('data:audio/wav;base64,UklGRiQEAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAEAAB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f38=')
+};
+
+// Preguntas del quiz
+const quizQuestions = [
+    {
+        question: "¿Qué es un requerimiento funcional?",
+        options: [
+            "Una característica de rendimiento del sistema",
+            "Una función específica que el sistema debe realizar",
+            "Una restricción de diseño del sistema",
+            "Un aspecto de seguridad del sistema"
+        ],
+        correct: 1,
+        explanation: "Los requerimientos funcionales describen las funciones específicas que el sistema debe realizar, es decir, QUÉ debe hacer el sistema."
+    },
+    {
+        question: "¿Cuál de las siguientes NO es un stakeholder en el caso del sistema de reservas?",
+        options: [
+            "Estudiantes",
+            "Competidores de otras universidades",
+            "Administradores",
+            "Equipo de mantenimiento"
+        ],
+        correct: 1,
+        explanation: "Los competidores de otras universidades no tienen interés directo ni son afectados por el sistema de reservas interno de la universidad."
+    },
+    {
+        question: "En el caso presentado, ¿cuál es el objetivo principal del sistema?",
+        options: [
+            "Reducir el personal administrativo",
+            "Optimizar el uso de las salas de estudio",
+            "Aumentar el número de salas",
+            "Cobrar por el uso de las salas"
+        ],
+        correct: 1,
+        explanation: "El objetivo principal es optimizar el uso de las salas de estudio y mejorar la experiencia de los estudiantes mediante un sistema digital de reservas."
+    },
+    {
+        question: "¿Cuántas salas de estudio tiene la universidad en total según el caso?",
+        options: [
+            "10 salas",
+            "12 salas",
+            "15 salas",
+            "20 salas"
+        ],
+        correct: 2,
+        explanation: "La Universidad Nacional del Progreso cuenta con 15 salas de estudio distribuidas en 3 edificios (6+5+4=15)."
+    },
+    {
+        question: "¿Cuál de los siguientes es un requerimiento NO funcional?",
+        options: [
+            "El sistema debe permitir cancelar reservas",
+            "El sistema debe cargar en menos de 2 segundos",
+            "El sistema debe enviar notificaciones por email",
+            "El sistema debe mostrar la disponibilidad de salas"
+        ],
+        correct: 1,
+        explanation: "El tiempo de carga es un requerimiento no funcional de rendimiento. Los demás son funciones específicas del sistema (requerimientos funcionales)."
+    },
+    {
+        question: "Según el caso, ¿cuál es el límite de reservas activas simultáneas para estudiantes?",
+        options: [
+            "1 reserva",
+            "2 reservas",
+            "3 reservas",
+            "Sin límite"
+        ],
+        correct: 1,
+        explanation: "El requerimiento RF-07 establece que el sistema debe limitar a los estudiantes a un máximo de 2 reservas activas simultáneas."
+    },
+    {
+        question: "¿Qué característica distingue a un requerimiento no funcional?",
+        options: [
+            "Describe funciones del sistema",
+            "Describe cualidades y restricciones del sistema",
+            "Se implementa primero",
+            "No es importante para el proyecto"
+        ],
+        correct: 1,
+        explanation: "Los requerimientos no funcionales describen cualidades del sistema como rendimiento, seguridad, usabilidad, etc., en lugar de funciones específicas."
+    },
+    {
+        question: "¿Con cuánta anticipación se debe cancelar una reserva según los requerimientos?",
+        options: [
+            "30 minutos",
+            "1 hora",
+            "2 horas",
+            "24 horas"
+        ],
+        correct: 2,
+        explanation: "El RF-06 indica que el sistema debe permitir cancelar reservas con al menos 2 horas de anticipación."
+    },
+    {
+        question: "¿Cuál es un ejemplo de stakeholder técnico en el proyecto?",
+        options: [
+            "Estudiantes",
+            "Equipo de desarrollo",
+            "Docentes",
+            "Autoridades universitarias"
+        ],
+        correct: 1,
+        explanation: "El equipo de desarrollo es un stakeholder técnico responsable de la construcción del sistema."
+    },
+    {
+        question: "En el contexto de requerimientos, ¿qué significa 'verificable'?",
+        options: [
+            "Que se puede programar",
+            "Que se puede comprobar objetivamente si se cumple",
+            "Que está bien escrito",
+            "Que es importante"
+        ],
+        correct: 1,
+        explanation: "Un requerimiento verificable es aquel que se puede comprobar objetivamente mediante pruebas o mediciones para determinar si se cumple o no."
+    },
+    {
+        question: "¿Qué tipo de requerimiento es 'El sistema debe soportar 500 usuarios concurrentes'?",
+        options: [
+            "Funcional",
+            "No funcional de rendimiento",
+            "No funcional de seguridad",
+            "No funcional de usabilidad"
+        ],
+        correct: 1,
+        explanation: "Este es un requerimiento no funcional de rendimiento (RNF-02), ya que especifica una capacidad técnica del sistema."
+    },
+    {
+        question: "Según el caso, ¿cuántos usuarios activos tiene aproximadamente la universidad?",
+        options: [
+            "3,000",
+            "5,000",
+            "7,000",
+            "10,000"
+        ],
+        correct: 1,
+        explanation: "El caso menciona 5,000 estudiantes activos, más 200 docentes y 3 administradores."
+    },
+    {
+        question: "¿Qué problema actual NO se menciona en el caso de estudio?",
+        options: [
+            "Pérdida de tiempo de los estudiantes",
+            "Conflictos por uso simultáneo",
+            "Alto costo de las salas",
+            "Imposibilidad de obtener estadísticas"
+        ],
+        correct: 2,
+        explanation: "El caso no menciona el costo de las salas como un problema. Los problemas son: pérdida de tiempo, conflictos, falta de control y estadísticas."
+    },
+    {
+        question: "¿Qué aspecto aborda el requerimiento 'El sistema debe cumplir con WCAG 2.1'?",
+        options: [
+            "Seguridad",
+            "Rendimiento",
+            "Accesibilidad",
+            "Escalabilidad"
+        ],
+        correct: 2,
+        explanation: "WCAG (Web Content Accessibility Guidelines) son pautas de accesibilidad web. El RNF-09 es un requerimiento no funcional de usabilidad/accesibilidad."
+    },
+    {
+        question: "¿Cuál es el horario de las salas los sábados según el caso?",
+        options: [
+            "7:00 - 22:00",
+            "8:00 - 18:00",
+            "9:00 - 17:00",
+            "Cerrado"
+        ],
+        correct: 1,
+        explanation: "Según el caso, los sábados las salas están disponibles de 8:00 a 18:00 horas."
+    },
+    {
+        question: "¿Qué característica debe tener un buen requerimiento?",
+        options: [
+            "Ambiguo y flexible",
+            "Claro, específico y verificable",
+            "Técnico y complejo",
+            "General y amplio"
+        ],
+        correct: 1,
+        explanation: "Un buen requerimiento debe ser claro (sin ambigüedades), específico (detallado) y verificable (se puede comprobar si se cumple)."
+    },
+    {
+        question: "El requerimiento 'El sistema debe ser intuitivo' es un ejemplo de:",
+        options: [
+            "Requerimiento funcional",
+            "Requerimiento no funcional de usabilidad",
+            "Requerimiento de negocio",
+            "Requerimiento de dominio"
+        ],
+        correct: 1,
+        explanation: "La intuitividad es una característica de usabilidad, por lo tanto es un requerimiento no funcional (RNF-07)."
+    },
+    {
+        question: "¿Cuántos edificios tienen salas de estudio según el caso?",
+        options: [
+            "2 edificios",
+            "3 edificios",
+            "4 edificios",
+            "5 edificios"
+        ],
+        correct: 1,
+        explanation: "El caso menciona que las 15 salas están distribuidas en 3 edificios: A, B y C."
+    },
+    {
+        question: "¿Qué tipo de notificación debe enviar el sistema 30 minutos antes de la reserva?",
+        options: [
+            "SMS",
+            "Notificación push",
+            "Recordatorio (según RF-09)",
+            "Llamada telefónica"
+        ],
+        correct: 2,
+        explanation: "El RF-09 especifica que el sistema debe enviar recordatorios 30 minutos antes de la reserva, aunque no especifica el medio exacto."
+    },
+    {
+        question: "¿Por qué es importante identificar stakeholders en un proyecto?",
+        options: [
+            "Para aumentar el presupuesto",
+            "Para conocer todos los intereses y necesidades que el sistema debe satisfacer",
+            "Para complicar el proyecto",
+            "Solo es un requisito burocrático"
+        ],
+        correct: 1,
+        explanation: "Identificar stakeholders es crucial para entender todas las perspectivas, necesidades e intereses que el sistema debe considerar y satisfacer."
+    }
+];
+
+// Funciones de navegación
+function updateProgress() {
+    const progress = (currentSection / totalSections) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('sectionIndicator').textContent = `Sección ${currentSection} de ${totalSections}`;
+    
+    // Actualizar botones
+    document.getElementById('prevBtn').disabled = currentSection === 1;
+    document.getElementById('nextBtn').style.display = currentSection === totalSections ? 'none' : 'block';
+}
+
+function showSection(sectionNum) {
+    // Ocultar todas las secciones
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Mostrar la sección actual
+    document.getElementById(`section${sectionNum}`).classList.add('active');
+    currentSection = sectionNum;
+    updateProgress();
+    playSound('click');
+    
+    // Scroll al inicio
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextSection() {
+    if (currentSection < totalSections) {
+        showSection(currentSection + 1);
+    }
+}
+
+function prevSection() {
+    if (currentSection > 1) {
+        showSection(currentSection - 1);
+    }
+}
+
+function playSound(soundName) {
+    if (sounds[soundName]) {
+        sounds[soundName].currentTime = 0;
+        sounds[soundName].play().catch(e => console.log('Audio play failed:', e));
+    }
+}
+
+// Funciones del Quiz
+function startQuiz() {
+    showSection(7);
+    renderQuiz();
+}
+
+function renderQuiz() {
+    const container = document.getElementById('quizContainer');
+    container.innerHTML = '';
+    
+    quizQuestions.forEach((q, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'quiz-question animate__animated animate__fadeInUp';
+        questionDiv.style.animationDelay = `${index * 0.1}s`;
+        
+        questionDiv.innerHTML = `
+            <h5><span class="badge bg-primary">${index + 1}</span> ${q.question}</h5>
+            <div class="options-container mt-3">
+                ${q.options.map((option, optIndex) => `
+                    <div class="quiz-option" onclick="selectOption(${index}, ${optIndex})">
+                        <i class="fas fa-circle me-2"></i> ${option}
+                    </div>
+                `).join('')}
+            </div>
+            <div class="explanation mt-3" id="explanation-${index}" style="display: none;">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>Explicación:</strong> ${q.explanation}
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(questionDiv);
+    });
+    
+    document.getElementById('submitQuizBtn').style.display = 'inline-block';
+}
+
+function selectOption(questionIndex, optionIndex) {
+    const question = document.querySelectorAll('.quiz-question')[questionIndex];
+    const options = question.querySelectorAll('.quiz-option');
+    
+    // Deseleccionar todas las opciones de esta pregunta
+    options.forEach(opt => opt.classList.remove('selected'));
+    
+    // Seleccionar la opción clickeada
+    options[optionIndex].classList.add('selected');
+    
+    // Guardar la respuesta
+    quizAnswers[questionIndex] = optionIndex;
+    
+    playSound('click');
+}
+
+function submitQuiz() {
+    // Verificar que todas las preguntas estén respondidas
+    if (quizAnswers.filter(a => a !== undefined).length !== quizQuestions.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Preguntas sin responder',
+            text: 'Por favor responde todas las preguntas antes de enviar.',
+            confirmButtonColor: '#3498db'
+        });
+        return;
+    }
+    
+    Swal.fire({
+        title: '¿Enviar respuestas?',
+        text: "No podrás modificar tus respuestas después de enviar",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#27ae60',
+        cancelButtonColor: '#e74c3c',
+        confirmButtonText: 'Sí, enviar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            evaluateQuiz();
+        }
+    });
+}
+
+function evaluateQuiz() {
+    let correctCount = 0;
+    
+    quizQuestions.forEach((q, index) => {
+        const question = document.querySelectorAll('.quiz-question')[index];
+        const options = question.querySelectorAll('.quiz-option');
+        const userAnswer = quizAnswers[index];
+        
+        // Marcar respuesta correcta e incorrecta
+        options.forEach((opt, optIndex) => {
+            if (optIndex === q.correct) {
+                opt.classList.add('correct');
+                opt.innerHTML = `<i class="fas fa-check-circle me-2"></i> ${q.options[optIndex]}`;
+            } else if (optIndex === userAnswer && userAnswer !== q.correct) {
+                opt.classList.add('incorrect');
+                opt.innerHTML = `<i class="fas fa-times-circle me-2"></i> ${q.options[optIndex]}`;
+            }
+            opt.style.pointerEvents = 'none';
+        });
+        
+        // Mostrar explicación
+        document.getElementById(`explanation-${index}`).style.display = 'block';
+        
+        // Contar respuestas correctas
+        if (userAnswer === q.correct) {
+            correctCount++;
+            playSound('correct');
+        } else {
+            playSound('incorrect');
+        }
+    });
+    
+    // Ocultar botón de enviar
+    document.getElementById('submitQuizBtn').style.display = 'none';
+    
+    // Mostrar resultados
+    setTimeout(() => {
+        showResults(correctCount);
+    }, 1000);
+}
+
+function showResults(score) {
+    const percentage = (score / quizQuestions.length) * 100;
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const resultMessage = document.getElementById('resultMessage');
+    const resultProgressBar = document.getElementById('resultProgressBar');
+    const resultDetails = document.getElementById('resultDetails');
+    
+    scoreDisplay.textContent = `${score}/${quizQuestions.length}`;
+    resultProgressBar.style.width = percentage + '%';
+    resultProgressBar.textContent = `${percentage.toFixed(1)}%`;
+    
+    // Determinar mensaje y color según el puntaje
+    let message = '';
+    let colorClass = '';
+    let icon = '';
+    
+    if (percentage >= 90) {
+        message = '¡Excelente! Dominas completamente el tema';
+        colorClass = 'bg-success';
+        icon = '🏆';
+    } else if (percentage >= 70) {
+        message = '¡Muy bien! Tienes un buen entendimiento';
+        colorClass = 'bg-primary';
+        icon = '⭐';
+    } else if (percentage >= 50) {
+        message = 'Bien, pero puedes mejorar repasando algunos conceptos';
+        colorClass = 'bg-warning';
+        icon = '📚';
+    } else {
+        message = 'Necesitas repasar el material. ¡No te desanimes!';
+        colorClass = 'bg-danger';
+        icon = '💪';
+    }
+    
+    resultMessage.innerHTML = `${icon} ${message}`;
+    resultProgressBar.classList.add(colorClass);
+    
+    resultDetails.innerHTML = `
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card card-custom">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle text-success" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2">${score}</h3>
+                        <p class="text-muted">Respuestas Correctas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-custom">
+                    <div class="card-body text-center">
+                        <i class="fas fa-times-circle text-danger" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2">${quizQuestions.length - score}</h3>
+                        <p class="text-muted">Respuestas Incorrectas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-custom">
+                    <div class="card-body text-center">
+                        <i class="fas fa-percentage text-primary" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2">${percentage.toFixed(1)}%</h3>
+                        <p class="text-muted">Porcentaje</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    showSection(8);
+    
+    // Animación de confetti si el puntaje es excelente
+    if (percentage >= 90) {
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Felicitaciones! 🎉',
+                text: 'Has demostrado excelencia en el análisis de requerimientos',
+                confirmButtonColor: '#27ae60'
+            });
+        }, 500);
+    }
+}
+
+function reviewAnswers() {
+    showSection(7);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restartPresentation() {
+    Swal.fire({
+        title: '¿Reiniciar presentación?',
+        text: "Se perderán los resultados del quiz actual",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3498db',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, reiniciar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            quizAnswers = [];
+            showSection(1);
+        }
+    });
+}
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    updateProgress();
+    
+    // Mensaje de bienvenida
+    setTimeout(() => {
+        Swal.fire({
+            icon: 'info',
+            title: '¡Bienvenido!',
+            html: '<p>Esta presentación interactiva te guiará a través del <strong>Análisis y Obtención de Requerimientos</strong>.</p><p>Usa los botones de navegación para avanzar.</p>',
+            confirmButtonColor: '#3498db',
+            confirmButtonText: '¡Comenzar!'
+        });
+    }, 500);
+});
+
+// Atajos de teclado
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight') {
+        nextSection();
+    } else if (e.key === 'ArrowLeft') {
+        prevSection();
+    }
+});
+</script>
+
+</body>
+</html>
