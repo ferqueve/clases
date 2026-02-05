@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Events, BUC y PUC - Análisis de Requerimientos</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .slide {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            margin: 20px auto;
+            max-width: 1000px;
+            min-height: 600px;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        
+        .slide-header h2 {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .slide-header .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .icon-box {
+            background: linear-gradient(135deg, var(--secondary-color), #5dade2);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            transition: transform 0.3s;
+        }
+        
+        .icon-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        .icon-box i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .step-card {
+            background: #f8f9fa;
+            border-left: 4px solid var(--secondary-color);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .step-card:hover {
+            background: #e8f4f8;
+            transform: translateX(5px);
+        }
+        
+        .step-number {
+            background: var(--secondary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .example-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .example-box h5 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        
+        .highlight-box {
+            background: #d1ecf1;
+            border: 2px solid #0dcaf0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .navigation {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-nav {
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-nav:hover {
+            transform: scale(1.05);
+        }
+        
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.3);
+            z-index: 1000;
+        }
+        
+        .progress-bar-custom {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+        
+        .quiz-option {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option:hover {
+            background: #e9ecef;
+            border-color: var(--secondary-color);
+            transform: translateX(5px);
+        }
+        
+        .quiz-option.selected {
+            background: #cfe2ff;
+            border-color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        .quiz-option.correct {
+            background: #d1e7dd;
+            border-color: var(--success-color);
+        }
+        
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: var(--accent-color);
+        }
+        
+        .question-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .question-number {
+            background: var(--secondary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .slide-counter {
+            text-align: center;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        
+        .definition-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .definition-box h4 {
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+        
+        .comparison-table {
+            margin: 20px 0;
+        }
+        
+        .comparison-table th {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .list-custom {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .list-custom li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-left: 4px solid var(--secondary-color);
+            border-radius: 5px;
+        }
+        
+        .list-custom li i {
+            color: var(--secondary-color);
+            margin-right: 10px;
+        }
+        
+        .portada {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .portada h1 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .portada .subtitle-portada {
+            font-size: 1.5rem;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+        }
+        
+        .portada-icon {
+            font-size: 5rem;
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .portada h1 {
+                font-size: 2rem;
+            }
+            
+            .portada .subtitle-portada {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-container">
+        <div class="progress-bar-custom" id="progressBar"></div>
+    </div>
+
+    <div class="container">
+        <!-- SLIDE 1: PORTADA -->
+        <div class="slide active animate__animated animate__fadeIn" id="slide1">
+            <div class="portada">
+                <div class="portada-icon animate__animated animate__bounceIn">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <h1 class="animate__animated animate__fadeInDown">Business Events, BUC y PUC</h1>
+                <p class="subtitle-portada animate__animated animate__fadeInUp">
+                    Guía Completa de Análisis de Requerimientos
+                </p>
+                <div class="row mt-5">
+                    <div class="col-md-4 mb-3">
+                        <div class="icon-box animate__animated animate__fadeInLeft">
+                            <i class="fas fa-calendar-check"></i>
+                            <h5>Business Events</h5>
+                            <p>Identificación de eventos del negocio</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="icon-box animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                            <i class="fas fa-briefcase"></i>
+                            <h5>BUC</h5>
+                            <p>Business Use Cases</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="icon-box animate__animated animate__fadeInRight" style="animation-delay: 0.4s;">
+                            <i class="fas fa-box"></i>
+                            <h5>PUC</h5>
+                            <p>Product Use Cases</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: INTRODUCCIÓN -->
+        <div class="slide" id="slide2">
+            <div class="slide-header">
+                <h2><i class="fas fa-info-circle"></i> Introducción</h2>
+                <p class="subtitle">Conceptos fundamentales del análisis de requerimientos</p>
+            </div>
+            
+            <div class="definition-box animate__animated animate__fadeIn">
+                <h4><i class="fas fa-lightbulb"></i> ¿Qué es el Análisis de Requerimientos?</h4>
+                <p>El análisis de requerimientos es el proceso de determinar las necesidades y condiciones que debe cumplir un nuevo sistema o modificación de un sistema existente. Es fundamental para el éxito de cualquier proyecto de software.</p>
+            </div>
+            
+            <h4 class="mt-4"><i class="fas fa-puzzle-piece"></i> Tres Conceptos Clave:</h4>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="step-card text-center">
+                        <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                        <h5>Business Event</h5>
+                        <p>Evento que ocurre en el entorno del negocio y que requiere una respuesta del sistema.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card text-center">
+                        <i class="fas fa-briefcase fa-3x text-success mb-3"></i>
+                        <h5>BUC</h5>
+                        <p>Describe cómo el negocio responde a un evento específico, sin considerar la tecnología.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card text-center">
+                        <i class="fas fa-box fa-3x text-warning mb-3"></i>
+                        <h5>PUC</h5>
+                        <p>Define cómo el sistema/producto soporta o automatiza el BUC correspondiente.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="highlight-box mt-4">
+                <h5><i class="fas fa-arrow-right"></i> Flujo de Trabajo</h5>
+                <p class="mb-0"><strong>Business Event → BUC → PUC</strong></p>
+                <p class="mt-2">Primero identificamos el evento, luego definimos la respuesta del negocio, y finalmente especificamos cómo el producto lo implementará.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: BUSINESS EVENT - DEFINICIÓN -->
+        <div class="slide" id="slide3">
+            <div class="slide-header">
+                <h2><i class="fas fa-calendar-check"></i> Business Event</h2>
+                <p class="subtitle">Definición y características</p>
+            </div>
+            
+            <div class="definition-box">
+                <h4><i class="fas fa-book"></i> Definición</h4>
+                <p class="mb-0">Un <strong>Business Event</strong> (Evento de Negocio) es una ocurrencia en el mundo real que sucede fuera del control del sistema pero que requiere que el sistema responda de alguna manera. Es el punto de partida para identificar los requerimientos funcionales.</p>
+            </div>
+            
+            <h4 class="mt-4"><i class="fas fa-list-check"></i> Características Principales:</h4>
+            
+            <ul class="list-custom">
+                <li><i class="fas fa-check-circle"></i> <strong>Externo al sistema:</strong> Ocurre en el entorno del negocio, no dentro del sistema</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Detectable:</strong> El sistema debe ser capaz de detectar cuando ocurre</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Requiere respuesta:</strong> El negocio debe responder de alguna forma</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Atómico:</strong> Representa un evento único y completo</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Significativo:</strong> Tiene relevancia para el negocio</li>
+            </ul>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="example-box">
+                        <h5><i class="fas fa-thumbs-up"></i> Ejemplos de Business Events</h5>
+                        <ul>
+                            <li>Cliente realiza un pedido</li>
+                            <li>Producto llega al stock mínimo</li>
+                            <li>Cliente solicita devolución</li>
+                            <li>Empleado solicita vacaciones</li>
+                            <li>Llega la fecha de pago de factura</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="highlight-box">
+                        <h5><i class="fas fa-info-circle"></i> Importante</h5>
+                        <p>Los Business Events NO describen lo que hace el sistema, solo identifican qué está pasando en el negocio que requiere atención.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: TIPOS DE BUSINESS EVENTS -->
+        <div class="slide" id="slide4">
+            <div class="slide-header">
+                <h2><i class="fas fa-stream"></i> Tipos de Business Events</h2>
+                <p class="subtitle">Clasificación según su naturaleza</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="step-card">
+                        <h5><i class="fas fa-user text-primary"></i> Eventos Externos</h5>
+                        <p><strong>Iniciados por actores externos</strong> al sistema (clientes, proveedores, etc.)</p>
+                        <div class="example-box mt-3">
+                            <h6>Ejemplos:</h6>
+                            <ul class="mb-0">
+                                <li>Cliente hace un pedido</li>
+                                <li>Proveedor envía factura</li>
+                                <li>Usuario se registra</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <div class="step-card">
+                        <h5><i class="fas fa-clock text-success"></i> Eventos Temporales</h5>
+                        <p><strong>Ocurren en momentos específicos</strong> del tiempo o después de cierto período</p>
+                        <div class="example-box mt-3">
+                            <h6>Ejemplos:</h6>
+                            <ul class="mb-0">
+                                <li>Fin de mes (cierre contable)</li>
+                                <li>Vencimiento de póliza</li>
+                                <li>Hora de backup programado</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <div class="step-card">
+                        <h5><i class="fas fa-database text-warning"></i> Eventos Internos</h5>
+                        <p><strong>Disparados por condiciones</strong> dentro del sistema o del negocio</p>
+                        <div class="example-box mt-3">
+                            <h6>Ejemplos:</h6>
+                            <ul class="mb-0">
+                                <li>Stock llega al mínimo</li>
+                                <li>Temperatura excede límite</li>
+                                <li>Capacidad alcanza 90%</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="highlight-box mt-4">
+                <h5><i class="fas fa-exclamation-circle"></i> Nota Importante</h5>
+                <p class="mb-0">Cada tipo de evento requiere un enfoque diferente para su detección y manejo. Los eventos externos suelen requerir interfaces de usuario, los temporales necesitan programación de tareas, y los internos requieren monitoreo constante de condiciones.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: CÓMO ELABORAR UN BUSINESS EVENT -->
+        <div class="slide" id="slide5">
+            <div class="slide-header">
+                <h2><i class="fas fa-tools"></i> Cómo Elaborar un Business Event</h2>
+                <p class="subtitle">Proceso paso a paso</p>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">1</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Identificar el Contexto del Negocio</h5>
+                    <p>Analizar el dominio del negocio y entender los procesos existentes. Realizar entrevistas con stakeholders y observar las operaciones diarias.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">2</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Buscar Ocurrencias Significativas</h5>
+                    <p>Identificar momentos donde algo sucede que requiere que el negocio responda. Preguntarse: "¿Qué pasa en el negocio que nos obliga a actuar?"</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">3</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Nombrar el Evento Claramente</h5>
+                    <p>Usar la estructura: <strong>"Actor + Acción + Objeto"</strong> o <strong>"Condición + Ocurre"</strong>. El nombre debe ser claro, específico y describir el evento, no la respuesta.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">4</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Documentar Información Asociada</h5>
+                    <p>Registrar: actor que lo dispara, frecuencia, datos involucrados, condiciones previas, y restricciones temporales.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">5</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Validar con Stakeholders</h5>
+                    <p>Confirmar que el evento es real, relevante y completo. Asegurar que todos los interesados estén de acuerdo con la definición.</p>
+                </div>
+            </div>
+            
+            <div class="example-box mt-4">
+                <h5><i class="fas fa-lightbulb"></i> Ejemplo Práctico</h5>
+                <p><strong>Contexto:</strong> Sistema de gestión de biblioteca</p>
+                <p><strong>Evento Identificado:</strong> "Usuario solicita préstamo de libro"</p>
+                <ul class="mb-0">
+                    <li><strong>Actor:</strong> Usuario registrado</li>
+                    <li><strong>Tipo:</strong> Evento externo</li>
+                    <li><strong>Frecuencia:</strong> Múltiples veces al día</li>
+                    <li><strong>Datos:</strong> ID usuario, ID libro, fecha</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: BUC - DEFINICIÓN -->
+        <div class="slide" id="slide6">
+            <div class="slide-header">
+                <h2><i class="fas fa-briefcase"></i> Business Use Case (BUC)</h2>
+                <p class="subtitle">Definición y características</p>
+            </div>
+            
+            <div class="definition-box">
+                <h4><i class="fas fa-book"></i> Definición</h4>
+                <p class="mb-0">Un <strong>Business Use Case</strong> (Caso de Uso de Negocio) describe cómo el negocio responde a un Business Event específico. Se enfoca en QUÉ hace el negocio, no en CÓMO lo hace el sistema. Es independiente de la tecnología y describe el proceso del negocio.</p>
+            </div>
+            
+            <h4 class="mt-4"><i class="fas fa-list-check"></i> Características Principales:</h4>
+            
+            <ul class="list-custom">
+                <li><i class="fas fa-check-circle"></i> <strong>Orientado al negocio:</strong> Describe procesos desde la perspectiva del negocio</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Independiente de tecnología:</strong> No menciona sistemas, pantallas o bases de datos</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Valor para el negocio:</strong> Produce un resultado significativo para el negocio</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Completo:</strong> Describe el proceso de inicio a fin</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Actor principal:</strong> Siempre hay un actor (stakeholder) que inicia o se beneficia</li>
+            </ul>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="highlight-box">
+                        <h5><i class="fas fa-check"></i> BUC Incluye:</h5>
+                        <ul>
+                            <li>Nombre del caso de uso</li>
+                            <li>Actores involucrados</li>
+                            <li>Descripción narrativa</li>
+                            <li>Flujo básico de eventos</li>
+                            <li>Flujos alternativos</li>
+                            <li>Precondiciones y postcondiciones</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="example-box">
+                        <h5><i class="fas fa-lightbulb"></i> Ejemplo</h5>
+                        <p><strong>BUC:</strong> Procesar Pedido de Cliente</p>
+                        <p><strong>Descripción:</strong> El negocio recibe un pedido de un cliente, verifica la disponibilidad de productos, confirma el pedido, y programa la entrega.</p>
+                        <p class="mb-0"><em>Nota: No menciona cómo se hace técnicamente</em></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: COMPONENTES DE UN BUC -->
+        <div class="slide" id="slide7">
+            <div class="slide-header">
+                <h2><i class="fas fa-puzzle-piece"></i> Componentes de un BUC</h2>
+                <p class="subtitle">Elementos que conforman un Business Use Case</p>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-tag text-primary"></i> 1. Nombre del BUC</h5>
+                <p>Debe ser un verbo + sustantivo que describa claramente el proceso del negocio.</p>
+                <div class="example-box">
+                    <strong>Ejemplos:</strong> Procesar Devolución, Gestionar Inventario, Aprobar Préstamo
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-users text-success"></i> 2. Actores</h5>
+                <p>Personas, organizaciones o sistemas externos que interactúan con el caso de uso.</p>
+                <ul>
+                    <li><strong>Actor primario:</strong> Inicia el BUC o recibe el valor</li>
+                    <li><strong>Actores secundarios:</strong> Apoyan en el proceso</li>
+                </ul>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-align-left text-warning"></i> 3. Descripción</h5>
+                <p>Breve resumen (2-4 líneas) de lo que hace el BUC y su propósito para el negocio.</p>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-project-diagram text-info"></i> 4. Flujo de Eventos</h5>
+                <p><strong>Flujo Básico:</strong> Secuencia normal de pasos cuando todo va bien</p>
+                <p><strong>Flujos Alternativos:</strong> Variaciones y excepciones del flujo básico</p>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-flag-checkered text-danger"></i> 5. Pre y Postcondiciones</h5>
+                <p><strong>Precondición:</strong> Estado que debe existir antes de ejecutar el BUC</p>
+                <p><strong>Postcondición:</strong> Estado resultante después de ejecutar el BUC exitosamente</p>
+            </div>
+            
+            <div class="highlight-box mt-3">
+                <h5><i class="fas fa-exclamation-circle"></i> Importante</h5>
+                <p class="mb-0">Todos estos componentes se describen desde la perspectiva del negocio, sin mencionar detalles técnicos o de implementación del sistema.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: CÓMO ELABORAR UN BUC -->
+        <div class="slide" id="slide8">
+            <div class="slide-header">
+                <h2><i class="fas fa-tools"></i> Cómo Elaborar un BUC</h2>
+                <p class="subtitle">Proceso paso a paso</p>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">1</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Partir del Business Event</h5>
+                    <p>Cada BUC responde a un Business Event específico. Identificar primero el evento que dispara este caso de uso.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">2</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Identificar Actores</h5>
+                    <p>Determinar quién inicia el proceso (actor primario) y quiénes participan o apoyan (actores secundarios).</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">3</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Nombrar el BUC</h5>
+                    <p>Usar formato: <strong>Verbo + Sustantivo</strong> que capture el objetivo del negocio. Debe ser orientado a resultados.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">4</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Describir el Flujo Básico</h5>
+                    <p>Escribir los pasos secuenciales desde la perspectiva del negocio. Usar lenguaje de negocio, no técnico. Numerar cada paso.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">5</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Identificar Flujos Alternativos</h5>
+                    <p>Documentar excepciones, errores y variaciones. Cada alternativa debe indicar en qué paso del flujo básico se desvía.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">6</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Definir Pre y Postcondiciones</h5>
+                    <p>Establecer el estado inicial requerido y el estado final esperado del negocio.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">7</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Revisar y Validar</h5>
+                    <p>Verificar con stakeholders que el BUC refleja correctamente el proceso del negocio. Asegurar que no incluye detalles técnicos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: EJEMPLO COMPLETO BUC -->
+        <div class="slide" id="slide9">
+            <div class="slide-header">
+                <h2><i class="fas fa-file-alt"></i> Ejemplo Completo de BUC</h2>
+                <p class="subtitle">Caso práctico detallado</p>
+            </div>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-shopping-cart"></i> BUC: Procesar Pedido de Cliente</h4>
+                
+                <p><strong><i class="fas fa-calendar-check"></i> Business Event:</strong> Cliente realiza un pedido</p>
+                
+                <p><strong><i class="fas fa-users"></i> Actores:</strong></p>
+                <ul>
+                    <li><strong>Primario:</strong> Cliente</li>
+                    <li><strong>Secundarios:</strong> Vendedor, Almacén</li>
+                </ul>
+                
+                <p><strong><i class="fas fa-align-left"></i> Descripción:</strong></p>
+                <p>Este caso de uso describe cómo el negocio procesa un pedido desde que el cliente lo solicita hasta que se confirma la entrega.</p>
+                
+                <p><strong><i class="fas fa-check-circle"></i> Precondición:</strong></p>
+                <ul>
+                    <li>El cliente está registrado en el sistema</li>
+                    <li>Existen productos en el catálogo</li>
+                </ul>
+                
+                <p><strong><i class="fas fa-project-diagram"></i> Flujo Básico:</strong></p>
+                <ol>
+                    <li>Cliente selecciona productos del catálogo</li>
+                    <li>Cliente especifica cantidades deseadas</li>
+                    <li>Vendedor verifica disponibilidad en almacén</li>
+                    <li>Vendedor calcula el total del pedido</li>
+                    <li>Cliente confirma el pedido</li>
+                    <li>Vendedor registra el pedido</li>
+                    <li>Almacén prepara los productos para envío</li>
+                    <li>Se notifica al cliente la confirmación y fecha estimada de entrega</li>
+                </ol>
+                
+                <p><strong><i class="fas fa-random"></i> Flujos Alternativos:</strong></p>
+                <ul>
+                    <li><strong>3a.</strong> Si un producto no está disponible, vendedor ofrece alternativas o agenda reposición</li>
+                    <li><strong>5a.</strong> Si cliente cancela, se termina el caso de uso</li>
+                    <li><strong>7a.</strong> Si hay problemas en almacén, se contacta al cliente para ajustar pedido</li>
+                </ul>
+                
+                <p><strong><i class="fas fa-flag-checkered"></i> Postcondición:</strong></p>
+                <ul class="mb-0">
+                    <li>El pedido queda registrado en el sistema</li>
+                    <li>Los productos están reservados para el cliente</li>
+                    <li>Se ha programado la entrega</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: PUC - DEFINICIÓN -->
+        <div class="slide" id="slide10">
+            <div class="slide-header">
+                <h2><i class="fas fa-box"></i> Product Use Case (PUC)</h2>
+                <p class="subtitle">Definición y características</p>
+            </div>
+            
+            <div class="definition-box">
+                <h4><i class="fas fa-book"></i> Definición</h4>
+                <p class="mb-0">Un <strong>Product Use Case</strong> (Caso de Uso de Producto) describe cómo el sistema/producto de software soporta o automatiza un Business Use Case específico. Se enfoca en CÓMO el sistema implementa la funcionalidad requerida por el negocio.</p>
+            </div>
+            
+            <h4 class="mt-4"><i class="fas fa-list-check"></i> Características Principales:</h4>
+            
+            <ul class="list-custom">
+                <li><i class="fas fa-check-circle"></i> <strong>Orientado al sistema:</strong> Describe interacciones con el software</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Técnicamente específico:</strong> Incluye pantallas, validaciones, y procesos del sistema</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Implementable:</strong> Proporciona suficiente detalle para ser programado</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Derivado del BUC:</strong> Se crea basándose en uno o más BUCs</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Interacción usuario-sistema:</strong> Describe el diálogo entre usuario y aplicación</li>
+            </ul>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="highlight-box">
+                        <h5><i class="fas fa-laptop-code"></i> PUC Incluye:</h5>
+                        <ul>
+                            <li>Nombre del caso de uso</li>
+                            <li>Actores (usuarios del sistema)</li>
+                            <li>Flujo de interacción detallado</li>
+                            <li>Interfaces de usuario</li>
+                            <li>Validaciones y reglas de negocio</li>
+                            <li>Mensajes de error</li>
+                            <li>Condiciones y restricciones técnicas</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="example-box">
+                        <h5><i class="fas fa-lightbulb"></i> Ejemplo</h5>
+                        <p><strong>PUC:</strong> Registrar Pedido en Sistema</p>
+                        <p><strong>Descripción:</strong> El sistema permite al usuario ingresar los datos del pedido, valida la información, verifica disponibilidad en la base de datos, y genera un número de pedido único.</p>
+                        <p class="mb-0"><em>Nota: Menciona detalles técnicos y de implementación</em></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: DIFERENCIAS BUC vs PUC -->
+        <div class="slide" id="slide11">
+            <div class="slide-header">
+                <h2><i class="fas fa-exchange-alt"></i> BUC vs PUC</h2>
+                <p class="subtitle">Diferencias fundamentales</p>
+            </div>
+            
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th width="25%">Aspecto</th>
+                        <th width="37.5%">Business Use Case (BUC)</th>
+                        <th width="37.5%">Product Use Case (PUC)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Perspectiva</strong></td>
+                        <td>Negocio</td>
+                        <td>Sistema/Producto</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enfoque</strong></td>
+                        <td>QUÉ hace el negocio</td>
+                        <td>CÓMO lo hace el sistema</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Audiencia</strong></td>
+                        <td>Stakeholders del negocio</td>
+                        <td>Desarrolladores y testers</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lenguaje</strong></td>
+                        <td>Términos del dominio del negocio</td>
+                        <td>Términos técnicos y de interfaz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Detalle</strong></td>
+                        <td>Alto nivel, abstracto</td>
+                        <td>Detallado, específico</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tecnología</strong></td>
+                        <td>Independiente de tecnología</td>
+                        <td>Especifica implementación técnica</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Actores</strong></td>
+                        <td>Roles de negocio</td>
+                        <td>Usuarios del sistema</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cambios</strong></td>
+                        <td>Más estable en el tiempo</td>
+                        <td>Puede cambiar con la tecnología</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="example-box">
+                        <h5><i class="fas fa-briefcase"></i> Ejemplo BUC</h5>
+                        <p class="mb-1"><strong>Paso 3:</strong> "Vendedor verifica disponibilidad de productos"</p>
+                        <p class="mb-0"><small><em>Describe la acción del negocio</em></small></p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="highlight-box">
+                        <h5><i class="fas fa-box"></i> Ejemplo PUC</h5>
+                        <p class="mb-1"><strong>Paso 3:</strong> "Sistema consulta tabla INVENTARIO, verifica campo CANTIDAD_DISPONIBLE > CANTIDAD_SOLICITADA, y muestra mensaje 'Disponible' en pantalla"</p>
+                        <p class="mb-0"><small><em>Describe la implementación técnica</em></small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: CÓMO ELABORAR UN PUC -->
+        <div class="slide" id="slide12">
+            <div class="slide-header">
+                <h2><i class="fas fa-tools"></i> Cómo Elaborar un PUC</h2>
+                <p class="subtitle">Proceso paso a paso</p>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">1</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Partir del BUC Correspondiente</h5>
+                    <p>Identificar el BUC que este PUC va a automatizar o soportar. Un BUC puede generar uno o más PUCs.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">2</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Definir Actores del Sistema</h5>
+                    <p>Identificar los usuarios que interactuarán con el sistema (no roles de negocio, sino usuarios del software).</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">3</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Nombrar el PUC</h5>
+                    <p>Usar formato similar al BUC pero con enfoque en la funcionalidad del sistema: <strong>Verbo + Sustantivo + "en Sistema"</strong></p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">4</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Describir el Flujo de Interacción</h5>
+                    <p>Detallar paso a paso la interacción entre el usuario y el sistema. Usar formato: "Usuario hace X", "Sistema responde Y".</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">5</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Especificar Interfaces y Pantallas</h5>
+                    <p>Describir las pantallas, formularios, botones y elementos de interfaz involucrados. Incluir wireframes si es posible.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">6</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Definir Validaciones y Reglas</h5>
+                    <p>Especificar todas las validaciones de datos, reglas de negocio implementadas en el sistema, y restricciones técnicas.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">7</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Documentar Flujos Alternativos y Excepciones</h5>
+                    <p>Incluir mensajes de error específicos, manejo de excepciones, y comportamiento del sistema ante situaciones anómalas.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <span class="step-number">8</span>
+                <div class="d-inline-block" style="width: calc(100% - 60px);">
+                    <h5>Especificar Requisitos No Funcionales</h5>
+                    <p>Incluir performance esperado, seguridad, usabilidad, y otros requisitos técnicos relevantes.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: EJEMPLO COMPLETO PUC -->
+        <div class="slide" id="slide13">
+            <div class="slide-header">
+                <h2><i class="fas fa-file-code"></i> Ejemplo Completo de PUC</h2>
+                <p class="subtitle">Caso práctico detallado</p>
+            </div>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-laptop"></i> PUC: Registrar Pedido en Sistema</h4>
+                
+                <p><strong><i class="fas fa-link"></i> Deriva del BUC:</strong> Procesar Pedido de Cliente</p>
+                
+                <p><strong><i class="fas fa-users"></i> Actores:</strong></p>
+                <ul>
+                    <li><strong>Primario:</strong> Usuario Vendedor</li>
+                    <li><strong>Secundario:</strong> Sistema de Inventario</li>
+                </ul>
+                
+                <p><strong><i class="fas fa-align-left"></i> Descripción:</strong></p>
+                <p>El sistema permite al vendedor registrar un nuevo pedido, validando datos y disponibilidad de productos en tiempo real.</p>
+                
+                <p><strong><i class="fas fa-check-circle"></i> Precondición:</strong></p>
+                <ul>
+                    <li>Usuario autenticado con rol "Vendedor"</li>
+                    <li>Cliente existe en base de datos</li>
+                    <li>Sistema de inventario disponible</li>
+                </ul>
+                
+                <p><strong><i class="fas fa-project-diagram"></i> Flujo Básico:</strong></p>
+                <ol>
+                    <li>Sistema muestra pantalla "Nuevo Pedido"</li>
+                    <li>Usuario hace clic en botón "Buscar Cliente"</li>
+                    <li>Sistema muestra modal de búsqueda</li>
+                    <li>Usuario ingresa DNI o nombre del cliente</li>
+                    <li>Sistema consulta tabla CLIENTES y muestra resultados</li>
+                    <li>Usuario selecciona cliente de la lista</li>
+                    <li>Sistema carga datos del cliente en formulario</li>
+                    <li>Usuario hace clic en "Agregar Producto"</li>
+                    <li>Sistema muestra catálogo de productos con campo de búsqueda</li>
+                    <li>Usuario selecciona producto e ingresa cantidad</li>
+                    <li>Sistema valida: cantidad > 0 y cantidad ≤ stock disponible</li>
+                    <li>Sistema agrega producto a tabla "Detalle del Pedido" con precio actual</li>
+                    <li>Sistema recalcula subtotal, impuestos y total automáticamente</li>
+                    <li>Usuario repite pasos 8-13 para agregar más productos</li>
+                    <li>Usuario hace clic en "Confirmar Pedido"</li>
+                    <li>Sistema valida: al menos 1 producto agregado</li>
+                    <li>Sistema genera número de pedido único (formato: PED-YYYYMMDD-####)</li>
+                    <li>Sistema inserta registro en tabla PEDIDOS y DETALLE_PEDIDOS</li>
+                    <li>Sistema actualiza campo STOCK_RESERVADO en tabla PRODUCTOS</li>
+                    <li>Sistema muestra mensaje de éxito con número de pedido</li>
+                    <li>Sistema envía email de confirmación al cliente</li>
+                </ol>
+                
+                <p><strong><i class="fas fa-random"></i> Flujos Alternativos:</strong></p>
+                <ul>
+                    <li><strong>5a.</strong> Si no se encuentra cliente: Sistema muestra "Cliente no encontrado" con opción "Registrar Nuevo Cliente"</li>
+                    <li><strong>11a.</strong> Si cantidad > stock: Sistema muestra error "Stock insuficiente. Disponible: X unidades" y no agrega el producto</li>
+                    <li><strong>11b.</strong> Si cantidad ≤ 0: Sistema muestra error "Cantidad debe ser mayor a 0"</li>
+                    <li><strong>16a.</strong> Si no hay productos: Sistema muestra error "Debe agregar al menos un producto"</li>
+                    <li><strong>18a.</strong> Si falla grabación en BD: Sistema muestra "Error al guardar pedido" y mantiene datos en pantalla</li>
+                </ul>
+                
+                <p><strong><i class="fas fa-shield-alt"></i> Validaciones:</strong></p>
+                <ul>
+                    <li>Todos los campos numéricos aceptan solo dígitos</li>
+                    <li>Precio unitario >= 0</li>
+                    <li>Total pedido >= monto mínimo configurado ($100)</li>
+                    <li>Tiempo de sesión: 30 minutos de inactividad cierra sesión</li>
+                </ul>
+                
+                <p><strong><i class="fas fa-flag-checkered"></i> Postcondición:</strong></p>
+                <ul class="mb-0">
+                    <li>Pedido registrado en tabla PEDIDOS con estado "CONFIRMADO"</li>
+                    <li>Detalle guardado en tabla DETALLE_PEDIDOS</li>
+                    <li>Stock reservado en tabla PRODUCTOS</li>
+                    <li>Email enviado al cliente</li>
+                    <li>Log de auditoría registrado</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: RELACIÓN ENTRE LOS TRES CONCEPTOS -->
+        <div class="slide" id="slide14">
+            <div class="slide-header">
+                <h2><i class="fas fa-sitemap"></i> Relación: Event → BUC → PUC</h2>
+                <p class="subtitle">Cómo se conectan los tres conceptos</p>
+            </div>
+            
+            <div class="text-center mb-4">
+                <div class="step-card d-inline-block" style="width: 250px; margin: 10px;">
+                    <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                    <h5>Business Event</h5>
+                    <p class="mb-0">¿QUÉ PASÓ?</p>
+                </div>
+                <div class="d-inline-block" style="vertical-align: middle;">
+                    <i class="fas fa-arrow-right fa-2x text-secondary mx-3"></i>
+                </div>
+                <div class="step-card d-inline-block" style="width: 250px; margin: 10px;">
+                    <i class="fas fa-briefcase fa-3x text-success mb-3"></i>
+                    <h5>BUC</h5>
+                    <p class="mb-0">¿QUÉ HACE EL NEGOCIO?</p>
+                </div>
+                <div class="d-inline-block" style="vertical-align: middle;">
+                    <i class="fas fa-arrow-right fa-2x text-secondary mx-3"></i>
+                </div>
+                <div class="step-card d-inline-block" style="width: 250px; margin: 10px;">
+                    <i class="fas fa-box fa-3x text-warning mb-3"></i>
+                    <h5>PUC</h5>
+                    <p class="mb-0">¿CÓMO LO AUTOMATIZA EL SISTEMA?</p>
+                </div>
+            </div>
+            
+            <div class="example-box">
+                <h5><i class="fas fa-shopping-bag"></i> Ejemplo Completo del Flujo</h5>
+                
+                <div class="step-card bg-white">
+                    <h6><i class="fas fa-calendar-check text-primary"></i> Business Event</h6>
+                    <p class="mb-0"><strong>"Cliente realiza un pedido"</strong></p>
+                    <p><small>Evento que ocurre en el mundo real</small></p>
+                </div>
+                
+                <div class="text-center my-3">
+                    <i class="fas fa-arrow-down fa-2x text-secondary"></i>
+                </div>
+                
+                <div class="step-card bg-white">
+                    <h6><i class="fas fa-briefcase text-success"></i> BUC: Procesar Pedido de Cliente</h6>
+                    <p class="mb-2"><strong>Descripción del negocio:</strong></p>
+                    <ol>
+                        <li>Cliente selecciona productos</li>
+                        <li>Vendedor verifica disponibilidad</li>
+                        <li>Cliente confirma pedido</li>
+                        <li>Se registra el pedido</li>
+                        <li>Se programa entrega</li>
+                    </ol>
+                    <p><small>Proceso del negocio, sin detalles técnicos</small></p>
+                </div>
+                
+                <div class="text-center my-3">
+                    <i class="fas fa-arrow-down fa-2x text-secondary"></i>
+                </div>
+                
+                <div class="step-card bg-white">
+                    <h6><i class="fas fa-box text-warning"></i> PUCs derivados:</h6>
+                    <ul class="mb-0">
+                        <li><strong>PUC 1:</strong> Registrar Pedido en Sistema</li>
+                        <li><strong>PUC 2:</strong> Consultar Disponibilidad de Productos</li>
+                        <li><strong>PUC 3:</strong> Generar Orden de Preparación</li>
+                        <li><strong>PUC 4:</strong> Enviar Notificación al Cliente</li>
+                    </ul>
+                    <p class="mt-2"><small>Cada PUC detalla una funcionalidad específica del sistema</small></p>
+                </div>
+            </div>
+            
+            <div class="highlight-box mt-4">
+                <h5><i class="fas fa-lightbulb"></i> Puntos Clave</h5>
+                <ul class="mb-0">
+                    <li>Un Business Event puede disparar múltiples BUCs</li>
+                    <li>Un BUC puede derivar en múltiples PUCs</li>
+                    <li>Los PUCs son más detallados y técnicos que los BUCs</li>
+                    <li>Todos los PUCs juntos implementan el BUC completo</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: MEJORES PRÁCTICAS -->
+        <div class="slide" id="slide15">
+            <div class="slide-header">
+                <h2><i class="fas fa-star"></i> Mejores Prácticas</h2>
+                <p class="subtitle">Consejos para elaborar Events, BUCs y PUCs de calidad</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="step-card">
+                        <h5><i class="fas fa-check-circle text-success"></i> DO - Hacer</h5>
+                        <ul>
+                            <li>Usar lenguaje claro y consistente</li>
+                            <li>Mantener Business Events atómicos</li>
+                            <li>BUCs independientes de tecnología</li>
+                            <li>PUCs con suficiente detalle para desarrollar</li>
+                            <li>Validar con stakeholders regularmente</li>
+                            <li>Documentar excepciones y flujos alternativos</li>
+                            <li>Usar diagramas para complementar texto</li>
+                            <li>Mantener trazabilidad Event→BUC→PUC</li>
+                            <li>Revisar y actualizar documentación</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="step-card">
+                        <h5><i class="fas fa-times-circle text-danger"></i> DON'T - Evitar</h5>
+                        <ul>
+                            <li>Mezclar perspectivas (negocio y sistema)</li>
+                            <li>Usar jerga técnica en BUCs</li>
+                            <li>Omitir precondiciones y postcondiciones</li>
+                            <li>Hacer PUCs muy abstractos o muy específicos</li>
+                            <li>Duplicar casos de uso</li>
+                            <li>Ignorar flujos de error</li>
+                            <li>Asumir conocimiento implícito</li>
+                            <li>Copiar y pegar sin adaptar</li>
+                            <li>Documentar solo el flujo feliz</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="highlight-box mt-3">
+                <h5><i class="fas fa-lightbulb"></i> Tip Profesional</h5>
+                <p class="mb-0">Comienza siempre por los Business Events. Son la base de todo el análisis. Un evento bien identificado facilita la elaboración de BUCs y PUCs precisos. Invierte tiempo en esta etapa inicial.</p>
+            </div>
+            
+            <div class="example-box mt-3">
+                <h5><i class="fas fa-tools"></i> Herramientas Recomendadas</h5>
+                <ul class="mb-0">
+                    <li><strong>Visual Paradigm:</strong> Para diagramas UML</li>
+                    <li><strong>Balsamiq:</strong> Para wireframes de PUCs</li>
+                    <li><strong>Confluence/Notion:</strong> Para documentación colaborativa</li>
+                    <li><strong>Jira:</strong> Para trazabilidad de requerimientos</li>
+                    <li><strong>Lucidchart:</strong> Para modelado de procesos</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 16: ERRORES COMUNES -->
+        <div class="slide" id="slide16">
+            <div class="slide-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Errores Comunes</h2>
+                <p class="subtitle">Qué evitar al elaborar Events, BUCs y PUCs</p>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-times text-danger"></i> Error 1: Confundir Event con BUC</h5>
+                <p><strong>Incorrecto:</strong> Business Event = "Procesar pedido del cliente"</p>
+                <p><strong>Correcto:</strong> Business Event = "Cliente realiza pedido"</p>
+                <p class="text-muted"><small>El evento es lo que sucede, no la respuesta del negocio</small></p>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-times text-danger"></i> Error 2: BUC con detalles técnicos</h5>
+                <p><strong>Incorrecto:</strong> "Sistema consulta tabla CLIENTES en MySQL y ejecuta SELECT..."</p>
+                <p><strong>Correcto:</strong> "Vendedor verifica datos del cliente"</p>
+                <p class="text-muted"><small>Los BUCs deben ser independientes de tecnología</small></p>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-times text-danger"></i> Error 3: PUC muy vago</h5>
+                <p><strong>Incorrecto:</strong> "Sistema guarda los datos"</p>
+                <p><strong>Correcto:</strong> "Sistema inserta registro en tabla PEDIDOS con campos: ID_PEDIDO, ID_CLIENTE, FECHA, TOTAL, ESTADO"</p>
+                <p class="text-muted"><small>Los PUCs necesitan suficiente detalle para desarrollar</small></p>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-times text-danger"></i> Error 4: Omitir flujos alternativos</h5>
+                <p><strong>Problema:</strong> Solo documentar el escenario perfecto (happy path)</p>
+                <p><strong>Solución:</strong> Incluir qué pasa cuando hay errores, datos inválidos, o situaciones excepcionales</p>
+                <p class="text-muted"><small>Los sistemas deben manejar tanto éxitos como fallos</small></p>
+            </div>
+            
+            <div class="step-card">
+                <h5><i class="fas fa-times text-danger"></i> Error 5: No trazar la relación Event→BUC→PUC</h5>
+                <p><strong>Problema:</strong> PUCs huérfanos sin conexión clara con el negocio</p>
+                <p><strong>Solución:</strong> Mantener matriz de trazabilidad que muestre de dónde deriva cada elemento</p>
+                <p class="text-muted"><small>La trazabilidad facilita el mantenimiento y validación</small></p>
+            </div>
+            
+            <div class="highlight-box mt-3">
+                <h5><i class="fas fa-shield-alt"></i> Cómo Evitar Estos Errores</h5>
+                <ul class="mb-0">
+                    <li>Revisar la documentación con múltiples stakeholders</li>
+                    <li>Usar plantillas estandarizadas para cada tipo de documento</li>
+                    <li>Realizar sesiones de validación cruzada entre analistas</li>
+                    <li>Mantener un glosario de términos del proyecto</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 17: CASO DE ESTUDIO COMPLETO -->
+        <div class="slide" id="slide17">
+            <div class="slide-header">
+                <h2><i class="fas fa-graduation-cap"></i> Caso de Estudio Completo</h2>
+                <p class="subtitle">Sistema de Gestión de Biblioteca</p>
+            </div>
+            
+            <div class="example-box">
+                <h4><i class="fas fa-book-reader"></i> Contexto del Sistema</h4>
+                <p>Una biblioteca universitaria necesita automatizar el proceso de préstamo de libros. Actualmente todo se hace manualmente con fichas de papel.</p>
+            </div>
+            
+            <div class="step-card bg-primary text-white">
+                <h5><i class="fas fa-calendar-check"></i> BUSINESS EVENT</h5>
+                <p class="mb-0"><strong>"Estudiante solicita préstamo de libro"</strong></p>
+            </div>
+            
+            <div class="step-card bg-success text-white mt-3">
+                <h5><i class="fas fa-briefcase"></i> BUC: Procesar Préstamo de Libro</h5>
+                
+                <p><strong>Actores:</strong> Estudiante (primario), Bibliotecario (secundario)</p>
+                
+                <p><strong>Flujo Básico:</strong></p>
+                <ol>
+                    <li>Estudiante presenta su carnet y solicita el libro</li>
+                    <li>Bibliotecario verifica que el estudiante esté activo</li>
+                    <li>Bibliotecario verifica disponibilidad del libro</li>
+                    <li>Bibliotecario registra el préstamo</li>
+                    <li>Bibliotecario calcula la fecha de devolución (7 días)</li>
+                    <li>Bibliotecario entrega el libro al estudiante</li>
+                    <li>Estudiante firma el comprobante</li>
+                </ol>
+                
+                <p><strong>Flujos Alternativos:</strong></p>
+                <ul>
+                    <li>2a. Si estudiante tiene préstamos vencidos, no se permite nuevo préstamo</li>
+                    <li>3a. Si libro no está disponible, se ofrece realizar una reserva</li>
+                </ul>
+                
+                <p><strong>Postcondición:</strong> El préstamo queda registrado y el libro marcado como prestado</p>
+            </div>
+            
+            <div class="step-card bg-warning mt-3">
+                <h5><i class="fas fa-box"></i> PUC: Registrar Préstamo en Sistema</h5>
+                
+                <p><strong>Actores:</strong> Usuario Bibliotecario, Sistema de Control Académico</p>
+                
+                <p><strong>Flujo Básico:</strong></p>
+                <ol>
+                    <li>Usuario accede al módulo "Préstamos" desde menú principal</li>
+                    <li>Sistema muestra pantalla "Nuevo Préstamo"</li>
+                    <li>Usuario ingresa código de estudiante en campo "Carnet"</li>
+                    <li>Sistema consulta API del Sistema Académico para validar estudiante</li>
+                    <li>Sistema verifica en tabla PRESTAMOS si hay préstamos vencidos (WHERE fecha_devolucion < CURDATE() AND estado='ACTIVO')</li>
+                    <li>Sistema muestra datos del estudiante: nombre, carrera, foto</li>
+                    <li>Usuario escanea código de barras del libro</li>
+                    <li>Sistema consulta tabla LIBROS por ISBN</li>
+                    <li>Sistema verifica campo ESTADO = 'DISPONIBLE'</li>
+                    <li>Sistema muestra información del libro</li>
+                    <li>Sistema calcula automáticamente fecha_devolucion = CURDATE() + 7 días</li>
+                    <li>Usuario hace clic en "Confirmar Préstamo"</li>
+                    <li>Sistema inserta registro en tabla PRESTAMOS</li>
+                    <li>Sistema actualiza LIBROS.ESTADO = 'PRESTADO'</li>
+                    <li>Sistema genera comprobante PDF con código QR</li>
+                    <li>Sistema muestra mensaje "Préstamo registrado exitosamente"</li>
+                    <li>Sistema imprime comprobante automáticamente</li>
+                </ol>
+                
+                <p><strong>Flujos Alternativos:</strong></p>
+                <ul>
+                    <li>4a. Si API no responde: Sistema muestra "Error de conexión" y guarda en cola de sincronización</li>
+                    <li>5a. Si hay préstamos vencidos: Sistema muestra ventana modal con lista de préstamos vencidos y bloquea nuevo préstamo</li>
+                    <li>9a. Si ESTADO != 'DISPONIBLE': Sistema muestra "Libro no disponible" con opción "Ver disponibilidad" que muestra fecha estimada de devolución</li>
+                </ul>
+                
+                <p><strong>Validaciones:</strong></p>
+                <ul class="mb-0">
+                    <li>Carnet debe ser numérico de 8 dígitos</li>
+                    <li>ISBN debe ser válido (formato 13 dígitos)</li>
+                    <li>Estudiante no puede tener más de 3 préstamos activos simultáneos</li>
+                    <li>Tiempo de respuesta de consultas < 2 segundos</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 18: RESUMEN EJECUTIVO -->
+        <div class="slide" id="slide18">
+            <div class="slide-header">
+                <h2><i class="fas fa-clipboard-list"></i> Resumen Ejecutivo</h2>
+                <p class="subtitle">Puntos clave para recordar</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="icon-box">
+                        <i class="fas fa-calendar-check"></i>
+                        <h5>Business Event</h5>
+                        <ul class="text-start">
+                            <li>Ocurrencia en el negocio</li>
+                            <li>Externo al sistema</li>
+                            <li>Requiere respuesta</li>
+                            <li>Punto de partida</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <div class="icon-box" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                        <i class="fas fa-briefcase"></i>
+                        <h5>BUC</h5>
+                        <ul class="text-start">
+                            <li>Respuesta del negocio</li>
+                            <li>Independiente de tecnología</li>
+                            <li>Lenguaje de negocio</li>
+                            <li>Alto nivel</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <div class="icon-box" style="background: linear-gradient(135deg, #f39c12, #f1c40f);">
+                        <i class="fas fa-box"></i>
+                        <h5>PUC</h5>
+                        <ul class="text-start">
+                            <li>Implementación del sistema</li>
+                            <li>Detalles técnicos</li>
+                            <li>Especificación completa</li>
+                            <li>Listo para desarrollar</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="definition-box mt-4">
+                <h4><i class="fas fa-route"></i> El Camino del Requerimiento</h4>
+                <div class="text-center">
+                    <h5 class="mb-4">Business Event → BUC → PUC → Código → Sistema Funcionando</h5>
+                    <p class="mb-0">Cada etapa agrega más detalle y especificidad, transformando una necesidad del negocio en software funcional.</p>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="highlight-box">
+                        <h5><i class="fas fa-key"></i> Factores de Éxito</h5>
+                        <ul class="mb-0">
+                            <li>Clara separación de perspectivas</li>
+                            <li>Trazabilidad completa</li>
+                            <li>Validación con stakeholders</li>
+                            <li>Documentación detallada</li>
+                            <li>Revisión continua</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="example-box">
+                        <h5><i class="fas fa-trophy"></i> Beneficios</h5>
+                        <ul class="mb-0">
+                            <li>Requerimientos claros y completos</li>
+                            <li>Mejor comunicación equipo-cliente</li>
+                            <li>Menos cambios durante desarrollo</li>
+                            <li>Estimaciones más precisas</li>
+                            <li>Mayor calidad del software</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 19: INTRODUCCIÓN AL CUESTIONARIO -->
+        <div class="slide" id="slide19">
+            <div class="slide-header">
+                <h2><i class="fas fa-question-circle"></i> ¡Momento del Cuestionario!</h2>
+                <p class="subtitle">Pon a prueba tus conocimientos</p>
+            </div>
+            
+            <div class="portada">
+                <div class="portada-icon animate__animated animate__bounceIn">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3>Cuestionario Final</h3>
+                <p class="lead mt-4">A continuación encontrarás 20 preguntas de selección múltiple sobre Business Events, BUC y PUC.</p>
+                
+                <div class="highlight-box mt-5">
+                    <h5><i class="fas fa-info-circle"></i> Instrucciones</h5>
+                    <ul class="text-start">
+                        <li>Lee cada pregunta cuidadosamente</li>
+                        <li>Selecciona la respuesta que consideres correcta</li>
+                        <li>Al final podrás ver tu puntaje</li>
+                        <li>Se mostrarán las respuestas correctas e incorrectas</li>
+                        <li>¡Buena suerte!</li>
+                    </ul>
+                </div>
+                
+                <div class="text-center mt-5">
+                    <button class="btn btn-primary btn-lg" onclick="nextSlide()">
+                        <i class="fas fa-play"></i> Comenzar Cuestionario
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDES DE PREGUNTAS (20-39) -->
+        <div class="slide" id="slide20">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 1 de 20</span>
+                <h5 class="mt-3">¿Qué es un Business Event?</h5>
+                <div class="quiz-option" data-question="1" data-answer="a">
+                    A) Una ocurrencia en el mundo real que requiere que el sistema responda
+                </div>
+                <div class="quiz-option" data-question="1" data-answer="b">
+                    B) Un caso de uso del sistema
+                </div>
+                <div class="quiz-option" data-question="1" data-answer="c">
+                    C) Una función del software
+                </div>
+                <div class="quiz-option" data-question="1" data-answer="d">
+                    D) Un módulo de la aplicación
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide21">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 2 de 20</span>
+                <h5 class="mt-3">¿Cuál de las siguientes características NO corresponde a un Business Event?</h5>
+                <div class="quiz-option" data-question="2" data-answer="a">
+                    A) Es externo al sistema
+                </div>
+                <div class="quiz-option" data-question="2" data-answer="b">
+                    B) Describe cómo el sistema responde
+                </div>
+                <div class="quiz-option" data-question="2" data-answer="c">
+                    C) Es detectable
+                </div>
+                <div class="quiz-option" data-question="2" data-answer="d">
+                    D) Requiere una respuesta del negocio
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide22">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 3 de 20</span>
+                <h5 class="mt-3">¿Cuál es un ejemplo correcto de Business Event?</h5>
+                <div class="quiz-option" data-question="3" data-answer="a">
+                    A) Sistema guarda el pedido
+                </div>
+                <div class="quiz-option" data-question="3" data-answer="b">
+                    B) Cliente realiza un pedido
+                </div>
+                <div class="quiz-option" data-question="3" data-answer="c">
+                    C) Procesar pedido del cliente
+                </div>
+                <div class="quiz-option" data-question="3" data-answer="d">
+                    D) Registrar pedido en base de datos
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide23">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 4 de 20</span>
+                <h5 class="mt-3">Los eventos temporales son aquellos que:</h5>
+                <div class="quiz-option" data-question="4" data-answer="a">
+                    A) Ocurren en momentos específicos del tiempo
+                </div>
+                <div class="quiz-option" data-question="4" data-answer="b">
+                    B) Son iniciados por actores externos
+                </div>
+                <div class="quiz-option" data-question="4" data-answer="c">
+                    C) Son disparados por condiciones internas del sistema
+                </div>
+                <div class="quiz-option" data-question="4" data-answer="d">
+                    D) Duran poco tiempo
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide24">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 5 de 20</span>
+                <h5 class="mt-3">Un BUC (Business Use Case) se caracteriza por:</h5>
+                <div class="quiz-option" data-question="5" data-answer="a">
+                    A) Incluir detalles técnicos de implementación
+                </div>
+                <div class="quiz-option" data-question="5" data-answer="b">
+                    B) Describir cómo el negocio responde a un evento
+                </div>
+                <div class="quiz-option" data-question="5" data-answer="c">
+                    C) Especificar pantallas y bases de datos
+                </div>
+                <div class="quiz-option" data-question="5" data-answer="d">
+                    D) Ser muy técnico y específico
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide25">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 6 de 20</span>
+                <h5 class="mt-3">¿Qué lenguaje debe usar un BUC?</h5>
+                <div class="quiz-option" data-question="6" data-answer="a">
+                    A) Lenguaje técnico de programación
+                </div>
+                <div class="quiz-option" data-question="6" data-answer="b">
+                    B) Lenguaje del dominio del negocio
+                </div>
+                <div class="quiz-option" data-question="6" data-answer="c">
+                    C) Lenguaje SQL
+                </div>
+                <div class="quiz-option" data-question="6" data-answer="d">
+                    D) Lenguaje UML exclusivamente
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide26">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 7 de 20</span>
+                <h5 class="mt-3">¿Cuál NO es un componente de un BUC?</h5>
+                <div class="quiz-option" data-question="7" data-answer="a">
+                    A) Nombre del caso de uso
+                </div>
+                <div class="quiz-option" data-question="7" data-answer="b">
+                    B) Actores involucrados
+                </div>
+                <div class="quiz-option" data-question="7" data-answer="c">
+                    C) Código fuente del sistema
+                </div>
+                <div class="quiz-option" data-question="7" data-answer="d">
+                    D) Flujo de eventos
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide27">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 8 de 20</span>
+                <h5 class="mt-3">El primer paso para elaborar un BUC es:</h5>
+                <div class="quiz-option" data-question="8" data-answer="a">
+                    A) Diseñar la base de datos
+                </div>
+                <div class="quiz-option" data-question="8" data-answer="b">
+                    B) Partir del Business Event correspondiente
+                </div>
+                <div class="quiz-option" data-question="8" data-answer="c">
+                    C) Codificar el sistema
+                </div>
+                <div class="quiz-option" data-question="8" data-answer="d">
+                    D) Crear las pantallas
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide28">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 9 de 20</span>
+                <h5 class="mt-3">Un PUC (Product Use Case) describe:</h5>
+                <div class="quiz-option" data-question="9" data-answer="a">
+                    A) Solo el proceso del negocio
+                </div>
+                <div class="quiz-option" data-question="9" data-answer="b">
+                    B) Cómo el sistema implementa la funcionalidad
+                </div>
+                <div class="quiz-option" data-question="9" data-answer="c">
+                    C) Únicamente eventos externos
+                </div>
+                <div class="quiz-option" data-question="9" data-answer="d">
+                    D) Solo las interfaces de usuario
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide29">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 10 de 20</span>
+                <h5 class="mt-3">¿Cuál de las siguientes afirmaciones es correcta sobre los PUCs?</h5>
+                <div class="quiz-option" data-question="10" data-answer="a">
+                    A) Deben ser independientes de tecnología
+                </div>
+                <div class="quiz-option" data-question="10" data-answer="b">
+                    B) Incluyen detalles técnicos y de implementación
+                </div>
+                <div class="quiz-option" data-question="10" data-answer="c">
+                    C) No mencionan validaciones del sistema
+                </div>
+                <div class="quiz-option" data-question="10" data-answer="d">
+                    D) Solo describen el negocio
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide30">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 11 de 20</span>
+                <h5 class="mt-3">La principal diferencia entre BUC y PUC es:</h5>
+                <div class="quiz-option" data-question="11" data-answer="a">
+                    A) El BUC es más corto
+                </div>
+                <div class="quiz-option" data-question="11" data-answer="b">
+                    B) El BUC describe QUÉ hace el negocio, el PUC CÓMO lo hace el sistema
+                </div>
+                <div class="quiz-option" data-question="11" data-answer="c">
+                    C) El PUC no tiene actores
+                </div>
+                <div class="quiz-option" data-question="11" data-answer="d">
+                    D) Son exactamente lo mismo
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide31">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 12 de 20</span>
+                <h5 class="mt-3">¿Cuál es la audiencia principal de un PUC?</h5>
+                <div class="quiz-option" data-question="12" data-answer="a">
+                    A) Stakeholders del negocio
+                </div>
+                <div class="quiz-option" data-question="12" data-answer="b">
+                    B) Desarrolladores y testers
+                </div>
+                <div class="quiz-option" data-question="12" data-answer="c">
+                    C) Solo gerentes
+                </div>
+                <div class="quiz-option" data-question="12" data-answer="d">
+                    D) Usuarios finales únicamente
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide32">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 13 de 20</span>
+                <h5 class="mt-3">Un PUC debe incluir:</h5>
+                <div class="quiz-option" data-question="13" data-answer="a">
+                    A) Solo el flujo básico
+                </div>
+                <div class="quiz-option" data-question="13" data-answer="b">
+                    B) Validaciones, mensajes de error y flujos alternativos
+                </div>
+                <div class="quiz-option" data-question="13" data-answer="c">
+                    C) Solo descripciones abstractas
+                </div>
+                <div class="quiz-option" data-question="13" data-answer="d">
+                    D) Únicamente el nombre del caso de uso
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide33">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 14 de 20</span>
+                <h5 class="mt-3">¿Cuál es el orden correcto del flujo de trabajo?</h5>
+                <div class="quiz-option" data-question="14" data-answer="a">
+                    A) PUC → BUC → Business Event
+                </div>
+                <div class="quiz-option" data-question="14" data-answer="b">
+                    B) Business Event → BUC → PUC
+                </div>
+                <div class="quiz-option" data-question="14" data-answer="c">
+                    C) BUC → Business Event → PUC
+                </div>
+                <div class="quiz-option" data-question="14" data-answer="d">
+                    D) Business Event → PUC → BUC
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide34">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 15 de 20</span>
+                <h5 class="mt-3">¿Puede un BUC derivar en múltiples PUCs?</h5>
+                <div class="quiz-option" data-question="15" data-answer="a">
+                    A) No, siempre es relación 1:1
+                </div>
+                <div class="quiz-option" data-question="15" data-answer="b">
+                    B) Sí, un BUC puede generar varios PUCs
+                </div>
+                <div class="quiz-option" data-question="15" data-answer="c">
+                    C) Solo si el BUC es muy grande
+                </div>
+                <div class="quiz-option" data-question="15" data-answer="d">
+                    D) No, eso es un error de diseño
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide35">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 16 de 20</span>
+                <h5 class="mt-3">¿Qué son las precondiciones en un caso de uso?</h5>
+                <div class="quiz-option" data-question="16" data-answer="a">
+                    A) Estados que deben existir antes de ejecutar el caso de uso
+                </div>
+                <div class="quiz-option" data-question="16" data-answer="b">
+                    B) Requisitos de hardware del sistema
+                </div>
+                <div class="quiz-option" data-question="16" data-answer="c">
+                    C) Permisos de los usuarios
+                </div>
+                <div class="quiz-option" data-question="16" data-answer="d">
+                    D) Estados finales del caso de uso
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide36">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 17 de 20</span>
+                <h5 class="mt-3">Los flujos alternativos documentan:</h5>
+                <div class="quiz-option" data-question="17" data-answer="a">
+                    A) Solo el camino feliz del sistema
+                </div>
+                <div class="quiz-option" data-question="17" data-answer="b">
+                    B) Excepciones, errores y variaciones del flujo básico
+                </div>
+                <div class="quiz-option" data-question="17" data-answer="c">
+                    C) Diferentes interfaces de usuario
+                </div>
+                <div class="quiz-option" data-question="17" data-answer="d">
+                    D) Métodos de pago alternativos
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide37">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 18 de 20</span>
+                <h5 class="mt-3">¿Cuál es un error común al elaborar un BUC?</h5>
+                <div class="quiz-option" data-question="18" data-answer="a">
+                    A) Incluir actores
+                </div>
+                <div class="quiz-option" data-question="18" data-answer="b">
+                    B) Incluir detalles técnicos de implementación
+                </div>
+                <div class="quiz-option" data-question="18" data-answer="c">
+                    C) Describir el proceso del negocio
+                </div>
+                <div class="quiz-option" data-question="18" data-answer="d">
+                    D) Documentar flujos alternativos
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide38">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 19 de 20</span>
+                <h5 class="mt-3">La trazabilidad Event→BUC→PUC es importante porque:</h5>
+                <div class="quiz-option" data-question="19" data-answer="a">
+                    A) Es un requisito de la norma ISO
+                </div>
+                <div class="quiz-option" data-question="19" data-answer="b">
+                    B) Facilita el mantenimiento y validación de requerimientos
+                </div>
+                <div class="quiz-option" data-question="19" data-answer="c">
+                    C) Mejora el rendimiento del sistema
+                </div>
+                <div class="quiz-option" data-question="19" data-answer="d">
+                    D) Reduce el costo de hardware
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide39">
+            <div class="slide-header">
+                <h2><i class="fas fa-question"></i> Cuestionario</h2>
+            </div>
+            <div class="question-card">
+                <span class="question-number">Pregunta 20 de 20</span>
+                <h5 class="mt-3">¿Cuál de las siguientes es una mejor práctica al elaborar casos de uso?</h5>
+                <div class="quiz-option" data-question="20" data-answer="a">
+                    A) Documentar solo el flujo feliz
+                </div>
+                <div class="quiz-option" data-question="20" data-answer="b">
+                    B) Mezclar perspectivas de negocio y técnicas
+                </div>
+                <div class="quiz-option" data-question="20" data-answer="c">
+                    C) Validar regularmente con stakeholders
+                </div>
+                <div class="quiz-option" data-question="20" data-answer="d">
+                    D) Evitar usar diagramas complementarios
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 40: RESULTADOS -->
+        <div class="slide" id="slide40">
+            <div class="slide-header">
+                <h2><i class="fas fa-chart-bar"></i> Resultados del Cuestionario</h2>
+                <p class="subtitle">Tu desempeño</p>
+            </div>
+            
+            <div class="text-center">
+                <div id="scoreDisplay" class="definition-box mb-4">
+                    <h3>Puntaje: <span id="scoreValue">0</span> / 20</h3>
+                    <h4>Porcentaje: <span id="percentValue">0</span>%</h4>
+                    <p id="scoreMessage" class="mt-3"></p>
+                </div>
+            </div>
+            
+            <div id="answersReview"></div>
+            
+            <div class="text-center mt-4">
+                <button class="btn btn-primary btn-lg" onclick="resetQuiz()">
+                    <i class="fas fa-redo"></i> Reintentar Cuestionario
+                </button>
+                <button class="btn btn-secondary btn-lg ms-3" onclick="goToSlide(1)">
+                    <i class="fas fa-home"></i> Volver al Inicio
+                </button>
+            </div>
+        </div>
+
+        <!-- NAVEGACIÓN -->
+        <div class="navigation">
+            <button class="btn btn-secondary btn-nav" onclick="prevSlide()" id="prevBtn">
+                <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            <div class="slide-counter">
+                <span id="currentSlide">1</span> / <span id="totalSlides">40</span>
+            </div>
+            <button class="btn btn-primary btn-nav" onclick="nextSlide()" id="nextBtn">
+                Siguiente <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        let currentSlideIndex = 1;
+        const totalSlides = 40;
+        const userAnswers = {};
+        
+        // Respuestas correctas
+        const correctAnswers = {
+            1: 'a', 2: 'b', 3: 'b', 4: 'a', 5: 'b',
+            6: 'b', 7: 'c', 8: 'b', 9: 'b', 10: 'b',
+            11: 'b', 12: 'b', 13: 'b', 14: 'b', 15: 'b',
+            16: 'a', 17: 'b', 18: 'b', 19: 'b', 20: 'c'
+        };
+        
+        function updateSlideDisplay() {
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            const currentSlide = document.getElementById(`slide${currentSlideIndex}`);
+            if (currentSlide) {
+                currentSlide.classList.add('active');
+                currentSlide.classList.add('animate__animated', 'animate__fadeIn');
+            }
+            
+            document.getElementById('currentSlide').textContent = currentSlideIndex;
+            document.getElementById('totalSlides').textContent = totalSlides;
+            
+            // Actualizar barra de progreso
+            const progress = (currentSlideIndex / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Actualizar botones
+            document.getElementById('prevBtn').disabled = currentSlideIndex === 1;
+            
+            if (currentSlideIndex === 39) {
+                document.getElementById('nextBtn').innerHTML = '<i class="fas fa-check"></i> Ver Resultados';
+            } else {
+                document.getElementById('nextBtn').innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+            }
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex === 39) {
+                // Verificar que todas las preguntas estén respondidas
+                let allAnswered = true;
+                for (let i = 1; i <= 20; i++) {
+                    if (!userAnswers[i]) {
+                        allAnswered = false;
+                        break;
+                    }
+                }
+                
+                if (!allAnswered) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '¡Atención!',
+                        text: 'Por favor responde todas las preguntas antes de ver los resultados.',
+                        confirmButtonColor: '#3498db'
+                    });
+                    return;
+                }
+                
+                calculateResults();
+            }
+            
+            if (currentSlideIndex < totalSlides) {
+                currentSlideIndex++;
+                updateSlideDisplay();
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlideIndex > 1) {
+                currentSlideIndex--;
+                updateSlideDisplay();
+            }
+        }
+        
+        function goToSlide(slideNumber) {
+            currentSlideIndex = slideNumber;
+            updateSlideDisplay();
+        }
+        
+        // Manejar selección de respuestas
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('quiz-option')) {
+                const questionNum = e.target.getAttribute('data-question');
+                const answer = e.target.getAttribute('data-answer');
+                
+                // Remover selección anterior
+                document.querySelectorAll(`[data-question="${questionNum}"]`).forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Marcar nueva selección
+                e.target.classList.add('selected');
+                userAnswers[questionNum] = answer;
+                
+                // Avanzar automáticamente después de 500ms
+                setTimeout(() => {
+                    if (currentSlideIndex < 39) {
+                        nextSlide();
+                    }
+                }, 500);
+            }
+        });
+        
+        function calculateResults() {
+            let correctCount = 0;
+            let reviewHTML = '<h4 class="mb-4"><i class="fas fa-list-check"></i> Revisión de Respuestas</h4>';
+            
+            for (let i = 1; i <= 20; i++) {
+                const userAnswer = userAnswers[i];
+                const correctAnswer = correctAnswers[i];
+                const isCorrect = userAnswer === correctAnswer;
+                
+                if (isCorrect) correctCount++;
+                
+                reviewHTML += `
+                    <div class="step-card ${isCorrect ? 'border-success' : 'border-danger'}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6>Pregunta ${i}</h6>
+                                <p class="mb-1">
+                                    <strong>Tu respuesta:</strong> 
+                                    <span class="${isCorrect ? 'text-success' : 'text-danger'}">
+                                        Opción ${userAnswer.toUpperCase()}
+                                        ${isCorrect ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>'}
+                                    </span>
+                                </p>
+                                ${!isCorrect ? `<p class="mb-0"><strong>Respuesta correcta:</strong> <span class="text-success">Opción ${correctAnswer.toUpperCase()}</span></p>` : ''}
+                            </div>
+                            <div>
+                                ${isCorrect ? 
+                                    '<span class="badge bg-success">Correcta</span>' : 
+                                    '<span class="badge bg-danger">Incorrecta</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const percentage = (correctCount / 20) * 100;
+            
+            document.getElementById('scoreValue').textContent = correctCount;
+            document.getElementById('percentValue').textContent = percentage.toFixed(1);
+            document.getElementById('answersReview').innerHTML = reviewHTML;
+            
+            let message = '';
+            let icon = '';
+            
+            if (percentage >= 90) {
+                message = '¡Excelente! Dominas muy bien los conceptos.';
+                icon = '🏆';
+            } else if (percentage >= 70) {
+                message = '¡Muy bien! Tienes un buen entendimiento del tema.';
+                icon = '👍';
+            } else if (percentage >= 50) {
+                message = 'Bien. Te recomendamos repasar algunos conceptos.';
+                icon = '📚';
+            } else {
+                message = 'Necesitas reforzar estos conceptos. ¡Sigue estudiando!';
+                icon = '💪';
+            }
+            
+            document.getElementById('scoreMessage').innerHTML = `<h5>${icon} ${message}</h5>`;
+            
+            nextSlide();
+            
+            // Mostrar SweetAlert
+            Swal.fire({
+                icon: percentage >= 70 ? 'success' : 'info',
+                title: '¡Cuestionario Completado!',
+                html: `
+                    <h3>Tu puntuación: ${correctCount}/20</h3>
+                    <h4>${percentage.toFixed(1)}%</h4>
+                    <p>${message}</p>
+                `,
+                confirmButtonColor: '#3498db',
+                confirmButtonText: 'Ver Detalle'
+            });
+        }
+        
+        function resetQuiz() {
+            // Limpiar respuestas
+            Object.keys(userAnswers).forEach(key => delete userAnswers[key]);
+            
+            // Limpiar selecciones visuales
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Volver al inicio del cuestionario
+            goToSlide(19);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Cuestionario Reiniciado',
+                text: '¡Buena suerte en este nuevo intento!',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+        
+        // Navegación con teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+        
+        // Inicializar
+        updateSlideDisplay();
+    </script>
+</body>
+</html>
