@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentos Entregables y Gestión con Kanban</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #7c3aed;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f3f4f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .presentation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .slide {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 60px;
+            min-height: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 25px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .icon-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .icon-title i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        .feature-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .feature-box h3 {
+            color: white;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+
+        .deliverable-card {
+            background: white;
+            border-left: 5px solid var(--primary-color);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .deliverable-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .deliverable-number {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-list li {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .content-list li:before {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-size: 1.2rem;
+        }
+
+        .kanban-column {
+            background: var(--light-color);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .kanban-column h4 {
+            color: var(--dark-color);
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .kanban-card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            gap: 15px;
+        }
+
+        .nav-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .nav-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .nav-button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar-custom {
+            height: 8px;
+            background: var(--light-color);
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .quiz-option {
+            background: white;
+            border: 2px solid var(--light-color);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-color);
+            background: #f0f9ff;
+            transform: translateX(10px);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .quiz-option-letter {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .quiz-option.selected .quiz-option-letter {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid var(--warning-color);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .highlight-box i {
+            color: var(--warning-color);
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .trello-board {
+            background: linear-gradient(135deg, #0079bf 0%, #026aa7 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-left: 5px solid var(--success-color);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .tip-box strong {
+            color: var(--success-color);
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 20px;
+                min-height: auto;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            .nav-button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            padding-left: 80px;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .week-badge {
+            display: inline-block;
+            background: var(--warning-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        
+        <!-- Slide 1: Portada -->
+        <div class="slide active animate__animated animate__fadeIn" id="slide1">
+            <div class="slide-number">1 / 12</div>
+            <div class="text-center" style="padding-top: 80px;">
+                <i class="fas fa-file-contract fa-5x mb-4 text-primary animate__animated animate__bounceIn"></i>
+                <h1 class="display-3 animate__animated animate__fadeInDown">Documentos Entregables</h1>
+                <h2 class="text-secondary animate__animated animate__fadeInUp">y Gestión de Proyecto con Kanban</h2>
+                <div class="mt-5 animate__animated animate__fadeIn animate__delay-1s">
+                    <p class="lead" style="font-size: 1.3rem; color: #6b7280;">
+                        <i class="fas fa-graduation-cap text-primary me-2"></i>
+                        Guía completa para la organización y entrega del proyecto
+                    </p>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-button" disabled>
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 2: Introducción -->
+        <div class="slide" id="slide2">
+            <div class="slide-number">2 / 12</div>
+            <h1><i class="fas fa-list-check me-3"></i>Entregables del Proyecto</h1>
+            
+            <div class="feature-box animate__animated animate__fadeInLeft">
+                <h3><i class="fas fa-bullseye me-2"></i>Objetivo</h3>
+                <p style="font-size: 1.1rem; line-height: 1.8;">
+                    Durante el desarrollo del proyecto, se deben generar <strong>5 documentos principales</strong> 
+                    que documentan todas las fases del ciclo de vida del software, desde el relevamiento 
+                    inicial hasta el manual técnico final.
+                </p>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="deliverable-card animate__animated animate__fadeInUp">
+                        <h4><i class="fas fa-chart-line text-success me-2"></i>Importancia</h4>
+                        <ul class="content-list">
+                            <li>Documentación profesional</li>
+                            <li>Trazabilidad del proyecto</li>
+                            <li>Comunicación con el cliente</li>
+                            <li>Base para el desarrollo</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="deliverable-card animate__animated animate__fadeInUp animate__delay-1s">
+                        <h4><i class="fas fa-clock text-warning me-2"></i>Cronograma</h4>
+                        <ul class="content-list">
+                            <li>Semana 1: Relevamiento</li>
+                            <li>Semana 2: Diseño</li>
+                            <li>Semana 3: Implementación</li>
+                            <li>Validaciones con cliente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 3: Entregable 1 -->
+        <div class="slide" id="slide3">
+            <div class="slide-number">3 / 12</div>
+            <div class="icon-title">
+                <div class="deliverable-number">1</div>
+                <h1>Documento de Relevamiento de Requerimientos</h1>
+            </div>
+
+            <div class="timeline-item animate__animated animate__fadeInRight">
+                <div class="timeline-icon"><i class="fas fa-clipboard-list"></i></div>
+                <span class="week-badge"><i class="fas fa-calendar-alt me-1"></i>Semana 1</span>
+                <h3>Contenido Principal</h3>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="deliverable-card animate__animated animate__fadeInUp">
+                        <h4><i class="fas fa-bolt text-warning me-2"></i>BEs</h4>
+                        <p><strong>Business Events</strong></p>
+                        <p>Eventos del negocio que desencadenan procesos en el sistema.</p>
+                        <div class="tip-box mt-3">
+                            <strong><i class="fas fa-lightbulb me-1"></i>Ejemplo:</strong>
+                            "Cliente solicita presupuesto"
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="deliverable-card animate__animated animate__fadeInUp animate__delay-1s">
+                        <h4><i class="fas fa-users text-primary me-2"></i>BUCs</h4>
+                        <p><strong>Business Use Cases</strong></p>
+                        <p>Casos de uso del negocio que describen procesos completos.</p>
+                        <div class="tip-box mt-3">
+                            <strong><i class="fas fa-lightbulb me-1"></i>Ejemplo:</strong>
+                            "Gestión de ventas"
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="deliverable-card animate__animated animate__fadeInUp animate__delay-2s">
+                        <h4><i class="fas fa-project-diagram text-success me-2"></i>PUCs</h4>
+                        <p><strong>Process Use Cases</strong></p>
+                        <p>Casos de uso de proceso que detallan actividades específicas.</p>
+                        <div class="tip-box mt-3">
+                            <strong><i class="fas fa-lightbulb me-1"></i>Ejemplo:</strong>
+                            "Registrar pago"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box animate__animated animate__fadeIn animate__delay-3s">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Importante:</strong> Este documento surge de las actividades de relevamiento 
+                y entrevistas realizadas durante la Semana 1.
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 4: Entregable 2 -->
+        <div class="slide" id="slide4">
+            <div class="slide-number">4 / 12</div>
+            <div class="icon-title">
+                <div class="deliverable-number">2</div>
+                <h1>Requerimientos Funcionales y No Funcionales</h1>
+            </div>
+
+            <div class="timeline-item animate__animated animate__fadeInRight">
+                <div class="timeline-icon"><i class="fas fa-file-alt"></i></div>
+                <span class="week-badge"><i class="fas fa-calendar-alt me-1"></i>Validación: Lunes 15</span>
+                <h3>Plantilla Volere</h3>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="feature-box animate__animated animate__fadeInLeft">
+                        <h3><i class="fas fa-cog me-2"></i>Requerimientos Funcionales (RF)</h3>
+                        <ul class="content-list" style="color: white;">
+                            <li>Qué debe hacer el sistema</li>
+                            <li>Funcionalidades específicas</li>
+                            <li>Comportamientos esperados</li>
+                            <li>Casos de uso detallados</li>
+                        </ul>
+                        <div class="mt-3 p-3" style="background: rgba(255,255,255,0.2); border-radius: 8px;">
+                            <strong><i class="fas fa-example me-1"></i>Ejemplo:</strong><br>
+                            "El sistema debe permitir registrar nuevos clientes con sus datos de contacto"
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-box animate__animated animate__fadeInRight">
+                        <h3><i class="fas fa-shield-alt me-2"></i>Requerimientos No Funcionales (RNF)</h3>
+                        <ul class="content-list" style="color: white;">
+                            <li>Restricciones del sistema</li>
+                            <li>Calidad y rendimiento</li>
+                            <li>Seguridad y usabilidad</li>
+                            <li>Tecnologías requeridas</li>
+                        </ul>
+                        <div class="mt-3 p-3" style="background: rgba(255,255,255,0.2); border-radius: 8px;">
+                            <strong><i class="fas fa-example me-1"></i>Ejemplo:</strong><br>
+                            "El sistema debe responder en menos de 2 segundos para el 95% de las operaciones"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="deliverable-card mt-4 animate__animated animate__fadeInUp">
+                <h4><i class="fas fa-sitemap text-primary me-2"></i>Diagramas Requeridos</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="content-list">
+                            <li><strong>Diagramas de Casos de Uso:</strong> Actores e interacciones</li>
+                            <li>Identificar actores principales</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="content-list">
+                            <li><strong>Diagramas de Actividades:</strong> Flujos de trabajo</li>
+                            <li>Procesos paso a paso</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 5: Entregable 3 -->
+        <div class="slide" id="slide5">
+            <div class="slide-number">5 / 12</div>
+            <div class="icon-title">
+                <div class="deliverable-number">3</div>
+                <h1>Documento de Diseño del Sistema</h1>
+            </div>
+
+            <div class="timeline-item animate__animated animate__fadeInRight">
+                <div class="timeline-icon"><i class="fas fa-drafting-compass"></i></div>
+                <span class="week-badge"><i class="fas fa-calendar-alt me-1"></i>Semana 2</span>
+                <h3>Diseño Técnico Completo</h3>
+            </div>
+
+            <div class="highlight-box animate__animated animate__fadeIn">
+                <i class="fas fa-info-circle"></i>
+                <strong>Nota Importante:</strong> Todo se entrega consolidado en un único documento de diseño, 
+                no separado en múltiples PDFs.
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="deliverable-card animate__animated animate__fadeInLeft">
+                        <h4><i class="fas fa-diagram-project text-primary me-2"></i>Diagramas UML</h4>
+                        <ul class="content-list">
+                            <li><strong>Diagramas de Clases:</strong> Estructura del sistema</li>
+                            <li><strong>Diagramas de Paquetes:</strong> Organización lógica</li>
+                            <li><strong>Diagramas de Secuencia:</strong> Interacciones temporales</li>
+                            <li><strong>Diagramas de Componentes:</strong> Arquitectura modular</li>
+                            <li><strong>Diagramas de Despliegue:</strong> Infraestructura física</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="deliverable-card animate__animated animate__fadeInRight">
+                        <h4><i class="fas fa-database text-success me-2"></i>Diseño de Base de Datos</h4>
+                        <ul class="content-list">
+                            <li><strong>MER:</strong> Modelo Entidad-Relación</li>
+                            <li><strong>MDR:</strong> Modelo de Datos Relacional</li>
+                            <li><strong>Diccionario de Clases:</strong> Atributos y métodos</li>
+                            <li><strong>Diseño de BD:</strong> Tablas, campos, tipos de datos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-box mt-4 animate__animated animate__fadeInUp">
+                <strong><i class="fas fa-lightbulb me-2"></i>Consejo de Organización:</strong>
+                Utiliza herramientas como Visual Paradigm, Draw.io o Lucidchart para mantener 
+                consistencia en todos los diagramas.
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 6: Entregable 4 -->
+        <div class="slide" id="slide6">
+            <div class="slide-number">6 / 12</div>
+            <div class="icon-title">
+                <div class="deliverable-number">4</div>
+                <h1>Prototipo de Interfaces de Usuario</h1>
+            </div>
+
+            <div class="timeline-item animate__animated animate__fadeInRight">
+                <div class="timeline-icon"><i class="fab fa-figma"></i></div>
+                <h3>Diseño Visual en Figma</h3>
+            </div>
+
+            <div class="feature-box animate__animated animate__fadeInDown">
+                <h3><i class="fas fa-palette me-2"></i>Características del Prototipo</h3>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <ul class="content-list" style="color: white;">
+                            <li>Diseño visual de todas las pantallas</li>
+                            <li>Navegación interactiva entre vistas</li>
+                            <li>Componentes reutilizables</li>
+                            <li>Guía de estilos (colores, tipografías)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="content-list" style="color: white;">
+                            <li>Responsive design (móvil y desktop)</li>
+                            <li>Flujos de usuario completos</li>
+                            <li>Estados de la interfaz (hover, active)</li>
+                            <li>Iconografía y recursos visuales</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box animate__animated animate__fadeIn">
+                <i class="fas fa-star"></i>
+                <strong>Importante:</strong> Este NO es solo un entregable visual, es un entregable formal 
+                que debe ser presentado y validado con el cliente.
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="deliverable-card animate__animated animate__fadeInLeft">
+                        <h4><i class="fas fa-check-circle text-success me-2"></i>Qué Incluir</h4>
+                        <ul class="content-list">
+                            <li>Pantallas de inicio y login</li>
+                            <li>Dashboard principal</li>
+                            <li>Formularios de captura de datos</li>
+                            <li>Listados y tablas</li>
+                            <li>Mensajes de error y confirmación</li>
+                            <li>Menús de navegación</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="deliverable-card animate__animated animate__fadeInRight">
+                        <h4><i class="fas fa-tools text-warning me-2"></i>Herramientas Recomendadas</h4>
+                        <ul class="content-list">
+                            <li><strong>Figma:</strong> Recomendado (gratuito)</li>
+                            <li><strong>Adobe XD:</strong> Alternativa profesional</li>
+                            <li><strong>Sketch:</strong> Para Mac users</li>
+                            <li><strong>Balsamiq:</strong> Wireframes rápidos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 7: Entregable 5 -->
+        <div class="slide" id="slide7">
+            <div class="slide-number">7 / 12</div>
+            <div class="icon-title">
+                <div class="deliverable-number">5</div>
+                <h1>Manual Técnico</h1>
+            </div>
+
+            <div class="timeline-item animate__animated animate__fadeInRight">
+                <div class="timeline-icon"><i class="fas fa-book"></i></div>
+                <span class="week-badge"><i class="fas fa-calendar-alt me-1"></i>Semana 3 - Sábado 20 (11:55)</span>
+                <h3>Documentación Técnica Completa</h3>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="feature-box animate__animated animate__fadeInLeft">
+                        <h3><i class="fas fa-code me-2"></i>Contenido Técnico</h3>
+                        <ul class="content-list" style="color: white;">
+                            <li>Arquitectura del sistema</li>
+                            <li>Tecnologías utilizadas</li>
+                            <li>Estructura del código</li>
+                            <li>APIs y servicios</li>
+                            <li>Configuración del entorno</li>
+                            <li>Scripts de base de datos</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-box animate__animated animate__fadeInRight">
+                        <h3><i class="fas fa-wrench me-2"></i>Guías de Operación</h3>
+                        <ul class="content-list" style="color: white;">
+                            <li>Instalación del sistema</li>
+                            <li>Configuración de servidores</li>
+                            <li>Procedimientos de backup</li>
+                            <li>Mantenimiento preventivo</li>
+                            <li>Resolución de problemas</li>
+                            <li>Actualizaciones y parches</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="deliverable-card mt-4 animate__animated animate__fadeInUp">
+                <h4><i class="fas fa-users-cog text-primary me-2"></i>Audiencia del Manual</h4>
+                <p>El manual técnico está dirigido a:</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="tip-box">
+                            <strong><i class="fas fa-laptop-code me-1"></i>Desarrolladores</strong>
+                            Para entender y modificar el código
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="tip-box">
+                            <strong><i class="fas fa-server me-1"></i>Administradores</strong>
+                            Para instalar y mantener el sistema
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="tip-box">
+                            <strong><i class="fas fa-life-ring me-1"></i>Soporte Técnico</strong>
+                            Para resolver incidencias
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box animate__animated animate__fadeIn">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Consejo:</strong> Incluye diagramas, capturas de pantalla y ejemplos de código 
+                para facilitar la comprensión.
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 8: Resumen de Entregables -->
+        <div class="slide" id="slide8">
+            <div class="slide-number">8 / 12</div>
+            <h1><i class="fas fa-clipboard-check me-3"></i>Resumen de Entregables</h1>
+
+            <div class="deliverable-card animate__animated animate__fadeInUp">
+                <h3 class="text-center mb-4"><i class="fas fa-list-ol text-primary me-2"></i>5 Documentos Principales</h3>
+                
+                <div class="timeline">
+                    <div class="timeline-item animate__animated animate__fadeInLeft">
+                        <div class="timeline-icon">1</div>
+                        <h4>Documento de Relevamiento de Requerimientos</h4>
+                        <p><strong>Incluye:</strong> BEs, BUCs y PUCs</p>
+                        <span class="week-badge"><i class="fas fa-calendar-week me-1"></i>Semana 1</span>
+                    </div>
+
+                    <div class="timeline-item animate__animated animate__fadeInLeft animate__delay-1s">
+                        <div class="timeline-icon">2</div>
+                        <h4>Documento de RF y RNF (Volere)</h4>
+                        <p><strong>Incluye:</strong> Requerimientos + Diagramas de Casos de Uso y Actividades</p>
+                        <span class="week-badge"><i class="fas fa-check me-1"></i>Validación: Lunes 15</span>
+                    </div>
+
+                    <div class="timeline-item animate__animated animate__fadeInLeft animate__delay-2s">
+                        <div class="timeline-icon">3</div>
+                        <h4>Documento de Diseño del Sistema</h4>
+                        <p><strong>Incluye:</strong> Todos los diagramas UML + MER/MDR + Diccionario</p>
+                        <span class="week-badge"><i class="fas fa-calendar-week me-1"></i>Semana 2</span>
+                    </div>
+
+                    <div class="timeline-item animate__animated animate__fadeInRight animate__delay-3s">
+                        <div class="timeline-icon">4</div>
+                        <h4>Prototipo de Interfaces (Figma)</h4>
+                        <p><strong>Incluye:</strong> Diseño visual interactivo de todas las pantallas</p>
+                        <span class="week-badge"><i class="fas fa-palette me-1"></i>Entregable Formal</span>
+                    </div>
+
+                    <div class="timeline-item animate__animated animate__fadeInRight animate__delay-4s">
+                        <div class="timeline-icon">5</div>
+                        <h4>Manual Técnico</h4>
+                        <p><strong>Incluye:</strong> Documentación técnica completa del sistema</p>
+                        <span class="week-badge"><i class="fas fa-calendar-day me-1"></i>Sábado 20 - 11:55</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 9: Introducción a Trello y Kanban -->
+        <div class="slide" id="slide9">
+            <div class="slide-number">9 / 12</div>
+            <h1><i class="fab fa-trello me-3"></i>Organización con Trello y Kanban</h1>
+
+            <div class="trello-board animate__animated animate__fadeInDown">
+                <h2 class="text-white"><i class="fas fa-columns me-2"></i>¿Por qué usar Trello?</h2>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <ul class="content-list" style="color: white;">
+                            <li>Herramienta gratuita y fácil de usar</li>
+                            <li>Colaboración en tiempo real</li>
+                            <li>Visualización clara del progreso</li>
+                            <li>Acceso desde cualquier dispositivo</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="content-list" style="color: white;">
+                            <li>Asignación de responsables</li>
+                            <li>Fechas límite y recordatorios</li>
+                            <li>Adjuntar archivos y documentos</li>
+                            <li>Historial de cambios</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-box animate__animated animate__fadeInUp">
+                <h3><i class="fas fa-stream me-2"></i>Metodología Kanban</h3>
+                <p style="font-size: 1.1rem; color: white; line-height: 1.8;">
+                    Kanban es un método visual para gestionar el trabajo. Se basa en tarjetas que 
+                    se mueven a través de columnas que representan diferentes estados del proceso.
+                </p>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="deliverable-card">
+                            <h4><i class="fas fa-eye text-primary me-2"></i>Visual</h4>
+                            <p>Ver todo el trabajo de un vistazo</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="deliverable-card">
+                            <h4><i class="fas fa-balance-scale text-success me-2"></i>Límites WIP</h4>
+                            <p>Controlar el trabajo en progreso</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="deliverable-card">
+                            <h4><i class="fas fa-chart-line text-warning me-2"></i>Flujo Continuo</h4>
+                            <p>Mejora continua del proceso</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 10: Estructura del Tablero Kanban -->
+        <div class="slide" id="slide10">
+            <div class="slide-number">10 / 12</div>
+            <h1><i class="fas fa-th-large me-3"></i>Estructura del Tablero Kanban</h1>
+
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="kanban-column animate__animated animate__fadeInUp">
+                        <h4><i class="fas fa-inbox text-secondary me-2"></i>Backlog</h4>
+                        <div class="kanban-card">
+                            <strong>Todas las tareas pendientes</strong>
+                            <p class="mt-2 mb-0">Tareas identificadas pero no iniciadas</p>
+                        </div>
+                        <div class="kanban-card">
+                            <p class="mb-0"><i class="fas fa-lightbulb text-warning me-2"></i>Nuevas ideas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kanban-column animate__animated animate__fadeInUp animate__delay-1s">
+                        <h4><i class="fas fa-list-ul text-primary me-2"></i>Por Hacer</h4>
+                        <div class="kanban-card">
+                            <strong>Tareas priorizadas</strong>
+                            <p class="mt-2 mb-0">Listas para comenzar</p>
+                        </div>
+                        <div class="kanban-card">
+                            <p class="mb-0"><i class="fas fa-calendar-check text-primary me-2"></i>Con fecha asignada</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kanban-column animate__animated animate__fadeInUp animate__delay-2s">
+                        <h4><i class="fas fa-spinner text-warning me-2"></i>En Progreso</h4>
+                        <div class="kanban-card" style="border-left-color: var(--warning-color);">
+                            <strong>Trabajo activo</strong>
+                            <p class="mt-2 mb-0">Tareas en desarrollo</p>
+                        </div>
+                        <div class="kanban-card" style="border-left-color: var(--warning-color);">
+                            <p class="mb-0"><i class="fas fa-user text-warning me-2"></i>Con responsable</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kanban-column animate__animated animate__fadeInUp animate__delay-3s">
+                        <h4><i class="fas fa-check-circle text-success me-2"></i>Completado</h4>
+                        <div class="kanban-card" style="border-left-color: var(--success-color);">
+                            <strong>Tareas finalizadas</strong>
+                            <p class="mt-2 mb-0">Trabajo terminado y validado</p>
+                        </div>
+                        <div class="kanban-card" style="border-left-color: var(--success-color);">
+                            <p class="mb-0"><i class="fas fa-trophy text-success me-2"></i>¡Logros!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-box mt-4 animate__animated animate__fadeIn animate__delay-4s">
+                <strong><i class="fas fa-lightbulb me-2"></i>Consejo:</strong>
+                Puedes agregar columnas adicionales según las necesidades del equipo, como "En Revisión" 
+                o "Testing", pero mantén la estructura simple y clara.
+            </div>
+
+            <div class="highlight-box animate__animated animate__fadeIn animate__delay-4s">
+                <i class="fas fa-exclamation-circle"></i>
+                <strong>Límite WIP (Work In Progress):</strong> No sobrecargues la columna "En Progreso". 
+                Limita la cantidad de tareas simultáneas (recomendado: 2-3 tareas por persona).
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 11: Recomendaciones de Uso -->
+        <div class="slide" id="slide11">
+            <div class="slide-number">11 / 12</div>
+            <h1><i class="fas fa-star me-3"></i>Recomendaciones de Uso</h1>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="deliverable-card animate__animated animate__fadeInLeft">
+                        <h3><i class="fas fa-tasks text-primary me-2"></i>Gestión de Tarjetas</h3>
+                        <ul class="content-list">
+                            <li><strong>Títulos claros:</strong> "Crear diagrama de clases" mejor que "Diagrama"</li>
+                            <li><strong>Descripciones completas:</strong> Especifica qué se debe hacer</li>
+                            <li><strong>Checklists:</strong> Divide tareas grandes en subtareas</li>
+                            <li><strong>Etiquetas de color:</strong> Categoriza (Documentación, Diseño, etc.)</li>
+                            <li><strong>Fechas límite:</strong> Asigna deadlines realistas</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="deliverable-card animate__animated animate__fadeInRight">
+                        <h3><i class="fas fa-users text-success me-2"></i>Trabajo en Equipo</h3>
+                        <ul class="content-list">
+                            <li><strong>Asigna responsables:</strong> Cada tarjeta debe tener un owner</li>
+                            <li><strong>Comentarios:</strong> Comunica avances y bloqueos</li>
+                            <li><strong>Adjunta archivos:</strong> Sube documentos relevantes</li>
+                            <li><strong>Daily stand-up:</strong> Revisa el tablero diariamente</li>
+                            <li><strong>Actualiza el estado:</strong> Mueve tarjetas al cambiar de fase</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-box mt-4 animate__animated animate__fadeInUp">
+                <h3><i class="fas fa-project-diagram me-2"></i>Ejemplo de Organización por Entregables</h3>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="kanban-card">
+                            <h5><i class="fas fa-tag text-danger me-2"></i>Etiqueta: Relevamiento</h5>
+                            <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
+                                <li>✓ Entrevistar cliente</li>
+                                <li>✓ Identificar BEs</li>
+                                <li>✓ Documentar BUCs y PUCs</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="kanban-card">
+                            <h5><i class="fas fa-tag text-primary me-2"></i>Etiqueta: Diseño</h5>
+                            <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
+                                <li>✓ Crear diagrama de clases</li>
+                                <li>✓ Diseñar MER</li>
+                                <li>✓ Prototipo en Figma</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-box mt-4 animate__animated animate__fadeIn">
+                <strong><i class="fas fa-rocket me-2"></i>Mejora Continua:</strong>
+                Realiza retrospectivas semanales para identificar qué está funcionando bien 
+                y qué se puede mejorar en el proceso.
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="nextSlide()">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 12: Quiz -->
+        <div class="slide" id="slide12">
+            <div class="slide-number">12 / 12</div>
+            <h1><i class="fas fa-graduation-cap me-3"></i>Quiz de Evaluación</h1>
+            
+            <p class="lead text-center mb-4">Pon a prueba tus conocimientos sobre los entregables y Kanban</p>
+
+            <div id="quiz-container">
+                <!-- Pregunta 1 -->
+                <div class="deliverable-card question-card animate__animated animate__fadeInUp" data-question="1">
+                    <h4><i class="fas fa-question-circle text-primary me-2"></i>Pregunta 1</h4>
+                    <p class="fw-bold">¿Cuántos documentos entregables principales se deben generar en el proyecto?</p>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">A</div>
+                        <div>3 documentos</div>
+                    </div>
+                    <div class="quiz-option" data-answer="correct">
+                        <div class="quiz-option-letter">B</div>
+                        <div>5 documentos</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">C</div>
+                        <div>7 documentos</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">D</div>
+                        <div>4 documentos</div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 2 -->
+                <div class="deliverable-card question-card animate__animated animate__fadeInUp" data-question="2">
+                    <h4><i class="fas fa-question-circle text-primary me-2"></i>Pregunta 2</h4>
+                    <p class="fw-bold">¿Qué incluye el Documento de Relevamiento de Requerimientos?</p>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">A</div>
+                        <div>Solo BEs (Business Events)</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">B</div>
+                        <div>RF y RNF únicamente</div>
+                    </div>
+                    <div class="quiz-option" data-answer="correct">
+                        <div class="quiz-option-letter">C</div>
+                        <div>BEs, BUCs y PUCs</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">D</div>
+                        <div>Diagramas de clases</div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 3 -->
+                <div class="deliverable-card question-card animate__animated animate__fadeInUp" data-question="3">
+                    <h4><i class="fas fa-question-circle text-primary me-2"></i>Pregunta 3</h4>
+                    <p class="fw-bold">¿Qué herramienta se recomienda para crear el prototipo de interfaces?</p>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">A</div>
+                        <div>Microsoft Word</div>
+                    </div>
+                    <div class="quiz-option" data-answer="correct">
+                        <div class="quiz-option-letter">B</div>
+                        <div>Figma</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">C</div>
+                        <div>Excel</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">D</div>
+                        <div>PowerPoint</div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 4 -->
+                <div class="deliverable-card question-card animate__animated animate__fadeInUp" data-question="4">
+                    <h4><i class="fas fa-question-circle text-primary me-2"></i>Pregunta 4</h4>
+                    <p class="fw-bold">¿Cuál es una ventaja principal de usar la metodología Kanban?</p>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">A</div>
+                        <div>Elimina la necesidad de documentación</div>
+                    </div>
+                    <div class="quiz-option" data-answer="correct">
+                        <div class="quiz-option-letter">B</div>
+                        <div>Visualización clara del progreso del trabajo</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">C</div>
+                        <div>Permite trabajar sin fechas límite</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">D</div>
+                        <div>Reemplaza las reuniones de equipo</div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 5 -->
+                <div class="deliverable-card question-card animate__animated animate__fadeInUp" data-question="5">
+                    <h4><i class="fas fa-question-circle text-primary me-2"></i>Pregunta 5</h4>
+                    <p class="fw-bold">¿Qué significa WIP en la metodología Kanban?</p>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">A</div>
+                        <div>Work In Planning (Trabajo en Planificación)</div>
+                    </div>
+                    <div class="quiz-option" data-answer="correct">
+                        <div class="quiz-option-letter">B</div>
+                        <div>Work In Progress (Trabajo en Progreso)</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">C</div>
+                        <div>Work Is Pending (Trabajo Pendiente)</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">D</div>
+                        <div>Work In Production (Trabajo en Producción)</div>
+                    </div>
+                </div>
+
+                <!-- Pregunta 6 -->
+                <div class="deliverable-card question-card animate__animated animate__fadeInUp" data-question="6">
+                    <h4><i class="fas fa-question-circle text-primary me-2"></i>Pregunta 6</h4>
+                    <p class="fw-bold">¿Cuándo se entrega el Manual Técnico?</p>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">A</div>
+                        <div>Semana 1</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">B</div>
+                        <div>Semana 2</div>
+                    </div>
+                    <div class="quiz-option" data-answer="correct">
+                        <div class="quiz-option-letter">C</div>
+                        <div>Semana 3 - Sábado 20</div>
+                    </div>
+                    <div class="quiz-option" data-answer="wrong">
+                        <div class="quiz-option-letter">D</div>
+                        <div>Al final del proyecto</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button class="nav-button" onclick="submitQuiz()" style="background: var(--success-color);">
+                    <i class="fas fa-check-circle me-2"></i>Enviar Respuestas
+                </button>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-button" onclick="previousSlide()">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <button class="nav-button" onclick="window.location.reload()">
+                    <i class="fas fa-redo"></i> Reiniciar
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar-custom" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 12;
+        const userAnswers = {};
+
+        // Actualizar barra de progreso
+        function updateProgress() {
+            const progress = (currentSlide / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Mostrar slide
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[n - 1].classList.add('active');
+            slides[n - 1].classList.add('animate__animated', 'animate__fadeIn');
+            currentSlide = n;
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        // Siguiente slide
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        // Slide anterior
+        function previousSlide() {
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // Navegación con teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Manejo de opciones del quiz
+        document.querySelectorAll('.quiz-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const questionCard = this.closest('.question-card');
+                const questionNum = questionCard.dataset.question;
+                
+                // Remover selección anterior
+                questionCard.querySelectorAll('.quiz-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Seleccionar esta opción
+                this.classList.add('selected');
+                
+                // Guardar respuesta
+                userAnswers[questionNum] = this.dataset.answer;
+            });
+        });
+
+        // Enviar quiz
+        function submitQuiz() {
+            const totalQuestions = 6;
+            let correctAnswers = 0;
+
+            // Verificar que todas las preguntas estén respondidas
+            if (Object.keys(userAnswers).length < totalQuestions) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Atención!',
+                    text: 'Por favor, responde todas las preguntas antes de enviar.',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+
+            // Contar respuestas correctas
+            for (let answer in userAnswers) {
+                if (userAnswers[answer] === 'correct') {
+                    correctAnswers++;
+                }
+            }
+
+            const percentage = (correctAnswers / totalQuestions) * 100;
+            let icon, title, message, color;
+
+            if (percentage === 100) {
+                icon = 'success';
+                title = '¡Excelente!';
+                message = `¡Perfecto! Has respondido correctamente las ${totalQuestions} preguntas. 🎉`;
+                color = '#10b981';
+            } else if (percentage >= 70) {
+                icon = 'success';
+                title = '¡Muy bien!';
+                message = `Has acertado ${correctAnswers} de ${totalQuestions} preguntas. ¡Buen trabajo! 👏`;
+                color = '#10b981';
+            } else if (percentage >= 50) {
+                icon = 'info';
+                title = 'Bien';
+                message = `Has acertado ${correctAnswers} de ${totalQuestions} preguntas. Puedes mejorar repasando el contenido. 📚`;
+                color = '#2563eb';
+            } else {
+                icon = 'error';
+                title = 'Necesitas repasar';
+                message = `Has acertado ${correctAnswers} de ${totalQuestions} preguntas. Te recomendamos revisar la presentación nuevamente. 📖`;
+                color = '#ef4444';
+            }
+
+            Swal.fire({
+                icon: icon,
+                title: title,
+                html: `
+                    <p>${message}</p>
+                    <div style="font-size: 2rem; margin: 20px 0;">
+                        <strong>${percentage.toFixed(0)}%</strong>
+                    </div>
+                    <p style="color: #6b7280;">Respuestas correctas: ${correctAnswers}/${totalQuestions}</p>
+                `,
+                confirmButtonText: 'Reiniciar Presentación',
+                confirmButtonColor: color,
+                showCancelButton: true,
+                cancelButtonText: 'Cerrar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
+            });
+        }
+
+        // Inicializar
+        updateProgress();
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
