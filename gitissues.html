@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creación de Issues en GitHub - Tutorial Interactivo</title>
+    <title>GitHub Issues - Tutorial Completo</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,30 +15,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Prism.js para sintaxis de código -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
+    <!-- Prism.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     
     <style>
-        :root {
-            --primary-color: #2ea44f;
-            --secondary-color: #0969da;
-            --accent-color: #fd8c73;
-            --dark-bg: #0d1117;
-            --card-bg: #161b22;
-            --text-light: #c9d1d9;
-            --text-muted: #8b949e;
-            --border-color: #30363d;
-            --code-bg: #1f2937;
-            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -46,331 +31,274 @@
         }
         
         body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--dark-bg);
-            color: var(--text-light);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-        
-        /* Fondo animado con partículas */
-        .particles-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            opacity: 0.1;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(46, 164, 79, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(9, 105, 218, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 40% 90%, rgba(253, 140, 115, 0.15) 0%, transparent 50%);
-        }
-        
-        /* Header */
-        .main-header {
-            position: relative;
-            z-index: 10;
-            padding: 3rem 0;
-            text-align: center;
-            background: linear-gradient(135deg, rgba(46, 164, 79, 0.1) 0%, rgba(9, 105, 218, 0.1) 100%);
-            border-bottom: 2px solid var(--border-color);
-        }
-        
-        .main-header h1 {
-            font-family: 'Space Mono', monospace;
-            font-size: 3.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        
-        .main-header p {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            font-weight: 300;
-        }
-        
-        .github-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            color: var(--text-light);
-        }
-        
-        /* Navigation */
-        .nav-container {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(13, 17, 23, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 0;
-        }
-        
-        .nav-pills {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        
-        .nav-pills .nav-link {
-            font-family: 'Fira Code', monospace;
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.5rem 1.5rem;
-            transition: all 0.3s ease;
-            background: var(--card-bg);
-            font-size: 0.9rem;
-        }
-        
-        .nav-pills .nav-link:hover {
-            color: var(--text-light);
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46, 164, 79, 0.3);
-        }
-        
-        .nav-pills .nav-link.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-        
-        /* Content Container */
-        .content-wrapper {
-            position: relative;
-            z-index: 1;
-            padding: 3rem 0;
-            min-height: calc(100vh - 300px);
-        }
-        
-        /* Section Cards */
-        .section-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 3rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .section-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-        }
-        
-        .section-title {
-            font-family: 'Space Mono', monospace;
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .section-title i {
-            font-size: 2rem;
-        }
-        
-        .section-subtitle {
-            font-size: 1.5rem;
-            color: var(--secondary-color);
-            margin: 2rem 0 1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        
-        .section-subtitle i {
-            font-size: 1.3rem;
-        }
-        
-        /* Code Blocks */
-        .code-container {
-            position: relative;
-            margin: 1.5rem 0;
-            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             overflow: hidden;
-            border: 1px solid var(--border-color);
+            height: 100vh;
+        }
+        
+        .slide-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .slide {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            overflow-y: auto;
+            padding: 50px;
+            position: relative;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .slide-header h1 {
+            font-size: 3rem;
+            color: #667eea;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        
+        .slide-header h2 {
+            font-size: 2rem;
+            color: #764ba2;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .slide-header .icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .slide-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+        }
+        
+        .slide-content h3 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            font-weight: 700;
+        }
+        
+        .slide-content h4 {
+            color: #764ba2;
+            font-size: 1.4rem;
+            margin: 20px 0 10px;
+            font-weight: 600;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow-x: auto;
         }
         
         .code-header {
-            background: var(--code-bg);
-            padding: 0.8rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
         }
         
         .code-lang {
-            font-family: 'Fira Code', monospace;
-            color: var(--primary-color);
+            color: #667eea;
             font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            font-family: 'Fira Code', monospace;
         }
         
         .copy-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 0.3rem 0.8rem;
-            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            transition: all 0.3s;
         }
         
         .copy-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
+            background: #764ba2;
+            transform: translateY(-2px);
         }
         
         pre {
             margin: 0;
-            background: #1f2937 !important;
-            padding: 1.5rem !important;
-            overflow-x: auto;
         }
         
         code {
             font-family: 'Fira Code', monospace !important;
-            font-size: 0.9rem;
-            line-height: 1.6;
+            font-size: 0.95rem;
         }
         
-        /* Info Boxes */
         .info-box {
-            background: linear-gradient(135deg, rgba(9, 105, 218, 0.1), rgba(46, 164, 79, 0.1));
-            border-left: 4px solid var(--secondary-color);
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
         }
         
         .warning-box {
-            background: linear-gradient(135deg, rgba(253, 140, 115, 0.1), rgba(245, 87, 108, 0.1));
-            border-left: 4px solid var(--accent-color);
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
+            background: linear-gradient(135deg, #f093fb15, #f5576c15);
+            border-left: 4px solid #f5576c;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
         }
         
         .success-box {
-            background: linear-gradient(135deg, rgba(46, 164, 79, 0.1), rgba(79, 172, 254, 0.1));
-            border-left: 4px solid var(--primary-color);
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
+            background: linear-gradient(135deg, #4facfe15, #00f2fe15);
+            border-left: 4px solid #4facfe;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
         }
         
-        .info-box strong, .warning-box strong, .success-box strong {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
-        }
-        
-        /* Steps */
-        .steps-container {
-            counter-reset: step-counter;
+        .step-list {
+            counter-reset: step;
         }
         
         .step-item {
+            counter-increment: step;
             position: relative;
-            padding-left: 4rem;
-            margin-bottom: 2rem;
-            counter-increment: step-counter;
+            padding-left: 60px;
+            margin-bottom: 25px;
         }
         
         .step-item::before {
-            content: counter(step-counter);
+            content: counter(step);
             position: absolute;
             left: 0;
             top: 0;
-            width: 2.5rem;
-            height: 2.5rem;
-            background: var(--gradient-1);
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             font-size: 1.2rem;
-            color: white;
         }
         
-        .step-item h4 {
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            background: white;
+            color: #667eea;
+            border: 3px solid #667eea;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
             font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
-        /* Quiz Section */
-        .quiz-container {
-            background: var(--card-bg);
-            border: 2px solid var(--primary-color);
-            border-radius: 16px;
-            padding: 3rem;
-            margin-top: 3rem;
+        .nav-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .slide-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
         }
         
         .quiz-question {
-            background: rgba(46, 164, 79, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
         }
         
         .quiz-question h4 {
-            color: var(--primary-color);
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-        }
-        
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            color: #667eea;
+            margin-bottom: 20px;
         }
         
         .quiz-option {
-            background: var(--dark-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 10px 0;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 15px;
         }
         
         .quiz-option:hover {
-            border-color: var(--primary-color);
-            background: rgba(46, 164, 79, 0.1);
+            border-color: #667eea;
+            background: #667eea15;
             transform: translateX(5px);
         }
         
@@ -380,315 +308,239 @@
             cursor: pointer;
         }
         
-        .quiz-btn {
-            background: var(--gradient-1);
+        .submit-quiz-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            padding: 1rem 3rem;
-            font-size: 1.1rem;
-            border-radius: 8px;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
+            margin-top: 20px;
+            transition: all 0.3s;
         }
         
-        .quiz-btn:hover {
+        .submit-quiz-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
         
-        /* Footer */
-        .main-footer {
-            background: var(--card-bg);
-            border-top: 1px solid var(--border-color);
-            padding: 2rem 0;
-            text-align: center;
-            margin-top: 3rem;
+        ul {
+            padding-left: 25px;
         }
         
-        .main-footer p {
-            color: var(--text-muted);
-            margin: 0;
+        ul li {
+            margin: 10px 0;
         }
         
-        /* Badges */
-        .method-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--gradient-1);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
+        strong {
+            color: #667eea;
         }
         
-        /* Responsive */
+        /* Scrollbar personalizada */
+        .slide::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .slide::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+        
         @media (max-width: 768px) {
-            .main-header h1 {
+            .slide {
+                padding: 30px 20px;
+                height: 85vh;
+            }
+            
+            .slide-header h1 {
                 font-size: 2rem;
             }
             
-            .section-title {
+            .slide-header h2 {
                 font-size: 1.5rem;
             }
             
-            .section-card {
-                padding: 1.5rem;
+            .navigation {
+                bottom: 15px;
+                gap: 10px;
             }
             
-            .nav-pills {
-                flex-direction: column;
+            .nav-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
             }
-        }
-        
-        /* Scroll Progress Bar */
-        .progress-bar-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--border-color);
-            z-index: 9999;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: var(--gradient-1);
-            width: 0%;
-            transition: width 0.1s ease;
         }
     </style>
 </head>
 <body>
-    <!-- Scroll Progress Bar -->
-    <div class="progress-bar-container">
-        <div class="progress-bar" id="progressBar"></div>
-    </div>
+    <div class="slide-counter" id="slideCounter">1 / 15</div>
     
-    <!-- Background -->
-    <div class="particles-bg"></div>
-    
-    <!-- Header -->
-    <header class="main-header animate__animated animate__fadeInDown">
-        <div class="container">
-            <i class="fab fa-github github-icon animate__animated animate__bounceIn"></i>
-            <h1 class="animate__animated animate__fadeIn animate__delay-1s">GitHub Issues</h1>
-            <p class="animate__animated animate__fadeIn animate__delay-2s">Guía completa para crear y gestionar issues desde múltiples plataformas</p>
+    <div class="slide-container">
+        
+        <!-- Slide 1: Portada -->
+        <div class="slide active animate__animated animate__fadeIn">
+            <div class="slide-header">
+                <div class="icon animate__animated animate__bounceIn">
+                    <i class="fab fa-github"></i>
+                </div>
+                <h1 class="animate__animated animate__fadeInDown">GitHub Issues</h1>
+                <p style="font-size: 1.5rem; color: #764ba2; margin-top: 20px;" class="animate__animated animate__fadeInUp">
+                    Tutorial Completo: Creación de Issues desde Múltiples Plataformas
+                </p>
+            </div>
+            <div class="slide-content" style="text-align: center; font-size: 1.2rem;">
+                <p><strong>Aprenderás a crear issues usando:</strong></p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 40px;">
+                    <div class="info-box">
+                        <i class="fas fa-globe" style="font-size: 2rem; color: #667eea;"></i>
+                        <p><strong>Interfaz Web</strong></p>
+                    </div>
+                    <div class="info-box">
+                        <i class="fas fa-terminal" style="font-size: 2rem; color: #667eea;"></i>
+                        <p><strong>GitHub CLI</strong></p>
+                    </div>
+                    <div class="info-box">
+                        <i class="fab fa-python" style="font-size: 2rem; color: #667eea;"></i>
+                        <p><strong>Python</strong></p>
+                    </div>
+                    <div class="info-box">
+                        <i class="fab fa-js" style="font-size: 2rem; color: #667eea;"></i>
+                        <p><strong>JavaScript</strong></p>
+                    </div>
+                </div>
+            </div>
         </div>
-    </header>
-    
-    <!-- Navigation -->
-    <div class="nav-container">
-        <div class="container">
-            <ul class="nav nav-pills" id="mainNav" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#intro" data-bs-toggle="pill">
-                        <i class="fas fa-home"></i> Introducción
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#web" data-bs-toggle="pill">
-                        <i class="fas fa-globe"></i> Interfaz Web
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#cli" data-bs-toggle="pill">
-                        <i class="fas fa-terminal"></i> Línea de Comandos
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#python" data-bs-toggle="pill">
-                        <i class="fab fa-python"></i> Python
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#javascript" data-bs-toggle="pill">
-                        <i class="fab fa-js"></i> JavaScript
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#quiz" data-bs-toggle="pill">
-                        <i class="fas fa-graduation-cap"></i> Cuestionario
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-    
-    <!-- Content -->
-    <div class="content-wrapper">
-        <div class="container">
-            <div class="tab-content">
+        
+        <!-- Slide 2: ¿Qué son los Issues? -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-info-circle"></i> ¿Qué son los Issues en GitHub?</h2>
+            </div>
+            <div class="slide-content">
+                <p>Los <strong>issues</strong> son una herramienta fundamental en GitHub para rastrear tareas, mejoras, bugs y cualquier tipo de trabajo relacionado con un proyecto.</p>
                 
-                <!-- Introducción -->
-                <div class="tab-pane fade show active" id="intro">
-                    <div class="section-card animate__animated animate__fadeInUp">
-                        <h2 class="section-title">
-                            <i class="fas fa-info-circle"></i>
-                            ¿Qué son los Issues en GitHub?
-                        </h2>
-                        
-                        <p style="font-size: 1.1rem; line-height: 1.8;">
-                            Los <strong>issues</strong> son una herramienta fundamental en GitHub para rastrear tareas, mejoras, 
-                            bugs y cualquier tipo de trabajo relacionado con un proyecto. Funcionan como un sistema de 
-                            tickets que permite la colaboración y organización del equipo.
-                        </p>
-                        
-                        <div class="success-box">
-                            <strong><i class="fas fa-check-circle"></i> Casos de uso principales:</strong>
-                            <ul style="margin-top: 1rem;">
-                                <li><strong>Reportar bugs:</strong> Documentar errores encontrados en el código</li>
-                                <li><strong>Solicitar features:</strong> Proponer nuevas funcionalidades</li>
-                                <li><strong>Hacer preguntas:</strong> Consultas sobre el proyecto</li>
-                                <li><strong>Documentar tareas:</strong> Organizar el trabajo del equipo</li>
-                                <li><strong>Discusiones técnicas:</strong> Debatir sobre implementaciones</li>
-                            </ul>
+                <div class="success-box">
+                    <h4><i class="fas fa-check-circle"></i> Casos de uso principales:</h4>
+                    <ul>
+                        <li><strong>Reportar bugs:</strong> Documentar errores encontrados en el código</li>
+                        <li><strong>Solicitar features:</strong> Proponer nuevas funcionalidades</li>
+                        <li><strong>Hacer preguntas:</strong> Consultas sobre el proyecto</li>
+                        <li><strong>Documentar tareas:</strong> Organizar el trabajo del equipo</li>
+                        <li><strong>Discusiones técnicas:</strong> Debatir sobre implementaciones</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-lightbulb"></i> Beneficios:</h4>
+                    <ul>
+                        <li>Sistema centralizado de seguimiento</li>
+                        <li>Facilita la colaboración del equipo</li>
+                        <li>Historial completo de cambios</li>
+                        <li>Integración con PRs y commits</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 3: Componentes de un Issue -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-puzzle-piece"></i> Componentes de un Issue</h2>
+            </div>
+            <div class="slide-content">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <h4><i class="fas fa-heading"></i> Título</h4>
+                            <p>Descripción breve y clara del problema o tarea. Debe ser conciso pero informativo.</p>
                         </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-puzzle-piece"></i>
-                            Componentes de un Issue
-                        </h3>
-                        
-                        <div class="row g-4 mt-2">
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <strong><i class="fas fa-heading"></i> Título</strong>
-                                    <p>Descripción breve y clara del problema o tarea</p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <strong><i class="fas fa-align-left"></i> Descripción</strong>
-                                    <p>Detalles completos, pasos para reproducir, capturas</p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <strong><i class="fas fa-tags"></i> Labels</strong>
-                                    <p>Etiquetas para categorizar (bug, enhancement, etc.)</p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <strong><i class="fas fa-user"></i> Assignees</strong>
-                                    <p>Personas responsables de resolver el issue</p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <strong><i class="fas fa-project-diagram"></i> Milestone</strong>
-                                    <p>Agrupación por versión o sprint</p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <strong><i class="fas fa-comments"></i> Comments</strong>
-                                    <p>Discusión y actualizaciones sobre el issue</p>
-                                </div>
-                            </div>
+                        <div class="info-box">
+                            <h4><i class="fas fa-align-left"></i> Descripción</h4>
+                            <p>Detalles completos usando Markdown: pasos para reproducir, capturas, código.</p>
                         </div>
-                        
-                        <div class="warning-box mt-4">
-                            <strong><i class="fas fa-exclamation-triangle"></i> Importante:</strong>
-                            <p>En esta presentación aprenderás <strong>4 métodos diferentes</strong> para crear issues en GitHub:</p>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>Interfaz Web de GitHub</li>
-                                <li>GitHub CLI (gh)</li>
-                                <li>Python (PyGithub y requests)</li>
-                                <li>JavaScript/Node.js (Octokit)</li>
-                            </ul>
+                        <div class="info-box">
+                            <h4><i class="fas fa-tags"></i> Labels</h4>
+                            <p>Etiquetas para categorizar: bug, enhancement, documentation, etc.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <h4><i class="fas fa-user"></i> Assignees</h4>
+                            <p>Personas responsables de resolver el issue.</p>
+                        </div>
+                        <div class="info-box">
+                            <h4><i class="fas fa-project-diagram"></i> Milestone</h4>
+                            <p>Agrupación por versión o sprint del proyecto.</p>
+                        </div>
+                        <div class="info-box">
+                            <h4><i class="fas fa-comments"></i> Comments</h4>
+                            <p>Discusión y actualizaciones sobre el progreso.</p>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4: Interfaz Web - Introducción -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-globe"></i> Método 1: Interfaz Web</h2>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">La forma más sencilla y visual de crear un issue es directamente desde la interfaz web de GitHub.</p>
                 
-                <!-- Interfaz Web -->
-                <div class="tab-pane fade" id="web">
-                    <div class="section-card animate__animated animate__fadeInUp">
-                        <h2 class="section-title">
-                            <i class="fas fa-globe"></i>
-                            Crear Issues desde la Interfaz Web
-                        </h2>
-                        
-                        <div class="method-badge">
-                            <i class="fas fa-mouse-pointer"></i>
-                            Método: Interfaz Gráfica
-                        </div>
-                        
-                        <p style="font-size: 1.1rem;">
-                            La forma más sencilla y visual de crear un issue es directamente desde la interfaz web de GitHub.
-                        </p>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-list-ol"></i>
-                            Pasos para crear un Issue
-                        </h3>
-                        
-                        <div class="steps-container">
-                            <div class="step-item animate__animated animate__fadeInLeft">
-                                <h4>Acceder al Repositorio</h4>
-                                <p>Navega al repositorio donde deseas crear el issue en GitHub.com</p>
-                            </div>
-                            
-                            <div class="step-item animate__animated animate__fadeInLeft animate__delay-1s">
-                                <h4>Ir a la pestaña Issues</h4>
-                                <p>Haz clic en la pestaña "Issues" en la parte superior del repositorio</p>
-                            </div>
-                            
-                            <div class="step-item animate__animated animate__fadeInLeft animate__delay-2s">
-                                <h4>Crear Nuevo Issue</h4>
-                                <p>Haz clic en el botón verde "New issue"</p>
-                            </div>
-                            
-                            <div class="step-item animate__animated animate__fadeInLeft animate__delay-3s">
-                                <h4>Completar el Formulario</h4>
-                                <p>Añade un título descriptivo y una descripción detallada usando Markdown</p>
-                            </div>
-                            
-                            <div class="step-item animate__animated animate__fadeInLeft animate__delay-4s">
-                                <h4>Configurar Metadatos</h4>
-                                <p>Opcionalmente, asigna labels, assignees, projects y milestones</p>
-                            </div>
-                            
-                            <div class="step-item animate__animated animate__fadeInLeft animate__delay-5s">
-                                <h4>Enviar el Issue</h4>
-                                <p>Haz clic en "Submit new issue" para crearlo</p>
-                            </div>
-                        </div>
-                        
-                        <div class="success-box">
-                            <strong><i class="fas fa-lightbulb"></i> Consejos Pro:</strong>
-                            <ul style="margin-top: 1rem;">
-                                <li><strong>Usa Markdown:</strong> Formatea tu issue con encabezados, listas, código, etc.</li>
-                                <li><strong>Incluye contexto:</strong> Versión del software, sistema operativo, pasos para reproducir</li>
-                                <li><strong>Adjunta screenshots:</strong> Arrastra y suelta imágenes directamente</li>
-                                <li><strong>Referencias:</strong> Menciona otros issues con #número o usuarios con @nombre</li>
-                                <li><strong>Templates:</strong> Usa plantillas de issue si el repositorio las tiene configuradas</li>
-                            </ul>
-                        </div>
-                        
-                        <h3 class="section-subtitle mt-4">
-                            <i class="fas fa-markdown"></i>
-                            Ejemplo de Formato Markdown
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-markdown"></i> Markdown</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-markdown">## Descripción del Bug
-Al intentar iniciar sesión con credenciales válidas, el sistema muestra un error 500.
+                <div class="step-list">
+                    <div class="step-item">
+                        <h4>Acceder al Repositorio</h4>
+                        <p>Navega a <code>github.com/usuario/repositorio</code></p>
+                    </div>
+                    <div class="step-item">
+                        <h4>Ir a la pestaña Issues</h4>
+                        <p>Haz clic en "Issues" en el menú superior del repositorio</p>
+                    </div>
+                    <div class="step-item">
+                        <h4>Crear Nuevo Issue</h4>
+                        <p>Presiona el botón verde "New issue"</p>
+                    </div>
+                    <div class="step-item">
+                        <h4>Completar Formulario</h4>
+                        <p>Añade título descriptivo y descripción detallada</p>
+                    </div>
+                    <div class="step-item">
+                        <h4>Configurar Metadatos</h4>
+                        <p>Asigna labels, assignees, projects y milestones</p>
+                    </div>
+                    <div class="step-item">
+                        <h4>Enviar Issue</h4>
+                        <p>Haz clic en "Submit new issue"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5: Interfaz Web - Ejemplo Markdown -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fab fa-markdown"></i> Formato Markdown en Issues</h2>
+            </div>
+            <div class="slide-content">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fab fa-markdown"></i> Markdown</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-markdown">## Descripción del Bug
+Al intentar iniciar sesión con credenciales válidas, 
+el sistema muestra un error 500.
 
 ## Pasos para Reproducir
 1. Navegar a `/login`
@@ -700,15 +552,12 @@ Al intentar iniciar sesión con credenciales válidas, el sistema muestra un err
 El usuario debería ser redirigido al dashboard.
 
 ## Comportamiento Actual
-Se muestra un error "Internal Server Error 500".
+Se muestra "Internal Server Error 500".
 
 ## Información Adicional
 - **Navegador:** Chrome 120
-- **Sistema Operativo:** Windows 11
-- **Versión de la App:** v2.3.1
-
-## Screenshots
-![Error 500](url-de-la-imagen.png)
+- **SO:** Windows 11
+- **Versión:** v2.3.1
 
 ## Logs Relevantes
 ```
@@ -716,53 +565,39 @@ ERROR: Database connection timeout
 at Connection.query (db.js:45)
 ```
 
-Relacionado con #123 y #124</code></pre>
-                        </div>
-                        
-                        <div class="info-box mt-4">
-                            <strong><i class="fas fa-star"></i> Ventajas de la Interfaz Web:</strong>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>✅ Fácil de usar, no requiere configuración</li>
-                                <li>✅ Vista previa en tiempo real del formato Markdown</li>
-                                <li>✅ Acceso a todas las funcionalidades (labels, projects, etc.)</li>
-                                <li>✅ Drag & drop para imágenes y archivos</li>
-                                <li>✅ Auto-completado de referencias</li>
-                            </ul>
-                        </div>
-                    </div>
+Relacionado con #123</code></pre>
                 </div>
                 
-                <!-- CLI -->
-                <div class="tab-pane fade" id="cli">
-                    <div class="section-card animate__animated animate__fadeInUp">
-                        <h2 class="section-title">
-                            <i class="fas fa-terminal"></i>
-                            Crear Issues desde la Línea de Comandos
-                        </h2>
-                        
-                        <div class="method-badge">
-                            <i class="fas fa-terminal"></i>
-                            Método: GitHub CLI
-                        </div>
-                        
-                        <p style="font-size: 1.1rem;">
-                            GitHub CLI (<code>gh</code>) es una herramienta oficial de línea de comandos que permite 
-                            interactuar con GitHub directamente desde tu terminal.
-                        </p>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-download"></i>
-                            Instalación de GitHub CLI
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-linux"></i> Linux/Mac</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash"># Mac (con Homebrew)
+                <div class="success-box">
+                    <h4><i class="fas fa-star"></i> Ventajas:</h4>
+                    <ul>
+                        <li>✅ Fácil de usar, no requiere configuración</li>
+                        <li>✅ Vista previa en tiempo real</li>
+                        <li>✅ Drag & drop para imágenes</li>
+                        <li>✅ Auto-completado de referencias</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: GitHub CLI - Instalación -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-terminal"></i> Método 2: GitHub CLI</h2>
+            </div>
+            <div class="slide-content">
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">GitHub CLI (<code>gh</code>) permite interactuar con GitHub desde la terminal.</p>
+                
+                <h3>Instalación</h3>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fab fa-linux"></i> Linux/Mac</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-bash"># Mac (Homebrew)
 brew install gh
 
 # Ubuntu/Debian
@@ -770,661 +605,339 @@ sudo apt install gh
 
 # Fedora
 sudo dnf install gh</code></pre>
-                        </div>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-windows"></i> Windows</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash"># Con Chocolatey
+                </div>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fab fa-windows"></i> Windows</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-bash"># Chocolatey
 choco install gh
 
-# Con Scoop
-scoop install gh
-
-# O descarga desde: https://cli.github.com/</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-key"></i>
-                            Autenticación
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fas fa-terminal"></i> Bash</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash"># Autenticarse con GitHub
-gh auth login
-
-# Verificar autenticación
+# Scoop
+scoop install gh</code></pre>
+                </div>
+                
+                <h3>Autenticación</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fas fa-key"></i> Auth</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-bash">gh auth login
 gh auth status</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-plus-circle"></i>
-                            Crear un Issue
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fas fa-terminal"></i> Comando Básico</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash"># Crear issue de forma interactiva
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 7: GitHub CLI - Crear Issues -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-terminal"></i> GitHub CLI - Crear Issues</h2>
+            </div>
+            <div class="slide-content">
+                <h3>Comando Básico</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fas fa-terminal"></i> Bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-bash"># Forma interactiva
 gh issue create
 
-# Crear issue con parámetros directos
-gh issue create --title "Bug en login" --body "Descripción del bug"
-
-# Crear con más opciones
-gh issue create \
-  --title "Implementar autenticación OAuth" \
-  --body "Necesitamos agregar soporte para OAuth 2.0" \
+# Con parámetros directos
+gh issue create --title "Bug en login" \
+  --body "Descripción del problema"</code></pre>
+                </div>
+                
+                <h3>Issue Completo</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fas fa-terminal"></i> Bash Avanzado</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-bash">gh issue create \
+  --title "Feature: Autenticación OAuth" \
+  --body "Implementar OAuth 2.0" \
   --label "enhancement" \
   --label "security" \
   --assignee "@me" \
   --milestone "v2.0"</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-file-alt"></i>
-                            Usar archivo para el cuerpo del issue
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fas fa-terminal"></i> Bash</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash"># Crear archivo con la descripción
-cat > issue-description.md << 'EOF'
-## Descripción
-Sistema de notificaciones en tiempo real usando WebSockets
-
-## Requisitos Funcionales
-- [ ] Conexión WebSocket persistente
-- [ ] Notificaciones push
-- [ ] Indicador visual de nuevas notificaciones
-
-## Requisitos Técnicos
-- Socket.IO v4.x
-- Redis para pub/sub
-- Escalabilidad horizontal
-EOF
-
-# Crear issue desde archivo
-gh issue create \
-  --title "Feature: Sistema de notificaciones en tiempo real" \
-  --body-file issue-description.md \
-  --label "enhancement" \
-  --label "high-priority"</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-list"></i>
-                            Otros comandos útiles
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fas fa-terminal"></i> Comandos Útiles</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash"># Listar issues abiertos
-gh issue list
-
-# Ver detalles de un issue
-gh issue view 42
-
-# Comentar en un issue
-gh issue comment 42 --body "Esto está relacionado con el PR #45"
-
-# Cerrar un issue
-gh issue close 42
-
-# Editar un issue
-gh issue edit 42 --add-label "wontfix"
-
-# Ver issues asignados a ti
-gh issue list --assignee "@me"
-
-# Buscar issues
-gh issue list --search "bug in:title"</code></pre>
-                        </div>
-                        
-                        <div class="info-box">
-                            <strong><i class="fas fa-star"></i> Ventajas de GitHub CLI:</strong>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>✅ Rápido y eficiente para desarrolladores</li>
-                                <li>✅ Automatización fácil con scripts</li>
-                                <li>✅ No necesitas salir del terminal</li>
-                                <li>✅ Integración perfecta con flujos de trabajo Git</li>
-                                <li>✅ Soporte para templates de issues</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="warning-box">
-                            <strong><i class="fas fa-info-circle"></i> Tip Pro:</strong>
-                            <p>Puedes combinar <code>gh</code> con otros comandos de terminal para automatizaciones avanzadas:</p>
-                            <div class="code-container mt-2">
-                                <div class="code-header">
-                                    <span class="code-lang"><i class="fas fa-terminal"></i> Script de Automatización</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">
-                                        <i class="fas fa-copy"></i> Copiar
-                                    </button>
-                                </div>
-                                <pre><code class="language-bash">#!/bin/bash
-# Script para crear issue desde errores en logs
-
-LOG_FILE="app.log"
-ERROR_COUNT=$(grep "ERROR" $LOG_FILE | wc -l)
-
-if [ $ERROR_COUNT -gt 10 ]; then
-  ERRORS=$(grep "ERROR" $LOG_FILE | tail -10)
-  gh issue create \
-    --title "⚠️ Múltiples errores detectados en producción" \
-    --body "Se detectaron $ERROR_COUNT errores en las últimas horas:\n\n\`\`\`\n$ERRORS\n\`\`\`" \
-    --label "bug" \
-    --label "urgent"
-fi</code></pre>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 
-                <!-- Python -->
-                <div class="tab-pane fade" id="python">
-                    <div class="section-card animate__animated animate__fadeInUp">
-                        <h2 class="section-title">
-                            <i class="fab fa-python"></i>
-                            Crear Issues desde Python
-                        </h2>
-                        
-                        <div class="method-badge">
-                            <i class="fab fa-python"></i>
-                            Método: Python + PyGithub / Requests
-                        </div>
-                        
-                        <p style="font-size: 1.1rem;">
-                            Python ofrece múltiples formas de interactuar con la API de GitHub. Veremos dos enfoques: 
-                            usando la librería <code>PyGithub</code> (wrapper de alto nivel) y usando <code>requests</code> 
-                            (acceso directo a la API REST).
-                        </p>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-book"></i>
-                            Método 1: PyGithub (Recomendado)
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fas fa-terminal"></i> Instalación</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash">pip install PyGithub</code></pre>
-                        </div>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-python"></i> Python</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-python">from github import Github
+                <h3>Otros Comandos Útiles</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fas fa-list"></i> Comandos</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-bash">gh issue list              # Listar issues
+gh issue view 42           # Ver issue #42
+gh issue close 42          # Cerrar issue
+gh issue comment 42        # Comentar</code></pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8: Python - PyGithub -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fab fa-python"></i> Método 3: Python con PyGithub</h2>
+            </div>
+            <div class="slide-content">
+                <h3>Instalación</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fas fa-terminal"></i> pip</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-bash">pip install PyGithub</code></pre>
+                </div>
+                
+                <h3>Ejemplo Básico</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fab fa-python"></i> Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-python">from github import Github
 
-# Autenticación con token personal
-# Generar token en: https://github.com/settings/tokens
-token = "ghp_tu_token_personal_aqui"
+# Autenticación
+token = "ghp_tu_token_personal"
 g = Github(token)
 
-# Obtener el repositorio
-repo = g.get_repo("usuario/nombre-repo")
+# Obtener repositorio
+repo = g.get_repo("usuario/repo")
 
-# Crear un issue simple
+# Crear issue
 issue = repo.create_issue(
-    title="Bug: Error al cargar perfil de usuario",
+    title="Bug: Error al cargar perfil",
     body="""## Descripción
-Al intentar cargar el perfil de un usuario, la aplicación se congela.
+La app se congela al cargar perfil.
 
 ## Pasos para Reproducir
 1. Iniciar sesión
 2. Navegar a 'Mi Perfil'
-3. La app se queda en pantalla de carga
-
-## Información del Sistema
-- Versión: 2.1.0
-- SO: Windows 11
-- Navegador: Chrome 120
+3. La app se congela
     """
 )
 
-print(f"Issue creado exitosamente: #{issue.number}")
+print(f"Issue #{issue.number} creado")
 print(f"URL: {issue.html_url}")</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-tags"></i>
-                            Issue con Labels y Assignees
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-python"></i> Python - Ejemplo Completo</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-python">from github import Github
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9: Python - Issue Avanzado -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fab fa-python"></i> Python - Issue Completo</h2>
+            </div>
+            <div class="slide-content">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fab fa-python"></i> Python Avanzado</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-python">from github import Github
 from datetime import datetime
 
 # Configuración
-GITHUB_TOKEN = "ghp_tu_token_personal"
-REPO_NAME = "usuario/mi-proyecto"
+token = "ghp_token"
+g = Github(token)
+repo = g.get_repo("usuario/proyecto")
 
-# Inicializar cliente
-g = Github(GITHUB_TOKEN)
-repo = g.get_repo(REPO_NAME)
-
-# Obtener labels existentes
+# Obtener labels y usuarios
 bug_label = repo.get_label("bug")
 priority_label = repo.get_label("high-priority")
-
-# Obtener usuarios para asignar
 assignee = g.get_user("nombre-usuario")
 
-# Crear issue con todas las opciones
+# Crear issue completo
 issue = repo.create_issue(
-    title="⚠️ Critical: Database connection failures",
-    body=f"""## 🐛 Descripción del Bug
-La aplicación está experimentando fallos intermitentes de conexión a la base de datos.
+    title="⚠️ Critical: Database failures",
+    body=f"""## 🐛 Bug Description
+Database connection failures occurring.
 
-## 📋 Detalles Técnicos
-- **Error:** `Connection timeout after 30s`
-- **Frecuencia:** ~20 veces por hora
-- **Impacto:** Alto - afecta a todos los usuarios
+## 📊 Details
+- **Error:** Connection timeout
+- **Frequency:** ~20/hour
+- **Impact:** High
 - **Timestamp:** {datetime.now().isoformat()}
 
-## 🔍 Pasos para Reproducir
-1. Ejecutar múltiples consultas concurrentes
-2. Esperar entre 2-5 minutos
-3. Observar timeout en conexión
+## 🔍 Steps to Reproduce
+1. Run concurrent queries
+2. Wait 2-5 minutes
+3. Observe timeout
 
-## 💡 Solución Propuesta
-- Aumentar el pool de conexiones
-- Implementar retry logic
-- Añadir circuit breaker
-
-## 📊 Logs
-```
-2025-02-11 10:23:45 ERROR: Connection timeout
-at DatabasePool.getConnection (pool.js:234)
-Stack trace...
-```
-
-cc: @tech-lead @database-admin
+## 💡 Proposed Solution
+- Increase connection pool
+- Implement retry logic
+- Add circuit breaker
     """,
     labels=[bug_label, priority_label],
     assignee=assignee
 )
 
-# Añadir comentario adicional
+# Añadir comentario
 issue.create_comment(
-    "📌 Este issue ha sido creado automáticamente por el sistema de monitoreo."
+    "📌 Auto-created by monitoring system"
 )
 
-print(f"✅ Issue #{issue.number} creado exitosamente")
-print(f"🔗 URL: {issue.html_url}")
-print(f"🏷️  Labels: {[label.name for label in issue.labels]}")
-print(f"👤 Asignado a: {issue.assignee.login if issue.assignee else 'Nadie'}")</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-code"></i>
-                            Método 2: Usando Requests (API REST Directa)
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fas fa-terminal"></i> Instalación</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash">pip install requests</code></pre>
-                        </div>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-python"></i> Python - Requests</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-python">import requests
-import json
+print(f"✅ Issue #{issue.number} created")
+print(f"🔗 {issue.html_url}")</code></pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10: Python - Requests -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fab fa-python"></i> Python con Requests (API REST)</h2>
+            </div>
+            <div class="slide-content">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fab fa-python"></i> Python + Requests</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-python">import requests
 
 # Configuración
-GITHUB_TOKEN = "ghp_tu_token_personal"
-REPO_OWNER = "usuario"
-REPO_NAME = "mi-proyecto"
+TOKEN = "ghp_token"
+OWNER = "usuario"
+REPO = "proyecto"
 
-# Headers con autenticación
 headers = {
-    "Authorization": f"token {GITHUB_TOKEN}",
+    "Authorization": f"token {TOKEN}",
     "Accept": "application/vnd.github.v3+json"
 }
 
-# URL de la API
-url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/issues"
+url = f"https://api.github.com/repos/{OWNER}/{REPO}/issues"
 
 # Datos del issue
-issue_data = {
-    "title": "Feature Request: Modo oscuro",
-    "body": """## 🎨 Descripción
-Implementar un modo oscuro para mejorar la experiencia de usuario.
+data = {
+    "title": "✨ Feature: Dark Mode",
+    "body": """## 🎨 Description
+Implement dark mode for better UX.
 
-## 📝 Requisitos
-- [ ] Toggle en configuración
-- [ ] Persistir preferencia del usuario
-- [ ] Aplicar a todas las vistas
-- [ ] Transición suave entre modos
-
-## 🎯 Beneficios
-- Reduce fatiga visual
-- Ahorra batería en dispositivos OLED
-- Mejora accesibilidad
+## 📝 Requirements
+- [ ] Toggle in settings
+- [ ] Persist user preference
+- [ ] Apply to all views
+- [ ] Smooth transition
     """,
     "labels": ["enhancement", "ui/ux"],
-    "assignees": ["nombre-usuario"]
+    "assignees": ["dev1"]
 }
 
-# Realizar petición POST
-response = requests.post(url, headers=headers, json=issue_data)
+# Crear issue
+response = requests.post(url, headers=headers, json=data)
 
-# Verificar respuesta
 if response.status_code == 201:
     issue = response.json()
-    print(f"✅ Issue creado exitosamente!")
-    print(f"📊 Número: #{issue['number']}")
-    print(f"🔗 URL: {issue['html_url']}")
-    print(f"📅 Creado: {issue['created_at']}")
+    print(f"✅ Issue #{issue['number']} created")
+    print(f"🔗 {issue['html_url']}")
 else:
-    print(f"❌ Error al crear issue: {response.status_code}")
-    print(f"Mensaje: {response.json()['message']}")</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-robot"></i>
-                            Script de Automatización Avanzado
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-python"></i> Python - Bot de Issues</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-python">from github import Github
-import os
-from datetime import datetime, timedelta
-
-class IssueBot:
-    def __init__(self, token, repo_name):
-        self.g = Github(token)
-        self.repo = self.g.get_repo(repo_name)
-    
-    def create_weekly_report_issue(self):
-        """Crea un issue semanal con reporte de actividad"""
-        # Obtener estadísticas de la semana
-        week_ago = datetime.now() - timedelta(days=7)
-        
-        # Contar PRs mergeados
-        merged_prs = 0
-        for pr in self.repo.get_pulls(state='closed'):
-            if pr.merged and pr.merged_at > week_ago:
-                merged_prs += 1
-        
-        # Contar commits
-        commits = self.repo.get_commits(since=week_ago)
-        commit_count = commits.totalCount
-        
-        # Crear reporte
-        report = f"""# 📊 Reporte Semanal - {datetime.now().strftime('%Y-%m-%d')}
-
-## 📈 Actividad de la Semana
-- **Commits:** {commit_count}
-- **Pull Requests Mergeados:** {merged_prs}
-- **Contributors Activos:** {len(set(c.author.login for c in commits if c.author))}
-
-## 🎯 Próximos Objetivos
-- [ ] Revisar issues pendientes
-- [ ] Actualizar documentación
-- [ ] Planificar próximo sprint
-
----
-*Generado automáticamente por IssueBot 🤖*
-        """
-        
-        issue = self.repo.create_issue(
-            title=f"📊 Reporte Semanal - {datetime.now().strftime('%d/%m/%Y')}",
-            body=report,
-            labels=['report', 'weekly']
-        )
-        
-        return issue
-    
-    def create_stale_issues_reminder(self):
-        """Crea issue recordando issues sin actividad"""
-        month_ago = datetime.now() - timedelta(days=30)
-        stale_issues = []
-        
-        for issue in self.repo.get_issues(state='open'):
-            if issue.updated_at < month_ago:
-                stale_issues.append(f"- #{issue.number} - {issue.title}")
-        
-        if stale_issues:
-            body = f"""# ⏰ Issues Sin Actividad Reciente
-
-Los siguientes issues no han tenido actividad en más de 30 días:
-
-{chr(10).join(stale_issues[:20])}
-
-{'...' if len(stale_issues) > 20 else ''}
-
-**Total:** {len(stale_issues)} issues
-
-Por favor, revisar y actualizar el estado de estos issues.
-            """
-            
-            issue = self.repo.create_issue(
-                title="⏰ Recordatorio: Issues sin actividad reciente",
-                body=body,
-                labels=['maintenance', 'reminder']
-            )
-            
-            return issue
-        return None
-
-# Uso
-if __name__ == "__main__":
-    TOKEN = os.getenv("GITHUB_TOKEN")
-    REPO = "usuario/proyecto"
-    
-    bot = IssueBot(TOKEN, REPO)
-    
-    # Crear reporte semanal
-    weekly = bot.create_weekly_report_issue()
-    print(f"✅ Reporte semanal creado: {weekly.html_url}")
-    
-    # Crear recordatorio de issues obsoletos
-    stale = bot.create_stale_issues_reminder()
-    if stale:
-        print(f"✅ Recordatorio creado: {stale.html_url}")
-    else:
-        print("ℹ️  No hay issues sin actividad")</code></pre>
-                        </div>
-                        
-                        <div class="success-box">
-                            <strong><i class="fas fa-star"></i> Ventajas de Python:</strong>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>✅ Perfecto para automatizaciones y scripts</li>
-                                <li>✅ PyGithub simplifica mucho el trabajo con la API</li>
-                                <li>✅ Fácil integración con otras herramientas (CI/CD, bots, etc.)</li>
-                                <li>✅ Ideal para análisis de datos y reportes</li>
-                                <li>✅ Gran ecosistema de librerías complementarias</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="warning-box">
-                            <strong><i class="fas fa-shield-alt"></i> Seguridad:</strong>
-                            <p><strong>NUNCA</strong> hardcodees tu token en el código. Usa variables de entorno:</p>
-                            <div class="code-container mt-2">
-                                <div class="code-header">
-                                    <span class="code-lang"><i class="fab fa-python"></i> Buena Práctica</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">
-                                        <i class="fas fa-copy"></i> Copiar
-                                    </button>
-                                </div>
-                                <pre><code class="language-python">import os
-from github import Github
-
-# ✅ Correcto: usar variable de entorno
-token = os.getenv("GITHUB_TOKEN")
-if not token:
-    raise ValueError("GITHUB_TOKEN no está configurado")
-
-g = Github(token)</code></pre>
-                            </div>
-                        </div>
-                    </div>
+    print(f"❌ Error: {response.status_code}")</code></pre>
                 </div>
                 
-                <!-- JavaScript -->
-                <div class="tab-pane fade" id="javascript">
-                    <div class="section-card animate__animated animate__fadeInUp">
-                        <h2 class="section-title">
-                            <i class="fab fa-js"></i>
-                            Crear Issues desde JavaScript/Node.js
-                        </h2>
-                        
-                        <div class="method-badge">
-                            <i class="fab fa-node-js"></i>
-                            Método: JavaScript + Octokit
-                        </div>
-                        
-                        <p style="font-size: 1.1rem;">
-                            Octokit es la librería oficial de GitHub para JavaScript/TypeScript. Funciona tanto en 
-                            Node.js como en el navegador, y proporciona una interfaz moderna basada en Promises.
-                        </p>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-download"></i>
-                            Instalación
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fas fa-terminal"></i> NPM</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-bash"># Con npm
-npm install @octokit/rest
+                <div class="warning-box">
+                    <h4><i class="fas fa-shield-alt"></i> Seguridad</h4>
+                    <p>Usa variables de entorno para el token:</p>
+                    <code>token = os.getenv("GITHUB_TOKEN")</code>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11: JavaScript - Octokit -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fab fa-js"></i> Método 4: JavaScript con Octokit</h2>
+            </div>
+            <div class="slide-content">
+                <h3>Instalación</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fas fa-terminal"></i> npm</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-bash">npm install @octokit/rest</code></pre>
+                </div>
+                
+                <h3>Ejemplo Básico</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fab fa-js"></i> JavaScript</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-javascript">const { Octokit } = require("@octokit/rest");
 
-# Con yarn
-yarn add @octokit/rest
-
-# Con pnpm
-pnpm add @octokit/rest</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-plus-circle"></i>
-                            Crear Issue Básico
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-js"></i> JavaScript</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-javascript">const { Octokit } = require("@octokit/rest");
-
-// Crear instancia con autenticación
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN // Token desde variable de entorno
+  auth: process.env.GITHUB_TOKEN
 });
 
-// Función para crear issue
 async function createIssue() {
-  try {
-    const response = await octokit.rest.issues.create({
-      owner: "usuario",
-      repo: "nombre-repo",
-      title: "🐛 Bug: Error en formulario de registro",
-      body: `## Descripción del Problema
-El formulario de registro no valida correctamente los emails.
+  const response = await octokit.rest.issues.create({
+    owner: "usuario",
+    repo: "proyecto",
+    title: "🐛 Bug: Form validation error",
+    body: `## Problem Description
+Form doesn't validate emails properly.
 
-## Pasos para Reproducir
-1. Ir a /register
-2. Ingresar email sin @
-3. Hacer click en "Registrarse"
-4. El formulario se envía sin validar
+## Steps to Reproduce
+1. Go to /register
+2. Enter invalid email
+3. Click Submit
+4. Form submits without validation
+    `
+  });
 
-## Comportamiento Esperado
-Debería mostrar error de validación.
-
-## Capturas
-![screenshot](url-imagen.png)
-      `
-    });
-
-    console.log(`✅ Issue creado: #${response.data.number}`);
-    console.log(`🔗 URL: ${response.data.html_url}`);
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error al crear issue:", error.message);
-    throw error;
-  }
+  console.log(`✅ Issue #${response.data.number}`);
+  console.log(`🔗 ${response.data.html_url}`);
 }
 
-// Ejecutar
 createIssue();</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-tags"></i>
-                            Issue Completo con Labels y Assignees
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-js"></i> JavaScript - Ejemplo Avanzado</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-javascript">const { Octokit } = require("@octokit/rest");
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 12: JavaScript - Issue Completo -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fab fa-js"></i> JavaScript - Issue Avanzado</h2>
+            </div>
+            <div class="slide-content">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang"><i class="fab fa-js"></i> JavaScript Avanzado</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <pre><code class="language-javascript">const { Octokit } = require("@octokit/rest");
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN
@@ -1434,667 +947,350 @@ async function createDetailedIssue() {
   const owner = "usuario";
   const repo = "proyecto";
   
-  try {
-    // Crear issue con todas las opciones
-    const issue = await octokit.rest.issues.create({
-      owner,
-      repo,
-      title: "✨ Feature: Implementar búsqueda avanzada",
-      body: `## 🎯 Objetivo
-Agregar capacidad de búsqueda avanzada con filtros múltiples.
+  // Crear issue
+  const issue = await octokit.rest.issues.create({
+    owner,
+    repo,
+    title: "✨ Feature: Advanced Search",
+    body: `## 🎯 Objective
+Add advanced search with multiple filters.
 
-## 📋 Requisitos Funcionales
-- [ ] Búsqueda por texto completo
-- [ ] Filtros por categoría
-- [ ] Filtros por fecha
-- [ ] Ordenamiento de resultados
-- [ ] Paginación
+## 📋 Functional Requirements
+- [ ] Full-text search
+- [ ] Category filters
+- [ ] Date filters
+- [ ] Result sorting
+- [ ] Pagination
 
-## 💡 Propuesta Técnica
-- Backend: Elasticsearch para indexación
-- Frontend: React Query para manejo de estado
-- API: GraphQL para queries flexibles
+## 💡 Technical Proposal
+- Backend: Elasticsearch
+- Frontend: React Query
+- API: GraphQL
 
-## 🎨 Mockups
-Ver diseños en Figma: [link]
+## ⏱️ Estimation
+8-10 development days
+    `,
+    labels: ["enhancement", "high-priority"],
+    assignees: ["dev1", "dev2"],
+    milestone: 3
+  });
 
-## ⏱️ Estimación
-**8-10 días de desarrollo**
+  // Agregar comentario
+  await octokit.rest.issues.createComment({
+    owner,
+    repo,
+    issue_number: issue.data.number,
+    body: "👋 @team Needs architecture review"
+  });
 
-## 📚 Recursos
-- [Documentación Elasticsearch](https://elastic.co)
-- [React Query Docs](https://tanstack.com/query)
-
----
-**Prioridad:** Alta
-**Milestone:** v3.0
-      `,
-      labels: ["enhancement", "high-priority", "needs-design"],
-      assignees: ["dev1", "dev2"],
-      milestone: 3 // Número del milestone
-    });
-
-    console.log(`✅ Issue #${issue.data.number} creado exitosamente`);
-    console.log(`📌 Título: ${issue.data.title}`);
-    console.log(`🔗 URL: ${issue.data.html_url}`);
-    console.log(`🏷️  Labels: ${issue.data.labels.map(l => l.name).join(", ")}`);
-    
-    // Agregar un comentario inicial
-    await octokit.rest.issues.createComment({
-      owner,
-      repo,
-      issue_number: issue.data.number,
-      body: "👋 @team Este issue necesita revisión de arquitectura antes de comenzar la implementación."
-    });
-    
-    console.log("💬 Comentario inicial agregado");
-    
-    return issue.data;
-  } catch (error) {
-    console.error("❌ Error:", error.message);
-    if (error.status) {
-      console.error(`Status: ${error.status}`);
-    }
-    throw error;
-  }
+  console.log(`✅ Issue #${issue.data.number} created`);
+  console.log(`🔗 ${issue.data.html_url}`);
 }
 
 createDetailedIssue();</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fas fa-robot"></i>
-                            Bot Automatizado con GitHub Actions
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-js"></i> JavaScript - Bot</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-javascript">const { Octokit } = require("@octokit/rest");
-
-class GitHubIssueBot {
-  constructor(token, owner, repo) {
-    this.octokit = new Octokit({ auth: token });
-    this.owner = owner;
-    this.repo = repo;
-  }
-
-  /**
-   * Crea issue de reporte diario
-   */
-  async createDailyReport() {
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Obtener estadísticas del día
-    const stats = await this.getDailyStats();
-    
-    const body = `# 📊 Reporte Diario - ${today}
-
-## 📈 Actividad del Día
-- **Issues Abiertos:** ${stats.openedToday}
-- **Issues Cerrados:** ${stats.closedToday}
-- **Pull Requests:** ${stats.prs}
-- **Commits:** ${stats.commits}
-
-## 🔥 Issues Más Activos
-${stats.hotIssues.map(i => `- #${i.number} - ${i.title} (${i.comments} comentarios)`).join('\n')}
-
-## 👥 Contributors
-${stats.contributors.map(c => `- @${c.login} (${c.contributions} contribuciones)`).join('\n')}
-
-## 🎯 Próximas Tareas
-- Revisar PRs pendientes
-- Actualizar documentación
-- Responder issues sin respuesta
-
----
-*🤖 Generado automáticamente*
-    `;
-
-    const issue = await this.octokit.rest.issues.create({
-      owner: this.owner,
-      repo: this.repo,
-      title: `📊 Daily Report - ${today}`,
-      body,
-      labels: ['report', 'automated']
-    });
-
-    return issue.data;
-  }
-
-  /**
-   * Obtiene estadísticas del repositorio
-   */
-  async getDailyStats() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Issues abiertos hoy
-    const openIssues = await this.octokit.rest.issues.listForRepo({
-      owner: this.owner,
-      repo: this.repo,
-      state: 'open',
-      since: today.toISOString()
-    });
-
-    // Issues cerrados hoy
-    const closedIssues = await this.octokit.rest.issues.listForRepo({
-      owner: this.owner,
-      repo: this.repo,
-      state: 'closed',
-      since: today.toISOString()
-    });
-
-    // Issues más comentados (últimos 7 días)
-    const weekAgo = new Date(today);
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    
-    const recentIssues = await this.octokit.rest.issues.listForRepo({
-      owner: this.owner,
-      repo: this.repo,
-      state: 'open',
-      since: weekAgo.toISOString(),
-      per_page: 100
-    });
-
-    const hotIssues = recentIssues.data
-      .sort((a, b) => b.comments - a.comments)
-      .slice(0, 5)
-      .map(i => ({
-        number: i.number,
-        title: i.title,
-        comments: i.comments
-      }));
-
-    return {
-      openedToday: openIssues.data.length,
-      closedToday: closedIssues.data.length,
-      prs: 0, // Implementar si necesitas
-      commits: 0, // Implementar si necesitas
-      hotIssues,
-      contributors: [] // Implementar si necesitas
-    };
-  }
-
-  /**
-   * Crea issues desde un archivo de tareas
-   */
-  async bulkCreateFromTasks(tasks) {
-    const results = [];
-    
-    for (const task of tasks) {
-      try {
-        const issue = await this.octokit.rest.issues.create({
-          owner: this.owner,
-          repo: this.repo,
-          title: task.title,
-          body: task.body,
-          labels: task.labels || [],
-          assignees: task.assignees || []
-        });
-        
-        results.push({
-          success: true,
-          number: issue.data.number,
-          url: issue.data.html_url
-        });
-        
-        console.log(`✅ Creado: #${issue.data.number}`);
-      } catch (error) {
-        results.push({
-          success: false,
-          error: error.message,
-          task: task.title
-        });
-        console.error(`❌ Error en: ${task.title}`);
-      }
-    }
-    
-    return results;
-  }
-}
-
-// Uso
-async function main() {
-  const bot = new GitHubIssueBot(
-    process.env.GITHUB_TOKEN,
-    "usuario",
-    "proyecto"
-  );
-
-  // Crear reporte diario
-  const report = await bot.createDailyReport();
-  console.log(`📊 Reporte creado: ${report.html_url}`);
-
-  // Crear múltiples issues desde lista
-  const tasks = [
-    {
-      title: "Implementar cache de Redis",
-      body: "Agregar capa de cache para mejorar performance",
-      labels: ["enhancement", "performance"]
-    },
-    {
-      title: "Actualizar dependencias",
-      body: "Actualizar todas las dependencias a últimas versiones",
-      labels: ["maintenance"]
-    }
-  ];
-
-  const results = await bot.bulkCreateFromTasks(tasks);
-  console.log(`✅ ${results.filter(r => r.success).length}/${tasks.length} issues creados`);
-}
-
-main().catch(console.error);</code></pre>
-                        </div>
-                        
-                        <h3 class="section-subtitle">
-                            <i class="fab fa-react"></i>
-                            Integración en Frontend (React)
-                        </h3>
-                        
-                        <div class="code-container">
-                            <div class="code-header">
-                                <span class="code-lang"><i class="fab fa-react"></i> React Component</span>
-                                <button class="copy-btn" onclick="copyCode(this)">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                            <pre><code class="language-javascript">import React, { useState } from 'react';
-import { Octokit } from '@octokit/rest';
-
-function IssueCreator() {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      // NOTA: En producción, el token NO debe estar en el frontend
-      // Usar un backend/API proxy para manejar la autenticación
-      const octokit = new Octokit({
-        auth: 'TU_TOKEN_AQUI' // ⚠️ Usar backend en producción
-      });
-
-      const response = await octokit.rest.issues.create({
-        owner: 'usuario',
-        repo: 'proyecto',
-        title,
-        body,
-        labels: ['user-reported']
-      });
-
-      setResult({
-        success: true,
-        number: response.data.number,
-        url: response.data.html_url
-      });
-      
-      // Limpiar formulario
-      setTitle('');
-      setBody('');
-    } catch (error) {
-      setResult({
-        success: false,
-        error: error.message
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="issue-creator">
-      <h2>Reportar un Problema</h2>
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Título</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Describe brevemente el problema"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Descripción</label>
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Proporciona detalles..."
-            rows={6}
-            required
-          />
-        </div>
-
-        <button type="submit" disabled={loading}>
-          {loading ? 'Enviando...' : 'Crear Issue'}
-        </button>
-      </form>
-
-      {result && (
-        <div className={`result ${result.success ? 'success' : 'error'}`}>
-          {result.success ? (
-            <>
-              <p>✅ Issue #{result.number} creado exitosamente</p>
-              <a href={result.url} target="_blank" rel="noopener">
-                Ver en GitHub →
-              </a>
-            </>
-          ) : (
-            <p>❌ Error: {result.error}</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default IssueCreator;</code></pre>
-                        </div>
-                        
-                        <div class="success-box">
-                            <strong><i class="fas fa-star"></i> Ventajas de JavaScript/Octokit:</strong>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>✅ Funciona tanto en Node.js como en navegador</li>
-                                <li>✅ API moderna basada en Promises/async-await</li>
-                                <li>✅ Excelente para integraciones en aplicaciones web</li>
-                                <li>✅ TypeScript support incluido</li>
-                                <li>✅ Documentación completa y mantenida por GitHub</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="warning-box">
-                            <strong><i class="fas fa-exclamation-triangle"></i> Seguridad Frontend:</strong>
-                            <p>⚠️ <strong>NUNCA expongas tu token de GitHub en el frontend</strong>. Para aplicaciones web:</p>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>Crea un backend/API que actúe como proxy</li>
-                                <li>El backend maneja la autenticación con GitHub</li>
-                                <li>El frontend solo se comunica con tu API</li>
-                                <li>Implementa rate limiting y validación en el servidor</li>
-                            </ul>
-                        </div>
-                    </div>
                 </div>
-                
-                <!-- Quiz -->
-                <div class="tab-pane fade" id="quiz">
-                    <div class="section-card animate__animated animate__fadeInUp">
-                        <h2 class="section-title">
-                            <i class="fas fa-graduation-cap"></i>
-                            Cuestionario de Evaluación
-                        </h2>
-                        
-                        <p style="font-size: 1.1rem; margin-bottom: 2rem;">
-                            Pon a prueba tus conocimientos sobre la creación de issues en GitHub. 
-                            ¡Responde todas las preguntas y verifica tu puntuación!
-                        </p>
-                        
-                        <div class="quiz-container">
-                            <form id="quizForm">
-                                
-                                <!-- Pregunta 1 -->
-                                <div class="quiz-question animate__animated animate__fadeIn">
-                                    <h4><i class="fas fa-question-circle"></i> 1. ¿Cuál NO es un componente estándar de un issue en GitHub?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q1" value="a" required>
-                                            <span>Título y descripción</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q1" value="b">
-                                            <span>Labels y assignees</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q1" value="c">
-                                            <span>Commits automáticos</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q1" value="d">
-                                            <span>Milestones y comentarios</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 2 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-1s">
-                                    <h4><i class="fas fa-question-circle"></i> 2. ¿Qué comando de GitHub CLI crea un nuevo issue?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q2" value="a" required>
-                                            <span>gh new issue</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q2" value="b">
-                                            <span>gh issue create</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q2" value="c">
-                                            <span>gh create-issue</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q2" value="d">
-                                            <span>gh add issue</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 3 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-2s">
-                                    <h4><i class="fas fa-question-circle"></i> 3. ¿Qué librería de Python es recomendada para trabajar con la API de GitHub?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q3" value="a" required>
-                                            <span>github-api</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q3" value="b">
-                                            <span>PyGithub</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q3" value="c">
-                                            <span>python-github</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q3" value="d">
-                                            <span>github-py</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 4 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-3s">
-                                    <h4><i class="fas fa-question-circle"></i> 4. En JavaScript/Node.js, ¿cuál es la librería oficial de GitHub?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q4" value="a" required>
-                                            <span>github.js</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q4" value="b">
-                                            <span>node-github</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q4" value="c">
-                                            <span>Octokit</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q4" value="d">
-                                            <span>GitHubAPI</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 5 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-4s">
-                                    <h4><i class="fas fa-question-circle"></i> 5. ¿Qué formato se usa para dar estilo al texto en la descripción de un issue?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q5" value="a" required>
-                                            <span>HTML</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q5" value="b">
-                                            <span>Markdown</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q5" value="c">
-                                            <span>LaTeX</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q5" value="d">
-                                            <span>reStructuredText</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 6 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-5s">
-                                    <h4><i class="fas fa-question-circle"></i> 6. ¿Dónde se debe almacenar el token de autenticación para mayor seguridad?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q6" value="a" required>
-                                            <span>Hardcodeado en el código fuente</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q6" value="b">
-                                            <span>En variables de entorno</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q6" value="c">
-                                            <span>En un archivo de configuración versionado</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q6" value="d">
-                                            <span>En los comentarios del código</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 7 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-6s">
-                                    <h4><i class="fas fa-question-circle"></i> 7. ¿Qué método HTTP se usa para crear un issue mediante la API REST de GitHub?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q7" value="a" required>
-                                            <span>GET</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q7" value="b">
-                                            <span>POST</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q7" value="c">
-                                            <span>PUT</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q7" value="d">
-                                            <span>PATCH</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 8 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-7s">
-                                    <h4><i class="fas fa-question-circle"></i> 8. ¿Cuál es la URL base de la API REST de GitHub?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q8" value="a" required>
-                                            <span>https://github.com/api</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q8" value="b">
-                                            <span>https://api.github.com</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q8" value="c">
-                                            <span>https://rest.github.com</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q8" value="d">
-                                            <span>https://github.api.com</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 9 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-8s">
-                                    <h4><i class="fas fa-question-circle"></i> 9. ¿Qué símbolo se usa en Markdown para referenciar otro issue?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q9" value="a" required>
-                                            <span>@</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q9" value="b">
-                                            <span>#</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q9" value="c">
-                                            <span>$</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q9" value="d">
-                                            <span>%</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pregunta 10 -->
-                                <div class="quiz-question animate__animated animate__fadeIn animate__delay-9s">
-                                    <h4><i class="fas fa-question-circle"></i> 10. ¿Cuál es la principal ventaja de usar GitHub CLI sobre la interfaz web?</h4>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q10" value="a" required>
-                                            <span>Tiene más funcionalidades</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q10" value="b">
-                                            <span>Permite automatización y scripting</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q10" value="c">
-                                            <span>Es más seguro</span>
-                                        </label>
-                                        <label class="quiz-option">
-                                            <input type="radio" name="q10" value="d">
-                                            <span>No requiere autenticación</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <button type="submit" class="quiz-btn animate__animated animate__fadeIn animate__delay-10s">
-                                    <i class="fas fa-check-circle"></i>
-                                    Evaluar Respuestas
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                
             </div>
         </div>
+        
+        <!-- Slide 13: Comparación de Métodos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-balance-scale"></i> Comparación de Métodos</h2>
+            </div>
+            <div class="slide-content">
+                <table class="table table-bordered table-striped">
+                    <thead style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                        <tr>
+                            <th>Método</th>
+                            <th>Ventajas</th>
+                            <th>Mejor Para</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Interfaz Web</strong></td>
+                            <td>
+                                • Fácil de usar<br>
+                                • Vista previa<br>
+                                • Drag & drop
+                            </td>
+                            <td>Usuarios ocasionales, reportes manuales</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GitHub CLI</strong></td>
+                            <td>
+                                • Rápido<br>
+                                • Scriptable<br>
+                                • No salir del terminal
+                            </td>
+                            <td>Desarrolladores, automatización simple</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Python</strong></td>
+                            <td>
+                                • Análisis de datos<br>
+                                • Scripts complejos<br>
+                                • Integración fácil
+                            </td>
+                            <td>Bots, reportes automáticos, CI/CD</td>
+                        </tr>
+                        <tr>
+                            <td><strong>JavaScript</strong></td>
+                            <td>
+                                • Frontend/Backend<br>
+                                • Aplicaciones web<br>
+                                • TypeScript support
+                            </td>
+                            <td>Apps web, integraciones frontend</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-lightbulb"></i> Recomendación</h4>
+                    <p>Elige el método según tu contexto:</p>
+                    <ul>
+                        <li><strong>Manual + Visual:</strong> Interfaz Web</li>
+                        <li><strong>Terminal + Scripts:</strong> GitHub CLI</li>
+                        <li><strong>Automatización + Análisis:</strong> Python</li>
+                        <li><strong>Apps Web:</strong> JavaScript/Octokit</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 14: Cuestionario -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-graduation-cap"></i> Cuestionario de Evaluación</h2>
+            </div>
+            <div class="slide-content" style="max-height: 75vh; overflow-y: auto;">
+                <form id="quizForm">
+                    
+                    <div class="quiz-question">
+                        <h4>1. ¿Cuál NO es un componente de un issue?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q1" value="a" required>
+                            Título y descripción
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q1" value="b">
+                            Labels y assignees
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q1" value="c">
+                            Commits automáticos
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q1" value="d">
+                            Comentarios
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>2. ¿Qué comando de GitHub CLI crea un issue?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q2" value="a" required>
+                            gh new issue
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q2" value="b">
+                            gh issue create
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q2" value="c">
+                            gh create-issue
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>3. ¿Qué librería de Python es recomendada?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q3" value="a" required>
+                            github-api
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q3" value="b">
+                            PyGithub
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q3" value="c">
+                            python-github
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>4. ¿Cuál es la librería oficial de GitHub para JavaScript?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q4" value="a" required>
+                            github.js
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q4" value="b">
+                            node-github
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q4" value="c">
+                            Octokit
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>5. ¿Qué formato se usa en la descripción?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q5" value="a" required>
+                            HTML
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q5" value="b">
+                            Markdown
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q5" value="c">
+                            LaTeX
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>6. ¿Dónde guardar el token?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q6" value="a" required>
+                            En el código
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q6" value="b">
+                            En variables de entorno
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q6" value="c">
+                            En archivo versionado
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>7. ¿Qué método HTTP crea un issue?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q7" value="a" required>
+                            GET
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q7" value="b">
+                            POST
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q7" value="c">
+                            PUT
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>8. ¿URL base de la API de GitHub?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q8" value="a" required>
+                            https://github.com/api
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q8" value="b">
+                            https://api.github.com
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q8" value="c">
+                            https://rest.github.com
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>9. ¿Símbolo para referenciar issues?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q9" value="a" required>
+                            @
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q9" value="b">
+                            #
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q9" value="c">
+                            $
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>10. ¿Ventaja principal de GitHub CLI?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q10" value="a" required>
+                            Más funcionalidades
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q10" value="b">
+                            Automatización y scripting
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q10" value="c">
+                            No requiere auth
+                        </label>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button type="submit" class="submit-quiz-btn">
+                            <i class="fas fa-check-circle"></i> Evaluar Respuestas
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Slide 15: Final -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="icon">
+                    <i class="fas fa-check-circle" style="color: #4facfe;"></i>
+                </div>
+                <h1>¡Felicitaciones!</h1>
+            </div>
+            <div class="slide-content" style="text-align: center; font-size: 1.2rem;">
+                <p style="font-size: 1.4rem; margin: 30px 0;">
+                    Has completado el tutorial sobre creación de issues en GitHub.
+                </p>
+                
+                <div class="success-box">
+                    <h4>🎯 Has aprendido:</h4>
+                    <ul style="text-align: left;">
+                        <li>Qué son los issues y sus componentes</li>
+                        <li>Crear issues desde la interfaz web</li>
+                        <li>Usar GitHub CLI para automatización</li>
+                        <li>Integrar con Python usando PyGithub</li>
+                        <li>Desarrollar con JavaScript y Octokit</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>📚 Recursos Adicionales:</h4>
+                    <ul style="text-align: left;">
+                        <li><strong>Documentación GitHub:</strong> docs.github.com</li>
+                        <li><strong>GitHub CLI:</strong> cli.github.com</li>
+                        <li><strong>PyGithub:</strong> pygithub.readthedocs.io</li>
+                        <li><strong>Octokit:</strong> octokit.github.io</li>
+                    </ul>
+                </div>
+                
+                <p style="font-size: 1.3rem; margin-top: 40px; color: #667eea; font-weight: 700;">
+                    <i class="fab fa-github"></i> ¡Ahora estás listo para gestionar issues como un profesional!
+                </p>
+            </div>
+        </div>
+        
     </div>
     
-    <!-- Footer -->
-    <footer class="main-footer">
-        <div class="container">
-            <p>
-                <i class="fab fa-github"></i> 
-                Tutorial de GitHub Issues | Desarrollado con ❤️ para estudiantes de programación
-            </p>
-        </div>
-    </footer>
+    <!-- Navigation Buttons -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+            <i class="fas fa-arrow-left"></i> Anterior
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+            Siguiente <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -2107,43 +1303,64 @@ export default IssueCreator;</code></pre>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
     
     <script>
-        // Respuestas correctas
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        // Respuestas correctas del quiz
         const correctAnswers = {
-            q1: 'c',
-            q2: 'b',
-            q3: 'b',
-            q4: 'c',
-            q5: 'b',
-            q6: 'b',
-            q7: 'b',
-            q8: 'b',
-            q9: 'b',
-            q10: 'b'
+            q1: 'c', q2: 'b', q3: 'b', q4: 'c', q5: 'b',
+            q6: 'b', q7: 'b', q8: 'b', q9: 'b', q10: 'b'
         };
         
-        // Progress bar
-        window.addEventListener('scroll', () => {
-            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrolled = (winScroll / height) * 100;
-            document.getElementById('progressBar').style.width = scrolled + '%';
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            slides[currentSlide].scrollTop = 0;
+            
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            
+            // Highlight code
+            Prism.highlightAll();
+        }
+        
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
         });
         
         // Copy code function
         function copyCode(button) {
-            const codeBlock = button.closest('.code-container').querySelector('code');
+            const codeBlock = button.closest('.code-block').querySelector('code');
             const text = codeBlock.textContent;
             
             navigator.clipboard.writeText(text).then(() => {
                 const originalHTML = button.innerHTML;
                 button.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
-                button.style.background = 'var(--primary-color)';
-                button.style.color = 'white';
+                button.style.background = '#4facfe';
                 
                 setTimeout(() => {
                     button.innerHTML = originalHTML;
                     button.style.background = '';
-                    button.style.color = '';
                 }, 2000);
             });
         }
@@ -2154,110 +1371,54 @@ export default IssueCreator;</code></pre>
             
             let correct = 0;
             let total = Object.keys(correctAnswers).length;
-            let details = [];
             
             for (let question in correctAnswers) {
-                const selectedAnswer = document.querySelector(`input[name="${question}"]:checked`);
-                
-                if (selectedAnswer && selectedAnswer.value === correctAnswers[question]) {
+                const selected = document.querySelector(`input[name="${question}"]:checked`);
+                if (selected && selected.value === correctAnswers[question]) {
                     correct++;
-                    details.push({
-                        question: question.replace('q', ''),
-                        correct: true
-                    });
-                } else {
-                    details.push({
-                        question: question.replace('q', ''),
-                        correct: false,
-                        selected: selectedAnswer ? selectedAnswer.value : 'Sin respuesta',
-                        correctAnswer: correctAnswers[question]
-                    });
                 }
             }
             
             const percentage = (correct / total) * 100;
-            let message = '';
-            let icon = '';
-            let color = '';
+            let message, icon, color;
             
             if (percentage === 100) {
-                message = '¡Perfecto! 🎉 Dominas completamente el tema.';
+                message = '¡Perfecto! 🎉 Dominas el tema completamente.';
                 icon = 'success';
-                color = '#2ea44f';
+                color = '#4facfe';
             } else if (percentage >= 70) {
-                message = '¡Muy bien! 👍 Tienes un buen conocimiento del tema.';
+                message = '¡Muy bien! 👍 Tienes un buen conocimiento.';
                 icon = 'success';
-                color = '#2ea44f';
+                color = '#4facfe';
             } else if (percentage >= 50) {
                 message = '¡Buen intento! 📚 Revisa los temas que fallaste.';
                 icon = 'warning';
-                color = '#fd8c73';
+                color = '#f5576c';
             } else {
                 message = 'Necesitas estudiar más 📖 Repasa el material.';
                 icon = 'error';
                 color = '#f5576c';
             }
             
-            // Construir detalles HTML
-            let detailsHTML = '<div style="text-align: left; margin-top: 20px;">';
-            details.forEach(detail => {
-                if (detail.correct) {
-                    detailsHTML += `<p style="color: #2ea44f;"><i class="fas fa-check-circle"></i> Pregunta ${detail.question}: Correcta</p>`;
-                } else {
-                    detailsHTML += `<p style="color: #f5576c;"><i class="fas fa-times-circle"></i> Pregunta ${detail.question}: Incorrecta</p>`;
-                }
-            });
-            detailsHTML += '</div>';
-            
             Swal.fire({
                 title: `Resultado: ${correct}/${total}`,
                 html: `
-                    <div style="font-size: 3rem; margin: 20px 0;">${percentage.toFixed(0)}%</div>
-                    <p style="font-size: 1.2rem; margin: 20px 0;">${message}</p>
-                    ${detailsHTML}
+                    <div style="font-size: 3rem; margin: 20px 0; color: ${color};">
+                        ${percentage.toFixed(0)}%
+                    </div>
+                    <p style="font-size: 1.2rem;">${message}</p>
                 `,
                 icon: icon,
                 confirmButtonText: 'Entendido',
                 confirmButtonColor: color,
-                background: '#161b22',
-                color: '#c9d1d9',
                 customClass: {
                     popup: 'animate__animated animate__zoomIn'
                 }
             });
         });
         
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-        
-        // Animación al hacer visible
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
-                }
-            });
-        }, observerOptions);
-        
-        document.querySelectorAll('.step-item, .quiz-question').forEach(el => {
-            observer.observe(el);
-        });
+        // Initialize
+        showSlide(0);
     </script>
 </body>
 </html>
