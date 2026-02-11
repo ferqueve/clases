@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrevistas con Clientes - Validación de Prototipos</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .slide-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .slide {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            overflow-y: auto;
+            padding: 50px;
+            position: relative;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #f5576c;
+        }
+        
+        .slide-header h1 {
+            font-size: 3rem;
+            color: #f5576c;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        
+        .slide-header h2 {
+            font-size: 2rem;
+            color: #f093fb;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .slide-header .icon {
+            font-size: 4rem;
+            color: #f5576c;
+            margin-bottom: 20px;
+        }
+        
+        .slide-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+        }
+        
+        .slide-content h3 {
+            color: #f5576c;
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            font-weight: 700;
+        }
+        
+        .slide-content h4 {
+            color: #f093fb;
+            font-size: 1.4rem;
+            margin: 20px 0 10px;
+            font-weight: 600;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #f093fb15, #f5576c15);
+            border-left: 4px solid #f5576c;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, #feca5715, #ff616115);
+            border-left: 4px solid #ff6161;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .success-box {
+            background: linear-gradient(135deg, #4facfe15, #00f2fe15);
+            border-left: 4px solid #4facfe;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .tip-box {
+            background: linear-gradient(135deg, #a8edea15, #fed6e315);
+            border-left: 4px solid #a8edea;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .step-list {
+            counter-reset: step;
+        }
+        
+        .step-item {
+            counter-increment: step;
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 25px;
+        }
+        
+        .step-item::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #f5576c;
+        }
+        
+        .question-card h5 {
+            color: #f5576c;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .example-dialog {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .dialog-line {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .dialog-interviewer {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-left: 4px solid #667eea;
+        }
+        
+        .dialog-client {
+            background: linear-gradient(135deg, #f093fb15, #f5576c15);
+            border-left: 4px solid #f5576c;
+        }
+        
+        .dialog-speaker {
+            font-weight: 700;
+            color: #f5576c;
+            margin-bottom: 5px;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .checklist li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding-left: 40px;
+            position: relative;
+        }
+        
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 12px;
+            color: #4facfe;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+        
+        .do-dont-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .do-box {
+            background: linear-gradient(135deg, #4facfe15, #00f2fe15);
+            border: 2px solid #4facfe;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .do-box h4 {
+            color: #4facfe;
+        }
+        
+        .dont-box {
+            background: linear-gradient(135deg, #ff616115, #feca5715);
+            border: 2px solid #ff6161;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .dont-box h4 {
+            color: #ff6161;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            background: white;
+            color: #f5576c;
+            border: 3px solid #f5576c;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-btn:hover:not(:disabled) {
+            background: #f5576c;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .slide-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #f5576c;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        
+        .quiz-question {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .quiz-question h4 {
+            color: #f5576c;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .quiz-option:hover {
+            border-color: #f5576c;
+            background: #f5576c15;
+            transform: translateX(5px);
+        }
+        
+        .quiz-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .submit-quiz-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        
+        .submit-quiz-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+        }
+        
+        ul {
+            padding-left: 25px;
+        }
+        
+        ul li {
+            margin: 10px 0;
+        }
+        
+        strong {
+            color: #f5576c;
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, #f093fb25, #f5576c25);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        
+        .badge-custom {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        /* Scrollbar */
+        .slide::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .slide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .slide::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            border-radius: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 20px;
+                height: 85vh;
+            }
+            
+            .slide-header h1 {
+                font-size: 2rem;
+            }
+            
+            .slide-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .navigation {
+                bottom: 15px;
+                gap: 10px;
+            }
+            
+            .nav-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .do-dont-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-counter" id="slideCounter">1 / 18</div>
+    
+    <div class="slide-container">
+        
+        <!-- Slide 1: Portada -->
+        <div class="slide active animate__animated animate__fadeIn">
+            <div class="slide-header">
+                <div class="icon animate__animated animate__bounceIn">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h1 class="animate__animated animate__fadeInDown">Entrevistas con Clientes</h1>
+                <p style="font-size: 1.5rem; color: #f093fb; margin-top: 20px;" class="animate__animated animate__fadeInUp">
+                    Validación de Prototipos y Requerimientos
+                </p>
+            </div>
+            <div class="slide-content" style="text-align: center; font-size: 1.2rem;">
+                <p style="margin: 30px 0;"><strong>Domina el arte de la entrevista efectiva</strong></p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 40px;">
+                    <div class="info-box">
+                        <i class="fas fa-clipboard-list" style="font-size: 2rem; color: #f5576c;"></i>
+                        <p><strong>Preparación</strong></p>
+                        <p style="font-size: 0.95rem;">Planifica tu entrevista</p>
+                    </div>
+                    <div class="info-box">
+                        <i class="fas fa-comments" style="font-size: 2rem; color: #f5576c;"></i>
+                        <p><strong>Comunicación</strong></p>
+                        <p style="font-size: 0.95rem;">Técnicas efectivas</p>
+                    </div>
+                    <div class="info-box">
+                        <i class="fas fa-desktop" style="font-size: 2rem; color: #f5576c;"></i>
+                        <p><strong>Demostración</strong></p>
+                        <p style="font-size: 0.95rem;">Presenta prototipos</p>
+                    </div>
+                    <div class="info-box">
+                        <i class="fas fa-check-double" style="font-size: 2rem; color: #f5576c;"></i>
+                        <p><strong>Validación</strong></p>
+                        <p style="font-size: 0.95rem;">Confirma requerimientos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 2: Importancia de las Entrevistas -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-bullseye"></i> ¿Por qué son importantes las entrevistas?</h2>
+            </div>
+            <div class="slide-content">
+                <p>Las entrevistas con clientes son <span class="highlight">fundamentales</span> para el éxito de cualquier proyecto de software. Permiten:</p>
+                
+                <div class="success-box">
+                    <h4><i class="fas fa-star"></i> Beneficios Clave:</h4>
+                    <ul>
+                        <li><strong>Clarificar expectativas:</strong> Entender exactamente qué necesita el cliente</li>
+                        <li><strong>Validar soluciones:</strong> Confirmar que el prototipo resuelve el problema real</li>
+                        <li><strong>Detectar problemas temprano:</strong> Identificar malentendidos antes de invertir en desarrollo</li>
+                        <li><strong>Construir confianza:</strong> Demostrar profesionalismo y compromiso</li>
+                        <li><strong>Obtener feedback valioso:</strong> Insights que no están en la documentación</li>
+                    </ul>
+                </div>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Riesgos de omitir entrevistas:</h4>
+                    <ul>
+                        <li>Desarrollar funcionalidades que el cliente no necesita</li>
+                        <li>Malinterpretar requerimientos críticos</li>
+                        <li>Descubrir problemas en etapas avanzadas del proyecto</li>
+                        <li>Pérdida de tiempo y recursos</li>
+                        <li>Insatisfacción del cliente</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <p><i class="fas fa-quote-left"></i> <em>"Una hora de entrevista puede ahorrarte semanas de desarrollo equivocado."</em> <i class="fas fa-quote-right"></i></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 3: Tipos de Entrevistas -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-layer-group"></i> Tipos de Entrevistas</h2>
+            </div>
+            <div class="slide-content">
+                <div class="question-card">
+                    <h5><i class="fas fa-search"></i> 1. Entrevista de Descubrimiento</h5>
+                    <p><strong>Objetivo:</strong> Entender el problema y necesidades iniciales</p>
+                    <p><strong>Momento:</strong> Al inicio del proyecto</p>
+                    <p><strong>Duración:</strong> 60-90 minutos</p>
+                </div>
+                
+                <div class="question-card">
+                    <h5><i class="fas fa-pencil-ruler"></i> 2. Entrevista de Validación de Diseño</h5>
+                    <p><strong>Objetivo:</strong> Confirmar que el diseño/wireframes son correctos</p>
+                    <p><strong>Momento:</strong> Después de crear mockups iniciales</p>
+                    <p><strong>Duración:</strong> 45-60 minutos</p>
+                </div>
+                
+                <div class="question-card">
+                    <h5><i class="fas fa-desktop"></i> 3. Entrevista de Demostración de Prototipo</h5>
+                    <p><strong>Objetivo:</strong> Mostrar prototipo funcional y obtener feedback</p>
+                    <p><strong>Momento:</strong> Durante el desarrollo iterativo</p>
+                    <p><strong>Duración:</strong> 30-45 minutos</p>
+                </div>
+                
+                <div class="question-card">
+                    <h5><i class="fas fa-check-circle"></i> 4. Entrevista de Validación Final</h5>
+                    <p><strong>Objetivo:</strong> Confirmar que todos los requerimientos están cumplidos</p>
+                    <p><strong>Momento:</strong> Antes del lanzamiento</p>
+                    <p><strong>Duración:</strong> 45-60 minutos</p>
+                </div>
+                
+                <div class="tip-box">
+                    <p><strong>💡 Tip:</strong> En este curso nos enfocaremos principalmente en la <span class="highlight">Entrevista de Demostración de Prototipo</span>, que es donde validamos requerimientos con un producto tangible.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4: Preparación - Antes de la Entrevista -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-clipboard-check"></i> Preparación: Antes de la Entrevista</h2>
+            </div>
+            <div class="slide-content">
+                <p>La preparación es <strong>crucial</strong> para el éxito de la entrevista. Sigue este checklist:</p>
+                
+                <h3>📋 Checklist de Preparación</h3>
+                <ul class="checklist">
+                    <li><strong>Revisar documentación:</strong> Lee todos los requerimientos y notas previas</li>
+                    <li><strong>Preparar el prototipo:</strong> Asegúrate que funciona correctamente</li>
+                    <li><strong>Definir objetivos:</strong> ¿Qué necesitas validar específicamente?</li>
+                    <li><strong>Preparar preguntas:</strong> Lista de preguntas clave a realizar</li>
+                    <li><strong>Probar tecnología:</strong> Verifica que tu presentación funcione</li>
+                    <li><strong>Preparar escenarios:</strong> Casos de uso para demostrar</li>
+                    <li><strong>Agenda clara:</strong> Estructura de la reunión</li>
+                    <li><strong>Material de apoyo:</strong> Documentos, diagramas, referencias</li>
+                </ul>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-clock"></i> Timing Recomendado:</h4>
+                    <ul>
+                        <li>Introducción: 5 minutos</li>
+                        <li>Demostración del prototipo: 15-20 minutos</li>
+                        <li>Preguntas y validación: 15-20 minutos</li>
+                        <li>Cierre y próximos pasos: 5 minutos</li>
+                    </ul>
+                </div>
+                
+                <div class="warning-box">
+                    <p><strong>⚠️ Importante:</strong> Siempre ten un <strong>Plan B</strong> si la tecnología falla. Lleva capturas de pantalla, videos grabados o presentaciones PDF como respaldo.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5: Estructura de la Entrevista -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-sitemap"></i> Estructura de la Entrevista</h2>
+            </div>
+            <div class="slide-content">
+                <div class="step-list">
+                    <div class="step-item">
+                        <h4>Apertura y Contexto</h4>
+                        <p>Saluda, establece el tono, explica el propósito y la agenda</p>
+                        <span class="badge-custom">3-5 minutos</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Recapitulación de Requerimientos</h4>
+                        <p>Resume brevemente lo que entiendes del proyecto y requerimientos</p>
+                        <span class="badge-custom">5 minutos</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Demostración del Prototipo</h4>
+                        <p>Muestra el prototipo siguiendo los casos de uso principales</p>
+                        <span class="badge-custom">15-20 minutos</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Validación de Funcionalidades</h4>
+                        <p>Pregunta específicamente sobre cada funcionalidad mostrada</p>
+                        <span class="badge-custom">10-15 minutos</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Recolección de Feedback</h4>
+                        <p>Escucha activamente comentarios, sugerencias y preocupaciones</p>
+                        <span class="badge-custom">10 minutos</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Cierre y Próximos Pasos</h4>
+                        <p>Resume acuerdos, ajustes necesarios y define siguientes acciones</p>
+                        <span class="badge-custom">5 minutos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: Apertura Efectiva -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-door-open"></i> Apertura Efectiva de la Entrevista</h2>
+            </div>
+            <div class="slide-content">
+                <h3>🎯 Objetivos de la Apertura:</h3>
+                <ul>
+                    <li>Establecer un ambiente cómodo y profesional</li>
+                    <li>Clarificar expectativas</li>
+                    <li>Definir la estructura de la reunión</li>
+                </ul>
+                
+                <div class="example-dialog">
+                    <h4><i class="fas fa-comment-dots"></i> Ejemplo de Apertura:</h4>
+                    
+                    <div class="dialog-line dialog-interviewer">
+                        <div class="dialog-speaker"><i class="fas fa-user-tie"></i> Desarrollador:</div>
+                        <p>"Buenos días [Nombre del cliente], gracias por tu tiempo. Hoy vamos a revisar el prototipo del sistema de gestión de inventario que hemos desarrollado basándonos en nuestras conversaciones anteriores."</p>
+                    </div>
+                    
+                    <div class="dialog-line dialog-interviewer">
+                        <div class="dialog-speaker"><i class="fas fa-user-tie"></i> Desarrollador:</div>
+                        <p>"La sesión durará aproximadamente 45 minutos. Primero haré una demostración de las funcionalidades principales, luego me gustaría que me des tu opinión sobre cada una, y al final definiremos los próximos pasos."</p>
+                    </div>
+                    
+                    <div class="dialog-line dialog-interviewer">
+                        <div class="dialog-speaker"><i class="fas fa-user-tie"></i> Desarrollador:</div>
+                        <p>"¿Te parece bien esta estructura? ¿Hay algo específico que te gustaría ver o discutir?"</p>
+                    </div>
+                    
+                    <div class="dialog-line dialog-client">
+                        <div class="dialog-speaker"><i class="fas fa-user"></i> Cliente:</div>
+                        <p>"Perfecto, me interesa especialmente ver cómo funciona el módulo de alertas de stock bajo."</p>
+                    </div>
+                    
+                    <div class="dialog-line dialog-interviewer">
+                        <div class="dialog-speaker"><i class="fas fa-user-tie"></i> Desarrollador:</div>
+                        <p>"Excelente, definitivamente incluiremos eso en la demostración. Comencemos..."</p>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4>✅ Elementos Clave de una Buena Apertura:</h4>
+                    <ul>
+                        <li>Saludo profesional y cordial</li>
+                        <li>Agradecimiento por el tiempo</li>
+                        <li>Explicación clara del objetivo</li>
+                        <li>Estructura de la reunión</li>
+                        <li>Apertura para preguntas/inquietudes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 7: Demostración del Prototipo -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-desktop"></i> Demostración del Prototipo</h2>
+            </div>
+            <div class="slide-content">
+                <h3>🎬 Mejores Prácticas para la Demo:</h3>
+                
+                <div class="do-dont-container">
+                    <div class="do-box">
+                        <h4><i class="fas fa-check-circle"></i> SÍ Hacer:</h4>
+                        <ul>
+                            <li>Contar una historia / caso de uso real</li>
+                            <li>Ir paso a paso, no apresurarse</li>
+                            <li>Mostrar primero lo más importante</li>
+                            <li>Permitir interrupciones y preguntas</li>
+                            <li>Usar datos realistas, no "test123"</li>
+                            <li>Explicar el "por qué" de las decisiones</li>
+                            <li>Pausar para verificar comprensión</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="dont-box">
+                        <h4><i class="fas fa-times-circle"></i> NO Hacer:</h4>
+                        <ul>
+                            <li>Mostrar código o aspectos técnicos</li>
+                            <li>Usar jerga técnica excesiva</li>
+                            <li>Ir demasiado rápido</li>
+                            <li>Disculparse por cosas incompletas</li>
+                            <li>Mostrar todas las funcionalidades</li>
+                            <li>Defender decisiones a la defensiva</li>
+                            <li>Monopolizar la conversación</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="tip-box">
+                    <h4><i class="fas fa-lightbulb"></i> Estructura de Demostración Recomendada:</h4>
+                    <ol>
+                        <li><strong>Visión general:</strong> "Este es el dashboard principal donde..."</li>
+                        <li><strong>Caso de uso principal:</strong> "Imaginemos que eres un usuario que necesita..."</li>
+                        <li><strong>Flujo completo:</strong> Desde el inicio hasta el resultado</li>
+                        <li><strong>Características destacadas:</strong> "Nota cómo aquí puedes..."</li>
+                        <li><strong>Manejo de errores:</strong> "Si algo sale mal, el sistema..."</li>
+                    </ol>
+                </div>
+                
+                <div class="warning-box">
+                    <p><strong>⚠️ Recuerda:</strong> El prototipo no tiene que ser perfecto. El objetivo es <strong>validar conceptos</strong>, no impresionar con perfección técnica.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8: Preguntas Efectivas -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-question-circle"></i> Preguntas Efectivas para Validación</h2>
+            </div>
+            <div class="slide-content">
+                <h3>📝 Tipos de Preguntas:</h3>
+                
+                <div class="question-card">
+                    <h5><i class="fas fa-expand-arrows-alt"></i> Preguntas Abiertas</h5>
+                    <p><strong>Cuándo usar:</strong> Para explorar y obtener información detallada</p>
+                    <p><strong>Ejemplos:</strong></p>
+                    <ul>
+                        <li>"¿Qué te parece este flujo de trabajo?"</li>
+                        <li>"¿Cómo imaginas usando esta funcionalidad en tu día a día?"</li>
+                        <li>"¿Qué otras situaciones deberíamos considerar?"</li>
+                        <li>"¿Hay algo que esperabas ver que no está aquí?"</li>
+                    </ul>
+                </div>
+                
+                <div class="question-card">
+                    <h5><i class="fas fa-check-square"></i> Preguntas Cerradas</h5>
+                    <p><strong>Cuándo usar:</strong> Para confirmar requerimientos específicos</p>
+                    <p><strong>Ejemplos:</strong></p>
+                    <ul>
+                        <li>"¿Este botón debe estar aquí o prefieres que esté en otro lugar?"</li>
+                        <li>"¿Los colores reflejan tu identidad de marca?"</li>
+                        <li>"¿Esta información es suficiente o necesitas más detalles?"</li>
+                        <li>"¿Es correcto que solo los administradores puedan hacer esto?"</li>
+                    </ul>
+                </div>
+                
+                <div class="question-card">
+                    <h5><i class="fas fa-balance-scale"></i> Preguntas de Priorización</h5>
+                    <p><strong>Cuándo usar:</strong> Para entender qué es crítico vs. deseable</p>
+                    <p><strong>Ejemplos:</strong></p>
+                    <ul>
+                        <li>"Si tuvieras que elegir entre estas dos funcionalidades, ¿cuál es más importante?"</li>
+                        <li>"En una escala del 1 al 10, ¿qué tan crítica es esta característica?"</li>
+                        <li>"¿Qué debe estar listo para el lanzamiento inicial?"</li>
+                    </ul>
+                </div>
+                
+                <div class="success-box">
+                    <h4>💡 Técnica del "Por qué":</h4>
+                    <p>Cuando el cliente sugiere un cambio, pregunta <strong>"¿Por qué?"</strong> (de manera respetuosa) para entender el problema subyacente:</p>
+                    <ul>
+                        <li><strong>Cliente:</strong> "Este botón debería ser más grande"</li>
+                        <li><strong>Tú:</strong> "Entiendo, ¿hay alguna razón específica?"</li>
+                        <li><strong>Cliente:</strong> "Es que es la acción más frecuente"</li>
+                        <li><strong>Insight:</strong> El problema real es la jerarquía visual, no solo el tamaño</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9: Escucha Activa -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-ear-listen"></i> Escucha Activa</h2>
+            </div>
+            <div class="slide-content">
+                <p>La escucha activa es <strong>fundamental</strong> para captar no solo lo que dice el cliente, sino lo que realmente necesita.</p>
+                
+                <h3>🎧 Técnicas de Escucha Activa:</h3>
+                
+                <div class="step-list">
+                    <div class="step-item">
+                        <h4>Parafrasea</h4>
+                        <p>"Si entiendo correctamente, necesitas que el sistema envíe una notificación cuando..."</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Confirma comprensión</h4>
+                        <p>"Déjame asegurarme que entendí: prefieres que la opción esté en el menú principal, ¿correcto?"</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Toma notas visibles</h4>
+                        <p>Demuestra que valoras sus comentarios documentando en tiempo real</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Usa lenguaje corporal positivo</h4>
+                        <p>Asentir, contacto visual, postura abierta (en reuniones presenciales/video)</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>No interrumpas</h4>
+                        <p>Deja que el cliente termine sus ideas antes de responder</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Identifica emociones</h4>
+                        <p>"Noto que esto es particularmente importante para ti..."</p>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>⚠️ Errores Comunes al Escuchar:</h4>
+                    <ul>
+                        <li>Preparar tu respuesta mientras el cliente habla</li>
+                        <li>Asumir que entiendes sin confirmar</li>
+                        <li>Ponerse a la defensiva ante críticas</li>
+                        <li>Interrumpir para dar explicaciones técnicas</li>
+                        <li>No tomar notas de feedback importante</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <p><i class="fas fa-quote-left"></i> <strong>Regla de oro:</strong> "Dos oídos, una boca. Escucha el doble de lo que hablas." <i class="fas fa-quote-right"></i></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10: Manejo de Objeciones -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-shield-alt"></i> Manejo de Objeciones y Críticas</h2>
+            </div>
+            <div class="slide-content">
+                <p>Las críticas y objeciones son <span class="highlight">oportunidades</span> para mejorar el producto. Aprende a manejarlas profesionalmente:</p>
+                
+                <div class="example-dialog">
+                    <h4>❌ Respuesta Defensiva (EVITAR):</h4>
+                    
+                    <div class="dialog-line dialog-client">
+                        <div class="dialog-speaker"><i class="fas fa-user"></i> Cliente:</div>
+                        <p>"No me gusta cómo se ve este formulario, es muy confuso."</p>
+                    </div>
+                    
+                    <div class="dialog-line" style="background: #ff616115; border-left: 4px solid #ff6161;">
+                        <div class="dialog-speaker" style="color: #ff6161;"><i class="fas fa-user-tie"></i> Desarrollador:</div>
+                        <p>"Bueno, así es el estándar de la industria y es lo que funciona mejor técnicamente."</p>
+                    </div>
+                </div>
+                
+                <div class="example-dialog">
+                    <h4>✅ Respuesta Constructiva (RECOMENDADA):</h4>
+                    
+                    <div class="dialog-line dialog-client">
+                        <div class="dialog-speaker"><i class="fas fa-user"></i> Cliente:</div>
+                        <p>"No me gusta cómo se ve este formulario, es muy confuso."</p>
+                    </div>
+                    
+                    <div class="dialog-line" style="background: #4facfe15; border-left: 4px solid #4facfe;">
+                        <div class="dialog-speaker" style="color: #4facfe;"><i class="fas fa-user-tie"></i> Desarrollador:</div>
+                        <p>"Entiendo. ¿Podrías ayudarme a entender qué parte específicamente resulta confusa? ¿Es la cantidad de campos, el orden, o algo más?"</p>
+                    </div>
+                    
+                    <div class="dialog-line dialog-client">
+                        <div class="dialog-speaker"><i class="fas fa-user"></i> Cliente:</div>
+                        <p>"Hay demasiados campos obligatorios al inicio. Mis usuarios no tienen toda esa información disponible."</p>
+                    </div>
+                    
+                    <div class="dialog-line" style="background: #4facfe15; border-left: 4px solid #4facfe;">
+                        <div class="dialog-speaker" style="color: #4facfe;"><i class="fas fa-user-tie"></i> Desarrollador:</div>
+                        <p>"Ah, excelente observación. ¿Qué te parece si hacemos algunos campos opcionales y permitimos guardar borradores? ¿O prefieres un formulario paso a paso?"</p>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4>✅ Estrategia A.E.I.O.U:</h4>
+                    <ul>
+                        <li><strong>A</strong>gradece: "Gracias por ese feedback"</li>
+                        <li><strong>E</strong>scucha: Deja que explique completamente</li>
+                        <li><strong>I</strong>ndaga: Haz preguntas para entender el problema real</li>
+                        <li><strong>O</strong>frece soluciones: Propón alternativas</li>
+                        <li><strong>U</strong>tiliza el feedback: Documenta y actúa sobre ello</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11: Validación de Requerimientos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-check-double"></i> Validación de Requerimientos</h2>
+            </div>
+            <div class="slide-content">
+                <p>Después de la demostración, es crucial <strong>validar sistemáticamente</strong> cada requerimiento:</p>
+                
+                <h3>📋 Checklist de Validación:</h3>
+                
+                <div class="question-card">
+                    <h5>1. Requerimientos Funcionales</h5>
+                    <ul>
+                        <li>¿El sistema hace lo que se supone que debe hacer?</li>
+                        <li>¿Todos los casos de uso están cubiertos?</li>
+                        <li>¿Las reglas de negocio son correctas?</li>
+                        <li>¿Los cálculos y validaciones son precisos?</li>
+                    </ul>
+                </div>
+                
+                <div class="question-card">
+                    <h5>2. Requerimientos de Interfaz</h5>
+                    <ul>
+                        <li>¿La navegación es intuitiva?</li>
+                        <li>¿Los elementos visuales coinciden con la marca?</li>
+                        <li>¿La información está organizada lógicamente?</li>
+                        <li>¿Los mensajes de error son claros?</li>
+                    </ul>
+                </div>
+                
+                <div class="question-card">
+                    <h5>3. Requerimientos de Datos</h5>
+                    <ul>
+                        <li>¿Se capturan todos los datos necesarios?</li>
+                        <li>¿Los formatos de entrada son correctos?</li>
+                        <li>¿Las validaciones de datos son apropiadas?</li>
+                        <li>¿Los reportes muestran la información correcta?</li>
+                    </ul>
+                </div>
+                
+                <div class="question-card">
+                    <h5>4. Requerimientos de Flujo</h5>
+                    <ul>
+                        <li>¿El flujo de trabajo refleja el proceso real?</li>
+                        <li>¿Hay pasos innecesarios que se puedan eliminar?</li>
+                        <li>¿Faltan pasos críticos en el flujo?</li>
+                        <li>¿Las transiciones entre estados son claras?</li>
+                    </ul>
+                </div>
+                
+                <div class="tip-box">
+                    <h4><i class="fas fa-lightbulb"></i> Técnica: Walkthrough Guiado</h4>
+                    <p>Pide al cliente que <strong>él mismo</strong> realice una tarea en el prototipo mientras piensa en voz alta. Esto revela problemas de usabilidad que quizás no mencionaría directamente.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 12: Documentación del Feedback -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-file-alt"></i> Documentación del Feedback</h2>
+            </div>
+            <div class="slide-content">
+                <p>El feedback sin documentación se pierde. Aprende a capturar información efectivamente:</p>
+                
+                <h3>📝 ¿Qué documentar?</h3>
+                
+                <div class="info-box">
+                    <h4>Información Esencial:</h4>
+                    <ul>
+                        <li><strong>Fecha y asistentes:</strong> Quién estuvo presente</li>
+                        <li><strong>Requerimientos validados:</strong> Lista de lo que fue aprobado</li>
+                        <li><strong>Cambios solicitados:</strong> Modificaciones pedidas con prioridad</li>
+                        <li><strong>Nuevos requerimientos:</strong> Funcionalidades no contempladas</li>
+                        <li><strong>Decisiones tomadas:</strong> Acuerdos alcanzados</li>
+                        <li><strong>Preocupaciones:</strong> Dudas o riesgos identificados</li>
+                        <li><strong>Próximos pasos:</strong> Acciones y responsables</li>
+                    </ul>
+                </div>
+                
+                <h3>📊 Plantilla de Documentación:</h3>
+                
+                <div class="example-dialog">
+                    <h4>Ejemplo de Acta de Reunión:</h4>
+                    <div style="background: white; padding: 20px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Fira Code', monospace; font-size: 0.9rem;">
+                        <p><strong>ACTA DE VALIDACIÓN DE PROTOTIPO</strong></p>
+                        <p>Fecha: 11/02/2026</p>
+                        <p>Proyecto: Sistema de Gestión de Inventario</p>
+                        <p>Asistentes: Juan Pérez (Cliente), María García (Desarrolladora)</p>
+                        <hr>
+                        <p><strong>FUNCIONALIDADES VALIDADAS ✓</strong></p>
+                        <ul>
+                            <li>[✓] Dashboard principal con métricas</li>
+                            <li>[✓] Registro de productos</li>
+                            <li>[✓] Alertas de stock bajo</li>
+                        </ul>
+                        <hr>
+                        <p><strong>CAMBIOS SOLICITADOS</strong></p>
+                        <ul>
+                            <li>[Alta] Añadir campo "Ubicación física" en productos</li>
+                            <li>[Media] Cambiar colores del dashboard (conflicto con marca)</li>
+                            <li>[Baja] Agregar opción de exportar PDF</li>
+                        </ul>
+                        <hr>
+                        <p><strong>NUEVOS REQUERIMIENTOS</strong></p>
+                        <ul>
+                            <li>Sistema de escaneo de códigos de barras</li>
+                            <li>Integración con sistema contable actual</li>
+                        </ul>
+                        <hr>
+                        <p><strong>PRÓXIMOS PASOS</strong></p>
+                        <ul>
+                            <li>María: Implementar cambios de alta prioridad (5 días)</li>
+                            <li>Juan: Enviar especificaciones de integración contable</li>
+                            <li>Ambos: Reunión de seguimiento el 18/02/2026</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <p><strong>⚠️ Importante:</strong> Envía el acta de reunión al cliente <strong>dentro de las 24 horas</strong> para confirmar que capturaste todo correctamente.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 13: Cierre de la Entrevista -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-handshake"></i> Cierre Efectivo de la Entrevista</h2>
+            </div>
+            <div class="slide-content">
+                <p>Un buen cierre asegura claridad y compromiso para los próximos pasos:</p>
+                
+                <div class="step-list">
+                    <div class="step-item">
+                        <h4>Resume los Puntos Clave</h4>
+                        <p>"Perfecto, entonces hemos validado X, Y y Z. Necesitamos hacer ajustes en A y B."</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Confirma Prioridades</h4>
+                        <p>"¿Estamos de acuerdo en que la integración con el sistema contable es lo más urgente?"</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Define Próximos Pasos</h4>
+                        <p>"Voy a implementar estos cambios y te envío una actualización el próximo viernes."</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Establece Siguiente Reunión</h4>
+                        <p>"¿Te parece bien que nos reunamos nuevamente el 18 de febrero para revisar los avances?"</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Abre Canal de Comunicación</h4>
+                        <p>"Si surge algo urgente o tienes preguntas, no dudes en contactarme por email o WhatsApp."</p>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Agradece el Tiempo</h4>
+                        <p>"Muchas gracias por tu tiempo y por el feedback tan valioso. Esto nos ayuda mucho a crear exactamente lo que necesitas."</p>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4>✅ Checklist de Cierre:</h4>
+                    <ul class="checklist">
+                        <li>Todos los puntos importantes fueron cubiertos</li>
+                        <li>Cliente comprende los próximos pasos</li>
+                        <li>Hay fechas concretas establecidas</li>
+                        <li>Ambas partes tienen claras sus responsabilidades</li>
+                        <li>Queda documentado quién hace qué y cuándo</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 14: Errores Comunes -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Errores Comunes a Evitar</h2>
+            </div>
+            <div class="slide-content">
+                <div class="warning-box">
+                    <h4>❌ Error #1: No Prepararse Adecuadamente</h4>
+                    <p><strong>Problema:</strong> Llegar sin haber revisado requerimientos o con el prototipo sin probar</p>
+                    <p><strong>Consecuencia:</strong> Pérdida de credibilidad y tiempo</p>
+                    <p><strong>Solución:</strong> Dedica al menos 1 hora antes para revisar y preparar todo</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>❌ Error #2: Usar Jerga Técnica Excesiva</h4>
+                    <p><strong>Problema:</strong> "Implementamos un REST API con autenticación JWT y Redux para el state management"</p>
+                    <p><strong>Consecuencia:</strong> Cliente confundido, no puede dar feedback útil</p>
+                    <p><strong>Solución:</strong> Habla en términos de beneficios y funcionalidades, no implementación</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>❌ Error #3: Ponerse a la Defensiva</h4>
+                    <p><strong>Problema:</strong> Justificar cada decisión en lugar de escuchar</p>
+                    <p><strong>Consecuencia:</strong> Cliente no se siente escuchado, relación tensa</p>
+                    <p><strong>Solución:</strong> Acepta el feedback con apertura, valida preocupaciones</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>❌ Error #4: No Tomar Notas</h4>
+                    <p><strong>Problema:</strong> Confiar en la memoria para recordar todo</p>
+                    <p><strong>Consecuencia:</strong> Feedback perdido, necesidad de repetir reuniones</p>
+                    <p><strong>Solución:</strong> Documenta en tiempo real o graba la sesión (con permiso)</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>❌ Error #5: No Gestionar Expectativas</h4>
+                    <p><strong>Problema:</strong> Prometer cambios sin considerar tiempo/complejidad</p>
+                    <p><strong>Consecuencia:</strong> Incumplimiento de promesas, cliente frustrado</p>
+                    <p><strong>Solución:</strong> Sé realista sobre tiempos y limitaciones</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>❌ Error #6: Ignorar el Lenguaje Corporal</h4>
+                    <p><strong>Problema:</strong> No percibir señales de confusión o desacuerdo</p>
+                    <p><strong>Consecuencia:</strong> Cliente dice "sí" pero realmente piensa "no"</p>
+                    <p><strong>Solución:</strong> Observa expresiones, pregunta "¿Alguna duda hasta aquí?"</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 15: Tips para Reuniones Virtuales -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-video"></i> Tips para Entrevistas Virtuales</h2>
+            </div>
+            <div class="slide-content">
+                <p>Las reuniones virtuales tienen desafíos particulares. Aquí cómo superarlos:</p>
+                
+                <h3>🎥 Antes de la Reunión:</h3>
+                <ul class="checklist">
+                    <li>Prueba tu conexión a internet</li>
+                    <li>Verifica que cámara y micrófono funcionen</li>
+                    <li>Cierra aplicaciones innecesarias</li>
+                    <li>Prepara pantalla compartida con prototipo abierto</li>
+                    <li>Ten plan B si falla la conexión (llamada telefónica)</li>
+                    <li>Elige un espacio con buena iluminación y sin ruido</li>
+                </ul>
+                
+                <h3>💻 Durante la Reunión:</h3>
+                <div class="do-dont-container">
+                    <div class="do-box">
+                        <h4><i class="fas fa-check-circle"></i> Mejores Prácticas:</h4>
+                        <ul>
+                            <li>Mantén tu cámara encendida</li>
+                            <li>Mira a la cámara al hablar</li>
+                            <li>Comparte solo la ventana necesaria</li>
+                            <li>Usa "modo presentador" si disponible</li>
+                            <li>Pide confirmación frecuente: "¿Se ve bien?"</li>
+                            <li>Graba la sesión (con permiso)</li>
+                            <li>Usa herramientas de anotación</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="dont-box">
+                        <h4><i class="fas fa-times-circle"></i> Evita:</h4>
+                        <ul>
+                            <li>Compartir todo tu escritorio</li>
+                            <li>Tener notificaciones visibles</li>
+                            <li>Hablar demasiado rápido</li>
+                            <li>Múltiples personas hablando a la vez</li>
+                            <li>Ignorar la ventana de chat</li>
+                            <li>Asumir que todos ven lo mismo</li>
+                            <li>Olvidar hacer pausas para preguntas</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="tip-box">
+                    <h4><i class="fas fa-magic"></i> Herramientas Recomendadas:</h4>
+                    <ul>
+                        <li><strong>Zoom / Google Meet:</strong> Para videollamadas</li>
+                        <li><strong>Loom:</strong> Para grabar demos asíncronas</li>
+                        <li><strong>Miro / Figma:</strong> Para colaboración visual en tiempo real</li>
+                        <li><strong>Google Docs:</strong> Para notas colaborativas durante la reunión</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <p><strong>💡 Pro Tip:</strong> Si presentas en Zoom/Meet, activa "Inmersive View" o "Virtual Background" con tu pantalla compartida para que aparezca tu cara junto al prototipo. Esto mantiene conexión visual mientras demuestras.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 16: Después de la Entrevista -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-tasks"></i> Después de la Entrevista</h2>
+            </div>
+            <div class="slide-content">
+                <p>El trabajo no termina cuando la reunión acaba. Las acciones post-entrevista son críticas:</p>
+                
+                <div class="step-list">
+                    <div class="step-item">
+                        <h4>Envía el Acta (24 horas)</h4>
+                        <p>Documenta y envía resumen de lo discutido, decisiones y próximos pasos</p>
+                        <span class="badge-custom">Máximo 24h después</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Prioriza Cambios</h4>
+                        <p>Clasifica feedback en: Crítico, Importante, Deseable, Nice-to-have</p>
+                        <span class="badge-custom">Mismo día</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Estima Esfuerzo</h4>
+                        <p>Calcula tiempo necesario para implementar cada cambio solicitado</p>
+                        <span class="badge-custom">1-2 días después</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Actualiza Documentación</h4>
+                        <p>Modifica especificaciones de requerimientos según feedback</p>
+                        <span class="badge-custom">2-3 días después</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Planifica Iteración</h4>
+                        <p>Crea tareas en tu sistema de gestión (Trello, Jira, etc.)</p>
+                        <span class="badge-custom">Dentro de la semana</span>
+                    </div>
+                    
+                    <div class="step-item">
+                        <h4>Mantén Comunicación</h4>
+                        <p>Envía actualizaciones de progreso sin esperar a la próxima reunión</p>
+                        <span class="badge-custom">Semanalmente</span>
+                    </div>
+                </div>
+                
+                <div class="success-box">
+                    <h4>📧 Template de Email Post-Reunión:</h4>
+                    <div style="background: white; padding: 20px; border: 2px solid #4facfe; border-radius: 10px; margin-top: 15px;">
+                        <p><strong>Asunto:</strong> Resumen reunión - Sistema Inventario - 11/02/2026</p>
+                        <hr>
+                        <p>Hola [Nombre],</p>
+                        <p>Gracias por tu tiempo hoy. Adjunto encontrarás el acta detallada de nuestra reunión.</p>
+                        <p><strong>Resumen rápido:</strong></p>
+                        <ul>
+                            <li>✅ 3 funcionalidades validadas</li>
+                            <li>📝 5 cambios solicitados (2 alta prioridad)</li>
+                            <li>🆕 2 nuevos requerimientos identificados</li>
+                        </ul>
+                        <p><strong>Próximos pasos:</strong></p>
+                        <ul>
+                            <li>Implementaré cambios de alta prioridad esta semana</li>
+                            <li>Te envío actualización el viernes</li>
+                            <li>Próxima reunión: 18/02 a las 10:00</li>
+                        </ul>
+                        <p>Por favor confirma que el resumen es correcto.</p>
+                        <p>Saludos,<br>[Tu nombre]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 17: Buenas Prácticas Resumen -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-star"></i> Resumen de Buenas Prácticas</h2>
+            </div>
+            <div class="slide-content">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="success-box">
+                            <h4><i class="fas fa-thumbs-up"></i> SIEMPRE haz esto:</h4>
+                            <ul>
+                                <li>✅ Prepárate con anticipación</li>
+                                <li>✅ Establece agenda clara</li>
+                                <li>✅ Escucha más de lo que hablas</li>
+                                <li>✅ Toma notas visiblemente</li>
+                                <li>✅ Confirma comprensión frecuentemente</li>
+                                <li>✅ Usa lenguaje no técnico</li>
+                                <li>✅ Agradece el feedback</li>
+                                <li>✅ Documenta todo</li>
+                                <li>✅ Define próximos pasos claros</li>
+                                <li>✅ Haz seguimiento puntual</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="warning-box">
+                            <h4><i class="fas fa-ban"></i> NUNCA hagas esto:</h4>
+                            <ul>
+                                <li>❌ Llegar sin preparación</li>
+                                <li>❌ Monopolizar la conversación</li>
+                                <li>❌ Ponerte a la defensiva</li>
+                                <li>❌ Usar jerga técnica excesiva</li>
+                                <li>❌ Ignorar señales de confusión</li>
+                                <li>❌ Prometer sin evaluar viabilidad</li>
+                                <li>❌ Interrumpir constantemente</li>
+                                <li>❌ Olvidar enviar seguimiento</li>
+                                <li>❌ Asumir comprensión sin confirmar</li>
+                                <li>❌ Desestimar ideas del cliente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 30px;">
+                    <h4><i class="fas fa-lightbulb"></i> Recordatorio Final:</h4>
+                    <p style="font-size: 1.2rem; text-align: center; margin: 20px 0;">
+                        <strong>"La entrevista perfecta es aquella donde el cliente se siente escuchado, comprendido y confiado en que estás construyendo exactamente lo que necesita."</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 18: Cuestionario -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2><i class="fas fa-graduation-cap"></i> Cuestionario de Evaluación</h2>
+            </div>
+            <div class="slide-content" style="max-height: 75vh; overflow-y: auto;">
+                <form id="quizForm">
+                    
+                    <div class="quiz-question">
+                        <h4>1. ¿Cuál es el principal objetivo de una entrevista de validación de prototipo?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q1" value="a" required>
+                            Impresionar al cliente con tecnología
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q1" value="b">
+                            Confirmar que el prototipo resuelve las necesidades reales del cliente
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q1" value="c">
+                            Mostrar todas las funcionalidades posibles
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q1" value="d">
+                            Vender servicios adicionales
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>2. ¿Cuándo debes enviar el acta de reunión al cliente?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q2" value="a" required>
+                            Una semana después
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q2" value="b">
+                            Dentro de las 24 horas
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q2" value="c">
+                            No es necesario enviarla
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q2" value="d">
+                            Al final del proyecto
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>3. ¿Cuál es una característica de las preguntas abiertas?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q3" value="a" required>
+                            Solo permiten respuestas "sí" o "no"
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q3" value="b">
+                            Permiten explorar y obtener información detallada
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q3" value="c">
+                            Deben evitarse en entrevistas
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q3" value="d">
+                            Solo se usan al final de la reunión
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>4. ¿Qué debes hacer cuando el cliente critica tu prototipo?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q4" value="a" required>
+                            Defender tus decisiones técnicas
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q4" value="b">
+                            Agradecer, escuchar, indagar y ofrecer soluciones
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q4" value="c">
+                            Ignorar el comentario
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q4" value="d">
+                            Explicar por qué está equivocado
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>5. ¿Cuál NO es una buena práctica al demostrar un prototipo?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q5" value="a" required>
+                            Contar una historia con casos de uso reales
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q5" value="b">
+                            Permitir interrupciones y preguntas
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q5" value="c">
+                            Mostrar el código fuente y arquitectura técnica
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q5" value="d">
+                            Usar datos realistas
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>6. ¿Qué significa "escucha activa"?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q6" value="a" required>
+                            Oír lo que dice el cliente sin interrumpir
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q6" value="b">
+                            Parafrasear, confirmar comprensión y tomar notas visibles
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q6" value="c">
+                            Grabar toda la conversación
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q6" value="d">
+                            Hacer muchas preguntas seguidas
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>7. ¿Cuánto tiempo aproximado debe durar una entrevista de validación?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q7" value="a" required>
+                            15 minutos
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q7" value="b">
+                            30-45 minutos
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q7" value="c">
+                            2-3 horas
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q7" value="d">
+                            Todo el día
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>8. ¿Qué debe incluir siempre el cierre de una entrevista?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q8" value="a" required>
+                            Solo despedirse cordialmente
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q8" value="b">
+                            Resumen de puntos clave y próximos pasos con fechas concretas
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q8" value="c">
+                            Solicitud de pago inmediato
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q8" value="d">
+                            Prometer que todo estará listo pronto
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>9. ¿Por qué es importante usar la técnica del "¿Por qué?"?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q9" value="a" required>
+                            Para cuestionar las decisiones del cliente
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q9" value="b">
+                            Para entender el problema subyacente detrás de una solicitud
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q9" value="c">
+                            Para llenar tiempo en la reunión
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q9" value="d">
+                            Para demostrar conocimiento técnico
+                        </label>
+                    </div>
+                    
+                    <div class="quiz-question">
+                        <h4>10. ¿Qué tipo de lenguaje debes evitar en una entrevista con cliente?</h4>
+                        <label class="quiz-option">
+                            <input type="radio" name="q10" value="a" required>
+                            Lenguaje claro y simple
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q10" value="b">
+                            Jerga técnica excesiva como "REST API", "JWT", "Redux"
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q10" value="c">
+                            Términos de negocio del cliente
+                        </label>
+                        <label class="quiz-option">
+                            <input type="radio" name="q10" value="d">
+                            Preguntas abiertas
+                        </label>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button type="submit" class="submit-quiz-btn">
+                            <i class="fas fa-check-circle"></i> Evaluar Respuestas
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Slide 19: Final -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="icon">
+                    <i class="fas fa-trophy" style="color: #f5576c;"></i>
+                </div>
+                <h1>¡Excelente Trabajo!</h1>
+            </div>
+            <div class="slide-content" style="text-align: center; font-size: 1.2rem;">
+                <p style="font-size: 1.4rem; margin: 30px 0;">
+                    Has completado el curso sobre <strong>Entrevistas con Clientes</strong> para validación de prototipos.
+                </p>
+                
+                <div class="success-box">
+                    <h4>🎯 Ahora puedes:</h4>
+                    <ul style="text-align: left;">
+                        <li>Preparar y estructurar entrevistas efectivas</li>
+                        <li>Demostrar prototipos de manera profesional</li>
+                        <li>Hacer preguntas que revelan requerimientos reales</li>
+                        <li>Validar funcionalidades sistemáticamente</li>
+                        <li>Manejar objeciones constructivamente</li>
+                        <li>Documentar y dar seguimiento apropiadamente</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box">
+                    <h4>💡 Recuerda:</h4>
+                    <p style="text-align: left;">"La mejor entrevista es aquella donde el cliente se siente escuchado y tú obtenes información clara para construir exactamente lo que necesita. No se trata de vender tu solución, sino de co-crear la solución correcta."</p>
+                </div>
+                
+                <div class="tip-box">
+                    <h4>📚 Próximos Pasos:</h4>
+                    <ul style="text-align: left;">
+                        <li>Practica estas técnicas en tu próximo proyecto</li>
+                        <li>Crea tu propia plantilla de entrevista</li>
+                        <li>Documenta lecciones aprendidas</li>
+                        <li>Refina tu proceso continuamente</li>
+                    </ul>
+                </div>
+                
+                <p style="font-size: 1.3rem; margin-top: 40px; color: #f5576c; font-weight: 700;">
+                    <i class="fas fa-users"></i> ¡Mucho éxito en tus entrevistas con clientes!
+                </p>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Navigation Buttons -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+            <i class="fas fa-arrow-left"></i> Anterior
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+            Siguiente <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        // Respuestas correctas
+        const correctAnswers = {
+            q1: 'b', q2: 'b', q3: 'b', q4: 'b', q5: 'c',
+            q6: 'b', q7: 'b', q8: 'b', q9: 'b', q10: 'b'
+        };
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            slides[currentSlide].scrollTop = 0;
+            
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        
+        // Quiz evaluation
+        document.getElementById('quizForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let correct = 0;
+            let total = Object.keys(correctAnswers).length;
+            
+            for (let question in correctAnswers) {
+                const selected = document.querySelector(`input[name="${question}"]:checked`);
+                if (selected && selected.value === correctAnswers[question]) {
+                    correct++;
+                }
+            }
+            
+            const percentage = (correct / total) * 100;
+            let message, icon, color;
+            
+            if (percentage === 100) {
+                message = '¡Perfecto! 🎉 Dominas las técnicas de entrevista.';
+                icon = 'success';
+                color = '#4facfe';
+            } else if (percentage >= 70) {
+                message = '¡Muy bien! 👍 Tienes buen conocimiento del tema.';
+                icon = 'success';
+                color = '#4facfe';
+            } else if (percentage >= 50) {
+                message = '¡Buen intento! 📚 Repasa los conceptos clave.';
+                icon = 'warning';
+                color = '#f5576c';
+            } else {
+                message = 'Necesitas repasar el material 📖';
+                icon = 'error';
+                color = '#ff6161';
+            }
+            
+            Swal.fire({
+                title: `Resultado: ${correct}/${total}`,
+                html: `
+                    <div style="font-size: 3rem; margin: 20px 0; color: ${color};">
+                        ${percentage.toFixed(0)}%
+                    </div>
+                    <p style="font-size: 1.2rem;">${message}</p>
+                `,
+                icon: icon,
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: color,
+                customClass: {
+                    popup: 'animate__animated animate__zoomIn'
+                }
+            });
+        });
+        
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
