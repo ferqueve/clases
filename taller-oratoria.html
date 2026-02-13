@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oratoria: El Arte de Hablar en Público</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .content-section {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        
+        .card-custom {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .card-header-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .quiz-option {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .quiz-option:hover {
+            background: #f8f9fa;
+            border-color: var(--accent-color);
+            transform: translateX(5px);
+        }
+        
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: var(--success-color);
+        }
+        
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: var(--secondary-color);
+        }
+        
+        .exercise-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: white;
+            color: var(--accent-color);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .progress-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tip-box {
+            background: #fff3cd;
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header animate__animated animate__fadeInDown">
+            <h1><i class="fas fa-microphone-alt"></i> Oratoria</h1>
+            <p class="lead">El Arte de Hablar en Público con Confianza y Persuasión</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-buttons animate__animated animate__fadeInUp">
+            <button class="nav-btn btn btn-primary" onclick="showSection('intro')">
+                <i class="fas fa-home"></i> Introducción
+            </button>
+            <button class="nav-btn btn btn-info" onclick="showSection('bosquejo')">
+                <i class="fas fa-list-ol"></i> Bosquejo
+            </button>
+            <button class="nav-btn btn btn-success" onclick="showSection('ademanes')">
+                <i class="fas fa-hands"></i> Ademanes
+            </button>
+            <button class="nav-btn btn btn-warning" onclick="showSection('ejercicios')">
+                <i class="fas fa-theater-masks"></i> Ejercicios
+            </button>
+            <button class="nav-btn btn btn-danger" onclick="showSection('quiz')">
+                <i class="fas fa-question-circle"></i> Cuestionario
+            </button>
+        </div>
+
+        <!-- Sección: Introducción -->
+        <div id="intro" class="content-section active animate__animated animate__fadeIn">
+            <h2 class="section-title"><i class="fas fa-book-open"></i> ¿Qué es la Oratoria?</h2>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="lead">La oratoria es el <span class="highlight">arte de hablar con elocuencia</span> ante un público, con el objetivo de informar, persuadir, emocionar o entretener.</p>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card-custom">
+                        <div class="card-body text-center">
+                            <div class="icon-box mx-auto" style="background: #e3f2fd;">
+                                <i class="fas fa-brain" style="color: #2196F3;"></i>
+                            </div>
+                            <h5>Preparación Mental</h5>
+                            <p>Confianza, claridad de ideas y control del nerviosismo</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-custom">
+                        <div class="card-body text-center">
+                            <div class="icon-box mx-auto" style="background: #f3e5f5;">
+                                <i class="fas fa-comments" style="color: #9C27B0;"></i>
+                            </div>
+                            <h5>Comunicación Efectiva</h5>
+                            <p>Mensaje claro, estructurado y adaptado al público</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-custom">
+                        <div class="card-body text-center">
+                            <div class="icon-box mx-auto" style="background: #fff3e0;">
+                                <i class="fas fa-users" style="color: #FF9800;"></i>
+                            </div>
+                            <h5>Conexión con la Audiencia</h5>
+                            <p>Empatía, contacto visual y lenguaje corporal</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-box mt-4">
+                <strong><i class="fas fa-lightbulb"></i> Dato importante:</strong> El 93% de la comunicación es no verbal: 55% lenguaje corporal y 38% tono de voz.
+            </div>
+
+            <h3 class="mt-5 mb-4">Elementos Fundamentales de la Oratoria</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-volume-up"></i> Aspectos Vocales
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                <li><strong>Volumen:</strong> Suficiente para que todos escuchen</li>
+                                <li><strong>Velocidad:</strong> Ni muy rápido ni muy lento</li>
+                                <li><strong>Entonación:</strong> Variación para evitar monotonía</li>
+                                <li><strong>Pausas:</strong> Para enfatizar y dar tiempo de reflexión</li>
+                                <li><strong>Articulación:</strong> Pronunciación clara y precisa</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-user"></i> Aspectos Corporales
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                <li><strong>Postura:</strong> Erguida y segura</li>
+                                <li><strong>Contacto visual:</strong> Con toda la audiencia</li>
+                                <li><strong>Expresiones faciales:</strong> Acordes al mensaje</li>
+                                <li><strong>Gestos:</strong> Naturales y con propósito</li>
+                                <li><strong>Desplazamiento:</strong> Controlado y significativo</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Bosquejo -->
+        <div id="bosquejo" class="content-section">
+            <h2 class="section-title"><i class="fas fa-list-ol"></i> El Bosquejo: Estructura de tu Discurso</h2>
+            
+            <p class="lead">Un bosquejo es el <span class="highlight">esquema organizativo</span> que guía tu presentación, asegurando coherencia y fluidez.</p>
+
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-sitemap"></i> Estructura Clásica de un Discurso
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h5><span class="step-number">1</span>Introducción</h5>
+                                    <p><strong>10-15% del tiempo</strong></p>
+                                    <ul>
+                                        <li>Saludo y presentación</li>
+                                        <li>Captar atención (anécdota, pregunta, estadística)</li>
+                                        <li>Presentar el tema</li>
+                                        <li>Establecer objetivo</li>
+                                        <li>Adelantar estructura</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5><span class="step-number">2</span>Desarrollo</h5>
+                                    <p><strong>70-80% del tiempo</strong></p>
+                                    <ul>
+                                        <li>Punto principal 1 + evidencias</li>
+                                        <li>Punto principal 2 + ejemplos</li>
+                                        <li>Punto principal 3 + datos</li>
+                                        <li>Transiciones claras</li>
+                                        <li>Argumentos sólidos</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5><span class="step-number">3</span>Conclusión</h5>
+                                    <p><strong>10-15% del tiempo</strong></p>
+                                    <ul>
+                                        <li>Señalar el cierre</li>
+                                        <li>Resumir puntos clave</li>
+                                        <li>Reforzar mensaje principal</li>
+                                        <li>Llamado a la acción</li>
+                                        <li>Cierre memorable</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="mt-5 mb-4">Tipos de Bosquejo</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-stream"></i> Bosquejo Temático
+                        </div>
+                        <div class="card-body">
+                            <p>Organizado por <strong>temas o ideas principales</strong></p>
+                            <p><strong>Ejemplo: "Beneficios del ejercicio"</strong></p>
+                            <ol>
+                                <li>Salud física
+                                    <ul>
+                                        <li>Fortalece el corazón</li>
+                                        <li>Controla el peso</li>
+                                    </ul>
+                                </li>
+                                <li>Salud mental
+                                    <ul>
+                                        <li>Reduce estrés</li>
+                                        <li>Mejora el ánimo</li>
+                                    </ul>
+                                </li>
+                                <li>Longevidad
+                                    <ul>
+                                        <li>Aumenta esperanza de vida</li>
+                                    </ul>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-clock"></i> Bosquejo Cronológico
+                        </div>
+                        <div class="card-body">
+                            <p>Organizado por <strong>secuencia temporal</strong></p>
+                            <p><strong>Ejemplo: "Historia de Internet"</strong></p>
+                            <ol>
+                                <li>Orígenes (1960s)
+                                    <ul>
+                                        <li>ARPANET</li>
+                                        <li>Primeros protocolos</li>
+                                    </ul>
+                                </li>
+                                <li>Expansión (1980s-1990s)
+                                    <ul>
+                                        <li>World Wide Web</li>
+                                        <li>Navegadores</li>
+                                    </ul>
+                                </li>
+                                <li>Era moderna (2000+)
+                                    <ul>
+                                        <li>Redes sociales</li>
+                                        <li>Internet móvil</li>
+                                    </ul>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-balance-scale"></i> Bosquejo Problema-Solución
+                        </div>
+                        <div class="card-body">
+                            <p>Presenta un <strong>problema y propone soluciones</strong></p>
+                            <ol>
+                                <li>Planteamiento del problema</li>
+                                <li>Causas y consecuencias</li>
+                                <li>Propuesta de soluciones</li>
+                                <li>Beneficios de la solución</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-map-marked-alt"></i> Bosquejo Espacial
+                        </div>
+                        <div class="card-body">
+                            <p>Organizado por <strong>ubicación geográfica</strong></p>
+                            <ol>
+                                <li>Región Norte</li>
+                                <li>Región Centro</li>
+                                <li>Región Sur</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-box mt-4">
+                <strong><i class="fas fa-star"></i> Consejo profesional:</strong> Un buen bosquejo debe permitirte reconstruir tu discurso completo con solo mirarlo. Usa palabras clave, no oraciones completas.
+            </div>
+        </div>
+
+        <!-- Sección: Ademanes -->
+        <div id="ademanes" class="content-section">
+            <h2 class="section-title"><i class="fas fa-hands"></i> Ademanes: El Lenguaje del Cuerpo</h2>
+            
+            <p class="lead">Los ademanes son <span class="highlight">movimientos corporales</span> que complementan y refuerzan tu mensaje verbal.</p>
+
+            <h3 class="mt-4 mb-4">Tipos de Ademanes</h3>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-exclamation-triangle"></i> Ademanes Enfáticos
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3"><strong>Objetivo:</strong> Reforzar, destacar y dar énfasis a ideas importantes</p>
+                            
+                            <h6><i class="fas fa-hand-point-right"></i> Características:</h6>
+                            <ul>
+                                <li>Movimientos fuertes y decididos</li>
+                                <li>Mayor amplitud gestual</li>
+                                <li>Sincronizados con palabras clave</li>
+                                <li>Expresan convicción y seguridad</li>
+                            </ul>
+
+                            <h6 class="mt-3"><i class="fas fa-check-circle"></i> Ejemplos:</h6>
+                            <div class="alert alert-info">
+                                <strong>✊ Puño cerrado:</strong> "¡Debemos actuar AHORA!"<br>
+                                <strong>👆 Dedo índice señalando arriba:</strong> "Este es EL punto más importante"<br>
+                                <strong>✋ Palma hacia abajo, movimiento descendente:</strong> "Esto es DEFINITIVO"<br>
+                                <strong>👊 Golpe en la mesa/aire:</strong> "¡No hay vuelta atrás!"<br>
+                                <strong>🤝 Palmas abiertas hacia adelante:</strong> "¡Es crucial entender esto!"
+                            </div>
+
+                            <div class="tip-box">
+                                <strong>Cuándo usar:</strong> En frases clave, al reforzar argumentos, al expresar urgencia o importancia.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <i class="fas fa-paint-brush"></i> Ademanes Descriptivos
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3"><strong>Objetivo:</strong> Ilustrar, mostrar y hacer visible conceptos abstractos</p>
+                            
+                            <h6><i class="fas fa-hand-point-right"></i> Características:</h6>
+                            <ul>
+                                <li>Movimientos suaves y fluidos</li>
+                                <li>Dibujan formas en el aire</li>
+                                <li>Representan tamaños y direcciones</li>
+                                <li>Facilitan la visualización</li>
+                            </ul>
+
+                            <h6 class="mt-3"><i class="fas fa-check-circle"></i> Ejemplos:</h6>
+                            <div class="alert alert-success">
+                                <strong>↔️ Manos separándose:</strong> "La brecha es cada vez mayor..."<br>
+                                <strong>📏 Manos paralelas:</strong> "Imaginen una línea que va desde aquí..."<br>
+                                <strong>🔄 Movimiento circular:</strong> "El ciclo se repite continuamente"<br>
+                                <strong>📈 Mano ascendente:</strong> "El crecimiento fue exponencial"<br>
+                                <strong>🤏 Dedos juntándose:</strong> "Un detalle pequeño pero significativo"
+                            </div>
+
+                            <div class="tip-box">
+                                <strong>Cuándo usar:</strong> Al explicar procesos, describir objetos, comparar tamaños, mostrar secuencias.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="mt-5 mb-4">Principios del Lenguaje Corporal Efectivo</h3>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card-custom text-center">
+                        <div class="card-body">
+                            <div class="icon-box mx-auto" style="background: #e8f5e9;">
+                                <i class="fas fa-sync-alt" style="color: #4CAF50;"></i>
+                            </div>
+                            <h6>Naturalidad</h6>
+                            <p>Los gestos deben fluir de manera espontánea y coherente con tu estilo</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card-custom text-center">
+                        <div class="card-body">
+                            <div class="icon-box mx-auto" style="background: #e3f2fd;">
+                                <i class="fas fa-bullseye" style="color: #2196F3;"></i>
+                            </div>
+                            <h6>Propósito</h6>
+                            <p>Cada gesto debe tener una razón y reforzar el mensaje verbal</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card-custom text-center">
+                        <div class="card-body">
+                            <div class="icon-box mx-auto" style="background: #fce4ec;">
+                                <i class="fas fa-balance-scale" style="color: #E91E63;"></i>
+                            </div>
+                            <h6>Moderación</h6>
+                            <p>Evita gesticular en exceso; el abuso distrae y pierde efectividad</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card-custom text-center">
+                        <div class="card-body">
+                            <div class="icon-box mx-auto" style="background: #fff3e0;">
+                                <i class="fas fa-expand-arrows-alt" style="color: #FF9800;"></i>
+                            </div>
+                            <h6>Amplitud</h6>
+                            <p>Adapta el tamaño de tus gestos al tamaño de la audiencia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning mt-4">
+                <h5><i class="fas fa-times-circle"></i> Errores Comunes a Evitar</h5>
+                <ul class="mb-0">
+                    <li>❌ Manos en los bolsillos o cruzadas (indica inseguridad)</li>
+                    <li>❌ Gestos repetitivos sin significado (muletillas corporales)</li>
+                    <li>❌ Tocarse el rostro o cabello constantemente</li>
+                    <li>❌ Apuntar con el dedo de forma acusatoria</li>
+                    <li>❌ Dar la espalda a la audiencia</li>
+                    <li>❌ Movimientos bruscos o descontrolados</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sección: Ejercicios de Rol -->
+        <div id="ejercicios" class="content-section">
+            <h2 class="section-title"><i class="fas fa-theater-masks"></i> Ejercicios de Juego de Rol</h2>
+            
+            <p class="lead">Practiquen sus habilidades oratorias con estos <span class="highlight">ejercicios interactivos</span> diseñados para aplicar los conceptos aprendidos.</p>
+
+            <!-- Ejercicio 1 -->
+            <div class="exercise-card animate__animated animate__fadeInLeft">
+                <h3><i class="fas fa-trophy"></i> Ejercicio 1: El Vendedor Persuasivo</h3>
+                
+                <div class="bg-white text-dark p-4 rounded mt-3">
+                    <h5><i class="fas fa-bullseye"></i> Objetivo</h5>
+                    <p>Practicar el uso de <strong>ademanes enfáticos</strong> y estructura de bosquejo para persuadir.</p>
+
+                    <h5 class="mt-4"><i class="fas fa-tasks"></i> Instrucciones</h5>
+                    <ol>
+                        <li><strong>Formación de grupos:</strong> Dividan la clase en parejas</li>
+                        <li><strong>Asignación de roles:</strong> 
+                            <ul>
+                                <li>Estudiante A: Vendedor</li>
+                                <li>Estudiante B: Cliente potencial (escéptico)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Preparación (5 minutos):</strong> El vendedor debe crear un bosquejo breve para vender un producto inusual elegido al azar:
+                            <ul>
+                                <li>Un lápiz que nunca se gasta</li>
+                                <li>Un paraguas que cambia de color según el clima</li>
+                                <li>Zapatos que te hacen invisible por 5 segundos</li>
+                                <li>Un reloj que atrasa el tiempo 10 minutos</li>
+                                <li>Audífonos que traducen idiomas instantáneamente</li>
+                            </ul>
+                        </li>
+                        <li><strong>Presentación (3 minutos):</strong> El vendedor presenta su producto usando:
+                            <ul>
+                                <li>Introducción atractiva con pregunta o anécdota</li>
+                                <li>3 beneficios principales (desarrollo)</li>
+                                <li>Ademanes enfáticos para destacar características clave</li>
+                                <li>Conclusión con llamado a la acción</li>
+                            </ul>
+                        </li>
+                        <li><strong>Retroalimentación (2 minutos):</strong> El cliente y la clase comentan:
+                            <ul>
+                                <li>¿Los ademanes fueron efectivos?</li>
+                                <li>¿El bosquejo estaba claro?</li>
+                                <li>¿El mensaje fue persuasivo?</li>
+                            </ul>
+                        </li>
+                        <li><strong>Intercambio:</strong> Cambian roles y repiten con otro producto</li>
+                    </ol>
+
+                    <div class="alert alert-info mt-3">
+                        <strong><i class="fas fa-star"></i> Criterios de evaluación:</strong>
+                        <ul class="mb-0">
+                            <li>✓ Uso apropiado de ademanes enfáticos (mínimo 5 gestos intencionados)</li>
+                            <li>✓ Estructura clara: introducción, desarrollo, conclusión</li>
+                            <li>✓ Contacto visual constante</li>
+                            <li>✓ Tono de voz variado y entusiasta</li>
+                            <li>✓ Capacidad de persuasión y creatividad</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ejercicio 2 -->
+            <div class="exercise-card animate__animated animate__fadeInRight" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                <h3><i class="fas fa-chalkboard-teacher"></i> Ejercicio 2: El Explicador Visual</h3>
+                
+                <div class="bg-white text-dark p-4 rounded mt-3">
+                    <h5><i class="fas fa-bullseye"></i> Objetivo</h5>
+                    <p>Desarrollar habilidades de <strong>ademanes descriptivos</strong> para explicar conceptos complejos de manera visual.</p>
+
+                    <h5 class="mt-4"><i class="fas fa-tasks"></i> Instrucciones</h5>
+                    <ol>
+                        <li><strong>Formación de grupos:</strong> Grupos de 3-4 estudiantes</li>
+                        <li><strong>Asignación de temas:</strong> Cada estudiante debe explicar uno de estos procesos o conceptos abstractos:
+                            <ul>
+                                <li>Cómo funciona el ciclo del agua</li>
+                                <li>El proceso de fotosíntesis</li>
+                                <li>Cómo se propaga el sonido</li>
+                                <li>El funcionamiento de Internet</li>
+                                <li>La órbita de los planetas alrededor del Sol</li>
+                                <li>Cómo se forma un arcoíris</li>
+                                <li>El proceso de respiración celular</li>
+                            </ul>
+                        </li>
+                        <li><strong>Preparación (7 minutos):</strong> Crear un bosquejo cronológico o temático del proceso, identificando:
+                            <ul>
+                                <li>Pasos principales o componentes</li>
+                                <li>Qué ademanes descriptivos usarán en cada paso</li>
+                                <li>Palabras clave que acompañarán cada gesto</li>
+                            </ul>
+                        </li>
+                        <li><strong>Presentación (4 minutos):</strong> Explicar el proceso sin usar ningún material visual (sin pizarra, papel, etc.), solo con:
+                            <ul>
+                                <li>Ademanes descriptivos para ilustrar formas, tamaños, direcciones</li>
+                                <li>Movimientos que representen acciones y procesos</li>
+                                <li>Gestos para comparar y contrastar elementos</li>
+                            </ul>
+                        </li>
+                        <li><strong>Desafío especial:</strong> Los compañeros deben cerrar los ojos durante 30 segundos de la explicación y luego intentar dibujar lo que entendieron (solo basándose en la descripción verbal)</li>
+                        <li><strong>Retroalimentación (3 minutos):</strong> El grupo evalúa:
+                            <ul>
+                                <li>¿Fue fácil visualizar el proceso?</li>
+                                <li>¿Los ademanes descriptivos ayudaron a entender?</li>
+                                <li>¿Qué gestos fueron más efectivos?</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <div class="alert alert-success mt-3">
+                        <strong><i class="fas fa-star"></i> Criterios de evaluación:</strong>
+                        <ul class="mb-0">
+                            <li>✓ Variedad de ademanes descriptivos (mínimo 7 gestos diferentes)</li>
+                            <li>✓ Coherencia entre gestos y explicación verbal</li>
+                            <li>✓ Uso de analogías y comparaciones visuales</li>
+                            <li>✓ Claridad en la secuencia o estructura</li>
+                            <li>✓ Capacidad de hacer visible lo abstracto</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip-box mt-3">
+                        <strong><i class="fas fa-lightbulb"></i> Tip para el facilitador:</strong> Anime a los estudiantes a ser creativos y "dibujar en el aire". Recuérdeles que los ademanes descriptivos son como pintar un cuadro sin lienzo.
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-primary mt-4">
+                <h5><i class="fas fa-comments"></i> Reflexión Final Grupal</h5>
+                <p>Después de completar ambos ejercicios, reúnan a toda la clase para discutir:</p>
+                <ul>
+                    <li>¿Qué ejercicio fue más desafiante y por qué?</li>
+                    <li>¿Qué diferencias notaron entre ademanes enfáticos y descriptivos?</li>
+                    <li>¿Cómo pueden aplicar estas habilidades en sus presentaciones académicas?</li>
+                    <li>¿Qué aprendieron sobre la importancia del lenguaje corporal?</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sección: Cuestionario -->
+        <div id="quiz" class="content-section">
+            <h2 class="section-title"><i class="fas fa-question-circle"></i> Cuestionario de Evaluación</h2>
+            
+            <div class="progress-container">
+                <h5>Progreso: <span id="quiz-progress">0/20</span></h5>
+                <div class="progress">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
+                </div>
+                <p class="mt-2 mb-0">Puntuación: <strong><span id="score">0</span> puntos</strong></p>
+            </div>
+
+            <div id="quiz-container"></div>
+
+            <div class="text-center mt-4">
+                <button id="submit-quiz" class="btn btn-primary btn-lg" onclick="submitQuiz()" style="display: none;">
+                    <i class="fas fa-check-circle"></i> Finalizar Cuestionario
+                </button>
+                <button id="reset-quiz" class="btn btn-warning btn-lg" onclick="resetQuiz()" style="display: none;">
+                    <i class="fas fa-redo"></i> Reintentar
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const targetSection = document.getElementById(sectionId);
+            targetSection.classList.add('active');
+            targetSection.classList.add('animate__animated', 'animate__fadeIn');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Quiz Data
+        const quizData = [
+            {
+                question: "¿Qué porcentaje de la comunicación es no verbal?",
+                options: ["55%", "75%", "93%", "45%"],
+                correct: 2,
+                explanation: "El 93% de la comunicación es no verbal: 55% lenguaje corporal y 38% tono de voz."
+            },
+            {
+                question: "¿Cuál es la función principal del bosquejo en un discurso?",
+                options: [
+                    "Memorizar el discurso palabra por palabra",
+                    "Organizar y estructurar las ideas de manera coherente",
+                    "Impresionar a la audiencia con complejidad",
+                    "Evitar el contacto visual"
+                ],
+                correct: 1,
+                explanation: "El bosquejo sirve para organizar y estructurar las ideas, asegurando coherencia y fluidez en la presentación."
+            },
+            {
+                question: "¿Qué porcentaje del tiempo debería ocupar el desarrollo en un discurso?",
+                options: ["10-15%", "30-40%", "50-60%", "70-80%"],
+                correct: 3,
+                explanation: "El desarrollo debe ocupar el 70-80% del tiempo total del discurso, siendo la parte más sustancial."
+            },
+            {
+                question: "Los ademanes enfáticos se caracterizan por:",
+                options: [
+                    "Movimientos suaves que describen formas",
+                    "Movimientos fuertes que refuerzan ideas importantes",
+                    "Ausencia de movimiento corporal",
+                    "Gestos repetitivos sin significado"
+                ],
+                correct: 1,
+                explanation: "Los ademanes enfáticos son movimientos fuertes y decididos que refuerzan y destacan ideas importantes."
+            },
+            {
+                question: "¿Cuál de estos NO es un elemento de los aspectos vocales?",
+                options: ["Volumen", "Postura", "Entonación", "Pausas"],
+                correct: 1,
+                explanation: "La postura es un aspecto corporal, no vocal. Los aspectos vocales incluyen volumen, velocidad, entonación, pausas y articulación."
+            },
+            {
+                question: "Un bosquejo cronológico se organiza por:",
+                options: [
+                    "Temas o ideas principales",
+                    "Secuencia temporal de eventos",
+                    "Ubicación geográfica",
+                    "Nivel de importancia"
+                ],
+                correct: 1,
+                explanation: "El bosquejo cronológico se organiza siguiendo una secuencia temporal, de lo más antiguo a lo más reciente."
+            },
+            {
+                question: "¿Cuál es un ejemplo de ademán descriptivo?",
+                options: [
+                    "Puño cerrado al decir 'debemos actuar'",
+                    "Manos separándose al explicar 'la brecha es mayor'",
+                    "Golpear la mesa con firmeza",
+                    "Señalar con el dedo índice hacia arriba"
+                ],
+                correct: 1,
+                explanation: "Separar las manos para ilustrar 'una brecha mayor' es un ademán descriptivo que hace visible un concepto abstracto."
+            },
+            {
+                question: "La introducción de un discurso debe:",
+                options: [
+                    "Presentar todos los detalles del tema",
+                    "Ocupar el 50% del tiempo total",
+                    "Captar la atención y presentar el tema",
+                    "Incluir la conclusión anticipada"
+                ],
+                correct: 2,
+                explanation: "La introducción debe captar la atención, presentar el tema, establecer el objetivo y adelantar la estructura."
+            },
+            {
+                question: "¿Qué característica NO debe tener un ademán efectivo?",
+                options: [
+                    "Naturalidad",
+                    "Propósito claro",
+                    "Repetición excesiva",
+                    "Moderación"
+                ],
+                correct: 2,
+                explanation: "La repetición excesiva es un error común. Los ademanes deben ser naturales, tener propósito y usarse con moderación."
+            },
+            {
+                question: "El bosquejo tipo problema-solución se utiliza para:",
+                options: [
+                    "Describir ubicaciones geográficas",
+                    "Narrar eventos históricos",
+                    "Presentar un problema y proponer soluciones",
+                    "Enumerar características de un producto"
+                ],
+                correct: 2,
+                explanation: "Este tipo de bosquejo presenta un problema, sus causas y consecuencias, y luego propone soluciones."
+            },
+            {
+                question: "¿Cuál es un error común en el lenguaje corporal?",
+                options: [
+                    "Mantener contacto visual con la audiencia",
+                    "Manos en los bolsillos constantemente",
+                    "Usar gestos con propósito",
+                    "Variar la entonación"
+                ],
+                correct: 1,
+                explanation: "Mantener las manos en los bolsillos es un error común que indica inseguridad y limita la comunicación no verbal."
+            },
+            {
+                question: "La conclusión de un discurso debe incluir:",
+                options: [
+                    "Información nueva no mencionada antes",
+                    "Disculpas por el tiempo utilizado",
+                    "Resumen de puntos clave y llamado a la acción",
+                    "Detalles técnicos complejos"
+                ],
+                correct: 2,
+                explanation: "La conclusión debe resumir los puntos clave, reforzar el mensaje principal y hacer un llamado a la acción memorable."
+            },
+            {
+                question: "¿Qué tipo de ademán usarías al decir 'Este es EL punto más importante'?",
+                options: [
+                    "Ademán descriptivo con movimiento circular",
+                    "Ademán enfático señalando hacia arriba",
+                    "Manos cruzadas",
+                    "Ningún ademán"
+                ],
+                correct: 1,
+                explanation: "Señalar hacia arriba con el dedo índice es un ademán enfático ideal para destacar la importancia de una idea."
+            },
+            {
+                question: "¿Cuánto tiempo debe ocupar la introducción de un discurso?",
+                options: ["5%", "10-15%", "30%", "50%"],
+                correct: 1,
+                explanation: "La introducción debe ocupar aproximadamente el 10-15% del tiempo total del discurso."
+            },
+            {
+                question: "Un bosquejo temático organiza la información por:",
+                options: [
+                    "Orden cronológico",
+                    "Temas o ideas principales",
+                    "Ubicación espacial",
+                    "Complejidad técnica"
+                ],
+                correct: 1,
+                explanation: "El bosquejo temático agrupa la información en temas o ideas principales relacionadas entre sí."
+            },
+            {
+                question: "¿Cuál de estos aspectos NO es parte del lenguaje corporal?",
+                options: [
+                    "Expresiones faciales",
+                    "Velocidad del habla",
+                    "Postura",
+                    "Gestos con las manos"
+                ],
+                correct: 1,
+                explanation: "La velocidad del habla es un aspecto vocal, no corporal. El lenguaje corporal incluye postura, gestos, expresiones y desplazamiento."
+            },
+            {
+                question: "Los ademanes descriptivos son más apropiados para:",
+                options: [
+                    "Expresar urgencia en la toma de decisiones",
+                    "Ilustrar procesos y describir formas o tamaños",
+                    "Mostrar enojo o frustración",
+                    "Llamar la atención de una audiencia distraída"
+                ],
+                correct: 1,
+                explanation: "Los ademanes descriptivos son ideales para ilustrar, mostrar y hacer visibles conceptos, procesos y características."
+            },
+            {
+                question: "¿Qué debe contener cada nivel de un buen bosquejo?",
+                options: [
+                    "Oraciones completas y extensas",
+                    "Palabras clave y frases breves",
+                    "Párrafos desarrollados completamente",
+                    "Solo números y letras sin texto"
+                ],
+                correct: 1,
+                explanation: "Un buen bosquejo usa palabras clave y frases breves, no oraciones completas, para facilitar la recordación."
+            },
+            {
+                question: "El principio de 'amplitud' en los ademanes se refiere a:",
+                options: [
+                    "Usar la mayor cantidad de gestos posible",
+                    "Adaptar el tamaño de los gestos al tamaño de la audiencia",
+                    "Hacer gestos muy pequeños para parecer modesto",
+                    "No usar ademanes en presentaciones grandes"
+                ],
+                correct: 1,
+                explanation: "La amplitud significa adaptar el tamaño de tus gestos al tamaño de la audiencia: más grandes para auditorios grandes."
+            },
+            {
+                question: "¿Cuál es el objetivo principal de la oratoria?",
+                options: [
+                    "Demostrar superioridad intelectual",
+                    "Hablar el mayor tiempo posible",
+                    "Informar, persuadir, emocionar o entretener a una audiencia",
+                    "Memorizar textos largos"
+                ],
+                correct: 2,
+                explanation: "La oratoria busca informar, persuadir, emocionar o entretener a un público mediante el habla elocuente y efectiva."
+            }
+        ];
+
+        let currentAnswers = new Array(quizData.length).fill(null);
+        let quizSubmitted = false;
+
+        // Initialize Quiz
+        function initQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            
+            quizData.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'card-custom mb-4';
+                questionDiv.innerHTML = `
+                    <div class="card-header-custom">
+                        Pregunta ${index + 1} de ${quizData.length}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="mb-3">${q.question}</h5>
+                        ${q.options.map((option, optIndex) => `
+                            <div class="quiz-option" onclick="selectAnswer(${index}, ${optIndex})" id="q${index}-opt${optIndex}">
+                                <i class="fas fa-circle-notch me-2"></i> ${option}
+                            </div>
+                        `).join('')}
+                        <div id="explanation-${index}" style="display: none;" class="alert alert-info mt-3">
+                            <strong><i class="fas fa-info-circle"></i> Explicación:</strong> <span id="exp-text-${index}"></span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(questionDiv);
+            });
+        }
+
+        // Select Answer
+        function selectAnswer(questionIndex, optionIndex) {
+            if (quizSubmitted) return;
+            
+            // Reset previous selection for this question
+            quizData[questionIndex].options.forEach((_, i) => {
+                const opt = document.getElementById(`q${questionIndex}-opt${i}`);
+                opt.classList.remove('correct', 'incorrect');
+                opt.style.background = 'white';
+                opt.style.borderColor = '#e0e0e0';
+            });
+            
+            // Mark current selection
+            const selected = document.getElementById(`q${questionIndex}-opt${optionIndex}`);
+            selected.style.background = '#e3f2fd';
+            selected.style.borderColor = '#2196F3';
+            
+            currentAnswers[questionIndex] = optionIndex;
+            
+            updateProgress();
+            
+            // Show submit button when all answered
+            if (currentAnswers.every(a => a !== null)) {
+                document.getElementById('submit-quiz').style.display = 'inline-block';
+            }
+        }
+
+        // Update Progress
+        function updateProgress() {
+            const answered = currentAnswers.filter(a => a !== null).length;
+            document.getElementById('quiz-progress').textContent = `${answered}/${quizData.length}`;
+            const percentage = (answered / quizData.length) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+        }
+
+        // Submit Quiz
+        function submitQuiz() {
+            if (currentAnswers.some(a => a === null)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Atención!',
+                    text: 'Por favor responde todas las preguntas antes de finalizar.',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+            
+            quizSubmitted = true;
+            let score = 0;
+            
+            quizData.forEach((q, index) => {
+                const userAnswer = currentAnswers[index];
+                const isCorrect = userAnswer === q.correct;
+                
+                if (isCorrect) score++;
+                
+                // Show results
+                q.options.forEach((_, optIndex) => {
+                    const opt = document.getElementById(`q${index}-opt${optIndex}`);
+                    opt.style.pointerEvents = 'none';
+                    
+                    if (optIndex === q.correct) {
+                        opt.classList.add('correct');
+                        opt.innerHTML = `<i class="fas fa-check-circle me-2"></i> ${q.options[optIndex]}`;
+                    } else if (optIndex === userAnswer && !isCorrect) {
+                        opt.classList.add('incorrect');
+                        opt.innerHTML = `<i class="fas fa-times-circle me-2"></i> ${q.options[optIndex]}`;
+                    }
+                });
+                
+                // Show explanation
+                document.getElementById(`explanation-${index}`).style.display = 'block';
+                document.getElementById(`exp-text-${index}`).textContent = q.explanation;
+            });
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('submit-quiz').style.display = 'none';
+            document.getElementById('reset-quiz').style.display = 'inline-block';
+            
+            // Final message
+            const percentage = (score / quizData.length) * 100;
+            let message = '';
+            let icon = '';
+            
+            if (percentage >= 90) {
+                message = '¡Excelente! Dominas los conceptos de oratoria.';
+                icon = 'success';
+            } else if (percentage >= 70) {
+                message = '¡Muy bien! Tienes un buen conocimiento de oratoria.';
+                icon = 'success';
+            } else if (percentage >= 50) {
+                message = 'Bien. Revisa los temas para mejorar tu comprensión.';
+                icon = 'info';
+            } else {
+                message = 'Te recomendamos repasar el material nuevamente.';
+                icon = 'warning';
+            }
+            
+            Swal.fire({
+                icon: icon,
+                title: 'Cuestionario Completado',
+                html: `
+                    <p style="font-size: 1.2rem;"><strong>Tu puntuación: ${score}/${quizData.length}</strong></p>
+                    <p style="font-size: 1.1rem;">${percentage.toFixed(0)}% de respuestas correctas</p>
+                    <p>${message}</p>
+                `,
+                confirmButtonText: 'Entendido',
+                width: '600px'
+            });
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Reset Quiz
+        function resetQuiz() {
+            Swal.fire({
+                title: '¿Reiniciar cuestionario?',
+                text: 'Se borrarán todas tus respuestas actuales.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, reiniciar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    currentAnswers = new Array(quizData.length).fill(null);
+                    quizSubmitted = false;
+                    document.getElementById('score').textContent = '0';
+                    document.getElementById('reset-quiz').style.display = 'none';
+                    initQuiz();
+                    updateProgress();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Cuestionario reiniciado!',
+                        text: 'Puedes intentarlo nuevamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initQuiz();
+            
+            // Welcome message
+            Swal.fire({
+                icon: 'info',
+                title: '¡Bienvenido!',
+                html: `
+                    <p>Esta presentación te enseñará sobre:</p>
+                    <ul style="text-align: left; display: inline-block;">
+                        <li>Los fundamentos de la oratoria</li>
+                        <li>Cómo crear un bosquejo efectivo</li>
+                        <li>Ademanes enfáticos y descriptivos</li>
+                        <li>Ejercicios prácticos de juego de rol</li>
+                    </ul>
+                    <p><strong>¡Disfruta tu aprendizaje!</strong></p>
+                `,
+                confirmButtonText: 'Comenzar',
+                width: '600px'
+            });
+        });
+    </script>
+</body>
+</html>
