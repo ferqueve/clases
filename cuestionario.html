@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuestionario — Análisis y Requerimientos</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f40;
+    --accent: #5b8af0;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e8eaf2;
+    --muted: #6b7280;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  /* Fondo decorativo */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(91,138,240,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .container {
+    max-width: 740px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(91,138,240,0.4);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #e8eaf2, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  /* Progreso */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 10px;
+    margin-bottom: 36px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+
+  /* Card de nombre */
+  .name-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+
+  .name-card h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  /* Input y textarea */
+  input[type="text"], textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 14px 18px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  textarea { resize: vertical; min-height: 90px; }
+
+  /* Preguntas */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+  }
+
+  .question-card.answered { border-color: rgba(91,138,240,0.3); }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .q-num {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(91,138,240,0.15);
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+
+  .q-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-bottom: 8px;
+    display: inline-block;
+  }
+  .tag-knowledge { background: rgba(91,138,240,0.15); color: var(--accent); }
+  .tag-reflection { background: rgba(167,139,250,0.15); color: var(--accent2); }
+
+  .q-text {
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* Opciones radio */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .option-label:hover { border-color: rgba(91,138,240,0.5); background: rgba(91,138,240,0.04); }
+  .option-label input[type="radio"] { display: none; }
+
+  .radio-dot {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    margin-top: 2px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .option-label input:checked + .radio-dot {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+
+  .option-label input:checked + .radio-dot::after {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: white;
+  }
+
+  .option-label.selected { border-color: rgba(91,138,240,0.5); background: rgba(91,138,240,0.06); }
+
+  /* Estados feedback */
+  .option-label.correct { border-color: var(--green); background: rgba(52,211,153,0.08); }
+  .option-label.wrong { border-color: var(--red); background: rgba(248,113,113,0.08); }
+  .option-label.show-correct { border-color: var(--green); background: rgba(52,211,153,0.06); }
+
+  .feedback-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+  }
+
+  /* Botón submit */
+  .submit-wrap { text-align: center; margin-top: 40px; }
+
+  .btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 16px 48px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #7c3aed);
+    color: white;
+    box-shadow: 0 4px 20px rgba(91,138,240,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(91,138,240,0.4); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Resultados */
+  .results-header {
+    text-align: center;
+    padding: 40px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 32px;
+  }
+
+  .score-circle {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) 0deg, var(--border) 0deg);
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .score-circle::before {
+    content: '';
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: var(--surface);
+    position: absolute;
+  }
+  .score-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    position: relative;
+    z-index: 1;
+  }
+
+  .results-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .results-sub { color: var(--muted); font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    z-index: 100;
+    max-width: 320px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-color: rgba(52,211,153,0.5); }
+  .toast.error { border-color: rgba(248,113,113,0.5); }
+
+  /* Pantalla de nombre */
+  .name-screen {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 56px 40px;
+    text-align: center;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  .name-icon {
+    font-size: 48px;
+    margin-bottom: 24px;
+    display: block;
+  }
+
+  .name-screen h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  .name-hint {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .name-screen input[type="text"] {
+    font-size: 17px;
+    text-align: center;
+  }
+
+  /* Config de token */
+  .config-note {
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--yellow);
+    margin-bottom: 28px;
+    display: none;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+  }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+  El ID de CrudCrud va en la URL, no en el código:
+  cuestionario.html?cid=TU_ID_AQUI
+  ════════════════════════════════════════════════ -->
+<script>
+  var CRUDCRUD_ID = new URLSearchParams(window.location.search).get('cid') || '';
+</script>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="badge">Análisis de Sistemas</div>
+    <h1>Análisis y Requerimientos</h1>
+    <p class="subtitle">Panadería · BE / BUC / PUC / RF / RNF</p>
+  </div>
+
+  <!-- PANTALLA DE NOMBRE -->
+  <div id="nameSection" style="display:none">
+    <div class="name-screen">
+      <div class="name-icon">👤</div>
+      <h2>Antes de comenzar…</h2>
+      <p class="name-hint">Ingresá tu nombre completo para registrar tus respuestas.</p>
+      <input type="text" id="studentName" placeholder="Tu nombre completo…" autocomplete="off">
+      <button class="btn btn-primary" id="startBtn" onclick="startQuiz()" style="margin-top:24px;width:100%">
+        Comenzar cuestionario →
+      </button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO PRINCIPAL -->
+  <div id="quizSection" style="display:none">
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+
+    <!-- Preguntas de conocimiento -->
+    <div class="section-label">Preguntas de conocimiento</div>
+
+    <!-- P1 -->
+    <div class="question-card" data-q="1">
+      <div class="q-header">
+        <div class="q-num">1</div>
+        <div>
+          <span class="q-tag tag-knowledge">Conocimiento</span>
+          <p class="q-text">¿Qué es un <strong>Business Event (BE)</strong> según el documento?</p>
+        </div>
+      </div>
+      <div class="options" data-correct="b">
+        <label class="option-label"><input type="radio" name="q1" value="a"><span class="radio-dot"></span>Una funcionalidad del sistema a implementar</label>
+        <label class="option-label"><input type="radio" name="q1" value="b"><span class="radio-dot"></span>Un evento relevante del negocio que dispara procesos, decisiones o comportamientos del sistema</label>
+        <label class="option-label"><input type="radio" name="q1" value="c"><span class="radio-dot"></span>Un requerimiento no funcional asociado a la calidad</label>
+        <label class="option-label"><input type="radio" name="q1" value="d"><span class="radio-dot"></span>Un actor externo que interactúa con el sistema</label>
+      </div>
+    </div>
+
+    <!-- P2 -->
+    <div class="question-card" data-q="2">
+      <div class="q-header">
+        <div class="q-num">2</div>
+        <div>
+          <span class="q-tag tag-knowledge">Conocimiento</span>
+          <p class="q-text">¿Cómo se gestionan actualmente los pedidos en la panadería (<strong>situación AS-IS</strong>)?</p>
+        </div>
+      </div>
+      <div class="options" data-correct="c">
+        <label class="option-label"><input type="radio" name="q2" value="a"><span class="radio-dot"></span>Con un sistema ERP y base de datos centralizada</label>
+        <label class="option-label"><input type="radio" name="q2" value="b"><span class="radio-dot"></span>Mediante una app móvil propia de la panadería</label>
+        <label class="option-label"><input type="radio" name="q2" value="c"><span class="radio-dot"></span>De forma manual: WhatsApp personal, planilla y pizarrón</label>
+        <label class="option-label"><input type="radio" name="q2" value="d"><span class="radio-dot"></span>Por correo electrónico y hoja de cálculo compartida</label>
+      </div>
+    </div>
+
+    <!-- P3 -->
+    <div class="question-card" data-q="3">
+      <div class="q-header">
+        <div class="q-num">3</div>
+        <div>
+          <span class="q-tag tag-knowledge">Conocimiento</span>
+          <p class="q-text">¿Qué describe un <strong>Process Use Case (PUC)</strong>?</p>
+        </div>
+      </div>
+      <div class="options" data-correct="b">
+        <label class="option-label"><input type="radio" name="q3" value="a"><span class="radio-dot"></span>Los objetivos del negocio, independientemente de la tecnología</label>
+        <label class="option-label"><input type="radio" name="q3" value="b"><span class="radio-dot"></span>Cómo un proceso y/o sistema implementa un Business Use Case</label>
+        <label class="option-label"><input type="radio" name="q3" value="c"><span class="radio-dot"></span>Los atributos de calidad y restricciones del sistema</label>
+        <label class="option-label"><input type="radio" name="q3" value="d"><span class="radio-dot"></span>Los eventos externos que disparan el sistema</label>
+      </div>
+    </div>
+
+    <!-- P4 -->
+    <div class="question-card" data-q="4">
+      <div class="q-header">
+        <div class="q-num">4</div>
+        <div>
+          <span class="q-tag tag-knowledge">Conocimiento</span>
+          <p class="q-text">¿Cuántos <strong>Process Use Cases (PUC)</strong> contiene el documento de análisis de la panadería?</p>
+        </div>
+      </div>
+      <div class="options" data-correct="c">
+        <label class="option-label"><input type="radio" name="q4" value="a"><span class="radio-dot"></span>4</label>
+        <label class="option-label"><input type="radio" name="q4" value="b"><span class="radio-dot"></span>5</label>
+        <label class="option-label"><input type="radio" name="q4" value="c"><span class="radio-dot"></span>7</label>
+        <label class="option-label"><input type="radio" name="q4" value="d"><span class="radio-dot"></span>6</label>
+      </div>
+    </div>
+
+    <!-- P5 -->
+    <div class="question-card" data-q="5">
+      <div class="q-header">
+        <div class="q-num">5</div>
+        <div>
+          <span class="q-tag tag-knowledge">Conocimiento</span>
+          <p class="q-text">¿Cuál de los siguientes es un <strong>Requerimiento No Funcional (RNF)</strong> del documento?</p>
+        </div>
+      </div>
+      <div class="options" data-correct="d">
+        <label class="option-label"><input type="radio" name="q5" value="a"><span class="radio-dot"></span>Registrar un pedido de cliente</label>
+        <label class="option-label"><input type="radio" name="q5" value="b"><span class="radio-dot"></span>Calcular la producción diaria por producto</label>
+        <label class="option-label"><input type="radio" name="q5" value="c"><span class="radio-dot"></span>Visualizar los pedidos del día ordenados por hora</label>
+        <label class="option-label"><input type="radio" name="q5" value="d"><span class="radio-dot"></span>Disponibilidad mínima del 99% durante el horario operativo</label>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Preguntas de reflexión</div>
+
+    <!-- P6 -->
+    <div class="question-card" data-q="6">
+      <div class="q-header">
+        <div class="q-num">6</div>
+        <div>
+          <span class="q-tag tag-reflection">Reflexión</span>
+          <p class="q-text">¿Qué <strong>sección del documento</strong> fue la que principalmente desarrollaste o trabajaste?</p>
+        </div>
+      </div>
+      <textarea name="q6" placeholder="Ej: Me encargué de los Business Events y los BUC. Definí los actores y los flujos principales…"></textarea>
+    </div>
+
+    <!-- P7 -->
+    <div class="question-card" data-q="7">
+      <div class="q-header">
+        <div class="q-num">7</div>
+        <div>
+          <span class="q-tag tag-reflection">Reflexión</span>
+          <p class="q-text">¿Qué parte del análisis te resultó <strong>más difícil</strong> y por qué?</p>
+        </div>
+      </div>
+      <textarea name="q7" placeholder="Ej: La parte que más me costó fue armar la matriz de trazabilidad porque…"></textarea>
+    </div>
+
+    <!-- P8 -->
+    <div class="question-card" data-q="8">
+      <div class="q-header">
+        <div class="q-num">8</div>
+        <div>
+          <span class="q-tag tag-reflection">Reflexión</span>
+          <p class="q-text">¿Qué <strong>cambiarías o mejorarías</strong> del documento? ¿Faltó algo?</p>
+        </div>
+      </div>
+      <textarea name="q8" placeholder="Ej: Creo que podríamos haber añadido más detalle en los criterios de aceptación…"></textarea>
+    </div>
+
+    <div class="submit-wrap">
+      <button class="btn btn-primary" id="submitBtn" onclick="submitQuiz()">
+        Enviar respuestas →
+      </button>
+    </div>
+
+  </div>
+
+  <!-- RESULTADOS (oculto inicialmente) -->
+  <div id="resultsSection" style="display:none">
+
+    <div class="results-header">
+      <div class="score-circle" id="scoreCircle">
+        <span class="score-text" id="scoreText"></span>
+      </div>
+      <div class="results-name" id="resultsName"></div>
+      <div class="results-sub" id="resultsSub"></div>
+    </div>
+
+    <div class="section-label">Revisión de respuestas</div>
+    <div id="reviewCards"></div>
+
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ─── Pantalla de nombre ───────────────────────────────
+function startQuiz() {
+  const name = document.getElementById('studentName').value.trim();
+  if (!name) {
+    document.getElementById('studentName').focus();
+    document.getElementById('studentName').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('studentName').style.borderColor = '', 1500);
+    return;
+  }
+  document.getElementById('nameSection').style.display = 'none';
+  document.getElementById('quizSection').style.display = 'block';
+  // Saludo personal en el header
+  document.querySelector('.subtitle').textContent = `Panadería · BE / BUC / PUC / RF / RNF · Hola, ${name.split(' ')[0]} 👋`;
+}
+
+// Enter en el input de nombre arranca el quiz
+document.getElementById('studentName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startQuiz();
+});
+
+// ─── Progreso ────────────────────────────────────────
+function updateProgress() {
+  const total = 8;
+  let answered = 0;
+  for (let i = 1; i <= 5; i++) {
+    if (document.querySelector(`input[name="q${i}"]:checked`)) answered++;
+  }
+  for (let i = 6; i <= 8; i++) {
+    if (document.querySelector(`textarea[name="q${i}"]`)?.value.trim()) answered++;
+  }
+  document.getElementById('progressFill').style.width = ((answered / total) * 100) + '%';
+}
+
+// Escuchar cambios
+document.querySelectorAll('input[type="radio"]').forEach(r => {
+  r.addEventListener('change', () => {
+    const card = r.closest('.question-card');
+    card.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+    r.closest('.option-label').classList.add('selected');
+    card.classList.add('answered');
+    updateProgress();
+  });
+});
+document.querySelectorAll('textarea').forEach(t => {
+  t.addEventListener('input', updateProgress);
+});
+document.getElementById('studentName').addEventListener('input', updateProgress);
+
+// ─── Toast ────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  t.className = `toast ${type}`;
+  document.getElementById('toastIcon').textContent = icons[type] || '💬';
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ─── CrudCrud ─────────────────────────────────────────
+async function guardarEnCrudCrud(entrada) {
+  const url = `https://crudcrud.com/api/${CRUDCRUD_ID}/resultados`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entrada)
+  });
+  if (!res.ok) throw new Error('Error al guardar: ' + res.status);
+  return await res.json();
+}
+
+// ─── Submit ───────────────────────────────────────────
+async function submitQuiz() {
+  const name = document.getElementById('studentName').value.trim();
+
+  // Validar preguntas de conocimiento
+  for (let i = 1; i <= 5; i++) {
+    if (!document.querySelector(`input[name="q${i}"]:checked`)) {
+      showToast(`Respondé la pregunta ${i} antes de enviar`, 'error');
+      return;
+    }
+  }
+
+  // Validar reflexiones
+  for (let i = 6; i <= 8; i++) {
+    if (!document.querySelector(`textarea[name="q${i}"]`).value.trim()) {
+      showToast(`Completá la pregunta ${i} antes de enviar`, 'error');
+      return;
+    }
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  // Recopilar respuestas de conocimiento
+  const correctas = { q1: 'b', q2: 'c', q3: 'b', q4: 'c', q5: 'd' };
+  let puntaje = 0;
+  const respuestas = {};
+  for (let i = 1; i <= 5; i++) {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`)?.value;
+    respuestas[`q${i}`] = { respuesta: sel, correcta: correctas[`q${i}`], ok: sel === correctas[`q${i}`] };
+    if (respuestas[`q${i}`].ok) puntaje++;
+  }
+
+  const reflexiones = {
+    q6: document.querySelector('textarea[name="q6"]').value.trim(),
+    q7: document.querySelector('textarea[name="q7"]').value.trim(),
+    q8: document.querySelector('textarea[name="q8"]').value.trim()
+  };
+
+  const entrada = {
+    nombre: name,
+    fecha: new Date().toISOString(),
+    puntaje,
+    total_conocimiento: 5,
+    respuestas_conocimiento: respuestas,
+    reflexiones
+  };
+
+  try {
+    await guardarEnCrudCrud(entrada);
+    showToast('¡Respuestas guardadas correctamente!', 'success');
+  } catch (err) {
+    console.warn('CrudCrud:', err.message);
+    showToast('Sin conexión — resultados solo locales', 'info');
+  }
+
+  // Mostrar resultados
+  showResults(name, puntaje, respuestas, reflexiones);
+  btn.disabled = false;
+}
+
+// ─── Resultados ───────────────────────────────────────
+const questionTexts = {
+  q1: '¿Qué es un Business Event (BE)?',
+  q2: '¿Cómo se gestionan actualmente los pedidos (AS-IS)?',
+  q3: '¿Qué describe un Process Use Case (PUC)?',
+  q4: '¿Cuántos Process Use Cases tiene el documento?',
+  q5: '¿Cuál es un Requerimiento No Funcional (RNF)?'
+};
+
+const optionTexts = {
+  q1: { a: 'Una funcionalidad del sistema', b: 'Evento del negocio que dispara procesos o decisiones', c: 'Un requerimiento no funcional', d: 'Un actor externo' },
+  q2: { a: 'Con sistema ERP', b: 'Con app móvil propia', c: 'Manual: WhatsApp, planilla y pizarrón', d: 'Por correo y hoja de cálculo' },
+  q3: { a: 'Objetivos del negocio independientes de la tecnología', b: 'Cómo un proceso/sistema implementa un BUC', c: 'Atributos de calidad y restricciones', d: 'Eventos externos que disparan el sistema' },
+  q4: { a: '4', b: '5', c: '7', d: '6' },
+  q5: { a: 'Registrar un pedido de cliente', b: 'Calcular producción diaria', c: 'Visualizar pedidos del día', d: 'Disponibilidad mínima del 99%' }
+};
+
+function showResults(name, puntaje, respuestas) {
+  document.getElementById('quizSection').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'block';
+
+  document.getElementById('resultsName').textContent = name;
+  document.getElementById('scoreText').textContent = `${puntaje}/5`;
+
+  const pct = (puntaje / 5) * 100;
+  const color = pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--yellow)' : 'var(--red)';
+  const deg = Math.round(pct * 3.6);
+  document.getElementById('scoreCircle').style.background =
+    `conic-gradient(${color} ${deg}deg, var(--border) ${deg}deg)`;
+
+  const msgs = ['Para estudiar más 📚', 'Bien, repasá los detalles', 'Muy bien 👍', 'Excelente 🎉', 'Perfecto ⭐'];
+  document.getElementById('resultsSub').textContent =
+    `${pct}% de aciertos · ${msgs[puntaje] || ''}`;
+
+  const container = document.getElementById('reviewCards');
+  container.innerHTML = '';
+
+  for (const [key, val] of Object.entries(respuestas)) {
+    const card = document.createElement('div');
+    card.className = 'question-card answered';
+    card.style.marginBottom = '16px';
+    card.innerHTML = `
+      <div class="q-header">
+        <div class="q-num" style="background:${val.ok ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'};color:${val.ok ? 'var(--green)' : 'var(--red)'}">
+          ${val.ok ? '✓' : '✗'}
+        </div>
+        <div>
+          <p class="q-text">${questionTexts[key]}</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-left:46px">
+        <div style="padding:12px 16px;border-radius:10px;font-size:14px;
+          background:${val.ok ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)'};
+          border:1px solid ${val.ok ? 'var(--green)' : 'var(--red)'}">
+          <strong>Tu respuesta:</strong> ${optionTexts[key][val.respuesta]}
+          ${val.ok ? ' ✅' : ' ❌'}
+        </div>
+        ${!val.ok ? `<div style="padding:12px 16px;border-radius:10px;font-size:14px;background:rgba(52,211,153,0.06);border:1px solid var(--green)">
+          <strong>Respuesta correcta:</strong> ${optionTexts[key][val.correcta]} ✅
+        </div>` : ''}
+      </div>`;
+    container.appendChild(card);
+  }
+}
+
+// Al cargar, ir directo a la pantalla de nombre
+window.addEventListener('load', () => {
+  document.getElementById('nameSection').style.display = 'block';
+  if (!CRUDCRUD_ID) {
+    showToast('Abrí el link que te dio el docente para habilitar el guardado', 'error');
+  }
+});
+</script>
+</body>
+</html>

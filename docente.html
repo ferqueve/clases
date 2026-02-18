@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Docente — Análisis y Requerimientos</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f40;
+    --accent: #5b8af0;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e8eaf2;
+    --muted: #6b7280;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 48px; }
+
+  .badge {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent2);
+    border: 1px solid rgba(167,139,250,0.4);
+    padding: 6px 16px; border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 800; line-height: 1.1;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #e8eaf2, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle { color: var(--muted); font-size: 14px; }
+
+  /* Stats cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px; font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* Tabla */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+  }
+
+  .btn-refresh {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead th {
+    padding: 12px 20px;
+    text-align: left;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(42,47,64,0.5);
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(91,138,240,0.04); }
+
+  tbody td {
+    padding: 16px 20px;
+    vertical-align: middle;
+  }
+
+  .td-nombre {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .puntaje-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+  }
+
+  .puntaje-alto  { background: rgba(52,211,153,0.12); color: var(--green); }
+  .puntaje-medio { background: rgba(251,191,36,0.12); color: var(--yellow); }
+  .puntaje-bajo  { background: rgba(248,113,113,0.12); color: var(--red); }
+
+  .mini-bar {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .mini-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .dot-ok  { background: var(--green); }
+  .dot-bad { background: var(--border); }
+
+  .fecha { color: var(--muted); font-size: 13px; }
+
+  /* Panel de detalle */
+  .detail-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    display: none;
+    margin-bottom: 32px;
+  }
+
+  .detail-panel.open { display: block; }
+
+  .detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .detail-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+  }
+
+  .btn-close {
+    background: none; border: none;
+    color: var(--muted); font-size: 20px;
+    cursor: pointer; padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.2s;
+  }
+  .btn-close:hover { color: var(--text); }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } }
+
+  .detail-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .detail-block-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .q-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .q-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+  .reflexion-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    opacity: 0.85;
+  }
+
+  /* Estado vacío / carga */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 16px; }
+  .empty-state p { font-size: 15px; }
+
+  .loading { animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 30px; right: 30px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 14px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    opacity: 0; transform: translateY(20px);
+    transition: all 0.3s; z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { border-color: rgba(248,113,113,0.5); }
+</style>
+</head>
+<body>
+
+<script>
+  var CRUDCRUD_ID = new URLSearchParams(window.location.search).get('cid') || '';
+</script>
+
+<div class="container">
+
+  <div class="header">
+    <div class="badge">Panel Docente</div>
+    <h1>Resultados del Cuestionario</h1>
+    <p class="subtitle">Análisis y Requerimientos · Panadería</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal" style="color:var(--accent)">—</div>
+      <div class="stat-label">Respuestas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statPromedio" style="color:var(--accent2)">—</div>
+      <div class="stat-label">Promedio</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statAltos" style="color:var(--green)">—</div>
+      <div class="stat-label">Puntaje alto (4-5)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statBajos" style="color:var(--red)">—</div>
+      <div class="stat-label">Puntaje bajo (0-2)</div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Estudiantes</span>
+      <button class="btn-refresh" onclick="cargarDatos()">↻ Actualizar</button>
+    </div>
+    <div id="tableContainer">
+      <div class="empty-state loading">
+        <div class="icon">⏳</div>
+        <p>Cargando respuestas…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de detalle (se abre al hacer click en una fila) -->
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <div class="detail-name" id="detailName"></div>
+      <button class="btn-close" onclick="cerrarDetalle()">✕</button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">
+  <span id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+const questionLabels = {
+  q1: '¿Qué es un Business Event?',
+  q2: 'Situación AS-IS de la panadería',
+  q3: '¿Qué describe un PUC?',
+  q4: '¿Cuántos PUCs tiene el documento?',
+  q5: '¿Cuál es un RNF?'
+};
+
+const optionTexts = {
+  q1: { a: 'Una funcionalidad del sistema', b: 'Evento del negocio que dispara procesos', c: 'Un RNF', d: 'Un actor externo' },
+  q2: { a: 'Sistema ERP', b: 'App móvil propia', c: 'WhatsApp, planilla y pizarrón', d: 'Email y hoja de cálculo' },
+  q3: { a: 'Objetivos del negocio', b: 'Cómo un proceso implementa un BUC', c: 'Atributos de calidad', d: 'Eventos externos' },
+  q4: { a: '4', b: '5', c: '7', d: '6' },
+  q5: { a: 'Registrar pedido', b: 'Calcular producción', c: 'Visualizar pedidos del día', d: 'Disponibilidad mínima del 99%' }
+};
+
+const reflexionLabels = {
+  q6: '¿Qué sección desarrollaste?',
+  q7: '¿Qué te resultó más difícil y por qué?',
+  q8: '¿Qué cambiarías o mejorarías?'
+};
+
+// Colores para avatares
+const avatarColors = [
+  ['rgba(91,138,240,0.2)','var(--accent)'],
+  ['rgba(167,139,250,0.2)','var(--accent2)'],
+  ['rgba(52,211,153,0.2)','var(--green)'],
+  ['rgba(251,191,36,0.2)','var(--yellow)'],
+  ['rgba(248,113,113,0.2)','var(--red)'],
+  ['rgba(34,211,238,0.2)','#22d3ee'],
+];
+
+function showToast(msg, type = 'info') {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const t = document.getElementById('toast');
+  t.className = `toast ${type}`;
+  document.getElementById('toastIcon').textContent = icons[type];
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function formatFecha(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('es', { day:'2-digit', month:'2-digit', year:'2-digit' })
+    + ' ' + d.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+}
+
+function puntajeClass(p) {
+  if (p >= 4) return 'puntaje-alto';
+  if (p >= 3) return 'puntaje-medio';
+  return 'puntaje-bajo';
+}
+
+function miniBar(respuestas) {
+  return Object.values(respuestas).map(r =>
+    `<div class="mini-dot ${r.ok ? 'dot-ok' : 'dot-bad'}"></div>`
+  ).join('');
+}
+
+async function cargarDatos() {
+  if (!CRUDCRUD_ID) {
+    document.getElementById('tableContainer').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🔗</div>
+        <p>Abrí este panel con el link correcto:<br>
+        <code style="color:var(--accent);font-size:12px">docente.html?cid=TU_ID</code></p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('tableContainer').innerHTML = `
+    <div class="empty-state loading"><div class="icon">⏳</div><p>Cargando…</p></div>`;
+
+  try {
+    const res = await fetch(`https://crudcrud.com/api/${CRUDCRUD_ID}/resultados`);
+    if (!res.ok) throw new Error('Error ' + res.status);
+    const data = await res.json();
+
+    if (!data.length) {
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <p>Todavía no hay respuestas registradas.</p>
+        </div>`;
+      actualizarStats([]);
+      return;
+    }
+
+    // Ordenar por fecha desc
+    data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+    actualizarStats(data);
+    renderTabla(data);
+
+  } catch (err) {
+    document.getElementById('tableContainer').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⚠️</div>
+        <p>No se pudo conectar con CrudCrud.<br>
+        <span style="font-size:12px;color:var(--muted)">${err.message}</span></p>
+      </div>`;
+    showToast('Error al cargar datos', 'error');
+  }
+}
+
+function actualizarStats(data) {
+  const total = data.length;
+  const promedio = total ? (data.reduce((s, r) => s + (r.puntaje || 0), 0) / total).toFixed(1) : '—';
+  const altos = data.filter(r => r.puntaje >= 4).length;
+  const bajos = data.filter(r => r.puntaje <= 2).length;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPromedio').textContent = total ? promedio + '/5' : '—';
+  document.getElementById('statAltos').textContent = altos;
+  document.getElementById('statBajos').textContent = bajos;
+}
+
+function renderTabla(data) {
+  const rows = data.map((r, i) => {
+    const [bgColor, textColor] = avatarColors[i % avatarColors.length];
+    const iniciales = r.nombre?.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase() || '?';
+    const pc = puntajeClass(r.puntaje);
+    const bar = r.respuestas_conocimiento ? miniBar(r.respuestas_conocimiento) : '';
+
+    return `<tr onclick="abrirDetalle(${i})" data-index="${i}">
+      <td>
+        <div class="td-nombre">
+          <div class="avatar" style="background:${bgColor};color:${textColor}">${iniciales}</div>
+          ${r.nombre || '—'}
+        </div>
+      </td>
+      <td>
+        <span class="puntaje-badge ${pc}">${r.puntaje ?? '—'}/5</span>
+      </td>
+      <td>
+        <div class="mini-bar">${bar}</div>
+      </td>
+      <td class="fecha">${formatFecha(r.fecha)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableContainer').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Estudiante</th>
+          <th>Puntaje</th>
+          <th>Preguntas 1–5</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  // Guardar data globalmente para el detalle
+  window._resultados = data;
+}
+
+function abrirDetalle(index) {
+  const r = window._resultados[index];
+  if (!r) return;
+
+  document.getElementById('detailName').textContent = r.nombre;
+
+  // Respuestas de conocimiento
+  let conocimientoHTML = '';
+  if (r.respuestas_conocimiento) {
+    conocimientoHTML = Object.entries(r.respuestas_conocimiento).map(([key, val]) => {
+      const texto = optionTexts[key]?.[val.respuesta] || val.respuesta;
+      const correctoTexto = optionTexts[key]?.[val.correcta] || val.correcta;
+      return `<div class="q-row">
+        <span class="q-icon">${val.ok ? '✅' : '❌'}</span>
+        <div>
+          <div style="color:var(--muted);font-size:12px;margin-bottom:2px">${questionLabels[key]}</div>
+          <div>${texto}${!val.ok ? `<span style="color:var(--muted);font-size:12px"> · correcto: ${correctoTexto}</span>` : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Reflexiones
+  let reflexionesHTML = '';
+  if (r.reflexiones) {
+    reflexionesHTML = Object.entries(r.reflexiones).map(([key, val]) => `
+      <div style="margin-bottom:18px">
+        <div class="detail-block-label" style="margin-bottom:6px">${reflexionLabels[key]}</div>
+        <div class="reflexion-text">${val || '<em style="color:var(--muted)">Sin respuesta</em>'}</div>
+      </div>`
+    ).join('');
+  }
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-block">
+        <div class="detail-block-label">Conocimiento</div>
+        ${conocimientoHTML || '<p style="color:var(--muted);font-size:13px">Sin datos</p>'}
+      </div>
+      <div class="detail-block">
+        <div class="detail-block-label">Reflexiones</div>
+        ${reflexionesHTML || '<p style="color:var(--muted);font-size:13px">Sin datos</p>'}
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);text-align:right">
+      Enviado: ${formatFecha(r.fecha)}
+    </div>`;
+
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('detailPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cerrarDetalle() {
+  document.getElementById('detailPanel').classList.remove('open');
+}
+
+// Cargar al iniciar
+window.addEventListener('load', cargarDatos);
+</script>
+</body>
+</html>
