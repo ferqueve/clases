@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADA I — Quiz Batalla</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #07071a;
+  color: #e0e8ff;
+  font-family: 'Exo 2', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 40px;
+}
+
+header {
+  text-align: center;
+  padding: 18px 16px 10px;
+  width: 800px;
+}
+
+h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: #44aaff;
+  text-shadow: 0 0 12px #44aaff99, 0 0 30px #44aaff44;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  font-size: 10px;
+  color: #6688aa;
+  margin-top: 7px;
+  font-family: 'Press Start 2P', monospace;
+  letter-spacing: 1px;
+}
+
+#game-container {
+  width: 800px;
+  border: 2px solid #1a2240;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  box-shadow: 0 0 40px #44aaff22;
+}
+
+#quiz-panel {
+  width: 800px;
+  background: #0d0d24;
+  border: 2px solid #1a2240;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  padding: 22px 28px 26px;
+  box-shadow: 0 0 40px #44aaff22;
+}
+
+/* PROGRESS */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.prog-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #44aaff;
+  white-space: nowrap;
+  min-width: 50px;
+}
+
+.prog-track {
+  flex: 1;
+  height: 7px;
+  background: #0a0a20;
+  border-radius: 4px;
+  border: 1px solid #1a2240;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #44aaff, #0066cc);
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  width: 0%;
+}
+
+.scores {
+  display: flex;
+  gap: 10px;
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.badge-ok  { background: #071a0f; border: 1px solid #00cc66; color: #00cc66; }
+.badge-err { background: #1a0707; border: 1px solid #ff4444; color: #ff4444; }
+
+/* QUESTION */
+.q-num {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #334466;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.q-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ccddef;
+  line-height: 1.55;
+  margin-bottom: 18px;
+  min-height: 48px;
+}
+
+/* OPTIONS */
+.opts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.opt {
+  background: #10102a;
+  border: 2px solid #1a1a3c;
+  border-radius: 7px;
+  color: #b0c8e8;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 11px 14px;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.4;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.1s;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.opt:hover:not(:disabled) {
+  background: #181838;
+  border-color: #44aaff;
+  color: #fff;
+  transform: translateX(3px);
+}
+
+.opt:disabled { cursor: default; }
+
+.opt.correct {
+  background: #071a10;
+  border-color: #00cc66;
+  color: #00ee77;
+}
+
+.opt.wrong {
+  background: #1a0707;
+  border-color: #ff4444;
+  color: #ff6666;
+}
+
+.opt-letter {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #334466;
+  margin-top: 3px;
+  min-width: 14px;
+}
+
+/* EXPLANATION */
+.explanation {
+  background: #080818;
+  border-left: 3px solid #44aaff;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #8899bb;
+  border-radius: 0 5px 5px 0;
+  margin-bottom: 14px;
+  display: none;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+
+/* BUTTONS */
+.btn-next {
+  width: 100%;
+  padding: 12px;
+  background: #071428;
+  border: 2px solid #44aaff;
+  border-radius: 7px;
+  color: #44aaff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+  display: none;
+}
+
+.btn-next:hover {
+  background: #44aaff;
+  color: #07071a;
+  box-shadow: 0 0 20px #44aaff66;
+}
+
+/* RESULT SCREEN */
+#result-screen {
+  display: none;
+  text-align: center;
+  padding: 10px 0 4px;
+}
+
+.result-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.win-title  { color: #00ff88; text-shadow: 0 0 20px #00ff8866; }
+.lose-title { color: #ff4444; text-shadow: 0 0 20px #ff444466; }
+
+.result-stats {
+  font-size: 16px;
+  color: #8899bb;
+  margin-bottom: 20px;
+  line-height: 1.8;
+}
+
+.btn-restart {
+  padding: 12px 28px;
+  background: #071428;
+  border: 2px solid #44aaff;
+  border-radius: 7px;
+  color: #44aaff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.btn-restart:hover {
+  background: #44aaff;
+  color: #07071a;
+  box-shadow: 0 0 20px #44aaff66;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚔ ADA I — QUIZ BATALLA ⚔</h1>
+  <div class="subtitle">Análisis y Diseño de Aplicaciones · Marzo 2026</div>
+</header>
+
+<div id="game-container"></div>
+
+<div id="quiz-panel">
+  <div id="quiz-content">
+    <div class="top-bar">
+      <span class="prog-label" id="prog-label">1 / 15</span>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+      <div class="scores">
+        <span class="badge badge-ok">✔ <span id="cnt-ok">0</span></span>
+        <span class="badge badge-err">✘ <span id="cnt-err">0</span></span>
+      </div>
+    </div>
+
+    <div class="q-num" id="q-num">PREGUNTA 01</div>
+    <div class="q-text" id="q-text">Cargando...</div>
+    <div class="opts" id="opts"></div>
+    <div class="explanation" id="explanation"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">▶ SIGUIENTE PREGUNTA</button>
+  </div>
+
+  <div id="result-screen">
+    <div class="result-title" id="result-title">—</div>
+    <div class="result-stats" id="result-stats">—</div>
+    <button class="btn-restart" onclick="restartQuiz()">↺ JUGAR DE NUEVO</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  PREGUNTAS (15 preguntas sobre los 4 ejercicios del PDF)
+// ============================================================
+const QUESTIONS = [
+  // --- EJERCICIO 1: Distribuidora El Rápido ---
+  {
+    q: "En 'Distribuidora El Rápido', ¿cuál de las siguientes es un Requerimiento FUNCIONAL (RF)?",
+    opts: [
+      "El sistema debe soportar al menos 500 usuarios simultáneos",
+      "El sistema debe registrar pedidos de clientes digitalmente",
+      "Los datos de tarjetas de crédito deben estar encriptados",
+      "La página web debe tener alta disponibilidad (no puede caerse)"
+    ],
+    ok: 1,
+    exp: "Registrar pedidos (RF01) es una funcionalidad: describe QUÉ hace el sistema. Las demás son atributos de calidad: Rendimiento, Seguridad y Disponibilidad (RNF)."
+  },
+  {
+    q: "'Todos los viernes a las 5:00 PM el sistema genera el reporte de ventas.' ¿Qué tipo de Evento de Negocio es?",
+    opts: ["Evento Externo", "Evento Interno", "Evento Temporal", "Evento Manual"],
+    ok: 2,
+    exp: "Es Temporal: su disparador es el paso del tiempo (día y hora específicos). No interviene ningún actor humano ni un cambio de estado del sistema."
+  },
+  {
+    q: "'El stock de un producto baja de 5 unidades → el sistema alerta para reponer.' ¿Qué tipo de evento lo dispara?",
+    opts: ["Temporal", "Externo", "Mixto", "Interno"],
+    ok: 3,
+    exp: "Es Interno: lo dispara un cambio de estado dentro del sistema (el valor del inventario cruza un umbral). No hay actor externo ni reloj de por medio."
+  },
+  {
+    q: "¿Cuál de estas opciones es un Requerimiento NO FUNCIONAL (RNF) en 'Distribuidora El Rápido'?",
+    opts: [
+      "Validar deudas del cliente antes de permitir compra a crédito",
+      "Permitir a repartidores marcar pedidos como 'Entregado'",
+      "Generar incidencia de 'Retraso' si no se entrega en 24 horas",
+      "Los datos de tarjetas de crédito deben estar encriptados"
+    ],
+    ok: 3,
+    exp: "La encriptación es un RNF de Seguridad. Las demás opciones describen funcionalidades concretas (QUÉ hace el sistema)."
+  },
+  // --- EJERCICIO 2: Clínica Dental Sonrisas ---
+  {
+    q: "En 'Clínica Dental Sonrisas', ¿qué tipo de Evento de Negocio es 'El inventario de anestesia llega a cero'?",
+    opts: ["Evento Externo", "Evento Temporal", "Evento Interno", "Evento Mixto"],
+    ok: 2,
+    exp: "Es Interno: el sistema detecta que el inventario llegó a cero (cambio de estado interno) y bloquea la agenda. No hay actores externos ni relojes implicados."
+  },
+  {
+    q: "¿Cuál de estas es un Requerimiento NO FUNCIONAL en la Clínica Dental?",
+    opts: [
+      "Enviar recordatorio automático de cita 24 horas antes",
+      "Permitir a doctores adjuntar radiografías al historial del paciente",
+      "El historial clínico solo puede verlo el doctor tratante y el administrador",
+      "Calcular las comisiones de los doctores el primer día de cada mes"
+    ],
+    ok: 2,
+    exp: "El control de acceso (quién puede ver qué) es un RNF de Seguridad / Confidencialidad. Las demás describen funcionalidades del sistema."
+  },
+  {
+    q: "'El primer día de cada mes a las 8:00 AM se calculan las comisiones.' ¿Cómo se clasifica este disparador?",
+    opts: ["Requerimiento Funcional", "Evento Externo", "Evento Temporal", "Evento Interno"],
+    ok: 2,
+    exp: "Es un Evento Temporal: la fecha y hora exacta es el disparador. El cálculo en sí es el RF, pero CUÁNDO ocurre es lo que lo clasifica como temporal."
+  },
+  {
+    q: "'El paciente no confirma el recordatorio → la cita pasa a estado En Riesgo.' ¿Qué tipo de evento dispara este cambio?",
+    opts: ["Evento Temporal", "Evento Externo", "Evento Interno", "Requerimiento Funcional"],
+    ok: 2,
+    exp: "Es Interno: la ausencia de confirmación genera un cambio de estado dentro del sistema (de 'Pendiente' a 'En Riesgo'). El sistema detecta la condición y actúa."
+  },
+  // --- EJERCICIO 3: Academia Online CodeMaster ---
+  {
+    q: "En 'Academia CodeMaster', ¿cuál de las siguientes es un Requerimiento NO FUNCIONAL?",
+    opts: [
+      "Ejecutar un juez automático que valide el código del estudiante al instante",
+      "Los videos deben cargar en menos de 3 segundos con 2000 usuarios concurrentes",
+      "Bloquear 15 minutos al estudiante que exceda 10 envíos por minuto",
+      "Archivar cursos sin inscripciones en los últimos 6 meses (proceso anual)"
+    ],
+    ok: 1,
+    exp: "El tiempo de carga bajo carga concurrente es un RNF de Rendimiento. Las demás son funcionalidades (QUÉ hace el sistema)."
+  },
+  {
+    q: "¿Qué tipo de evento genera el correo motivacional con descuento a un estudiante inactivo?",
+    opts: [
+      "Externo — el estudiante solicita el correo",
+      "Interno — el sistema detecta cambio en el perfil",
+      "Temporal — pasan 7 días sin actividad registrada",
+      "Manual — el docente activa el envío"
+    ],
+    ok: 2,
+    exp: "Es Temporal: el disparador es el paso del tiempo (7 días sin actividad). Aunque hay inactividad, es el reloj del sistema el que verifica periódicamente."
+  },
+  {
+    q: "'El código del estudiante pasa todas las pruebas del juez → se desbloquea la siguiente lección.' ¿Tipo de evento?",
+    opts: ["Externo", "Temporal", "Interno", "Condicional Externo"],
+    ok: 2,
+    exp: "Es Interno: el juez automático (dentro del sistema) detecta el resultado exitoso, lo que genera el cambio de estado (lección desbloqueada)."
+  },
+  {
+    q: "En CodeMaster, 'cada 1 de enero el sistema archiva cursos inactivos y genera el reporte anual.' ¿Qué tipo de evento es?",
+    opts: ["Evento Interno (condición de inactividad)", "Evento Externo (lo activa contabilidad)", "Evento Temporal (fecha del calendario)", "Requerimiento No Funcional"],
+    ok: 2,
+    exp: "Es Temporal: el disparador principal es la fecha (1° de enero). La condición de inactividad de 6 meses es el criterio que usa ese evento para seleccionar qué archivar."
+  },
+  // --- EJERCICIO 4: Restaurante Sabor Urbano ---
+  {
+    q: "En 'Restaurante Sabor Urbano', ¿cuál de las siguientes es un RNF?",
+    opts: [
+      "Calcular el tiempo estimado de entrega según distancia y tráfico",
+      "Asignar automáticamente al repartidor más cercano disponible",
+      "Los datos de ubicación de repartidores deben eliminarse automáticamente a los 30 días",
+      "Otorgar estado 'Cliente Frecuente' y 10% de descuento al acumular 5 pedidos"
+    ],
+    ok: 2,
+    exp: "La retención y eliminación automática de datos es un RNF de Privacidad / Retención. Las demás son funcionalidades concretas del sistema."
+  },
+  {
+    q: "'Un cliente alcanza 5 pedidos en el mes → pasa a estado Cliente Frecuente.' ¿Tipo de evento?",
+    opts: ["Temporal", "Externo", "Interno", "Externo Condicional"],
+    ok: 2,
+    exp: "Es Interno: el sistema detecta que el contador de pedidos cruzó el umbral (cambio de estado interno). No interviene el reloj ni un actor externo directamente."
+  },
+  // --- PREGUNTA CONCEPTUAL ---
+  {
+    q: "¿Cuál es la diferencia clave entre un Requerimiento Funcional (RF) y uno No Funcional (RNF)?",
+    opts: [
+      "Los RF son obligatorios para el cliente; los RNF son opcionales para el equipo técnico",
+      "Los RF describen QUÉ hace el sistema; los RNF describen CÓMO lo hace (atributos de calidad)",
+      "Los RF los define el programador; los RNF los define el analista de negocio",
+      "Los RF son de alto nivel; los RNF son detalles técnicos de implementación"
+    ],
+    ok: 1,
+    exp: "RF = funcionalidades (qué hace el sistema). RNF = atributos de calidad del sistema: rendimiento, seguridad, disponibilidad, usabilidad, escalabilidad, etc. Ambos son obligatorios."
+  }
+];
+
+// ============================================================
+//  PHASER SCENE
+// ============================================================
+let gameScene = null;
+
+class BattleScene extends Phaser.Scene {
+  constructor() { super({ key: 'BattleScene' }); }
+
+  create() {
+    const W = 800, H = 250;
+    this.ropeX = W / 2; // flag x position: 150 (player wins) … 650 (cpu wins)
+    this.winX  = 150;
+    this.loseX = 650;
+
+    // --- Background ---
+    const bg = this.add.graphics();
+    bg.fillGradientStyle(0x07071a, 0x07071a, 0x0d0d24, 0x0d0d24, 1);
+    bg.fillRect(0, 0, W, H);
+
+    // Stars
+    const stars = this.add.graphics();
+    for (let i = 0; i < 80; i++) {
+      const a = Math.random() * 0.7 + 0.15;
+      stars.fillStyle(0xffffff, a);
+      stars.fillRect(
+        Phaser.Math.Between(0, W),
+        Phaser.Math.Between(0, H - 60),
+        Math.random() < 0.25 ? 2 : 1,
+        Math.random() < 0.25 ? 2 : 1
+      );
+    }
+
+    // Danger zones
+    this.leftZoneGfx = this.add.graphics();
+    this.rightZoneGfx = this.add.graphics();
+    this._drawZones();
+
+    // Ground
+    const ground = this.add.graphics();
+    ground.fillStyle(0x111130);
+    ground.fillRect(0, 195, W, 55);
+    ground.fillStyle(0x1a2248);
+    ground.fillRect(0, 195, W, 4);
+
+    // Rope graphics (redrawn each frame)
+    this.ropeGfx = this.add.graphics();
+
+    // Characters (drawn as persistent graphics)
+    this.playerGfx = this.add.graphics();
+    this.cpuGfx    = this.add.graphics();
+    this.playerX   = 145;
+    this.cpuX      = 655;
+    this._drawPlayer(0);
+    this._drawCPU(0);
+
+    // Flash overlay
+    this.flashGfx = this.add.graphics();
+    this.flashGfx.setAlpha(0);
+
+    // Status + reaction texts
+    this.statusText = this.add.text(W / 2, 14, '⚔  BATALLA DE CONOCIMIENTO  ⚔', {
+      fontFamily: 'Press Start 2P', fontSize: '8px', color: '#5588bb'
+    }).setOrigin(0.5, 0);
+
+    this.reactionText = this.add.text(W / 2, 35, '', {
+      fontFamily: 'Press Start 2P', fontSize: '9px', color: '#ffffff'
+    }).setOrigin(0.5, 0).setAlpha(0);
+
+    // Player / CPU labels
+    this.add.text(this.playerX, 230, 'JUGADOR', {
+      fontFamily: 'Press Start 2P', fontSize: '6px', color: '#4499ff'
+    }).setOrigin(0.5);
+
+    this.add.text(this.cpuX, 230, 'CPU', {
+      fontFamily: 'Press Start 2P', fontSize: '6px', color: '#ff4444'
+    }).setOrigin(0.5);
+
+    // Zone labels
+    this.add.text(75,  100, '⚠', { fontSize: '26px' }).setOrigin(0.5);
+    this.add.text(725, 100, '⚠', { fontSize: '26px' }).setOrigin(0.5);
+
+    this._drawRope();
+    gameScene = this;
+  }
+
+  _drawZones() {
+    this.leftZoneGfx.clear();
+    this.rightZoneGfx.clear();
+    this.leftZoneGfx.fillStyle(0x440000, 0.35);
+    this.leftZoneGfx.fillRect(0, 0, 140, 195);
+    this.rightZoneGfx.fillStyle(0x002200, 0.35);
+    this.rightZoneGfx.fillRect(660, 0, 140, 195);
+  }
+
+  _drawPlayer(lean) {
+    // lean: -1 (leaning back / winning) … +1 (leaning forward / losing)
+    const g = this.playerGfx;
+    const x = this.playerX;
+    g.clear();
+
+    const dy = lean * 6; // body top offset
+
+    // Shadow
+    g.fillStyle(0x000000, 0.25);
+    g.fillEllipse(x, 200, 44, 9);
+
+    // Legs
+    g.fillStyle(0x223355);
+    g.fillRect(x - 14, 182 + dy * 0.3, 11, 20);
+    g.fillRect(x + 3,  182 + dy * 0.3, 11, 20);
+
+    // Shoes
+    g.fillStyle(0x111122);
+    g.fillRect(x - 16, 198 + dy * 0.3, 14, 6);
+    g.fillRect(x + 1,  198 + dy * 0.3, 14, 6);
+
+    // Body
+    g.fillStyle(0x1a5bc0);
+    g.fillRoundedRect(x - 16, 145 + dy, 32, 40, 4);
+
+    // Shirt stripe
+    g.fillStyle(0x2a6ed0);
+    g.fillRect(x - 8, 150 + dy, 16, 5);
+
+    // Left arm (behind, toward rope)
+    g.fillStyle(0xf0c070);
+    g.fillRoundedRect(x + 15, 150 + dy, 28, 11, 4);
+
+    // Right arm (back)
+    g.fillStyle(0xf0c070);
+    g.fillRoundedRect(x - 43, 155 + dy, 28, 11, 4);
+
+    // Neck
+    g.fillStyle(0xf0c070);
+    g.fillRect(x - 6, 135 + dy, 12, 12);
+
+    // Head
+    g.fillStyle(0xf0c070);
+    g.fillCircle(x, 123 + dy, 18);
+
+    // Eyes (determined look)
+    g.fillStyle(0x111133);
+    g.fillCircle(x - 6, 121 + dy, 3);
+    g.fillCircle(x + 6, 121 + dy, 3);
+
+    // Eyebrows (focused)
+    g.fillStyle(0x332200);
+    g.fillRect(x - 9, 115 + dy, 7, 2);
+    g.fillRect(x + 2,  115 + dy, 7, 2);
+
+    // Gritted teeth
+    g.fillStyle(0x553322);
+    g.fillRect(x - 6, 129 + dy, 12, 3);
+    g.fillStyle(0xffffff);
+    g.fillRect(x - 5, 129 + dy, 10, 2);
+
+    // Hair
+    g.fillStyle(0x332200);
+    g.fillEllipse(x, 108 + dy, 36, 22);
+
+    // Graduation cap
+    g.fillStyle(0x001144);
+    g.fillRect(x - 19, 103 + dy, 38, 6);
+    g.fillRect(x - 11, 93  + dy, 22, 12);
+  }
+
+  _drawCPU(lean) {
+    const g = this.cpuGfx;
+    const x = this.cpuX;
+    g.clear();
+
+    const dy = lean * 6;
+
+    // Shadow
+    g.fillStyle(0x000000, 0.25);
+    g.fillEllipse(x, 200, 44, 9);
+
+    // Legs
+    g.fillStyle(0x441111);
+    g.fillRect(x - 14, 182 + dy * 0.3, 11, 20);
+    g.fillRect(x + 3,  182 + dy * 0.3, 11, 20);
+
+    // Feet
+    g.fillStyle(0x220000);
+    g.fillRect(x - 16, 198 + dy * 0.3, 14, 6);
+    g.fillRect(x + 1,  198 + dy * 0.3, 14, 6);
+
+    // Body
+    g.fillStyle(0x8b1a1a);
+    g.fillRoundedRect(x - 16, 145 + dy, 32, 40, 4);
+
+    // Body panel
+    g.fillStyle(0x550000);
+    g.fillRect(x - 10, 150 + dy, 20, 28);
+
+    // LEDs on panel
+    g.fillStyle(0xff4444); g.fillRect(x - 8, 154 + dy, 6, 4);
+    g.fillStyle(0xff8800); g.fillRect(x + 2,  154 + dy, 6, 4);
+    g.fillStyle(0xffee00); g.fillRect(x - 8, 162 + dy, 6, 4);
+    g.fillStyle(0x00ff88); g.fillRect(x + 2,  162 + dy, 6, 4);
+
+    // Left arm (toward rope)
+    g.fillStyle(0x882222);
+    g.fillRoundedRect(x - 43, 150 + dy, 28, 11, 4);
+
+    // Right arm (back)
+    g.fillStyle(0x882222);
+    g.fillRoundedRect(x + 15, 155 + dy, 28, 11, 4);
+
+    // Head (robot box)
+    g.fillStyle(0x9b2020);
+    g.fillRect(x - 18, 110 + dy, 36, 36);
+
+    // Face screen
+    g.fillStyle(0x000000);
+    g.fillRect(x - 14, 114 + dy, 28, 28);
+
+    // Eyes (red LEDs)
+    g.fillStyle(0xff0000);
+    g.fillRect(x - 10, 118 + dy, 8, 7);
+    g.fillRect(x + 2,  118 + dy, 8, 7);
+
+    // LED reflections
+    g.fillStyle(0xff8888, 0.5);
+    g.fillRect(x - 9, 118 + dy, 3, 3);
+    g.fillRect(x + 3, 118 + dy, 3, 3);
+
+    // Angry mouth
+    g.fillStyle(0xff4444);
+    g.fillRect(x - 8, 133 + dy, 16, 3);
+
+    // Antenna
+    g.fillStyle(0xaa3333);
+    g.fillRect(x - 2, 102 + dy, 4, 10);
+    g.fillStyle(0xff4444);
+    g.fillCircle(x, 100 + dy, 6);
+    g.fillStyle(0xff9999, 0.6);
+    g.fillCircle(x - 2, 98 + dy, 2);
+  }
+
+  _drawRope() {
+    const g = this.ropeGfx;
+    g.clear();
+
+    const ropeY  = 160;
+    const startX = this.playerX + 28;
+    const endX   = this.cpuX  - 28;
+    const flagX  = this.ropeX;
+    const t      = Date.now() / 700;
+
+    // Rope segments with gentle wave
+    g.lineStyle(3, 0xaa8844, 1);
+    g.beginPath();
+    g.moveTo(startX, ropeY);
+    for (let x = startX; x <= endX; x += 4) {
+      const wave = Math.sin(t + x * 0.04) * 3;
+      g.lineTo(x, ropeY + wave);
+    }
+    g.lineTo(endX, ropeY);
+    g.strokePath();
+
+    // Center marker line
+    g.lineStyle(1, 0x334466, 0.5);
+    g.beginPath();
+    g.moveTo(400, 145);
+    g.lineTo(400, 175);
+    g.strokePath();
+
+    // Flag pole
+    g.fillStyle(0xdddddd);
+    g.fillRect(flagX - 1, ropeY - 24, 2, 28);
+
+    // Flag triangle (color based on position)
+    const progress = (flagX - 400) / 250; // -1 to +1
+    let flagColor;
+    if (progress < -0.15) flagColor = 0x44aaff;       // player winning
+    else if (progress > 0.15) flagColor = 0xff4444;    // cpu winning
+    else flagColor = 0xffdd00;                          // tied
+
+    g.fillStyle(flagColor);
+    g.fillTriangle(flagX + 1, ropeY - 24, flagX + 18, ropeY - 16, flagX + 1, ropeY - 8);
+
+    // Flag shine
+    g.fillStyle(0xffffff, 0.3);
+    g.fillTriangle(flagX + 1, ropeY - 24, flagX + 9, ropeY - 20, flagX + 1, ropeY - 16);
+  }
+
+  update() {
+    this._drawRope();
+  }
+
+  // Called from quiz logic
+  setRopePosition(pos, maxPos) {
+    // pos: negative = player winning, positive = CPU winning
+    const center = 400;
+    const range  = 250;
+    this.ropeX = center + (pos / maxPos) * range;
+
+    // Lean characters
+    const lean = pos / maxPos; // -1 (player winning) to +1 (cpu winning)
+    this._drawPlayer(Math.max(0, lean));   // forward lean when losing
+    this._drawCPU(Math.max(0, -lean));
+
+    // Update status text
+    if (pos < -maxPos * 0.4) {
+      this.statusText.setText('🔥 ¡VAS GANANDO! SIGUE ASÍ').setColor('#00ff88');
+    } else if (pos > maxPos * 0.4) {
+      this.statusText.setText('💀 LA CPU TE ESTÁ GANANDO...').setColor('#ff4444');
+    } else {
+      this.statusText.setText('⚔  BATALLA PAREJA  ⚔').setColor('#5588bb');
+    }
+  }
+
+  flashAnswer(correct) {
+    const g = this.flashGfx;
+    g.clear();
+    g.fillStyle(correct ? 0x00ff88 : 0xff3333, 0.18);
+    g.fillRect(0, 0, 800, 250);
+
+    this.tweens.add({
+      targets: this.flashGfx,
+      alpha: 0,
+      duration: 500,
+      ease: 'Power2'
+    });
+    this.flashGfx.setAlpha(1);
+
+    // Reaction emoji text
+    const emoji = correct ? '💪 ¡CORRECTO!' : '💀 ¡FALLASTE!';
+    const col   = correct ? '#00ff88' : '#ff4444';
+    this.reactionText.setText(emoji).setColor(col).setAlpha(1).setY(35);
+
+    this.tweens.add({
+      targets: this.reactionText,
+      y: 20,
+      alpha: 0,
+      duration: 900,
+      ease: 'Power2'
+    });
+  }
+
+  showEndResult(win) {
+    if (win) {
+      this.statusText.setText('🏆 ¡VICTORIA!  ¡CPU VENCIDA!').setColor('#00ff88');
+      // Confetti
+      for (let i = 0; i < 28; i++) {
+        this.time.delayedCall(i * 60, () => {
+          const c = this.add.graphics();
+          const col = Phaser.Math.RND.pick([0x44aaff, 0x00ff88, 0xffdd00, 0xff88ff]);
+          c.fillStyle(col, 1);
+          c.fillRect(
+            Phaser.Math.Between(80, 720),
+            Phaser.Math.Between(-20, 60),
+            8, 8
+          );
+          this.tweens.add({
+            targets: c, y: 280, alpha: 0,
+            duration: Phaser.Math.Between(900, 1600),
+            ease: 'Power1',
+            onComplete: () => c.destroy()
+          });
+        });
+      }
+    } else {
+      this.statusText.setText('💀 ¡LA CPU GANÓ!  REVISA EL MATERIAL').setColor('#ff4444');
+    }
+  }
+}
+
+// ============================================================
+//  PHASER CONFIG
+// ============================================================
+const phaserConfig = {
+  type: Phaser.AUTO,
+  width: 800,
+  height: 250,
+  backgroundColor: '#07071a',
+  parent: 'game-container',
+  scene: BattleScene,
+  audio: { disableWebAudio: true }
+};
+const game = new Phaser.Game(phaserConfig);
+
+// ============================================================
+//  QUIZ STATE
+// ============================================================
+let curQ      = 0;
+let okCount   = 0;
+let errCount  = 0;
+let ropePos   = 0;  // <0 = player winning, >0 = cpu winning
+let answered  = false;
+const STEP    = 2;
+const MAX_POS = 8;   // win/lose threshold
+
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+function renderQuestion() {
+  const q = QUESTIONS[curQ];
+  document.getElementById('q-num').textContent   = `PREGUNTA ${String(curQ + 1).padStart(2, '0')}`;
+  document.getElementById('q-text').textContent  = q.q;
+  document.getElementById('prog-label').textContent = `${curQ + 1} / ${QUESTIONS.length}`;
+  document.getElementById('prog-fill').style.width  = `${(curQ / QUESTIONS.length) * 100}%`;
+  document.getElementById('explanation').style.display = 'none';
+  document.getElementById('btn-next').style.display   = 'none';
+
+  const grid = document.getElementById('opts');
+  grid.innerHTML = '';
+  answered = false;
+
+  q.opts.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span><span>${text}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    grid.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+
+  const q = QUESTIONS[curQ];
+  const btns = document.querySelectorAll('.opt');
+  btns.forEach(b => b.disabled = true);
+
+  const isOk = idx === q.ok;
+
+  btns[idx].classList.add(isOk ? 'correct' : 'wrong');
+  if (!isOk) btns[q.ok].classList.add('correct');
+
+  if (isOk) {
+    okCount++;
+    ropePos -= STEP;  // player pulls
+    document.getElementById('cnt-ok').textContent = okCount;
+  } else {
+    errCount++;
+    ropePos += STEP;  // cpu pulls
+    document.getElementById('cnt-err').textContent = errCount;
+  }
+
+  // Explanation
+  const expEl = document.getElementById('explanation');
+  expEl.textContent = '💡 ' + q.exp;
+  expEl.style.display = 'block';
+
+  // Update game
+  if (gameScene) {
+    gameScene.setRopePosition(ropePos, MAX_POS);
+    gameScene.flashAnswer(isOk);
+  }
+
+  // Win / lose by threshold
+  if (ropePos <= -MAX_POS) { setTimeout(() => endGame(true), 750);  return; }
+  if (ropePos >=  MAX_POS) { setTimeout(() => endGame(false), 750); return; }
+
+  // Last question
+  if (curQ >= QUESTIONS.length - 1) {
+    setTimeout(() => endGame(okCount > errCount), 750);
+    return;
+  }
+
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function nextQuestion() {
+  curQ++;
+  renderQuestion();
+}
+
+function endGame(playerWon) {
+  if (gameScene) gameScene.showEndResult(playerWon);
+
+  document.getElementById('quiz-content').style.display  = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+
+  const titleEl = document.getElementById('result-title');
+  const statsEl = document.getElementById('result-stats');
+
+  if (playerWon) {
+    titleEl.textContent = '🏆 ¡VICTORIA!';
+    titleEl.className   = 'result-title win-title';
+  } else {
+    titleEl.textContent = '💀 DERROTA';
+    titleEl.className   = 'result-title lose-title';
+  }
+
+  const total = okCount + errCount;
+  const pct   = total > 0 ? Math.round((okCount / total) * 100) : 0;
+  statsEl.innerHTML = `
+    Correctas: <strong style="color:#00cc66">${okCount}</strong>
+    &nbsp;|&nbsp;
+    Falladas: <strong style="color:#ff4444">${errCount}</strong><br>
+    <small style="color:#6688aa">
+      ${total} preguntas respondidas · ${pct}% de acierto
+    </small>
+  `;
+}
+
+function restartQuiz() {
+  curQ     = 0;
+  okCount  = 0;
+  errCount = 0;
+  ropePos  = 0;
+  answered = false;
+
+  document.getElementById('cnt-ok').textContent  = '0';
+  document.getElementById('cnt-err').textContent = '0';
+  document.getElementById('quiz-content').style.display  = 'block';
+  document.getElementById('result-screen').style.display = 'none';
+
+  if (gameScene) {
+    gameScene.setRopePosition(0, MAX_POS);
+    gameScene.statusText.setText('⚔  BATALLA DE CONOCIMIENTO  ⚔').setColor('#5588bb');
+  }
+
+  renderQuestion();
+}
+
+// Start quiz after Phaser is ready
+window.addEventListener('load', () => {
+  setTimeout(renderQuestion, 600);
+});
+</script>
+</body>
+</html>
