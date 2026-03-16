@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presentación - Conceptos de Ingeniería de Software</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0d6efd;
+      --secondary: #6610f2;
+      --accent: #20c997;
+      --warning-soft: #fff3cd;
+      --dark-soft: #1f2937;
+      --light-soft: #f8f9fa;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: linear-gradient(135deg, #eef2ff, #f8fafc);
+      color: #212529;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .navbar {
+      backdrop-filter: blur(8px);
+      background: rgba(13, 110, 253, 0.92) !important;
+    }
+    .hero {
+      min-height: 80vh;
+      background: radial-gradient(circle at top right, rgba(13,110,253,.18), transparent 35%),
+                  radial-gradient(circle at bottom left, rgba(102,16,242,.18), transparent 35%);
+      display: flex;
+      align-items: center;
+    }
+    .section-card {
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.4);
+      border-radius: 1.5rem;
+      box-shadow: 0 16px 32px rgba(31,41,55,.08);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .icon-badge {
+      width: 64px;
+      height: 64px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 1rem;
+      font-size: 1.6rem;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 10px 24px rgba(13,110,253,.25);
+    }
+    .concept-pill {
+      display: inline-block;
+      padding: .5rem .9rem;
+      border-radius: 999px;
+      background: #e9f2ff;
+      color: #0a58ca;
+      font-weight: 600;
+      margin: .25rem;
+    }
+    .timeline-step {
+      border-left: 4px solid var(--primary);
+      padding-left: 1rem;
+      margin-bottom: 1rem;
+    }
+    .example-box {
+      background: #f8f9ff;
+      border-left: 5px solid var(--secondary);
+      border-radius: 1rem;
+      padding: 1rem;
+    }
+    .comparison-table td, .comparison-table th {
+      vertical-align: middle;
+    }
+    .question-card {
+      border: none;
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,.06);
+      margin-bottom: 1rem;
+    }
+    .exercise-card {
+      border: 1px solid #dbeafe;
+      border-radius: 1rem;
+      height: 100%;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(59,130,246,.08);
+    }
+    .sticky-actions {
+      position: sticky;
+      bottom: 1rem;
+      z-index: 1020;
+    }
+    .progress {
+      height: 10px;
+      border-radius: 999px;
+    }
+    footer {
+      background: #0b1220;
+      color: #d1d5db;
+    }
+    .mini-note {
+      background: var(--warning-soft);
+      border-left: 4px solid #ffc107;
+      border-radius: .75rem;
+      padding: .9rem 1rem;
+    }
+    .slide-tag {
+      font-size: .85rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #6c757d;
+      font-weight: 700;
+    }
+    @media (max-width: 768px) {
+      .section-card { padding: 1.25rem; }
+      .hero { min-height: auto; padding-top: 5rem; padding-bottom: 3rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#inicio"><i class="fa-solid fa-diagram-project me-2"></i>Clase: Conceptos</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menuNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#conceptos">Conceptos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#ejercicios">Ejercicios</a></li>
+          <li class="nav-item"><a class="nav-link" href="#soluciones">Soluciones</a></li>
+          <li class="nav-item"><a class="nav-link" href="#quiz">Cuestionario</a></li>
+          <li class="nav-item"><a class="nav-link" href="#modulo">Módulo de práctica</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <header id="inicio" class="hero">
+    <div class="container py-5">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7 animate__animated animate__fadeInLeft">
+          <span class="slide-tag">Presentación interactiva</span>
+          <h1 class="display-4 fw-bold mt-2">Sistemas adyacentes, diagramas de contexto, customer journey map, abstracción, encapsulamiento, modularidad, cohesión, acoplamiento y connascence</h1>
+          <p class="lead text-secondary mt-3">Material pensado para clase, con ejemplos, actividades breves, cuestionario automático y devolución formativa para que el estudiante entienda en qué se equivocó.</p>
+          <div class="mt-4 d-flex flex-wrap gap-2">
+            <a href="#conceptos" class="btn btn-primary btn-lg"><i class="fa-solid fa-play me-2"></i>Comenzar</a>
+            <a href="#quiz" class="btn btn-outline-primary btn-lg"><i class="fa-solid fa-list-check me-2"></i>Ir al cuestionario</a>
+          </div>
+        </div>
+        <div class="col-lg-5 animate__animated animate__fadeInRight">
+          <div class="section-card">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-chalkboard-user me-2 text-primary"></i>Objetivos de aprendizaje</h5>
+            <ul class="mb-0">
+              <li>Distinguir tipos de sistemas adyacentes.</li>
+              <li>Interpretar y construir diagramas de contexto.</li>
+              <li>Comprender el customer journey map como técnica de relevamiento.</li>
+              <li>Explicar abstracción y encapsulamiento con ejemplos.</li>
+              <li>Relacionar modularidad, cohesión, acoplamiento y connascence.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-5" id="conceptos">
+    <section class="section-card animate-on-scroll">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-map"></i></div>
+        <div>
+          <div class="slide-tag">Mapa de la clase</div>
+          <h2 class="mb-0">Ruta de contenidos</h2>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap">
+        <span class="concept-pill">Sistemas adyacentes</span>
+        <span class="concept-pill">Diagrama de contexto</span>
+        <span class="concept-pill">Customer journey map</span>
+        <span class="concept-pill">Abstracción</span>
+        <span class="concept-pill">Encapsulamiento</span>
+        <span class="concept-pill">Modularidad</span>
+        <span class="concept-pill">Cohesión</span>
+        <span class="concept-pill">Acoplamiento</span>
+        <span class="concept-pill">Connascence</span>
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="sistemas-adyacentes">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-people-arrows"></i></div>
+        <div>
+          <div class="slide-tag">Concepto 1</div>
+          <h2 class="mb-0">Sistemas adyacentes</h2>
+        </div>
+      </div>
+      <p>Son sistemas automatizados o humanos que están al lado del trabajo estudiado. Intercambian datos o servicios con ese trabajo y ayudan a definir qué queda dentro y qué queda fuera del alcance del producto.</p>
+      <div class="row g-3 mt-2">
+        <div class="col-md-4">
+          <div class="exercise-card p-3 h-100">
+            <h5><i class="fa-solid fa-user text-primary me-2"></i>Activos</h5>
+            <p class="mb-0">Son humanos que interactúan con el trabajo. Puede evaluarse si parte de su tarea puede ser incorporada al producto.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="exercise-card p-3 h-100">
+            <h5><i class="fa-solid fa-building text-success me-2"></i>Autónomos</h5>
+            <p class="mb-0">Actúan independientemente del trabajo. Se comunican mediante flujos unidireccionales y no existe diálogo de ida y vuelta.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="exercise-card p-3 h-100">
+            <h5><i class="fa-solid fa-robot text-warning me-2"></i>Cooperativos</h5>
+            <p class="mb-0">Sistemas automatizados que colaboran con mensajes y respuestas predecibles durante un caso de uso del negocio.</p>
+          </div>
+        </div>
+      </div>
+      <div class="example-box mt-4">
+        <strong>Ejemplo breve:</strong> En una tienda online, el <em>cliente</em> sería un sistema adyacente activo, una <em>empresa de logística externa</em> podría ser autónoma si solo recibe exportaciones de datos, y una <em>pasarela de pago</em> normalmente sería cooperativa.
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="diagrama-contexto">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-circle-nodes"></i></div>
+        <div>
+          <div class="slide-tag">Concepto 2</div>
+          <h2 class="mb-0">Diagrama de contexto</h2>
+        </div>
+      </div>
+      <p>Es un modelo gráfico del alcance del trabajo. Representa el trabajo como una única actividad central, rodeada por sistemas adyacentes y unida a ellos por flujos de datos.</p>
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <h5>Elementos</h5>
+          <ul>
+            <li><strong>Trabajo:</strong> el sistema, producto o proceso estudiado.</li>
+            <li><strong>Sistemas adyacentes:</strong> actores externos.</li>
+            <li><strong>Flujos de datos:</strong> asociaciones dirigidas con nombre.</li>
+            <li><strong>Frontera opcional:</strong> delimita el alcance.</li>
+          </ul>
+        </div>
+        <div class="col-lg-6">
+          <h5>¿Para qué sirve?</h5>
+          <ul>
+            <li>Generar consenso sobre el alcance.</li>
+            <li>Mostrar responsabilidades internas y externas.</li>
+            <li>Ayudar a derivar eventos del negocio.</li>
+            <li>Evitar analizar partes que no pertenecen al trabajo.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="mini-note mt-3">
+        Consejo didáctico: cuando un estudiante no sabe si algo va dentro o fuera del sistema, el diagrama de contexto ayuda a tomar la decisión antes de diseñar en detalle.
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="cjm">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-route"></i></div>
+        <div>
+          <div class="slide-tag">Concepto 3</div>
+          <h2 class="mb-0">Customer journey map</h2>
+        </div>
+      </div>
+      <p>Representa gráficamente la experiencia del usuario con un servicio, mostrando acciones, puntos de contacto e incluso estados emocionales. Puede reflejar el estado actual o diseñar uno futuro.</p>
+      <div class="row g-3 mt-2">
+        <div class="col-md-3"><div class="exercise-card p-3 h-100"><strong>Acciones</strong><br>Qué hace el usuario.</div></div>
+        <div class="col-md-3"><div class="exercise-card p-3 h-100"><strong>Puntos de contacto</strong><br>Dónde interactúa con el servicio.</div></div>
+        <div class="col-md-3"><div class="exercise-card p-3 h-100"><strong>Canales</strong><br>Web, app, presencial, teléfono.</div></div>
+        <div class="col-md-3"><div class="exercise-card p-3 h-100"><strong>Emociones</strong><br>Cómo se siente durante el recorrido.</div></div>
+      </div>
+      <div class="example-box mt-4">
+        <strong>Ejemplo breve:</strong> Un estudiante busca información de una carrera, entra al sitio, compara planes, consulta por WhatsApp, se inscribe y recibe confirmación. En cada paso pueden registrarse dudas, frustraciones o satisfacción.
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="abstraccion">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-layer-group"></i></div>
+        <div>
+          <div class="slide-tag">Concepto 4</div>
+          <h2 class="mb-0">Abstracción</h2>
+        </div>
+      </div>
+      <p>La abstracción reduce lo irrelevante y resalta lo esencial. Permite pensar en un problema desde un nivel conceptual más alto, sin quedar atrapados en todos los detalles de implementación.</p>
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <h5>Ideas clave</h5>
+          <ul>
+            <li>Trabajamos con distintos niveles de detalle.</li>
+            <li>Nos concentramos en un nivel a la vez.</li>
+            <li>Permite ver el panorama general.</li>
+            <li>No busca ser vaga: busca precisión en otro nivel semántico.</li>
+          </ul>
+        </div>
+        <div class="col-lg-6">
+          <h5>Ejemplos</h5>
+          <ul>
+            <li>Llamar “casa” a un conjunto de ladrillos, cemento y vidrio.</li>
+            <li>Usar una función sin conocer su implementación interna.</li>
+            <li>Diseñar con clases o diagramas antes de programar detalle por detalle.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="encapsulamiento">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-box"></i></div>
+        <div>
+          <div class="slide-tag">Concepto 5</div>
+          <h2 class="mb-0">Encapsulamiento</h2>
+        </div>
+      </div>
+      <p>Si la abstracción ayuda a ignorar detalles, el encapsulamiento impide depender de ellos. Oculta la implementación detrás de una interfaz para que los componentes puedan cambiar sin romper a los demás.</p>
+      <div class="comparison-table table-responsive mt-3">
+        <table class="table table-bordered align-middle">
+          <thead class="table-primary">
+            <tr>
+              <th>Concepto</th>
+              <th>Pregunta guía</th>
+              <th>Idea central</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Abstracción</td>
+              <td>¿Qué hace?</td>
+              <td>Modela lo esencial.</td>
+            </tr>
+            <tr>
+              <td>Encapsulamiento</td>
+              <td>¿Cómo evito depender de su interior?</td>
+              <td>Esconde la implementación.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="modularidad">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-cubes"></i></div>
+        <div>
+          <div class="slide-tag">Concepto 6</div>
+          <h2 class="mb-0">Modularidad</h2>
+        </div>
+      </div>
+      <p>La modularidad descompone un sistema en módulos altamente cohesivos y poco acoplados, ocultando detalles de implementación detrás de interfaces. Esto favorece mantenimiento, reutilización y evolución independiente.</p>
+      <div class="timeline-step"><strong>Módulo:</strong> componente con responsabilidad clara.</div>
+      <div class="timeline-step"><strong>Alta cohesión:</strong> las partes del módulo están fuertemente relacionadas entre sí.</div>
+      <div class="timeline-step"><strong>Bajo acoplamiento:</strong> el módulo depende poco de otros.</div>
+      <div class="timeline-step"><strong>Baja connascence:</strong> menos cambios simultáneos obligatorios entre partes.</div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="cohesion-acoplamiento">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-link"></i></div>
+        <div>
+          <div class="slide-tag">Conceptos 7 y 8</div>
+          <h2 class="mb-0">Cohesión y acoplamiento</h2>
+        </div>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="exercise-card p-3 h-100">
+            <h5 class="text-success">Cohesión</h5>
+            <p>Mide qué tan relacionadas están las partes de un mismo módulo. Un módulo cohesivo reúne partes que conviene mantener juntas.</p>
+            <p class="mb-0"><strong>Meta:</strong> cohesión alta.</p>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="exercise-card p-3 h-100">
+            <h5 class="text-danger">Acoplamiento</h5>
+            <p>Mide las conexiones entre módulos diferentes. Puede ser aferente (entradas) o eferente (salidas).</p>
+            <p class="mb-0"><strong>Meta:</strong> acoplamiento bajo.</p>
+          </div>
+        </div>
+      </div>
+      <div class="example-box mt-4">
+        <strong>Ejemplo breve:</strong> si una clase “Factura” conoce demasiados detalles de “Cliente”, “Stock”, “Impuestos” y “Envíos”, el acoplamiento crece. Si además mezcla validación, cálculo, impresión y persistencia, la cohesión baja.
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="connascence">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-code-branch"></i></div>
+        <div>
+          <div class="slide-tag">Concepto 9</div>
+          <h2 class="mb-0">Co-nascencia o connascence</h2>
+        </div>
+      </div>
+      <p>Dos partes son co-nascentes si un cambio en una obliga a modificar la otra para mantener la corrección del sistema. Refina la idea de acoplamiento.</p>
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="exercise-card p-3 h-100">
+            <h5>Estática</h5>
+            <ul class="mb-0">
+              <li>De nombres</li>
+              <li>De tipos</li>
+              <li>De significado</li>
+              <li>De posición</li>
+              <li>De algoritmos</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="exercise-card p-3 h-100">
+            <h5>Dinámica</h5>
+            <ul class="mb-0">
+              <li>De orden de ejecución</li>
+              <li>De tiempo</li>
+              <li>De valores</li>
+              <li>De identidad</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="ejercicios">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-dumbbell"></i></div>
+        <div>
+          <div class="slide-tag">Práctica guiada</div>
+          <h2 class="mb-0">Ejercicios breves para aplicar en clase</h2>
+        </div>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-xl-4">
+          <div class="exercise-card p-3">
+            <h5>Ejercicio 1: identificar adyacentes</h5>
+            <p>Para un sistema de biblioteca online, clasifica estos elementos: estudiante, sistema de pagos, imprenta externa, administrador.</p>
+            <small class="text-secondary">Meta: distinguir activo, autónomo y cooperativo.</small>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <div class="exercise-card p-3">
+            <h5>Ejercicio 2: diagrama de contexto</h5>
+            <p>Dibuja el diagrama de contexto de una app para reservar consultas médicas. Define trabajo, sistemas adyacentes y 5 flujos de datos.</p>
+            <small class="text-secondary">Meta: delimitar alcance.</small>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <div class="exercise-card p-3">
+            <h5>Ejercicio 3: customer journey</h5>
+            <p>Describe el recorrido de un estudiante al inscribirse en una carrera. Incluye acciones, emociones y puntos de contacto.</p>
+            <small class="text-secondary">Meta: comprender experiencia del usuario.</small>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <div class="exercise-card p-3">
+            <h5>Ejercicio 4: abstracción</h5>
+            <p>Explica tres abstracciones presentes en un cajero automático: interfaz, transacción y cuenta bancaria.</p>
+            <small class="text-secondary">Meta: pensar por niveles.</small>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <div class="exercise-card p-3">
+            <h5>Ejercicio 5: encapsulamiento</h5>
+            <p>Propón una clase “CuentaBancaria” con atributos privados y métodos públicos. Justifica qué conviene ocultar.</p>
+            <small class="text-secondary">Meta: proteger implementación.</small>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <div class="exercise-card p-3">
+            <h5>Ejercicio 6: cohesión y acoplamiento</h5>
+            <p>Analiza un módulo “GestorTodoEnUno” que imprime reportes, valida usuarios, guarda datos y manda mails. ¿Qué problema tiene?</p>
+            <small class="text-secondary">Meta: detectar mala modularidad.</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="section-card animate-on-scroll" id="soluciones">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-key"></i></div>
+        <div>
+          <div class="slide-tag">Guía docente</div>
+          <h2 class="mb-0">Solución orientativa de los ejercicios</h2>
+        </div>
+      </div>
+      <div class="alert alert-warning rounded-4 border-0">
+        Estas respuestas son una guía posible. Puedes usarlas como pauta de corrección o pedir a los estudiantes que comparen su propuesta con esta solución y justifiquen diferencias.
+      </div>
+      <div class="row g-4">
+        <div class="col-12">
+          <div class="exercise-card p-4">
+            <h5>Ejercicio 1: identificar adyacentes</h5>
+            <p><strong>Posible solución:</strong> estudiante = <strong>adyacente activo</strong> porque es una persona que interactúa con el sistema; sistema de pagos = <strong>adyacente cooperativo</strong> porque colabora intercambiando información y servicios; imprenta externa = <strong>adyacente autónomo</strong> si solo recibe pedidos y entrega resultados sin depender del flujo principal interno; administrador = <strong>adyacente activo</strong> porque es un usuario humano que opera el sistema.</p>
+            <p class="mb-0"><strong>Clave conceptual:</strong> mirar si el elemento es humano o automatizado y si coopera directamente con el trabajo o funciona más independiente.</p>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="exercise-card p-4">
+            <h5>Ejercicio 2: diagrama de contexto</h5>
+            <p><strong>Posible solución:</strong> el trabajo puede llamarse <em>Sistema de Reserva de Consultas Médicas</em>. Sistemas adyacentes: paciente, recepcionista, médico, sistema de pagos y sistema de notificaciones.</p>
+            <p><strong>Cinco flujos de datos posibles:</strong></p>
+            <ul class="mb-0">
+              <li>Paciente → sistema: solicitud de reserva.</li>
+              <li>Sistema → paciente: confirmación de turno.</li>
+              <li>Médico → sistema: disponibilidad horaria.</li>
+              <li>Sistema → sistema de pagos: datos de cobro o validación.</li>
+              <li>Sistema → sistema de notificaciones: recordatorio de consulta.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="exercise-card p-4">
+            <h5>Ejercicio 3: customer journey</h5>
+            <p><strong>Posible solución:</strong></p>
+            <ul class="mb-0">
+              <li><strong>Acciones:</strong> busca información, completa formulario, adjunta documentos, confirma inscripción, recibe respuesta.</li>
+              <li><strong>Puntos de contacto:</strong> sitio web, correo institucional, formulario online, oficina de atención.</li>
+              <li><strong>Emociones:</strong> curiosidad al inicio, duda al cargar datos, tranquilidad si recibe confirmación, frustración si el sistema no responde.</li>
+            </ul>
+            <p class="mt-3 mb-0"><strong>Clave conceptual:</strong> el journey no describe solo pasos, también experiencia y percepción del usuario.</p>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="exercise-card p-4">
+            <h5>Ejercicio 4: abstracción</h5>
+            <p><strong>Posible solución:</strong></p>
+            <ul class="mb-0">
+              <li><strong>Interfaz:</strong> muestra opciones simples como retirar, depositar o consultar saldo, sin mostrar la complejidad interna.</li>
+              <li><strong>Transacción:</strong> el usuario entiende “retiro dinero”, aunque por detrás existan validaciones, reglas y registros.</li>
+              <li><strong>Cuenta bancaria:</strong> se ve como saldo y movimientos, aunque internamente existan tablas, identificadores y controles.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="exercise-card p-4">
+            <h5>Ejercicio 5: encapsulamiento</h5>
+            <p><strong>Posible solución:</strong> una clase <code>CuentaBancaria</code> podría tener atributos privados como <code>saldo</code>, <code>titular</code> y <code>numeroCuenta</code>, y métodos públicos como <code>depositar()</code>, <code>retirar()</code> y <code>consultarSaldo()</code>.</p>
+            <p class="mb-0"><strong>Justificación:</strong> conviene ocultar el saldo y modificarlo solo mediante métodos que validen reglas, por ejemplo evitar retiros mayores al saldo disponible o montos negativos.</p>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="exercise-card p-4">
+            <h5>Ejercicio 6: cohesión y acoplamiento</h5>
+            <p><strong>Posible solución:</strong> el módulo <em>GestorTodoEnUno</em> tiene <strong>baja cohesión</strong> porque reúne responsabilidades muy distintas: reportes, usuarios, persistencia y correos. También puede generar <strong>alto acoplamiento</strong> porque muchos componentes dependerían de ese módulo gigante.</p>
+            <p class="mb-0"><strong>Mejora:</strong> dividir en módulos como <em>GestorUsuarios</em>, <em>GeneradorReportes</em>, <em>RepositorioDatos</em> y <em>ServicioCorreo</em>. Así cada módulo tiene una responsabilidad más clara y dependencias más controladas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="section-card animate-on-scroll" id="modulo">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-laptop-code"></i></div>
+        <div>
+          <div class="slide-tag">Módulo sugerido</div>
+          <h2 class="mb-0">Propuesta de módulo de práctica</h2>
+        </div>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4"><div class="exercise-card p-3 h-100"><h5>Paso 1</h5><p>Elegir un sistema cotidiano: tienda, biblioteca, clínica, aula virtual.</p></div></div>
+        <div class="col-lg-4"><div class="exercise-card p-3 h-100"><h5>Paso 2</h5><p>Detectar trabajo, actores externos y flujos de datos.</p></div></div>
+        <div class="col-lg-4"><div class="exercise-card p-3 h-100"><h5>Paso 3</h5><p>Construir diagrama de contexto en papel o herramienta digital.</p></div></div>
+        <div class="col-lg-4"><div class="exercise-card p-3 h-100"><h5>Paso 4</h5><p>Elegir un usuario y describir su customer journey.</p></div></div>
+        <div class="col-lg-4"><div class="exercise-card p-3 h-100"><h5>Paso 5</h5><p>Proponer módulos del sistema y justificar cohesión, acoplamiento y encapsulamiento.</p></div></div>
+        <div class="col-lg-4"><div class="exercise-card p-3 h-100"><h5>Paso 6</h5><p>Detectar al menos dos casos de connascence y plantear mejoras.</p></div></div>
+      </div>
+    </section>
+
+    <section class="section-card animate-on-scroll" id="quiz">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="icon-badge"><i class="fa-solid fa-circle-question"></i></div>
+        <div>
+          <div class="slide-tag">Evaluación formativa</div>
+          <h2 class="mb-0">Cuestionario de 20 preguntas</h2>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-secondary">Marca una opción por pregunta.</div>
+        <div><span class="badge bg-primary" id="answeredCounter">0/20 respondidas</span></div>
+      </div>
+      <div class="progress mb-4">
+        <div id="quizProgress" class="progress-bar" style="width: 0%"></div>
+      </div>
+      <form id="quizForm"></form>
+      <div class="sticky-actions d-flex gap-2 mt-4">
+        <button class="btn btn-success btn-lg" id="submitQuizBtn"><i class="fa-solid fa-paper-plane me-2"></i>Corregir cuestionario</button>
+        <button class="btn btn-outline-secondary btn-lg" id="resetQuizBtn" type="button"><i class="fa-solid fa-rotate-left me-2"></i>Reiniciar</button>
+      </div>
+      <div id="results" class="mt-4"></div>
+    </section>
+  </main>
+
+  <footer class="py-4 mt-5">
+    <div class="container text-center">
+      <p class="mb-1">Presentación interactiva para clase.</p>
+      <small>Hecha con HTML, Bootstrap, JavaScript, Font Awesome, SweetAlert2 y Animate.css.</small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const quizData = [
+      {
+        question: "¿Qué es un sistema adyacente?",
+        options: [
+          "Un módulo interno del sistema",
+          "Un sistema humano o automatizado que está fuera del trabajo pero intercambia datos o servicios con él",
+          "Un error de diseño del sistema",
+          "Una pantalla del software"
+        ],
+        answer: 1,
+        explanation: "Los sistemas adyacentes están fuera del alcance directo del trabajo, pero se conectan con él mediante datos o servicios."
+      },
+      {
+        question: "¿Cuál de estos es un sistema adyacente activo?",
+        options: ["Una API de pagos", "Un cliente humano que interactúa con el sistema", "Una base de datos externa", "Un archivo exportado"],
+        answer: 1,
+        explanation: "Los activos son humanos que interactúan con el trabajo."
+      },
+      {
+        question: "¿Cuál caracteriza a un sistema adyacente autónomo?",
+        options: ["Dialoga ida y vuelta en tiempo real", "Está dentro del sistema", "Se comunica con flujos unidireccionales", "Siempre es humano"],
+        answer: 2,
+        explanation: "El autónomo actúa independientemente y se comunica con flujos de datos unidireccionales."
+      },
+      {
+        question: "¿Qué tipo de sistema adyacente suele responder mensajes de forma predecible e inmediata?",
+        options: ["Activo", "Autónomo", "Cooperativo", "Manual"],
+        answer: 2,
+        explanation: "El cooperativo colabora durante el trabajo mediante mensajes y respuestas."
+      },
+      {
+        question: "¿Cuál es el propósito principal del diagrama de contexto?",
+        options: ["Diseñar la interfaz gráfica", "Mostrar el alcance del trabajo y sus conexiones externas", "Documentar código fuente", "Crear casos de prueba"],
+        answer: 1,
+        explanation: "El diagrama de contexto delimita el trabajo y sus relaciones con sistemas externos."
+      },
+      {
+        question: "En un diagrama de contexto, el trabajo suele representarse como:",
+        options: ["Muchas clases", "Una base de datos", "Una sola actividad o caso de uso", "Un servidor físico"],
+        answer: 2,
+        explanation: "El trabajo se modela como una única actividad central."
+      },
+      {
+        question: "¿Qué representan las flechas etiquetadas en un diagrama de contexto?",
+        options: ["Casos de error", "Flujos de datos", "Tipos de usuarios", "Restricciones técnicas"],
+        answer: 1,
+        explanation: "Las asociaciones dirigidas muestran los datos que entran o salen del trabajo."
+      },
+      {
+        question: "¿Qué agrega un customer journey map respecto de una simple secuencia de pasos?",
+        options: ["Solo código", "Solo pantallas", "Emociones, acciones y puntos de contacto", "Solo métricas financieras"],
+        answer: 2,
+        explanation: "El customer journey map incorpora experiencia, emociones y canales de interacción."
+      },
+      {
+        question: "¿Cuál de estos puede ser un punto de contacto en un customer journey map?",
+        options: ["Sitio web", "Aplicación móvil", "Llamada telefónica", "Todas las anteriores"],
+        answer: 3,
+        explanation: "Los puntos de contacto pueden ser digitales o no digitales."
+      },
+      {
+        question: "¿Qué describe mejor la abstracción?",
+        options: ["Agregar todos los detalles posibles", "Eliminar lo irrelevante y resaltar lo esencial", "Ocultar errores", "Evitar diseñar"],
+        answer: 1,
+        explanation: "La abstracción ayuda a enfrentar la complejidad concentrándose en lo esencial."
+      },
+      {
+        question: "Cuando usamos una función sin saber cómo está implementada, estamos aprovechando:",
+        options: ["Sobrecarga", "Herencia", "Abstracción", "Serialización"],
+        answer: 2,
+        explanation: "La función se usa por lo que hace, no por cómo lo hace."
+      },
+      {
+        question: "¿Qué afirma mejor el encapsulamiento?",
+        options: ["Permite mezclar responsabilidades", "Oculta la implementación detrás de una interfaz", "Aumenta los detalles visibles", "Elimina módulos"],
+        answer: 1,
+        explanation: "Encapsular significa esconder la implementación para evitar dependencias innecesarias."
+      },
+      {
+        question: "La modularidad busca principalmente:",
+        options: ["Un gran bloque central de código", "Módulos cohesivos y poco acoplados", "Eliminar interfaces", "Evitar reutilización"],
+        answer: 1,
+        explanation: "La buena modularidad favorece módulos con responsabilidad clara y bajo impacto cruzado."
+      },
+      {
+        question: "La cohesión mide:",
+        options: ["Las conexiones entre módulos", "Qué tan relacionadas están las partes dentro de un módulo", "La velocidad de ejecución", "La cantidad de usuarios"],
+        answer: 1,
+        explanation: "La cohesión indica si las partes del módulo tienen sentido juntas."
+      },
+      {
+        question: "¿Qué conviene en términos de modularidad?",
+        options: ["Alta cohesión y alto acoplamiento", "Baja cohesión y bajo acoplamiento", "Alta cohesión y bajo acoplamiento", "Baja cohesión y alto acoplamiento"],
+        answer: 2,
+        explanation: "Ese es el equilibrio buscado para que los módulos estén bien definidos y dependan poco entre sí."
+      },
+      {
+        question: "El acoplamiento eferente se refiere a:",
+        options: ["Conexiones salientes hacia otros módulos", "Conexiones entrantes", "Emociones del usuario", "Interfaces gráficas"],
+        answer: 0,
+        explanation: "El eferente mira hacia afuera: dependencias que un módulo tiene con otros."
+      },
+      {
+        question: "¿Qué es connascence?",
+        options: ["Una técnica de testing", "La necesidad de cambiar dos partes juntas para mantener la corrección del sistema", "Un tipo de interfaz", "Una base de datos"],
+        answer: 1,
+        explanation: "Hay connascence cuando un cambio en una parte obliga a cambiar otra."
+      },
+      {
+        question: "¿Cuál es un ejemplo de connascence estática de posición?",
+        options: ["Depender del orden de parámetros del mismo tipo en una llamada", "Depender del horario del servidor", "Usar la misma clave primaria", "Persistir objetos después de crearlos"],
+        answer: 0,
+        explanation: "La posición obliga a coincidir en el orden de los valores."
+      },
+      {
+        question: "¿Cuál es un ejemplo de connascence dinámica de tiempo?",
+        options: ["Renombrar una variable", "Una condición de carrera", "Cambiar el nombre de un método", "Reordenar parámetros en compilación"],
+        answer: 1,
+        explanation: "La connascence dinámica de tiempo aparece cuando el momento de ejecución importa."
+      },
+      {
+        question: "Si un módulo imprime reportes, valida usuarios, calcula impuestos y envía correos, probablemente tenga:",
+        options: ["Alta cohesión", "Baja cohesión", "Bajo acoplamiento garantizado", "Encapsulamiento perfecto"],
+        answer: 1,
+        explanation: "Está mezclando demasiadas responsabilidades, por lo que la cohesión es baja."
+      }
+    ];
+
+    const quizForm = document.getElementById('quizForm');
+    const quizProgress = document.getElementById('quizProgress');
+    const answeredCounter = document.getElementById('answeredCounter');
+    const results = document.getElementById('results');
+    const submitQuizBtn = document.getElementById('submitQuizBtn');
+    const resetQuizBtn = document.getElementById('resetQuizBtn');
+
+    function renderQuiz() {
+      quizForm.innerHTML = quizData.map((item, index) => `
+        <div class="card question-card animate__animated animate__fadeInUp">
+          <div class="card-body">
+            <h5 class="card-title">${index + 1}. ${item.question}</h5>
+            ${item.options.map((option, optionIndex) => `
+              <div class="form-check mt-2">
+                <input class="form-check-input quiz-option" type="radio" name="q${index}" id="q${index}_${optionIndex}" value="${optionIndex}">
+                <label class="form-check-label" for="q${index}_${optionIndex}">${option}</label>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.quiz-option').forEach(input => {
+        input.addEventListener('change', updateProgress);
+      });
+    }
+
+    function updateProgress() {
+      const answered = quizData.filter((_, index) => document.querySelector(`input[name="q${index}"]:checked`)).length;
+      const percent = (answered / quizData.length) * 100;
+      quizProgress.style.width = percent + '%';
+      answeredCounter.textContent = `${answered}/${quizData.length} respondidas`;
+    }
+
+    submitQuizBtn.addEventListener('click', function(event) {
+      event.preventDefault();
+      const unanswered = quizData.filter((_, index) => !document.querySelector(`input[name="q${index}"]:checked`)).length;
+      if (unanswered > 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Cuestionario incompleto',
+          text: `Aún hay ${unanswered} pregunta(s) sin responder.`
+        });
+        return;
+      }
+
+      let score = 0;
+      let feedbackHtml = '<div class="section-card animate__animated animate__fadeIn"><h3 class="mb-3">Devolución detallada</h3>';
+      feedbackHtml += '<div class="row g-3">';
+
+      quizData.forEach((item, index) => {
+        const selected = Number(document.querySelector(`input[name="q${index}"]:checked`).value);
+        const isCorrect = selected === item.answer;
+        if (isCorrect) score++;
+
+        feedbackHtml += `
+          <div class="col-12">
+            <div class="p-3 rounded-4 ${isCorrect ? 'bg-success-subtle border border-success' : 'bg-danger-subtle border border-danger'}">
+              <h5>${index + 1}. ${item.question}</h5>
+              <p class="mb-1"><strong>Tu respuesta:</strong> ${item.options[selected]}</p>
+              <p class="mb-1"><strong>Respuesta correcta:</strong> ${item.options[item.answer]}</p>
+              <p class="mb-0"><strong>${isCorrect ? 'Bien:' : 'Atención:'}</strong> ${isCorrect ? 'Respuesta correcta.' : item.explanation}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      feedbackHtml += '</div></div>';
+      results.innerHTML = feedbackHtml;
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      Swal.fire({
+        icon: score >= 12 ? 'success' : 'info',
+        title: `Resultado: ${score}/${quizData.length}`,
+        html: score >= 12
+          ? 'Buen trabajo. Revisa la devolución para reforzar los conceptos menos sólidos.'
+          : 'Necesitas reforzar algunos temas. La devolución te mostrará tus errores y cómo corregirlos.'
+      });
+    });
+
+    resetQuizBtn.addEventListener('click', function() {
+      document.getElementById('quizForm').reset();
+      results.innerHTML = '';
+      updateProgress();
+      Swal.fire({
+        icon: 'success',
+        title: 'Cuestionario reiniciado',
+        timer: 1200,
+        showConfirmButton: false
+      });
+    });
+
+    function animateOnScroll() {
+      const items = document.querySelectorAll('.animate-on-scroll');
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      items.forEach(item => observer.observe(item));
+    }
+
+    renderQuiz();
+    updateProgress();
+    animateOnScroll();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADA Arena - Análisis y Diseño de Aplicaciones</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --bg-light: #ecf0f1;
+        }
+
+        body {
+            background-color: #f5f6fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .arena-header {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .concept-category {
+            background: var(--bg-light);
+            padding: 10px 15px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 2px solid #bdc3c7;
+        }
+
+        .level-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .level-item:hover {
+            background-color: #e8f4fd;
+            padding-left: 25px;
+        }
+
+        .level-item.active {
+            background-color: #d5f5e3;
+            border-left: 5px solid var(--success-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .level-item.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background-color: #f9f9f9;
+        }
+
+        .level-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            margin-right: 12px;
+        }
+
+        .status-done { color: var(--success-color); background: #d5f5e3; }
+        .status-current { color: var(--secondary-color); background: #d6eaf8; }
+        .status-locked { color: #95a5a6; background: #f4f6f7; }
+
+        .workspace {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .exercise-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .exercise-header {
+            padding: 25px;
+            border-bottom: 2px solid var(--bg-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to right, #f8f9fa, #ffffff);
+        }
+
+        .exercise-body {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            gap: 25px;
+        }
+
+        .instruction-panel {
+            flex: 1;
+            background: var(--bg-light);
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid var(--secondary-color);
+            overflow-y: auto;
+        }
+
+        .interaction-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-validate {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-validate:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-validate:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-hint {
+            background: #f1c40f;
+            color: #2c3e50;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .hint-box {
+            margin-top: 15px;
+            padding: 20px;
+            background: #fef9e7;
+            border-left: 5px solid #f1c40f;
+            border-radius: 6px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .concept-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 3px;
+        }
+
+        .tag-abstraction { background: #d6eaf8; color: #2980b9; }
+        .tag-encapsulation { background: #f5eef8; color: #8e44ad; }
+        .tag-cohesion { background: #d5f5e3; color: #27ae60; }
+        .tag-coupling { background: #fdedec; color: #e74c3c; }
+        .tag-connascence { background: #fef5e7; color: #f39c12; }
+
+        /* MATCHING EXERCISE STYLES - FIXED */
+        .matching-container {
+            display: flex;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .matching-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .matching-column-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            padding: 10px;
+            background: var(--bg-light);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .matching-item {
+            background: white;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .matching-item:hover {
+            border-color: var(--secondary-color);
+            background: #ebf5fb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .matching-item.matched {
+            border-color: var(--success-color);
+            background: #d5f5e3;
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .matching-item.matched::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: var(--success-color);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .matching-item.selected {
+            border-color: var(--secondary-color);
+            background: #d6eaf8;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+            transform: scale(1.02);
+        }
+
+        .matching-item.selected::before {
+            content: '👆 Seleccionado';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            white-space: nowrap;
+        }
+
+        .matching-item.can-deselect::before {
+            content: '✕ Click para deselectar';
+            background: var(--accent-color);
+        }
+
+        /* NEW: Style for incorrect attempt */
+        .matching-item.incorrect {
+            border-color: var(--accent-color);
+            background: #fadbd8;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .matching-progress {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .matching-progress-bar {
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .matching-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary-color), var(--success-color));
+            transition: width 0.5s ease;
+        }
+
+        .instruction-step {
+            background: #e8f4fd;
+            border-left: 4px solid var(--secondary-color);
+            padding: 12px 15px;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .instruction-step i {
+            margin-right: 8px;
+            color: var(--secondary-color);
+        }
+
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .status-message.info {
+            background: #d6eaf8;
+            color: #2980b9;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fadbd8;
+            color: #c0392b;
+            display: block;
+        }
+
+        .status-message.success {
+            background: #d5f5e3;
+            color: #27ae60;
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse-animation {
+            animation: pulse 1s infinite;
+        }
+
+        @media (max-width: 992px) {
+            .main-container { flex-direction: column; }
+            .sidebar { width: 100%; height: 200px; }
+            .exercise-body { flex-direction: column; }
+            .matching-container { flex-direction: column; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="arena-header">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="mb-0"><i class="fa-solid fa-diagram-project"></i> ADA Arena</h3>
+                <small>Análisis y Diseño de Aplicaciones - Laboratorio Interactivo</small>
+            </div>
+            <div>
+                <span class="badge bg-light text-dark p-2">Módulo: <span id="current-module-display">1</span>/12</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="sidebar" id="sidebar-list"></div>
+        
+        <div class="workspace">
+            <div class="exercise-card" id="exercise-container"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const exercises = [
+            {
+                category: "Sistemas Adyacentes",
+                id: 1,
+                title: "Identificando Sistemas Activos",
+                concept: "abstraction",
+                desc: "En un sistema de biblioteca, identifica cuáles son sistemas adyacentes ACTIVOS (humanos que interactúan).",
+                theory: "Los sistemas activos son humanos que pueden interactuar con el trabajo o participar en él.",
+                interactionType: "multiple-choice",
+                options: [
+                    { text: "Bibliotecario", correct: true },
+                    { text: "Sistema de bases de datos", correct: false },
+                    { text: "Usuario/Socio", correct: true },
+                    { text: "Sistema de pagos automático", correct: false }
+                ],
+                hint: "Piensa: ¿quiénes son personas que interactúan directamente con el sistema?",
+                successMsg: "¡Correcto! Los bibliotecarios y usuarios son sistemas activos porque son humanos que interactúan."
+            },
+            {
+                category: "Sistemas Adyacentes",
+                id: 2,
+                title: "Sistemas Cooperativos vs Autónomos",
+                concept: "coupling",
+                desc: "Clasifica los siguientes sistemas adyacentes de un e-commerce. <strong>Selecciona un elemento de la izquierda y luego su tipo correspondiente de la derecha.</strong>",
+                theory: "Los sistemas cooperativos colaboran mediante diálogo mensaje-respuesta. Los autónomos actúan independientemente con flujos unidireccionales.",
+                interactionType: "matching",
+                pairs: [
+                    { item: "Sistema de autorización de crédito", type: "cooperative", label: "Cooperativo" },
+                    { item: "Servicio meteorológico externo", type: "autonomous", label: "Autónomo" },
+                    { item: "Base de datos de productos", type: "cooperative", label: "Cooperativo" },
+                    { item: "Cliente que recibe newsletters", type: "autonomous", label: "Autónomo" }
+                ],
+                hint: "¿El sistema responde inmediatamente con un diálogo? → Cooperativo. ¿Solo envía/recibe sin interacción? → Autónomo",
+                successMsg: "¡Excelente! Los sistemas cooperativos dialogan, los autónomos solo reciben/envían sin interacción bidireccional."
+            },
+            {
+                category: "Diagramas de Contexto",
+                id: 3,
+                title: "Construyendo el Diagrama",
+                concept: "abstraction",
+                desc: "Para un sistema de reservas de hotel, arrastra los elementos correctos al diagrama de contexto:",
+                theory: "El diagrama muestra el trabajo como una actividad central, rodeada por sistemas adyacentes con flujos de datos etiquetados.",
+                interactionType: "diagram-builder",
+                elements: [
+                    { id: "work", name: "Sistema de Reservas", type: "work", x: 400, y: 250 },
+                    { id: "client", name: "Cliente", type: "active", x: 100, y: 100 },
+                    { id: "payment", name: "Sistema de Pagos", type: "cooperative", x: 700, y: 100 },
+                    { id: "email", name: "Servicio de Email", type: "cooperative", x: 700, y: 400 }
+                ],
+                flows: [
+                    { from: "client", to: "work", label: "Solicitud de reserva" },
+                    { from: "work", to: "client", label: "Confirmación" },
+                    { from: "work", to: "payment", label: "Datos de pago" },
+                    { from: "payment", to: "work", label: "Autorización" }
+                ],
+                hint: "El trabajo va al centro. Los sistemas adyacentes alrededor. Las flechas muestran el flujo de datos.",
+                successMsg: "¡Perfecto! Tu diagrama de contexto muestra claramente los límites del sistema."
+            },
+            {
+                category: "Abstracción",
+                id: 4,
+                title: "Niveles de Abstracción",
+                concept: "abstraction",
+                desc: "Ordena estos conceptos del MÁS ABSTRACTO al MÁS CONCRETO para un sistema de transporte:",
+                theory: "La abstracción elimina lo irrelevante y amplifica lo esencial. Trabajamos en un nivel a la vez.",
+                interactionType: "ordering",
+                items: [
+                    { text: "Mover personas de A a B", level: 0 },
+                    { text: "Sistema de transporte público", level: 1 },
+                    { text: "Línea de ómnibus 64", level: 2 },
+                    { text: "Ómnibus Mercedes-Benz OH-1625", level: 3 }
+                ],
+                hint: "Lo más abstracto es el concepto general. Lo más concreto es la implementación específica.",
+                successMsg: "¡Correcto! Has identificado correctamente la jerarquía de abstracción."
+            },
+            {
+                id: 5,
+                title: "Abstracción de Datos",
+                concept: "encapsulation",
+                desc: "Identifica qué detalles deben estar OCULTOS (encapsulados) en una clase 'CuentaBancaria':",
+                theory: "La abstracción de datos encapsula la representación, impidiendo el acceso directo.",
+                interactionType: "multiple-choice",
+                options: [
+                    { text: "Método Depositar(monto)", correct: false },
+                    { text: "Campo privado '_saldo'", correct: true },
+                    { text: "Método ConsultarSaldo()", correct: false },
+                    { text: "Estructura interna de almacenamiento del saldo", correct: true }
+                ],
+                hint: "¿Qué debe ser visible desde fuera? ¿Qué son detalles de implementación internos?",
+                successMsg: "¡Bien! Los detalles internos están encapsulados, solo se exponen las operaciones necesarias."
+            },
+            {
+                category: "Cohesión",
+                id: 6,
+                title: "Analizando Cohesión",
+                concept: "cohesion",
+                desc: "¿Cuál de estas clases tiene MAYOR cohesión?",
+                theory: "La cohesión mide qué tan relacionadas están las partes dentro de un módulo. Alta cohesión = todas las partes deben estar juntas.",
+                interactionType: "comparison",
+                options: [
+                    { 
+                        text: "Clase Utilidades: tiene métodos para calcular impuestos, enviar emails, validar DNI, y conectar a BD",
+                        cohesive: false,
+                        explanation: "Baja cohesión: funciones no relacionadas entre sí"
+                    },
+                    { 
+                        text: "Clase InformeFinanciero: genera PDF, calcula totales, aplica fórmulas contables",
+                        cohesive: true,
+                        explanation: "Alta cohesión: todo está relacionado con informes financieros"
+                    }
+                ],
+                hint: "Piensa: ¿todas las responsabilidades de la clase están fuertemente relacionadas?",
+                successMsg: "¡Exacto! La clase de informe financiero es más cohesiva porque todo gira en torno a un mismo concepto."
+            },
+            {
+                id: 7,
+                title: "Refactorizando para Mejorar Cohesión",
+                concept: "cohesion",
+                desc: "La clase 'GestorSistema' tiene métodos muy variados. ¿Qué métodos moverías a otra clase?",
+                theory: "Un módulo cohesivo es aquel en el que todas las partes deben estar juntas. Separarlas requería acoplarlas.",
+                interactionType: "multiple-select",
+                context: "Clase actual: GestorSistema",
+                methods: [
+                    { text: "CalcularNomina()", moveTo: "RecursosHumanos", keep: false },
+                    { text: "EnviarEmailNotificacion()", moveTo: "ServicioNotificaciones", keep: false },
+                    { text: "GenerarReporteVentas()", moveTo: "Reportes", keep: false },
+                    { text: "ObtenerDatosEmpleado()", moveTo: "RecursosHumanos", keep: false },
+                    { text: "ConectarBD()", moveTo: "Infraestructura", keep: false }
+                ],
+                hint: "Agrupa métodos por responsabilidad. ¿Qué métodos están relacionados entre sí?",
+                successMsg: "¡Perfecto! Has separado responsabilidades mejorando la cohesión de cada clase."
+            },
+            {
+                category: "Acoplamiento",
+                id: 8,
+                title: "Acoplamiento Aferente vs Eferente",
+                concept: "coupling",
+                desc: "Analiza el acoplamiento entre estos ensamblados de C#:",
+                theory: "Acoplamiento aferente: conexiones entrantes. Acoplamiento eferente: conexiones salientes.",
+                interactionType: "analysis",
+                scenario: `
+Ensamblado A: 
+- Usa tipos del Ensamblado B
+- Usa tipos del Ensamblado C
+- Es referenciado por Ensamblado D
+
+Ensamblado B:
+- Es referenciado por A y C
+- No referencia a otros`,
+                questions: [
+                    { 
+                        text: "¿Cuál es el acoplamiento eferente del Ensamblado A?", 
+                        answer: "2",
+                        explanation: "A referencia a B y C (2 conexiones salientes)"
+                    },
+                    { 
+                        text: "¿Cuál es el acoplamiento aferente del Ensamblado B?", 
+                        answer: "2",
+                        explanation: "B es referenciado por A y C (2 conexiones entrantes)"
+                    }
+                ],
+                hint: "Eferente = sale (usa otros). Aferente = entra (otros lo usan).",
+                successMsg: "¡Correcto! Entiendes cómo medir el acoplamiento en ambas direcciones."
+            },
+            {
+                id: 9,
+                title: "Reduciendo Acoplamiento",
+                concept: "coupling",
+                desc: "El código tiene alto acoplamiento. ¿Qué refactor aplicarías?",
+                theory: "Alto acoplamiento es problemático: cambios en un módulo requieren cambios en otros.",
+                interactionType: "code-refactor",
+                badCode: `public class Pedido {
+    private SqlServerDB _db;
+    private EmailService _email;
+    private PDFGenerator _pdf;
+    
+    public void Procesar() {
+        _db.Conectar();
+        _db.Guardar(this);
+        _email.Enviar("pedido@empresa.com");
+        var pdf = _pdf.Generar(this);
+    }
+}`,
+                solutions: [
+                    { 
+                        text: "Inyección de dependencias mediante interfaces",
+                        correct: true,
+                        explanation: "Usar interfaces reduce el acoplamiento a implementaciones específicas"
+                    },
+                    { 
+                        text: "Mantener todo junto para que sea más rápido",
+                        correct: false,
+                        explanation: "Esto mantiene el alto acoplamiento"
+                    },
+                    { 
+                        text: "Separar responsabilidades en clases diferentes",
+                        correct: true,
+                        explanation: "Principio de responsabilidad única reduce acoplamiento"
+                    }
+                ],
+                hint: "Piensa en principios SOLID y cómo reducir dependencias directas.",
+                successMsg: "¡Excelente! Has identificado las técnicas para reducir acoplamiento."
+            },
+            {
+                category: "Co-nascencia",
+                id: 10,
+                title: "Co-nascencia Estática",
+                concept: "connascence",
+                desc: "Identifica el tipo de co-nascencia estática en cada caso:",
+                theory: "Co-nascencia estática: acoplamiento en tiempo de compilación (nombres, tipos, significado, posición, algoritmos).",
+                interactionType: "matching",
+                pairs: [
+                    { 
+                        item: "Dos clases deben usar el mismo nombre de constante MAX_SIZE", 
+                        type: "name", 
+                        label: "De Nombres" 
+                    },
+                    { 
+                        item: "Un método recibe int pero debe ser string", 
+                        type: "type", 
+                        label: "De Tipos" 
+                    },
+                    { 
+                        item: "Método espera (nombre, apellido) pero le pasan (apellido, nombre)", 
+                        type: "position", 
+                        label: "De Posición" 
+                    },
+                    { 
+                        item: "Ambos lados acuerdan que 1=Activo, 0=Inactivo", 
+                        type: "meaning", 
+                        label: "De Significado" 
+                    }
+                ],
+                hint: "¿En qué deben ponerse de acuerdo las partes? ¿Nombre? ¿Tipo? ¿Orden?",
+                successMsg: "¡Perfecto! Has identificado correctamente los tipos de co-nascencia estática."
+            },
+            {
+                id: 11,
+                title: "Co-nascencia Dinámica",
+                concept: "connascence",
+                desc: "¿Qué tipo de co-nascencia dinámica representa cada situación?",
+                theory: "Co-nascencia dinámica: acoplamiento en tiempo de ejecución (orden, tiempo, valores, identidad).",
+                interactionType: "multiple-choice",
+                options: [
+                    { 
+                        text: "Debo asignar todas las propiedades antes de guardar en BD", 
+                        correct: "order",
+                        explanation: "Co-nascencia de orden de ejecución"
+                    },
+                    { 
+                        text: "Dos hilos acceden a la misma variable sin sincronización", 
+                        correct: "time",
+                        explanation: "Co-nascencia de tiempo (condición de carrera)"
+                    },
+                    { 
+                        text: "Si cambio el precio, debo actualizar también el precioConIVA", 
+                        correct: "values",
+                        explanation: "Co-nascencia de valores (deben cambiar juntos)"
+                    }
+                ],
+                hint: "La co-nascencia dinámica es más difícil de detectar porque ocurre en ejecución.",
+                successMsg: "¡Excelente! La co-nascencia dinámica es crítica para sistemas concurrentes y transaccionales."
+            },
+            {
+                category: "Customer Journey",
+                id: 12,
+                title: "Mapeando el Recorrido",
+                concept: "abstraction",
+                desc: "Ordena las etapas del customer journey para comprar en un e-commerce:",
+                theory: "El CJM representa la experiencia del usuario, sus interacciones y estados emocionales.",
+                interactionType: "ordering",
+                items: [
+                    { text: "Toma de conciencia (ve publicidad)", level: 0 },
+                    { text: "Consideración (compara productos)", level: 1 },
+                    { text: "Compra (agrega al carrito y paga)", level: 2 },
+                    { text: "Retención (recibe producto y soporte)", level: 3 },
+                    { text: "Lealtad (vuelve a comprar)", level: 4 }
+                ],
+                hint: "Piensa en el viaje completo del cliente desde que descubre el producto hasta que se fideliza.",
+                successMsg: "¡Perfecto! Has mapeado correctamente el journey del cliente."
+            }
+        ];
+
+        let currentLevel = 0;
+        let completedLevels = [];
+        let matchingState = {
+            selectedColumn: null,
+            selectedItem: null,
+            matchedPairs: []
+        };
+
+        function init() {
+            renderSidebar();
+            loadExercise(0);
+        }
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('sidebar-list');
+            sidebar.innerHTML = '';
+            
+            let currentCategory = '';
+            
+            exercises.forEach((ex, index) => {
+                if (ex.category !== currentCategory) {
+                    currentCategory = ex.category;
+                    const catDiv = document.createElement('div');
+                    catDiv.className = 'concept-category';
+                    catDiv.innerHTML = `<i class="fa-solid fa-folder-open"></i> ${currentCategory}`;
+                    sidebar.appendChild(catDiv);
+                }
+                
+                const isLocked = index > 0 && !completedLevels.includes(index - 1) && index !== currentLevel;
+                const isDone = completedLevels.includes(index);
+                const isActive = index === currentLevel;
+                
+                let iconClass = 'fa-lock';
+                let statusClass = 'status-locked';
+                
+                if (isDone) {
+                    iconClass = 'fa-check';
+                    statusClass = 'status-done';
+                } else if (isActive) {
+                    iconClass = 'fa-play';
+                    statusClass = 'status-current';
+                }
+                
+                const div = document.createElement('div');
+                div.className = `level-item ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
+                div.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div class="level-icon ${statusClass}">
+                            <i class="fa-solid ${iconClass}"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted">Ejercicio ${index + 1}</div>
+                            <div>${ex.title}</div>
+                            <span class="concept-tag tag-${ex.concept}">${ex.concept}</span>
+                        </div>
+                    </div>
+                `;
+                
+                if (!isLocked) {
+                    div.onclick = () => loadExercise(index);
+                }
+                
+                sidebar.appendChild(div);
+            });
+            
+            document.getElementById('current-module-display').innerText = currentLevel + 1;
+        }
+
+        function loadExercise(index) {
+            currentLevel = index;
+            const ex = exercises[index];
+            const container = document.getElementById('exercise-container');
+            
+            // Reset matching state
+            matchingState = {
+                selectedColumn: null,
+                selectedItem: null,
+                matchedPairs: []
+            };
+            
+            container.classList.remove('animate__fadeIn');
+            void container.offsetWidth;
+            container.classList.add('animate__fadeIn');
+            
+            let interactionHTML = '';
+            
+            switch(ex.interactionType) {
+                case 'multiple-choice':
+                    interactionHTML = generateMultipleChoice(ex);
+                    break;
+                case 'multiple-select':
+                    interactionHTML = generateMultipleSelect(ex);
+                    break;
+                case 'matching':
+                    interactionHTML = generateMatching(ex);
+                    break;
+                case 'ordering':
+                    interactionHTML = generateOrdering(ex);
+                    break;
+                case 'comparison':
+                    interactionHTML = generateComparison(ex);
+                    break;
+                case 'diagram-builder':
+                    interactionHTML = generateDiagramBuilder(ex);
+                    break;
+                case 'analysis':
+                    interactionHTML = generateAnalysis(ex);
+                    break;
+                case 'code-refactor':
+                    interactionHTML = generateCodeRefactor(ex);
+                    break;
+            }
+            
+            container.innerHTML = `
+                <div class="exercise-header">
+                    <div>
+                        <h4 class="mb-1">${ex.title}</h4>
+                        <span class="concept-tag tag-${ex.concept}">${ex.concept.toUpperCase()}</span>
+                    </div>
+                    <button class="btn btn-hint" onclick="toggleHint()">
+                        <i class="fa-regular fa-lightbulb"></i> Pista
+                    </button>
+                </div>
+                <div class="exercise-body">
+                    <div class="instruction-panel">
+                        <h5><i class="fa-solid fa-book-open"></i> Objetivo</h5>
+                        <p>${ex.desc}</p>
+                        
+                        ${ex.interactionType === 'matching' ? `
+                        <div class="instruction-step">
+                            <i class="fa-solid fa-hand-pointer"></i>
+                            <strong>Instrucciones:</strong>
+                            <ol class="mb-0 mt-2">
+                                <li>Click en un elemento de la izquierda</li>
+                                <li>Click en su tipo correspondiente de la derecha</li>
+                                <li>Click nuevamente para <strong>deseleccionar</strong></li>
+                                <li>Los pares correctos se marcarán en verde ✓</li>
+                                <li><strong>Podés validar cuantas veces quieras</strong> hasta completar todos los pares</li>
+                            </ol>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="fa-solid fa-graduation-cap"></i> Teoría</h6>
+                            <p class="mb-0">${ex.theory}</p>
+                        </div>
+                        
+                        ${ex.context ? `<div class="alert alert-secondary"><strong>Contexto:</strong> ${ex.context}</div>` : ''}
+                        
+                        <div id="hint-box" class="hint-box">
+                            <strong><i class="fa-solid fa-lightbulb"></i> Pista:</strong> ${ex.hint}
+                        </div>
+                    </div>
+                    
+                    <div class="interaction-panel">
+                        ${interactionHTML}
+                    </div>
+                </div>
+            `;
+            
+            renderSidebar();
+        }
+
+        function generateMultipleChoice(ex) {
+            let html = '<div class="card h-100"><div class="card-body">';
+            ex.options.forEach((opt, idx) => {
+                html += `
+                    <div class="form-check mb-3 p-3 border rounded">
+                        <input class="form-check-input" type="checkbox" 
+                               id="opt${idx}" data-correct="${opt.correct}">
+                        <label class="form-check-label" for="opt${idx}">
+                            ${opt.text}
+                        </label>
+                    </div>
+                `;
+            });
+            html += `<button class="btn btn-validate w-100 mt-3" onclick="validateMultipleChoice('${ex.successMsg}')">
+                <i class="fa-solid fa-check"></i> Validar Respuesta
+            </button></div></div>`;
+            return html;
+        }
+
+        function generateMultipleSelect(ex) {
+            let html = '<div class="card h-100"><div class="card-body">';
+            ex.methods.forEach((method, idx) => {
+                html += `
+                    <div class="form-check mb-3 p-3 border rounded">
+                        <input class="form-check-input" type="checkbox" 
+                               id="method${idx}" data-move="${method.moveTo}">
+                        <label class="form-check-label" for="method${idx}">
+                            <strong>${method.text}</strong><br>
+                            <small class="text-muted">Mover a: ${method.moveTo}</small>
+                        </label>
+                    </div>
+                `;
+            });
+            html += `<button class="btn btn-validate w-100 mt-3" onclick="validateMultipleSelect('${ex.successMsg}')">
+                <i class="fa-solid fa-check"></i> Validar Refactor
+            </button></div></div>`;
+            return html;
+        }
+
+        // FIXED MATCHING FUNCTION
+        function generateMatching(ex) {
+            matchingState = {
+                selectedColumn: null,
+                selectedItem: null,
+                matchedPairs: []
+            };
+            
+            let html = '<div class="card h-100"><div class="card-body">';
+            
+            // Progress indicator
+            html += `
+                <div class="matching-progress">
+                    <div><i class="fa-solid fa-link"></i> Pares completados: <span id="matched-count">0</span> / ${ex.pairs.length}</div>
+                    <div class="matching-progress-bar">
+                        <div class="matching-progress-fill" id="matching-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div id="matching-status" class="status-message info">
+                        <i class="fa-solid fa-info-circle"></i> Seleccioná un par para validar
+                    </div>
+                </div>
+            `;
+            
+            html += '<div class="matching-container mt-3">';
+            
+            // Left column - Items
+            html += '<div class="matching-column">';
+            html += '<div class="matching-column-title"><i class="fa-solid fa-list"></i> Sistemas</div>';
+            ex.pairs.forEach((pair, idx) => {
+                html += `<div class="matching-item" id="item-left-${idx}" data-idx="${idx}" data-type="${pair.type}" 
+                          onclick="handleMatchingClick('left', ${idx}, '${pair.type}')">
+                    ${pair.item}
+                </div>`;
+            });
+            html += '</div>';
+            
+            // Right column - Types
+            html += '<div class="matching-column">';
+            html += '<div class="matching-column-title"><i class="fa-solid fa-tags"></i> Tipos</div>';
+            
+            // Get unique types
+            const types = [...new Set(ex.pairs.map(p => p.type))];
+            const labels = [...new Set(ex.pairs.map(p => p.label))];
+            
+            labels.forEach((label, idx) => {
+                html += `<div class="matching-item" id="item-right-${idx}" data-idx="${idx}" data-type="${types[idx]}" 
+                          onclick="handleMatchingClick('right', ${idx}, '${types[idx]}')">
+                    <i class="fa-solid fa-tag me-2"></i> ${label}
+                </div>`;
+            });
+            html += '</div>';
+            html += '</div>';
+            
+            // Button is ALWAYS enabled - user can validate anytime
+            html += `<button class="btn btn-validate w-100 mt-3" id="btn-validate-matching" onclick="validateMatching(${ex.pairs.length}, '${ex.successMsg}')">
+                <i class="fa-solid fa-check"></i> Validar Par Seleccionado
+            </button></div></div>`;
+            
+            return html;
+        }
+
+        // FIXED MATCHING HANDLER
+        function handleMatchingClick(column, idx, type) {
+            const itemId = `item-${column}-${idx}`;
+            const item = document.getElementById(itemId);
+            
+            // Check if already matched - cannot change matched items
+            if (item.classList.contains('matched')) {
+                showStatus('info', 'Este par ya fue completado correctamente ✓');
+                return;
+            }
+            
+            // Remove incorrect class from all items
+            document.querySelectorAll('.matching-item').forEach(el => {
+                el.classList.remove('incorrect');
+            });
+            
+            // If clicking the same item, deselect it
+            if (matchingState.selectedColumn === column && matchingState.selectedItem === idx) {
+                deselectAll();
+                showStatus('info', 'Selección cancelada. Elegí otro par.');
+                return;
+            }
+            
+            // If there's already a selection in the same column, deselect first
+            if (matchingState.selectedColumn === column) {
+                deselectAll();
+            }
+            
+            // Select the new item
+            matchingState.selectedColumn = column;
+            matchingState.selectedItem = idx;
+            item.classList.add('selected');
+            item.classList.add('can-deselect');
+            
+            // Check if we have selections in both columns
+            const leftSelected = document.querySelector('.matching-column:first-child .matching-item.selected');
+            const rightSelected = document.querySelector('.matching-column:last-child .matching-item.selected');
+            
+            if (leftSelected && rightSelected) {
+                showStatus('info', '¡Par listo! Click en "Validar" para comprobar.');
+            } else {
+                showStatus('info', 'Ahora seleccioná un elemento de la otra columna.');
+            }
+        }
+
+        function deselectAll() {
+            document.querySelectorAll('.matching-item').forEach(el => {
+                el.classList.remove('selected');
+                el.classList.remove('can-deselect');
+                el.classList.remove('incorrect');
+            });
+            matchingState.selectedColumn = null;
+            matchingState.selectedItem = null;
+        }
+
+        function showStatus(type, message) {
+            const statusEl = document.getElementById('matching-status');
+            if (statusEl) {
+                statusEl.className = `status-message ${type}`;
+                statusEl.innerHTML = message;
+            }
+        }
+
+        // FIXED VALIDATION - Allows multiple attempts, only locks correct pairs
+        function validateMatching(totalPairs, successMsg) {
+            const ex = exercises[currentLevel];
+            const leftSelected = document.querySelector('.matching-column:first-child .matching-item.selected');
+            const rightSelected = document.querySelector('.matching-column:last-child .matching-item.selected');
+            
+            // Check if both columns have a selection
+            if (!leftSelected || !rightSelected) {
+                showStatus('error', '<i class="fa-solid fa-circle-exclamation"></i> Debes seleccionar UN elemento de cada columna antes de validar.');
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Falta selección',
+                    text: 'Seleccioná un elemento de la columna izquierda Y uno de la derecha.',
+                    confirmButtonColor: '#f39c12',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            
+            const leftType = leftSelected.dataset.type;
+            const rightType = rightSelected.dataset.type;
+            
+            if (leftType === rightType) {
+                // CORRECT MATCH!
+                leftSelected.classList.remove('selected', 'can-deselect');
+                rightSelected.classList.remove('selected', 'can-deselect');
+                leftSelected.classList.add('matched');
+                rightSelected.classList.add('matched');
+                
+                matchingState.matchedPairs.push({
+                    left: leftSelected.dataset.idx,
+                    right: rightSelected.dataset.idx
+                });
+                
+                // Clear selection for next pair
+                deselectAll();
+                
+                // Update progress
+                const matchedCount = matchingState.matchedPairs.length;
+                document.getElementById('matched-count').innerText = matchedCount;
+                document.getElementById('matching-progress-fill').style.width = `${(matchedCount / totalPairs) * 100}%`;
+                
+                // Check if ALL pairs are completed
+                if (matchedCount === totalPairs) {
+                    showStatus('success', '<i class="fa-solid fa-trophy"></i> ¡Todos los pares completados!');
+                    handleValidation(true, successMsg);
+                } else {
+                    showStatus('success', `<i class="fa-solid fa-check"></i> ¡Correcto! Te faltan ${totalPairs - matchedCount} pares.`);
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Par correcto!',
+                        text: `Te faltan ${totalPairs - matchedCount} pares. Seguì así.`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            } else {
+                // INCORRECT MATCH - But DON'T lock everything!
+                showStatus('error', '<i class="fa-solid fa-circle-xmark"></i> Incorrecto. Esos elementos no corresponden. Intentá de nuevo.');
+                
+                // Visual feedback - shake animation
+                leftSelected.classList.add('incorrect');
+                rightSelected.classList.add('incorrect');
+                
+                // Remove incorrect class after animation
+                setTimeout(() => {
+                    leftSelected.classList.remove('incorrect');
+                    rightSelected.classList.remove('incorrect');
+                    // Keep selection so user can try again or deselect
+                }, 1000);
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Incorrecto',
+                    text: 'Esos elementos no corresponden. Podés intentar de nuevo con otro par.',
+                    confirmButtonColor: '#e74c3c',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                
+                // IMPORTANT: Don't deselect - let user try again or change selection
+                // User can click same items to deselect, or choose different ones
+            }
+        }
+
+        function generateOrdering(ex) {
+            let html = '<div class="card h-100"><div class="card-body">';
+            html += '<div id="order-container">';
+            
+            ex.items.forEach((item, idx) => {
+                html += `<div class="matching-item" id="order${idx}" data-level="${item.level}" draggable="true" 
+                          ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)"
+                          style="cursor: move;">
+                    <i class="fa-solid fa-grip-lines me-2"></i> ${item.text}
+                </div>`;
+            });
+            
+            html += '</div>';
+            html += `<button class="btn btn-validate w-100 mt-3" onclick="validateOrdering(${ex.items.length}, '${ex.successMsg}')">
+                <i class="fa-solid fa-check"></i> Validar Orden
+            </button></div></div>`;
+            
+            return html;
+        }
+
+        function generateComparison(ex) {
+            let html = '<div class="card h-100"><div class="card-body">';
+            ex.options.forEach((opt, idx) => {
+                html += `
+                    <div class="alert ${opt.cohesive ? 'alert-success' : 'alert-danger'} mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="comparison" 
+                                   id="comp${idx}" value="${opt.cohesive}" data-explanation="${opt.explanation}">
+                            <label class="form-check-label" for="comp${idx}">
+                                ${opt.text}
+                            </label>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `<button class="btn btn-validate w-100 mt-3" onclick="validateComparison('${ex.successMsg}')">
+                <i class="fa-solid fa-check"></i> Validar
+            </button></div></div>`;
+            return html;
+        }
+
+        function generateDiagramBuilder(ex) {
+            let html = '<div class="diagram-container" style="height: 500px; position: relative;">';
+            
+            ex.elements.forEach(el => {
+                const typeClass = el.type === 'work' ? 'bg-primary text-white' : 
+                                 el.type === 'active' ? 'system-active' : 
+                                 el.type === 'cooperative' ? 'system-cooperative' : 'system-autonomous';
+                html += `<div class="diagram-element ${typeClass}" id="elem-${el.id}" 
+                            style="position: absolute; left: ${el.x}px; top: ${el.y}px;"
+                            draggable="true" ondragstart="dragDiagramElement(event, '${el.id}')">
+                            <strong>${el.name}</strong><br>
+                            <small>${el.type}</small>
+                        </div>`;
+            });
+            
+            html += '</div>';
+            html += `<div class="alert alert-info mt-3">
+                <i class="fa-solid fa-info-circle"></i> 
+                Arrastra los elementos para construir el diagrama. El trabajo debe ir al centro.
+            </div>`;
+            html += `<button class="btn btn-validate w-100" onclick="validateDiagram('${ex.successMsg}')">
+                <i class="fa-solid fa-check"></i> Validar Diagrama
+            </button>`;
+            
+            return html;
+        }
+
+        function generateAnalysis(ex) {
+            let html = '<div class="card h-100"><div class="card-body">';
+            html += '<pre class="bg-light p-3 rounded">${ex.scenario}</pre>';
+            
+            ex.questions.forEach((q, idx) => {
+                html += `
+                    <div class="mb-4 mt-4">
+                        <label class="form-label fw-bold">${q.text}</label>
+                        <input type="text" class="form-control" id="ans${idx}" placeholder="Tu respuesta">
+                        <small class="text-muted d-none" id="exp${idx}">${q.explanation}</small>
+                    </div>
+                `;
+            });
+            
+            html += `<button class="btn btn-validate w-100 mt-3" onclick="validateAnalysis(${ex.questions.length}, '${ex.successMsg}')">
+                <i class="fa-solid fa-check"></i> Validar Análisis
+            </button></div></div>`;
+            
+            return html;
+        }
+
+        function generateCodeRefactor(ex) {
+            let html = '<div class="card h-100"><div class="card-body">';
+            html += '<h6>Código con alto acoplamiento:</h6>';
+            html += `<pre class="bg-dark text-light p-3 rounded"><code>${ex.badCode}</code></pre>`;
+            
+            html += '<h6 class="mt-4">Soluciones propuestas:</h6>';
+            ex.solutions.forEach((sol, idx) => {
+                html += `
+                    <div class="form-check mb-3 p-3 border rounded">
+                        <input class="form-check-input" type="checkbox" 
+                               id="sol${idx}" data-correct="${sol.correct}">
+                        <label class="form-check-label" for="sol${idx}">
+                            ${sol.text}
+                        </label>
+                    </div>
+                `;
+            });
+            
+            html += `<button class="btn btn-validate w-100 mt-3" onclick="validateCodeRefactor('${ex.successMsg}')">
+                <i class="fa-solid fa-check"></i> Validar Refactorización
+            </button></div></div>`;
+            
+            return html;
+        }
+
+        // Validation functions
+        function validateMultipleChoice(successMsg) {
+            const inputs = document.querySelectorAll('input[type="checkbox"]');
+            let allCorrect = true;
+            let hasSelection = false;
+            
+            inputs.forEach(input => {
+                if (input.checked) hasSelection = true;
+                const isCorrect = input.dataset.correct === 'true';
+                if (input.checked !== isCorrect) allCorrect = false;
+            });
+            
+            if (!hasSelection) {
+                Swal.fire('Atención', 'Selecciona al menos una opción', 'warning');
+                return;
+            }
+            
+            handleValidation(allCorrect, successMsg);
+        }
+
+        function validateMultipleSelect(successMsg) {
+            const inputs = document.querySelectorAll('input[type="checkbox"]');
+            let allCorrect = true;
+            
+            inputs.forEach(input => {
+                const shouldBeSelected = input.dataset.move !== 'undefined';
+                if (input.checked !== shouldBeSelected) allCorrect = false;
+            });
+            
+            handleValidation(allCorrect, successMsg);
+        }
+
+        // Drag and drop for ordering
+        let draggedItem = null;
+
+        function dragStart(ev) {
+            draggedItem = ev.target;
+            ev.dataTransfer.effectAllowed = 'move';
+        }
+
+        function dragOver(ev) {
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = 'move';
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            if (ev.target.classList.contains('matching-item') && ev.target !== draggedItem) {
+                const parent = ev.target.parentNode;
+                const items = Array.from(parent.children);
+                const draggedIndex = items.indexOf(draggedItem);
+                const targetIndex = items.indexOf(ev.target);
+                
+                if (draggedIndex < targetIndex) {
+                    parent.insertBefore(draggedItem, ev.target.nextSibling);
+                } else {
+                    parent.insertBefore(draggedItem, ev.target);
+                }
+            }
+        }
+
+        function validateOrdering(totalItems, successMsg) {
+            const items = document.querySelectorAll('[id^="order"]');
+            let correct = true;
+            
+            items.forEach((item, idx) => {
+                const expectedLevel = parseInt(item.dataset.level);
+                if (idx !== expectedLevel) correct = false;
+            });
+            
+            handleValidation(correct, successMsg);
+        }
+
+        function validateComparison(successMsg) {
+            const selected = document.querySelector('input[name="comparison"]:checked');
+            if (!selected) {
+                Swal.fire('Atención', 'Selecciona una opción', 'warning');
+                return;
+            }
+            
+            const isCorrect = selected.value === 'true';
+            handleValidation(isCorrect, successMsg);
+        }
+
+        function validateDiagram(successMsg) {
+            const workElem = document.getElementById('elem-work');
+            const rect = workElem.getBoundingClientRect();
+            const container = document.querySelector('.diagram-container');
+            const containerRect = container.getBoundingClientRect();
+            
+            const centerX = containerRect.width / 2;
+            const centerY = containerRect.height / 2;
+            const elemX = rect.left - containerRect.left + rect.width / 2;
+            const elemY = rect.top - containerRect.top + rect.height / 2;
+            
+            const isCentered = Math.abs(elemX - centerX) < 100 && Math.abs(elemY - centerY) < 100;
+            handleValidation(isCentered, successMsg);
+        }
+
+        function validateAnalysis(totalQuestions, successMsg) {
+            let correct = 0;
+            const ex = exercises[currentLevel];
+            
+            ex.questions.forEach((q, idx) => {
+                const ans = document.getElementById(`ans${idx}`).value.trim();
+                if (ans === q.answer) correct++;
+            });
+            
+            handleValidation(correct === totalQuestions, successMsg);
+        }
+
+        function validateCodeRefactor(successMsg) {
+            const inputs = document.querySelectorAll('input[type="checkbox"]');
+            let allCorrect = true;
+            
+            inputs.forEach(input => {
+                const isCorrect = input.dataset.correct === 'true';
+                if (input.checked !== isCorrect) allCorrect = false;
+            });
+            
+            handleValidation(allCorrect, successMsg);
+        }
+
+        function handleValidation(isCorrect, successMsg) {
+            if (isCorrect) {
+                if (!completedLevels.includes(currentLevel)) {
+                    completedLevels.push(currentLevel);
+                }
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Correcto!',
+                    text: successMsg,
+                    confirmButtonColor: '#27ae60',
+                    confirmButtonText: currentLevel < exercises.length - 1 ? 'Siguiente Ejercicio' : 'Completado'
+                }).then((result) => {
+                    if (result.isConfirmed && currentLevel < exercises.length - 1) {
+                        loadExercise(currentLevel + 1);
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Incorrecto',
+                    text: 'Revisa los conceptos e inténtalo de nuevo. Usa la pista si lo necesitas.',
+                    confirmButtonColor: '#e74c3c'
+                });
+            }
+        }
+
+        function toggleHint() {
+            const box = document.getElementById('hint-box');
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        }
+
+        init();
+    </script>
+</body>
+</html>
