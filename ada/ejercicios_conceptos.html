@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ejercicios — Análisis y Diseño de Aplicaciones</title>
+
+<!-- Bootstrap 5 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@300;400;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+:root {
+  --azul-oscuro:    #0D3B6E;
+  --azul-medio:     #1565C0;
+  --azul-brillante: #1E88E5;
+  --celeste-vivo:   #29B6F6;
+  --celeste-claro:  #B3E5FC;
+  --celeste-fondo:  #EBF5FB;
+  --blanco:         #FFFFFF;
+  --gris-suave:     #F0F4F8;
+  --texto-oscuro:   #0A2342;
+  --texto-medio:    #344A6E;
+  --correcto:       #1A5C38;
+  --correcto-bg:    #E8F5E9;
+  --incorrecto:     #7B1010;
+  --incorrecto-bg:  #FEECEB;
+  --sombra-card:    0 4px 24px rgba(13,59,110,0.10);
+  --sombra-hover:   0 8px 32px rgba(13,59,110,0.18);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--gris-suave);
+  background-image:
+    radial-gradient(ellipse at 10% 0%, rgba(41,182,246,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(21,101,192,0.10) 0%, transparent 55%);
+  min-height: 100vh;
+  color: var(--texto-oscuro);
+}
+
+/* ── HEADER ─────────────────────────────────────── */
+.site-header {
+  background: var(--azul-oscuro);
+  background-image: linear-gradient(135deg, #0D3B6E 0%, #1565C0 100%);
+  color: var(--blanco);
+  padding: 2rem 0 1.6rem;
+  position: relative;
+  overflow: hidden;
+}
+.site-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 28px;
+  background: var(--gris-suave);
+  clip-path: ellipse(54% 100% at 50% 100%);
+}
+.header-badge {
+  display: inline-block;
+  background: rgba(41,182,246,0.22);
+  border: 1px solid rgba(41,182,246,0.45);
+  color: var(--celeste-claro);
+  font-family: 'Lato', sans-serif;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: .28rem .8rem;
+  border-radius: 20px;
+  margin-bottom: .8rem;
+}
+.site-header h1 {
+  font-family: 'Merriweather', serif;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+}
+.site-header p {
+  font-size: .9rem;
+  color: rgba(255,255,255,.72);
+  margin: .4rem 0 0;
+}
+
+/* ── PROGRESS ────────────────────────────────────── */
+.progress-wrap {
+  padding: 1.2rem 0 .6rem;
+}
+.progress-label {
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--azul-medio);
+  text-transform: uppercase;
+  margin-bottom: .4rem;
+}
+.progress {
+  height: 8px;
+  border-radius: 8px;
+  background: rgba(21,101,192,.12);
+}
+.progress-bar {
+  background: linear-gradient(90deg, var(--azul-brillante), var(--celeste-vivo));
+  border-radius: 8px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.score-badge {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--azul-medio);
+  background: rgba(21,101,192,.08);
+  border: 1px solid rgba(21,101,192,.18);
+  border-radius: 20px;
+  padding: .25rem .8rem;
+}
+
+/* ── EXERCISE CARD ───────────────────────────────── */
+.exercise-card {
+  background: var(--blanco);
+  border-radius: 18px;
+  box-shadow: var(--sombra-card);
+  overflow: hidden;
+  border: 1px solid rgba(21,101,192,.08);
+}
+.exercise-header {
+  background: linear-gradient(135deg, var(--celeste-fondo) 0%, #D6EAF8 100%);
+  padding: 1.4rem 1.8rem 1.2rem;
+  border-bottom: 1px solid rgba(21,101,192,.10);
+}
+.exercise-number {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--azul-brillante);
+  margin-bottom: .3rem;
+}
+.exercise-topic {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--azul-oscuro);
+  background: rgba(21,101,192,.10);
+  border-radius: 12px;
+  padding: .2rem .7rem;
+  margin-bottom: .8rem;
+}
+.exercise-question {
+  font-family: 'Merriweather', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--texto-oscuro);
+}
+
+/* ── SCENARIO BOX ────────────────────────────────── */
+.scenario-box {
+  background: var(--gris-suave);
+  border-left: 4px solid var(--celeste-vivo);
+  border-radius: 0 10px 10px 0;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.4rem;
+  font-size: .93rem;
+  color: var(--texto-medio);
+  line-height: 1.65;
+}
+.scenario-box strong { color: var(--azul-oscuro); }
+.scenario-label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--celeste-vivo);
+  display: block;
+  margin-bottom: .35rem;
+}
+
+/* ── CODE SNIPPET ────────────────────────────────── */
+.code-snippet {
+  font-family: 'Source Code Pro', monospace;
+  font-size: .82rem;
+  background: #0D1B2A;
+  color: #B3E5FC;
+  border-radius: 8px;
+  padding: .8rem 1rem;
+  margin: .6rem 0;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+.code-snippet .kw  { color: #29B6F6; }
+.code-snippet .str { color: #A5D6A7; }
+.code-snippet .cm  { color: #546E7A; font-style: italic; }
+.code-snippet .cls { color: #FFD54F; }
+
+/* ── OPTIONS ─────────────────────────────────────── */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+  margin: .4rem 0 1.2rem;
+}
+@media (max-width: 600px) {
+  .options-grid { grid-template-columns: 1fr; }
+}
+.option-item {
+  position: relative;
+}
+.option-item input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0; height: 0;
+}
+.option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  background: var(--gris-suave);
+  border: 2px solid rgba(21,101,192,.14);
+  border-radius: 12px;
+  padding: .9rem 1rem;
+  cursor: pointer;
+  transition: all .22s ease;
+  font-size: .9rem;
+  line-height: 1.45;
+  color: var(--texto-medio);
+  min-height: 60px;
+}
+.option-label:hover {
+  border-color: var(--azul-brillante);
+  background: var(--celeste-fondo);
+  color: var(--texto-oscuro);
+  box-shadow: var(--sombra-hover);
+  transform: translateY(-1px);
+}
+.option-dot {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(21,101,192,.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--azul-brillante);
+  transition: all .2s ease;
+  margin-top: .05rem;
+}
+.option-item input:checked + .option-label {
+  border-color: var(--azul-brillante);
+  background: linear-gradient(135deg, var(--celeste-fondo), #D6EAF8);
+  color: var(--texto-oscuro);
+  box-shadow: 0 0 0 3px rgba(30,136,229,.12);
+}
+.option-item input:checked + .option-label .option-dot {
+  background: var(--azul-brillante);
+  border-color: var(--azul-brillante);
+  color: #fff;
+}
+.option-item.correcto .option-label {
+  border-color: #2E7D32 !important;
+  background: var(--correcto-bg) !important;
+  color: var(--correcto) !important;
+}
+.option-item.incorrecto .option-label {
+  border-color: #C62828 !important;
+  background: var(--incorrecto-bg) !important;
+  color: var(--incorrecto) !important;
+}
+
+/* ── BUTTONS ─────────────────────────────────────── */
+.btn-verificar {
+  background: linear-gradient(135deg, var(--azul-medio), var(--azul-brillante));
+  color: #fff;
+  border: none;
+  padding: .75rem 2rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: .92rem;
+  letter-spacing: .03em;
+  transition: all .22s ease;
+  box-shadow: 0 4px 14px rgba(21,101,192,.28);
+}
+.btn-verificar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(21,101,192,.4);
+  color: #fff;
+}
+.btn-verificar:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.btn-siguiente {
+  background: transparent;
+  color: var(--azul-brillante);
+  border: 2px solid var(--azul-brillante);
+  padding: .73rem 1.8rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: .92rem;
+  transition: all .22s ease;
+  display: none;
+}
+.btn-siguiente:hover {
+  background: var(--azul-brillante);
+  color: #fff;
+  transform: translateY(-2px);
+}
+.btn-reiniciar {
+  background: var(--azul-oscuro);
+  color: #fff;
+  border: none;
+  padding: .75rem 2rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: .92rem;
+  transition: all .22s ease;
+  box-shadow: 0 4px 14px rgba(13,59,110,.3);
+}
+.btn-reiniciar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13,59,110,.45);
+  color: #fff;
+}
+
+/* ── FEEDBACK INLINE ──────────────────────────────── */
+.feedback-inline {
+  display: none;
+  border-radius: 10px;
+  padding: .85rem 1rem;
+  font-size: .88rem;
+  line-height: 1.5;
+  margin-top: .5rem;
+}
+.feedback-inline.correcto {
+  background: var(--correcto-bg);
+  border-left: 4px solid #2E7D32;
+  color: var(--correcto);
+}
+.feedback-inline.incorrecto {
+  background: var(--incorrecto-bg);
+  border-left: 4px solid #C62828;
+  color: var(--incorrecto);
+}
+
+/* ── RESULTS ─────────────────────────────────────── */
+#results-panel {
+  display: none;
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+.result-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--azul-medio), var(--celeste-vivo));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.4rem;
+  box-shadow: 0 8px 32px rgba(21,101,192,.3);
+}
+.result-score { font-size: 2.2rem; font-weight: 700; color: #fff; line-height: 1; }
+.result-total { font-size: .85rem; color: rgba(255,255,255,.8); }
+.result-title { font-family: 'Merriweather', serif; font-size: 1.5rem; color: var(--azul-oscuro); margin-bottom: .5rem; }
+.result-msg { color: var(--texto-medio); font-size: .95rem; }
+
+/* ── SWEETALERT CUSTOM ────────────────────────────── */
+.swal2-popup {
+  border-radius: 18px !important;
+  font-family: 'Lato', sans-serif !important;
+}
+.swal2-title { font-family: 'Merriweather', serif !important; color: var(--azul-oscuro) !important; }
+.swal2-html-container { font-size: .93rem !important; line-height: 1.65 !important; color: var(--texto-medio) !important; }
+.swal2-confirm {
+  background: linear-gradient(135deg, var(--azul-medio), var(--azul-brillante)) !important;
+  border-radius: 30px !important;
+  padding: .7rem 2rem !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(21,101,192,.3) !important;
+}
+.swal-arg-box {
+  background: var(--celeste-fondo);
+  border-left: 4px solid var(--azul-brillante);
+  border-radius: 0 10px 10px 0;
+  padding: .9rem 1rem;
+  margin: .6rem 0;
+  text-align: left;
+  font-size: .88rem;
+  line-height: 1.6;
+  color: var(--texto-oscuro);
+}
+.swal-arg-box strong { color: var(--azul-oscuro); }
+.swal-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-weight: 700;
+  font-size: .9rem;
+  margin-bottom: .6rem;
+}
+.swal-verdict.ok  { color: #1B5E20; }
+.swal-verdict.err { color: #B71C1C; }
+
+/* ── MISC ────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(21,101,192,.15), transparent);
+  margin: 1rem 0;
+}
+.exercise-body { padding: 1.6rem 1.8rem; }
+@media (max-width: 576px) {
+  .exercise-body { padding: 1.2rem 1rem; }
+  .exercise-header { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container" style="max-width:780px">
+    <div class="header-badge"><i class="bi bi-journal-code me-1"></i>Análisis y Diseño de Aplicaciones</div>
+    <h1>Ejercicios de Razonamiento</h1>
+    <p>Sistemas adyacentes · Diagramas de contexto · Abstracción · Modularidad · Acoplamiento · Co-nascencia</p>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="container py-4" style="max-width:780px">
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <span class="progress-label" id="prog-label">Ejercicio 1 de 8</span>
+      <span class="score-badge"><i class="bi bi-star-fill me-1" style="color:var(--celeste-vivo)"></i><span id="score-display">0 / 8</span></span>
+    </div>
+    <div class="progress"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  </div>
+
+  <div style="height:1.4rem"></div>
+
+  <!-- EXERCISE CARD -->
+  <div id="exercise-panel" class="exercise-card animate__animated animate__fadeInUp">
+
+    <div class="exercise-header">
+      <div class="exercise-number" id="ex-number">Ejercicio 01</div>
+      <div class="exercise-topic" id="ex-topic"><i class="bi bi-diagram-3-fill"></i><span id="ex-topic-text"></span></div>
+      <div class="exercise-question" id="ex-question"></div>
+    </div>
+
+    <div class="exercise-body">
+      <div class="scenario-box" id="ex-scenario"></div>
+
+      <p style="font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--azul-brillante);margin-bottom:.75rem;">
+        <i class="bi bi-list-check me-1"></i>Seleccioná la respuesta correcta
+      </p>
+
+      <div class="options-grid" id="options-container"></div>
+
+      <div class="feedback-inline" id="feedback-inline"></div>
+
+      <div class="divider"></div>
+
+      <div class="d-flex gap-3 flex-wrap">
+        <button class="btn-verificar" id="btn-verificar" onclick="verificar()" disabled>
+          <i class="bi bi-check2-circle me-2"></i>Verificar respuesta
+        </button>
+        <button class="btn-siguiente" id="btn-siguiente" onclick="siguiente()">
+          Siguiente <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-panel" class="exercise-card animate__animated">
+    <div class="exercise-body">
+      <div class="result-circle">
+        <span class="result-score" id="res-score">0</span>
+        <span class="result-total" id="res-total">/ 8</span>
+      </div>
+      <h2 class="result-title" id="res-title">¡Ejercicios completos!</h2>
+      <p class="result-msg" id="res-msg"></p>
+      <div class="divider"></div>
+      <div class="d-flex justify-content-center">
+        <button class="btn-reiniciar" onclick="reiniciar()">
+          <i class="bi bi-arrow-counterclockwise me-2"></i>Volver a intentar
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   WEB AUDIO — sonidos con osciladores
+════════════════════════════════════════════════════ */
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freqs, dur = 0.35, type = 'sine', vol = 0.18) {
+  const now = ctx.currentTime;
+  freqs.forEach((f, i) => {
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(f, now + i * 0.07);
+    gain.gain.setValueAtTime(vol, now + i * 0.07);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(now + i * 0.07);
+    osc.stop(now + i * 0.07 + dur + 0.05);
+  });
+}
+
+const soundCorrecto  = () => playTone([440, 554, 659], 0.3, 'sine', 0.15);
+const soundIncorrecto= () => playTone([330, 247], 0.35, 'sawtooth', 0.08);
+const soundClick     = () => playTone([600], 0.12, 'sine', 0.10);
+const soundFinal     = () => playTone([523, 659, 784, 1047], 0.4, 'sine', 0.13);
+
+/* ═══════════════════════════════════════════════════
+   EJERCICIOS
+════════════════════════════════════════════════════ */
+const ejercicios = [
+  {
+    numero: '01',
+    tema: 'Sistemas Adyacentes',
+    icono: 'bi-share-fill',
+    pregunta: '¿Qué tipo de sistema adyacente representa la pasarela de pagos?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Una plataforma de e-commerce uruguaya integra <strong>MercadoPago</strong> para procesar cobros.
+      Cuando un cliente compra, la plataforma envía una <em>solicitud de pago</em> al sistema de MercadoPago;
+      éste la procesa de forma automática y devuelve una <em>confirmación</em> sin intervención humana.
+      La comunicación ocurre mediante una API con mensajes y respuestas predecibles.`,
+    opciones: [
+      { letra: 'A', texto: 'Activo — porque interviene activamente en cada transacción y puede modificar el proceso.' },
+      { letra: 'B', texto: 'Autónomo — porque MercadoPago es una empresa externa que actúa de forma independiente.' },
+      { letra: 'C', texto: 'Cooperativo — es un sistema automatizado que colabora mediante mensajes y respuestas predecibles.' },
+      { letra: 'D', texto: 'No es un sistema adyacente, es parte del trabajo principal del sistema.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Sistema adyacente cooperativo',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>¿Por qué es cooperativo?</strong><br>
+        Un sistema adyacente cooperativo es un sistema <em>automatizado</em> que colabora con el trabajo
+        mediante un diálogo <em>mensaje → respuesta</em> durante el transcurso de un caso de uso.
+        MercadoPago recibe solicitudes de pago y devuelve confirmaciones de manera predecible y automática:
+        eso es exactamente la definición.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué no es activo?</strong><br>
+        Los sistemas activos son <em>humanos</em> que interactúan o participan en el trabajo.
+        MercadoPago es un sistema automatizado, no una persona.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué no es autónomo?</strong><br>
+        Los sistemas autónomos tienen flujos de datos <em>unidireccionales</em> y no interactúan
+        de forma directa. Aquí hay un diálogo de ida y vuelta (solicitud / respuesta),
+        lo que descarta el tipo autónomo.
+      </div>`
+  },
+  {
+    numero: '02',
+    tema: 'Sistemas Adyacentes',
+    icono: 'bi-share-fill',
+    pregunta: '¿Qué tipo de sistema adyacente representan los sistemas de los clientes corporativos?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Una empresa de logística recibe <strong>informes mensuales en PDF</strong> de sus clientes corporativos.
+      Cada cliente genera el informe desde su propio ERP, lo exporta a PDF y lo envía por email.
+      No existe ningún tipo de interacción directa, en tiempo real ni de ida y vuelta
+      entre el sistema de la empresa de logística y los sistemas de sus clientes.`,
+    opciones: [
+      { letra: 'A', texto: 'Activo — porque son empresas reales que participan en el proceso.' },
+      { letra: 'B', texto: 'Autónomo — actúan de forma independiente y la comunicación es unidireccional.' },
+      { letra: 'C', texto: 'Cooperativo — colaboran enviando datos al sistema.' },
+      { letra: 'D', texto: 'No son sistemas adyacentes ya que son externos a la organización.' }
+    ],
+    correcta: 1,
+    solutionTitle: 'Sistema adyacente autónomo',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>¿Por qué es autónomo?</strong><br>
+        Un sistema adyacente autónomo actúa <em>independientemente</em> del trabajo y se comunica
+        mediante <em>flujos de datos unidireccionales</em>: no hay interacción de ida y vuelta.
+        El cliente genera su informe por su cuenta (en su ERP) y lo envía; el sistema logístico
+        lo recibe pero no "responde" en tiempo real ni interactúa directamente con el ERP del cliente.
+      </div>
+      <div class="swal-arg-box">
+        <strong>Clave para no confundirlo con cooperativo:</strong><br>
+        El cooperativo tiene un diálogo <em>mensaje ↔ respuesta</em> en el contexto de un mismo caso de uso.
+        Aquí los ERPs de los clientes no "esperan respuesta" del sistema logístico; simplemente envían.
+      </div>
+      <div class="swal-arg-box">
+        <strong>Ojo con el tipo activo:</strong><br>
+        Activo implica que son <em>humanos</em> interactuando directamente con el trabajo.
+        Los sistemas ERP de los clientes son sistemas automatizados, no personas.
+      </div>`
+  },
+  {
+    numero: '03',
+    tema: 'Diagrama de Contexto',
+    icono: 'bi-diagram-2',
+    pregunta: '¿Qué representa correctamente la flecha etiquetada "Solicitud de préstamo"?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      En el <strong>diagrama de contexto</strong> de un sistema bancario, se observa una flecha
+      con la etiqueta <em>"Solicitud de préstamo"</em> que va desde el actor <strong>Cliente</strong>
+      hacia el caso de uso central <strong>Sistema Bancario</strong>.
+      El diagrama también muestra actores como <em>Banco Central</em> y <em>Sistema de Scoring</em>.`,
+    opciones: [
+      { letra: 'A', texto: 'Un caso de uso del sistema, porque describe una acción que realiza el usuario.' },
+      { letra: 'B', texto: 'Un flujo de datos que va desde el sistema adyacente (Cliente) hacia el trabajo.' },
+      { letra: 'C', texto: 'Un flujo de datos que sale del trabajo hacia el sistema adyacente Cliente.' },
+      { letra: 'D', texto: 'La frontera del sistema que separa lo que se estudia de lo que no.' }
+    ],
+    correcta: 1,
+    solutionTitle: 'Flujo de datos entrante al trabajo',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Flujos de datos en el diagrama de contexto:</strong><br>
+        Los flujos de datos se modelan con <em>asociaciones dirigidas</em>:
+        la dirección de la flecha indica el <strong>sentido del flujo</strong>.
+        Si la flecha va desde <em>Cliente → Sistema Bancario</em>,
+        entonces el dato ("Solicitud de préstamo") fluye <em>hacia el trabajo</em>,
+        es decir, entra al trabajo desde el sistema adyacente.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué no es un caso de uso?</strong><br>
+        En un diagrama de contexto el <em>único caso de uso</em> es el trabajo en sí (el óvalo central).
+        Las flechas etiquetadas son exclusivamente <em>flujos de datos</em>, no casos de uso.
+      </div>
+      <div class="swal-arg-box">
+        <strong>Elementos del diagrama de contexto:</strong><br>
+        • <strong>Trabajo</strong> → caso de uso central (el sistema) <br>
+        • <strong>Sistemas adyacentes</strong> → actores externos <br>
+        • <strong>Flujos de datos</strong> → asociaciones dirigidas etiquetadas <br>
+        • Frontera opcional rodeando el caso de uso
+      </div>`
+  },
+  {
+    numero: '04',
+    tema: 'Abstracción',
+    icono: 'bi-layers-half',
+    pregunta: '¿Qué principio de ingeniería de software aplica principalmente esta desarrolladora?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Una desarrolladora diseña un sistema de inventario y crea la clase <strong>Producto</strong>
+      con atributos <em>nombre</em>, <em>precio</em> y <em>stock</em>, y métodos como
+      <em>actualizarStock()</em> y <em>calcularValorTotal()</em>.
+      Cuando otros módulos del sistema necesitan trabajar con productos,
+      <strong>usan esta clase sin preocuparse de cómo los datos se almacenan en memoria</strong>.`,
+    opciones: [
+      { letra: 'A', texto: 'Acoplamiento eferente — porque los módulos dependen de la clase Producto.' },
+      { letra: 'B', texto: 'Modularidad — porque divide el sistema en componentes independientes.' },
+      { letra: 'C', texto: 'Abstracción — se trabaja con el concepto "Producto" ignorando detalles de implementación.' },
+      { letra: 'D', texto: 'Co-nascencia dinámica — porque los módulos se ejecutan en tiempos relacionados.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Abstracción',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>¿Qué es la abstracción aquí?</strong><br>
+        La abstracción es la eliminación de lo irrelevante y la amplificación de lo esencial.
+        Al usar la clase <em>Producto</em>, los otros módulos trabajan con el concepto en un
+        nivel superior: saben <em>qué hace</em> la clase, no <em>cómo lo hace</em>.
+        Eso es exactamente abstracción.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿No es también modularidad?</strong><br>
+        Sí, dividir en clases implica modularidad, pero el énfasis del escenario está en que
+        los módulos <em>ignoran los detalles</em> de implementación: eso apunta específicamente
+        a la abstracción. La modularidad es el mecanismo; la abstracción es el beneficio principal descrito.
+      </div>
+      <div class="swal-arg-box">
+        <strong>Cita clave del material:</strong><br>
+        "Para usar un procedimiento el programador solo se preocupa de lo que el procedimiento
+        <em>hace</em> y no de <em>cómo lo hace</em>." — Primera forma de abstracción en programación.
+      </div>`
+  },
+  {
+    numero: '05',
+    tema: 'Encapsulamiento',
+    icono: 'bi-lock-fill',
+    pregunta: '¿Qué principio garantiza que los módulos externos no se vean afectados por el cambio interno?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      La desarrolladora del ejercicio anterior decide que los atributos de <strong>Producto</strong>
+      serán <em>privados</em>, solo accesibles via getters/setters.
+      Luego cambia la lógica interna: el precio ahora se calcula <em>sin IVA</em> en lugar de con IVA.
+      A pesar de este cambio, <strong>ningún módulo externo necesita modificarse</strong>.`,
+    opciones: [
+      { letra: 'A', texto: 'Abstracción — porque se maneja el concepto de Producto en un nivel superior.' },
+      { letra: 'B', texto: 'Encapsulamiento — impide el acceso directo a los detalles de implementación, aislando los cambios.' },
+      { letra: 'C', texto: 'Cohesión — las partes del módulo están muy relacionadas entre sí.' },
+      { letra: 'D', texto: 'Co-nascencia de tipos — los tipos de datos definidos deben coincidir.' }
+    ],
+    correcta: 1,
+    solutionTitle: 'Encapsulamiento',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Encapsulamiento ≠ Abstracción:</strong><br>
+        <em>La abstracción ayuda a manejar la complejidad proveyendo modelos que permiten ignorar
+        los detalles. El encapsulamiento es lo que impide que puedas siquiera mirar esos detalles,
+        aunque quisieras.</em>
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué el encapsulamiento garantiza el aislamiento del cambio?</strong><br>
+        Al declarar los atributos como <em>privados</em> y exponer solo los métodos públicos,
+        ningún componente externo depende de cómo se calculan los precios internamente.
+        El material lo expresa así: "garantiza que los componentes pueden ser implementados
+        y <em>vueltos a implementar</em> independientemente de los demás".
+      </div>
+      <div class="swal-arg-box">
+        <strong>Relación con el principio de Parnas:</strong><br>
+        David Parnas describió el <em>information hiding</em>: esconder detalles de implementación
+        es exactamente lo que el encapsulamiento hace, y es la razón por la que el cambio
+        de lógica interna no se propaga a otros módulos.
+      </div>`
+  },
+  {
+    numero: '06',
+    tema: 'Cohesión',
+    icono: 'bi-boxes',
+    pregunta: '¿Cómo clasificarías la cohesión del módulo "Utilidades"?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Un equipo crea el módulo <strong>Utilidades</strong> que agrupa:
+      una función para <em>formatear fechas</em>,
+      un método para <em>enviar emails</em>,
+      una clase para <em>calcular impuestos</em>
+      y una función para <em>validar cédulas uruguayas</em>.
+      Todos son útiles en el sistema, pero no tienen ninguna relación entre sí más allá de ser convenientes.`,
+    opciones: [
+      { letra: 'A', texto: 'Alta cohesión — todas las funciones son útiles para el sistema.' },
+      { letra: 'B', texto: 'Baja cohesión — las partes no están relacionadas entre sí; están juntas solo por conveniencia.' },
+      { letra: 'C', texto: 'Alta cohesión — porque están todas contenidas dentro del mismo módulo.' },
+      { letra: 'D', texto: 'No es posible determinar la cohesión sin conocer el lenguaje de programación.' }
+    ],
+    correcta: 1,
+    solutionTitle: 'Baja cohesión — el antipatrón "Utilidades"',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>¿Qué mide la cohesión?</strong><br>
+        La cohesión refiere a <em>hasta qué punto las partes de un módulo deben estar
+        contenidas en el mismo módulo</em>. Es una medida de qué tan relacionadas están las partes entre sí.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué es baja?</strong><br>
+        Formatear fechas, enviar emails, calcular impuestos y validar cédulas
+        son responsabilidades completamente distintas. El único motivo por el que están juntas
+        es la <em>conveniencia del desarrollador</em>, no una relación real entre ellas.
+        El módulo "Utilidades" / "Helpers" es un antipatrón clásico de baja cohesión.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Qué debería hacerse?</strong><br>
+        Un módulo cohesivo es aquel donde "dividir sus partes requeriría crear nuevas conexiones".
+        Aquí lo ideal sería tener módulos separados: <em>FormateadorFechas</em>,
+        <em>ServicioEmail</em>, <em>CalculadorImpuestos</em>, <em>ValidadorDocumentos</em>.
+      </div>`
+  },
+  {
+    numero: '07',
+    tema: 'Acoplamiento',
+    icono: 'bi-link-45deg',
+    pregunta: '¿Qué tipo de acoplamiento tiene FacturacionService respecto a Modelos?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      El módulo <strong>FacturacionService</strong> en C# declara variables de tipo
+      <code>ClienteDTO</code> y <code>ProductoDTO</code>, ambos definidos en el namespace <strong>Modelos</strong>.
+      El proyecto de <em>FacturacionService</em> tiene una <em>referencia de ensamblado</em>
+      al ensamblado donde reside <em>Modelos</em>. Si cambian las firmas de los tipos en Modelos,
+      es muy probable que FacturacionService también deba modificarse.`,
+    opciones: [
+      { letra: 'A', texto: 'Acoplamiento aferente — porque Facturación recibe conexiones desde Modelos.' },
+      { letra: 'B', texto: 'Acoplamiento eferente — Facturación tiene conexiones salientes hacia Modelos.' },
+      { letra: 'C', texto: 'No hay acoplamiento, son módulos completamente independientes.' },
+      { letra: 'D', texto: 'Co-nascencia de identidad — ambos referencian las mismas entidades.' }
+    ],
+    correcta: 1,
+    solutionTitle: 'Acoplamiento eferente',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Aferente vs Eferente:</strong><br>
+        • <em>Aferente</em>: mide el número de conexiones <strong>entrantes</strong> a un módulo.<br>
+        • <em>Eferente</em>: mide las conexiones <strong>salientes</strong> hacia otros módulos.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué eferente para FacturacionService?</strong><br>
+        FacturacionService <em>usa</em> tipos de Modelos: declara variables de esos tipos,
+        necesita la cláusula <code>using</code> para referenciar el namespace y su proyecto
+        referencia el ensamblado de Modelos. Las conexiones <em>salen</em> de FacturacionService
+        hacia Modelos → eso es acoplamiento <strong>eferente</strong> para FacturacionService,
+        y acoplamiento <em>aferente</em> para Modelos (que es el módulo "usado").
+      </div>
+      <div class="swal-arg-box">
+        <strong>Implicancia práctica:</strong><br>
+        Un alto acoplamiento eferente es problemático porque si Modelos cambia (firmas de métodos,
+        nombres de clases), es muy probable que FacturacionService también deba modificarse
+        y desplegarse de nuevo.
+      </div>`
+  },
+  {
+    numero: '08',
+    tema: 'Co-nascencia',
+    icono: 'bi-braces-asterisk',
+    pregunta: '¿Qué tipo de co-nascencia describe mejor este problema de refactoring?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Una función <code>registrarVenta(clienteId, productoId, cantidad)</code>
+      es llamada en <strong>23 lugares</strong> del sistema.
+      En un refactor, el equipo cambia el orden de parámetros a
+      <code>registrarVenta(cantidad, clienteId, productoId)</code>.
+      Como resultado, <strong>todos los 23 lugares</strong> donde se invoca la función
+      deben actualizarse para que el sistema siga funcionando correctamente.
+      <div class="code-snippet">
+        <span class="cm">// Antes</span><br>
+        registrarVenta(<span class="str">clienteId</span>, <span class="str">productoId</span>, <span class="str">cantidad</span>);<br>
+        <span class="cm">// Después del refactor</span><br>
+        registrarVenta(<span class="str">cantidad</span>, <span class="str">clienteId</span>, <span class="str">productoId</span>);
+      </div>`,
+    opciones: [
+      { letra: 'A', texto: 'Co-nascencia de nombres — porque los nombres de los parámetros cambiaron en la firma.' },
+      { letra: 'B', texto: 'Co-nascencia de tipos — los tipos de los parámetros ya no coinciden con el llamador.' },
+      { letra: 'C', texto: 'Co-nascencia de posición — las partes deben acordar el orden de los valores.' },
+      { letra: 'D', texto: 'Co-nascencia de orden de ejecución — el orden en que se ejecuta la función cambia.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Co-nascencia de posición',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Definición exacta del material:</strong><br>
+        <em>"Co-nascencia de posición: múltiples partes deben ponerse de acuerdo en el
+        <strong>orden de los valores</strong>. Por ejemplo, en el orden de los parámetros del mismo tipo
+        en la firma de un método y en la invocación de ese método."</em>
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué no es de nombres?</strong><br>
+        La co-nascencia de nombres ocurre cuando el <em>identificador</em> (nombre de variable,
+        método o clase) debe coincidir en múltiples lugares. Aquí el nombre <em>registrarVenta</em>
+        no cambió; lo que cambió fue el <em>orden</em> de los parámetros.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué no es de orden de ejecución?</strong><br>
+        La co-nascencia <em>dinámica</em> de orden de ejecución refiere a que distintas partes
+        del sistema deben ejecutarse en un orden específico (p. ej.: asignar propiedades antes
+        de persistir). Aquí el problema ocurre en <em>tiempo de compilación</em> (o de lectura del código),
+        no en el orden de ejecución de distintos módulos → es co-nascencia <strong>estática</strong>.
+      </div>`
+  }
+];
+
+/* ═══════════════════════════════════════════════════
+   ESTADO
+════════════════════════════════════════════════════ */
+let actual   = 0;
+let puntaje  = 0;
+let respondido = false;
+let seleccion  = null;
+
+/* ═══════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════════ */
+function render() {
+  const ej = ejercicios[actual];
+  respondido = false;
+  seleccion  = null;
+
+  // Header
+  document.getElementById('ex-number').textContent   = `Ejercicio ${ej.numero}`;
+  document.getElementById('ex-topic-text').textContent = ej.tema;
+  document.getElementById('ex-topic').querySelector('i').className = `bi ${ej.icono}`;
+  document.getElementById('ex-question').textContent  = ej.pregunta;
+  document.getElementById('ex-scenario').innerHTML   = ej.escenario;
+
+  // Opciones
+  const cont = document.getElementById('options-container');
+  cont.innerHTML = '';
+  ej.opciones.forEach((op, i) => {
+    cont.innerHTML += `
+      <div class="option-item" id="opt-wrap-${i}">
+        <input type="radio" name="opcion" id="opt-${i}" value="${i}" onchange="seleccionar(${i})">
+        <label class="option-label" for="opt-${i}">
+          <span class="option-dot">${op.letra}</span>
+          <span>${op.texto}</span>
+        </label>
+      </div>`;
+  });
+
+  // Botones
+  const btnV = document.getElementById('btn-verificar');
+  const btnS = document.getElementById('btn-siguiente');
+  btnV.disabled = true;
+  btnV.style.display = 'inline-flex';
+  btnS.style.display = 'none';
+
+  // Feedback
+  const fb = document.getElementById('feedback-inline');
+  fb.style.display = 'none';
+  fb.className = 'feedback-inline';
+  fb.innerHTML = '';
+
+  // Progress
+  const pct = (actual / ejercicios.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('prog-label').textContent   = `Ejercicio ${actual + 1} de ${ejercicios.length}`;
+  document.getElementById('score-display').textContent = `${puntaje} / ${ejercicios.length}`;
+
+  // Animate
+  const card = document.getElementById('exercise-panel');
+  card.className = 'exercise-card animate__animated animate__fadeIn';
+  card.style.animationDuration = '.4s';
+}
+
+function seleccionar(idx) {
+  if (respondido) return;
+  seleccion = idx;
+  document.getElementById('btn-verificar').disabled = false;
+  soundClick();
+}
+
+/* ═══════════════════════════════════════════════════
+   VERIFICAR
+════════════════════════════════════════════════════ */
+function verificar() {
+  if (seleccion === null || respondido) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  respondido = true;
+
+  const ej = ejercicios[actual];
+  const correcta = ej.correcta;
+  const esCorrecta = seleccion === correcta;
+
+  // Marcar opciones visualmente
+  for (let i = 0; i < ej.opciones.length; i++) {
+    const wrap = document.getElementById(`opt-wrap-${i}`);
+    const inp  = document.getElementById(`opt-${i}`);
+    inp.disabled = true;
+    if (i === correcta)  wrap.classList.add('correcto');
+    if (i === seleccion && !esCorrecta) wrap.classList.add('incorrecto');
+  }
+
+  // Feedback inline
+  const fb = document.getElementById('feedback-inline');
+  if (esCorrecta) {
+    fb.className = 'feedback-inline correcto animate__animated animate__fadeIn';
+    fb.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i><strong>¡Correcto!</strong> Vas muy bien. Presioná "Ver solución" para leer los argumentos completos.`;
+    puntaje++;
+    soundCorrecto();
+  } else {
+    fb.className = 'feedback-inline incorrecto animate__animated animate__shakeX';
+    fb.innerHTML = `<i class="bi bi-x-circle-fill me-2"></i><strong>No es la opción correcta.</strong> La respuesta correcta es la opción <strong>${ej.opciones[correcta].letra}</strong>. Presioná "Ver solución" para entender por qué.`;
+    soundIncorrecto();
+  }
+  fb.style.display = 'block';
+
+  document.getElementById('score-display').textContent = `${puntaje} / ${ejercicios.length}`;
+
+  // Botones
+  document.getElementById('btn-verificar').style.display = 'none';
+
+  // SweetAlert solución + botón siguiente
+  setTimeout(() => {
+    const verdict = esCorrecta
+      ? `<div class="swal-verdict ok"><i class="bi bi-check-circle-fill"></i>¡Correcto! — ${ej.opciones[correcta].letra}: ${ej.opciones[correcta].texto.split('—')[0]}</div>`
+      : `<div class="swal-verdict err"><i class="bi bi-x-circle-fill"></i>Incorrecto. La respuesta es ${ej.opciones[correcta].letra}</div>`;
+
+    const esSiguiente = actual < ejercicios.length - 1;
+
+    Swal.fire({
+      title: ej.solutionTitle,
+      html: verdict + ej.solutionHtml,
+      confirmButtonText: esSiguiente ? 'Entendido — siguiente ejercicio <i class="bi bi-arrow-right ms-1"></i>' : 'Ver resultados finales <i class="bi bi-trophy ms-1"></i>',
+      icon: esCorrecta ? 'success' : 'info',
+      width: 620,
+      allowOutsideClick: false,
+    }).then(() => {
+      if (esSiguiente) {
+        actual++;
+        render();
+      } else {
+        mostrarResultados();
+      }
+    });
+  }, 700);
+}
+
+function siguiente() {
+  if (actual < ejercicios.length - 1) {
+    actual++;
+    render();
+  } else {
+    mostrarResultados();
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   RESULTADOS
+════════════════════════════════════════════════════ */
+function mostrarResultados() {
+  soundFinal();
+  document.getElementById('exercise-panel').style.display = 'none';
+  const panel = document.getElementById('results-panel');
+  panel.style.display = 'block';
+  panel.className = 'exercise-card animate__animated animate__zoomIn';
+
+  document.getElementById('res-score').textContent = puntaje;
+  document.getElementById('res-total').textContent = `/ ${ejercicios.length}`;
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('prog-label').textContent = `¡Completado!`;
+  document.getElementById('score-display').textContent = `${puntaje} / ${ejercicios.length}`;
+
+  const pct = puntaje / ejercicios.length;
+  let titulo, msg;
+  if (pct === 1)        { titulo = '¡Perfecto! Dominio completo 🏆'; msg = 'Respondiste correctamente todos los ejercicios. Tenés un excelente manejo de los conceptos del módulo.'; }
+  else if (pct >= 0.75) { titulo = '¡Muy bien! 🎯'; msg = `Obtuviste ${puntaje} de ${ejercicios.length}. Dominás la mayoría de los conceptos. Revisá las soluciones de los ejercicios que no acertaste.`; }
+  else if (pct >= 0.5)  { titulo = 'Buen intento 📘'; msg = `Obtuviste ${puntaje} de ${ejercicios.length}. Hay conceptos que vale la pena repasar, especialmente las definiciones de co-nascencia y acoplamiento.`; }
+  else                  { titulo = 'Seguí practicando 💪'; msg = `Obtuviste ${puntaje} de ${ejercicios.length}. Te recomendamos releer el material y volver a intentar los ejercicios.`; }
+
+  document.getElementById('res-title').textContent = titulo;
+  document.getElementById('res-msg').textContent   = msg;
+}
+
+function reiniciar() {
+  actual = 0; puntaje = 0;
+  document.getElementById('results-panel').style.display = 'none';
+  document.getElementById('exercise-panel').style.display = 'block';
+  render();
+}
+
+/* INIT */
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ejercicios II — Análisis y Diseño de Aplicaciones</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@300;400;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+:root {
+  --azul-oscuro:    #0D3B6E;
+  --azul-medio:     #1565C0;
+  --azul-brillante: #1E88E5;
+  --celeste-vivo:   #29B6F6;
+  --celeste-claro:  #B3E5FC;
+  --celeste-fondo:  #EBF5FB;
+  --blanco:         #FFFFFF;
+  --gris-suave:     #F0F4F8;
+  --texto-oscuro:   #0A2342;
+  --texto-medio:    #344A6E;
+  --correcto:       #1A5C38;
+  --correcto-bg:    #E8F5E9;
+  --incorrecto:     #7B1010;
+  --incorrecto-bg:  #FEECEB;
+  --sombra-card:    0 4px 24px rgba(13,59,110,0.10);
+  --sombra-hover:   0 8px 32px rgba(13,59,110,0.18);
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--gris-suave);
+  background-image:
+    radial-gradient(ellipse at 10% 0%, rgba(41,182,246,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(21,101,192,0.10) 0%, transparent 55%);
+  min-height: 100vh;
+  color: var(--texto-oscuro);
+}
+
+/* ── HEADER ─────────────────────────────────────── */
+.site-header {
+  background: linear-gradient(135deg, #0A2A50 0%, #1565C0 100%);
+  color: var(--blanco);
+  padding: 2rem 0 1.6rem;
+  position: relative;
+  overflow: hidden;
+}
+.site-header::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: rgba(41,182,246,0.10);
+  pointer-events: none;
+}
+.site-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 28px;
+  background: var(--gris-suave);
+  clip-path: ellipse(54% 100% at 50% 100%);
+}
+.header-badge {
+  display: inline-block;
+  background: rgba(41,182,246,0.22);
+  border: 1px solid rgba(41,182,246,0.45);
+  color: var(--celeste-claro);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: .28rem .8rem;
+  border-radius: 20px;
+  margin-bottom: .8rem;
+}
+.header-serie {
+  display: inline-block;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: .25rem .75rem;
+  border-radius: 20px;
+  margin-left: .5rem;
+}
+.site-header h1 {
+  font-family: 'Merriweather', serif;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+}
+.site-header p {
+  font-size: .9rem;
+  color: rgba(255,255,255,.72);
+  margin: .4rem 0 0;
+}
+
+/* ── PROGRESS ────────────────────────────────────── */
+.progress-wrap { padding: 1.2rem 0 .6rem; }
+.progress-label {
+  font-size: .78rem; font-weight: 700;
+  letter-spacing: .06em; color: var(--azul-medio);
+  text-transform: uppercase; margin-bottom: .4rem;
+}
+.progress { height: 8px; border-radius: 8px; background: rgba(21,101,192,.12); }
+.progress-bar {
+  background: linear-gradient(90deg, var(--azul-brillante), var(--celeste-vivo));
+  border-radius: 8px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.score-badge {
+  font-size: .78rem; font-weight: 700;
+  color: var(--azul-medio);
+  background: rgba(21,101,192,.08);
+  border: 1px solid rgba(21,101,192,.18);
+  border-radius: 20px; padding: .25rem .8rem;
+}
+
+/* ── EXERCISE CARD ───────────────────────────────── */
+.exercise-card {
+  background: var(--blanco);
+  border-radius: 18px;
+  box-shadow: var(--sombra-card);
+  overflow: hidden;
+  border: 1px solid rgba(21,101,192,.08);
+}
+.exercise-header {
+  background: linear-gradient(135deg, var(--celeste-fondo) 0%, #D6EAF8 100%);
+  padding: 1.4rem 1.8rem 1.2rem;
+  border-bottom: 1px solid rgba(21,101,192,.10);
+}
+.exercise-number {
+  font-size: .7rem; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--azul-brillante); margin-bottom: .3rem;
+}
+.exercise-topic {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .75rem; font-weight: 700;
+  color: var(--azul-oscuro);
+  background: rgba(21,101,192,.10);
+  border-radius: 12px; padding: .2rem .7rem; margin-bottom: .8rem;
+}
+.exercise-question {
+  font-family: 'Merriweather', serif;
+  font-size: 1.05rem; font-weight: 700;
+  line-height: 1.5; color: var(--texto-oscuro);
+}
+
+/* ── SCENARIO BOX ────────────────────────────────── */
+.scenario-box {
+  background: var(--gris-suave);
+  border-left: 4px solid var(--celeste-vivo);
+  border-radius: 0 10px 10px 0;
+  padding: 1rem 1.2rem; margin-bottom: 1.4rem;
+  font-size: .93rem; color: var(--texto-medio); line-height: 1.65;
+}
+.scenario-box strong { color: var(--azul-oscuro); }
+.scenario-label {
+  font-size: .68rem; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--celeste-vivo); display: block; margin-bottom: .35rem;
+}
+
+/* ── DIAGRAMA SVG ────────────────────────────────── */
+.diagram-wrap {
+  background: #F7FBFF;
+  border: 1px solid rgba(21,101,192,.12);
+  border-radius: 10px;
+  padding: .8rem;
+  margin: .6rem 0 1rem;
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* ── CODE SNIPPET ────────────────────────────────── */
+.code-snippet {
+  font-family: 'Source Code Pro', monospace;
+  font-size: .82rem;
+  background: #0D1B2A;
+  color: #B3E5FC;
+  border-radius: 8px;
+  padding: .8rem 1rem;
+  margin: .6rem 0;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+}
+.kw  { color: #29B6F6; }
+.str { color: #A5D6A7; }
+.cm  { color: #546E7A; font-style: italic; }
+.cls { color: #FFD54F; }
+.num { color: #CE93D8; }
+
+/* ── OPTIONS ─────────────────────────────────────── */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem; margin: .4rem 0 1.2rem;
+}
+@media (max-width:600px) { .options-grid { grid-template-columns: 1fr; } }
+.option-item { position: relative; }
+.option-item input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.option-label {
+  display: flex; align-items: flex-start; gap: .75rem;
+  background: var(--gris-suave);
+  border: 2px solid rgba(21,101,192,.14);
+  border-radius: 12px; padding: .9rem 1rem; cursor: pointer;
+  transition: all .22s ease;
+  font-size: .9rem; line-height: 1.45;
+  color: var(--texto-medio); min-height: 60px;
+}
+.option-label:hover {
+  border-color: var(--azul-brillante);
+  background: var(--celeste-fondo);
+  color: var(--texto-oscuro);
+  box-shadow: var(--sombra-hover);
+  transform: translateY(-1px);
+}
+.option-dot {
+  flex-shrink: 0; width: 22px; height: 22px;
+  border-radius: 50%; border: 2px solid rgba(21,101,192,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 700;
+  color: var(--azul-brillante); transition: all .2s ease; margin-top: .05rem;
+}
+.option-item input:checked + .option-label {
+  border-color: var(--azul-brillante);
+  background: linear-gradient(135deg, var(--celeste-fondo), #D6EAF8);
+  color: var(--texto-oscuro);
+  box-shadow: 0 0 0 3px rgba(30,136,229,.12);
+}
+.option-item input:checked + .option-label .option-dot {
+  background: var(--azul-brillante); border-color: var(--azul-brillante); color: #fff;
+}
+.option-item.correcto .option-label {
+  border-color: #2E7D32 !important; background: var(--correcto-bg) !important; color: var(--correcto) !important;
+}
+.option-item.incorrecto .option-label {
+  border-color: #C62828 !important; background: var(--incorrecto-bg) !important; color: var(--incorrecto) !important;
+}
+
+/* ── BUTTONS ─────────────────────────────────────── */
+.btn-verificar {
+  background: linear-gradient(135deg, var(--azul-medio), var(--azul-brillante));
+  color: #fff; border: none; padding: .75rem 2rem;
+  border-radius: 30px; font-weight: 700; font-size: .92rem;
+  letter-spacing: .03em; transition: all .22s ease;
+  box-shadow: 0 4px 14px rgba(21,101,192,.28); cursor: pointer;
+}
+.btn-verificar:hover:not(:disabled) {
+  transform: translateY(-2px); box-shadow: 0 6px 20px rgba(21,101,192,.4); color: #fff;
+}
+.btn-verificar:disabled { opacity: .45; cursor: not-allowed; }
+.btn-reiniciar {
+  background: var(--azul-oscuro); color: #fff; border: none;
+  padding: .75rem 2rem; border-radius: 30px; font-weight: 700;
+  font-size: .92rem; transition: all .22s ease;
+  box-shadow: 0 4px 14px rgba(13,59,110,.3); cursor: pointer;
+}
+.btn-reiniciar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13,59,110,.45); color: #fff; }
+
+/* ── FEEDBACK INLINE ──────────────────────────────── */
+.feedback-inline {
+  display: none; border-radius: 10px; padding: .85rem 1rem;
+  font-size: .88rem; line-height: 1.5; margin-top: .5rem;
+}
+.feedback-inline.correcto { background: var(--correcto-bg); border-left: 4px solid #2E7D32; color: var(--correcto); }
+.feedback-inline.incorrecto { background: var(--incorrecto-bg); border-left: 4px solid #C62828; color: var(--incorrecto); }
+
+/* ── RESULTS ─────────────────────────────────────── */
+#results-panel { display: none; text-align: center; padding: 2.5rem 1rem; }
+.result-circle {
+  width: 120px; height: 120px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--azul-medio), var(--celeste-vivo));
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  margin: 0 auto 1.4rem;
+  box-shadow: 0 8px 32px rgba(21,101,192,.3);
+}
+.result-score { font-size: 2.2rem; font-weight: 700; color: #fff; line-height: 1; }
+.result-total { font-size: .85rem; color: rgba(255,255,255,.8); }
+.result-title { font-family: 'Merriweather', serif; font-size: 1.5rem; color: var(--azul-oscuro); margin-bottom: .5rem; }
+.result-msg { color: var(--texto-medio); font-size: .95rem; }
+
+/* ── REVIEW LIST ─────────────────────────────────── */
+.review-list { text-align: left; margin-top: 1.4rem; }
+.review-item {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .6rem .8rem; border-radius: 8px; margin-bottom: .4rem;
+  font-size: .85rem;
+}
+.review-item.ok  { background: var(--correcto-bg); color: var(--correcto); }
+.review-item.err { background: var(--incorrecto-bg); color: var(--incorrecto); }
+
+/* ── SWEETALERT CUSTOM ────────────────────────────── */
+.swal2-popup { border-radius: 18px !important; font-family: 'Lato', sans-serif !important; }
+.swal2-title { font-family: 'Merriweather', serif !important; color: var(--azul-oscuro) !important; }
+.swal2-html-container { font-size: .93rem !important; line-height: 1.65 !important; color: var(--texto-medio) !important; }
+.swal2-confirm {
+  background: linear-gradient(135deg, var(--azul-medio), var(--azul-brillante)) !important;
+  border-radius: 30px !important; padding: .7rem 2rem !important;
+  font-weight: 700 !important; box-shadow: 0 4px 14px rgba(21,101,192,.3) !important;
+}
+.swal-arg-box {
+  background: var(--celeste-fondo); border-left: 4px solid var(--azul-brillante);
+  border-radius: 0 10px 10px 0; padding: .9rem 1rem; margin: .6rem 0;
+  text-align: left; font-size: .88rem; line-height: 1.6; color: var(--texto-oscuro);
+}
+.swal-arg-box strong { color: var(--azul-oscuro); }
+.swal-verdict {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-weight: 700; font-size: .9rem; margin-bottom: .6rem;
+}
+.swal-verdict.ok  { color: #1B5E20; }
+.swal-verdict.err { color: #B71C1C; }
+
+/* ── MISC ────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(21,101,192,.15), transparent);
+  margin: 1rem 0;
+}
+.exercise-body { padding: 1.6rem 1.8rem; }
+@media (max-width:576px) {
+  .exercise-body { padding: 1.2rem 1rem; }
+  .exercise-header { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container" style="max-width:780px">
+    <div>
+      <div class="header-badge"><i class="bi bi-journal-code me-1"></i>Análisis y Diseño de Aplicaciones</div>
+      <span class="header-serie">Serie II</span>
+    </div>
+    <h1>Ejercicios de Razonamiento</h1>
+    <p>Sistemas adyacentes · Diagramas de contexto · Abstracción · Modularidad · Acoplamiento · Co-nascencia</p>
+  </div>
+</header>
+
+<main class="container py-4" style="max-width:780px">
+
+  <div class="progress-wrap animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <span class="progress-label" id="prog-label">Ejercicio 1 de 8</span>
+      <span class="score-badge"><i class="bi bi-star-fill me-1" style="color:var(--celeste-vivo)"></i><span id="score-display">0 / 8</span></span>
+    </div>
+    <div class="progress"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  </div>
+
+  <div style="height:1.4rem"></div>
+
+  <!-- EXERCISE CARD -->
+  <div id="exercise-panel" class="exercise-card animate__animated animate__fadeInUp">
+    <div class="exercise-header">
+      <div class="exercise-number" id="ex-number">Ejercicio 01</div>
+      <div class="exercise-topic" id="ex-topic"><i class="bi bi-diagram-3-fill"></i><span id="ex-topic-text"></span></div>
+      <div class="exercise-question" id="ex-question"></div>
+    </div>
+    <div class="exercise-body">
+      <div class="scenario-box" id="ex-scenario"></div>
+      <p style="font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--azul-brillante);margin-bottom:.75rem;">
+        <i class="bi bi-list-check me-1"></i>Seleccioná la respuesta correcta
+      </p>
+      <div class="options-grid" id="options-container"></div>
+      <div class="feedback-inline" id="feedback-inline"></div>
+      <div class="divider"></div>
+      <div class="d-flex gap-3 flex-wrap">
+        <button class="btn-verificar" id="btn-verificar" onclick="verificar()" disabled>
+          <i class="bi bi-check2-circle me-2"></i>Verificar respuesta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-panel" class="exercise-card animate__animated">
+    <div class="exercise-body">
+      <div class="result-circle">
+        <span class="result-score" id="res-score">0</span>
+        <span class="result-total" id="res-total">/ 8</span>
+      </div>
+      <h2 class="result-title" id="res-title">¡Ejercicios completos!</h2>
+      <p class="result-msg" id="res-msg"></p>
+      <div id="review-list" class="review-list"></div>
+      <div class="divider"></div>
+      <div class="d-flex justify-content-center">
+        <button class="btn-reiniciar" onclick="reiniciar()">
+          <i class="bi bi-arrow-counterclockwise me-2"></i>Volver a intentar
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+/* ── AUDIO ── */
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+function playTone(freqs, dur=.35, type='sine', vol=.18){
+  const now=ctx.currentTime;
+  freqs.forEach((f,i)=>{
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(f,now+i*.07);
+    g.gain.setValueAtTime(vol,now+i*.07);
+    g.gain.exponentialRampToValueAtTime(.001,now+i*.07+dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(now+i*.07); o.stop(now+i*.07+dur+.05);
+  });
+}
+const soundOk    = ()=>playTone([440,554,659],.3,'sine',.15);
+const soundErr   = ()=>playTone([330,247],.35,'sawtooth',.08);
+const soundClick = ()=>playTone([600],.12,'sine',.10);
+const soundFinal = ()=>playTone([523,659,784,1047],.4,'sine',.13);
+
+/* ═══════════════════════════════════════════════════
+   EJERCICIOS — SERIE II
+════════════════════════════════════════════════════ */
+const ejercicios = [
+  /* 01 ─ Sistemas adyacentes: ampliar alcance */
+  {
+    numero: '01', tema: 'Sistemas Adyacentes', icono: 'bi-share-fill',
+    pregunta: '¿Qué decisión estratégica debería plantearse el equipo respecto al sistema adyacente activo?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Una universidad tiene un <strong>sistema de inscripciones</strong> que gestiona los cursos.
+      Los <strong>docentes</strong> son un sistema adyacente activo: hoy acceden al sistema
+      solo para <em>consultar las listas de asistencia</em> que el sistema genera.
+      Sin embargo, actualmente los docentes <em>cargan las notas finales a mano en planillas Excel</em>
+      y alguien del área académica las ingresa al sistema manualmente.`,
+    opciones: [
+      { letra: 'A', texto: 'Nada. Los sistemas adyacentes activos están fuera del alcance y no deben modificarse.' },
+      { letra: 'B', texto: 'Eliminar al docente como actor del diagrama, ya que solo consulta datos y no interactúa realmente.' },
+      { letra: 'C', texto: 'Evaluar ampliar el alcance del producto para que el docente cargue notas directamente, eliminando la doble carga.' },
+      { letra: 'D', texto: 'Convertirlo en sistema autónomo para que envíe las planillas Excel automáticamente por email.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Ampliar el alcance hacia el sistema adyacente activo',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Oportunidad de ampliación:</strong><br>
+        El material dice explícitamente sobre los sistemas adyacentes activos:
+        <em>"deben considerar si es posible ampliar el alcance del producto para incluir parte
+        del sistema adyacente. ¿Puede el producto realizar parte del trabajo que realiza
+        actualmente el sistema adyacente?"</em>
+      </div>
+      <div class="swal-arg-box">
+        <strong>En este caso:</strong><br>
+        La carga de notas actualmente la hace el docente en Excel y otra persona la pasa al sistema.
+        Eso es exactamente el tipo de ineficiencia que se gana eliminando al ampliar el alcance:
+        que el docente ingrese notas directamente al sistema.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué no eliminarlo del diagrama?</strong><br>
+        Los actores no se eliminan por interactuar poco; representan roles reales que intercambian
+        datos con el sistema. Eliminarlos falsearía el diagrama de contexto.
+      </div>`
+  },
+
+  /* 02 ─ Diagrama de contexto: elementos */
+  {
+    numero: '02', tema: 'Diagrama de Contexto', icono: 'bi-diagram-2',
+    pregunta: 'En el diagrama de contexto de abajo, ¿qué problema de modelado tiene la flecha marcada con ⚠️?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Analizá este fragmento de un diagrama de contexto para un <strong>Sistema de Turnos Médicos</strong>:
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 480 180" width="100%" style="max-width:460px;font-family:'Lato',sans-serif">
+          <!-- Sistema central -->
+          <ellipse cx="240" cy="90" rx="90" ry="38" fill="#EBF5FB" stroke="#1E88E5" stroke-width="2"/>
+          <text x="240" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#0D3B6E">Sistema de</text>
+          <text x="240" y="102" text-anchor="middle" font-size="12" font-weight="700" fill="#0D3B6E">Turnos Médicos</text>
+          <!-- Actor Paciente -->
+          <circle cx="60" cy="48" r="12" fill="none" stroke="#29B6F6" stroke-width="2"/>
+          <line x1="60" y1="60" x2="60" y2="90" stroke="#29B6F6" stroke-width="2"/>
+          <line x1="60" y1="72" x2="44" y2="82" stroke="#29B6F6" stroke-width="2"/>
+          <line x1="60" y1="72" x2="76" y2="82" stroke="#29B6F6" stroke-width="2"/>
+          <line x1="60" y1="90" x2="44" y2="108" stroke="#29B6F6" stroke-width="2"/>
+          <line x1="60" y1="90" x2="76" y2="108" stroke="#29B6F6" stroke-width="2"/>
+          <text x="60" y="126" text-anchor="middle" font-size="11" fill="#0D3B6E" font-weight="600">Paciente</text>
+          <!-- Actor Médico -->
+          <circle cx="60" cy="148" r="12" fill="none" stroke="#29B6F6" stroke-width="2"/>
+          <text x="60" y="172" text-anchor="middle" font-size="11" fill="#0D3B6E" font-weight="600">Médico</text>
+          <!-- Flecha Paciente → Sistema -->
+          <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#1E88E5"/></marker>
+          <marker id="arr-warn" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#E53935"/></marker></defs>
+          <line x1="80" y1="78" x2="148" y2="80" stroke="#1E88E5" stroke-width="1.8" marker-end="url(#arr)"/>
+          <text x="114" y="72" text-anchor="middle" font-size="10" fill="#1565C0">Solicitud de turno</text>
+          <!-- Flecha Sistema → Paciente -->
+          <line x1="148" y1="90" x2="80" y2="100" stroke="#1E88E5" stroke-width="1.8" marker-end="url(#arr)"/>
+          <text x="114" y="102" text-anchor="middle" font-size="10" fill="#1565C0">Confirmación</text>
+          <!-- Flecha PROBLEMÁTICA: bidireccional sin etiqueta -->
+          <line x1="80" y1="148" x2="148" y2="110" stroke="#E53935" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-warn)"/>
+          <text x="96" y="135" text-anchor="middle" font-size="18" fill="#E53935">⚠️</text>
+          <!-- Actor OS (cooperativo) -->
+          <rect x="390" y="65" width="78" height="50" rx="8" fill="#EBF5FB" stroke="#1E88E5" stroke-width="1.5"/>
+          <text x="429" y="85" text-anchor="middle" font-size="10" fill="#546E7A">«cooperative»</text>
+          <text x="429" y="99" text-anchor="middle" font-size="11" font-weight="700" fill="#0D3B6E">Obra Social</text>
+          <line x1="330" y1="85" x2="390" y2="85" stroke="#1E88E5" stroke-width="1.8" marker-end="url(#arr)"/>
+          <text x="360" y="78" text-anchor="middle" font-size="10" fill="#1565C0">Cobertura</text>
+          <line x1="390" y1="95" x2="330" y2="95" stroke="#1E88E5" stroke-width="1.8" marker-end="url(#arr)"/>
+          <text x="360" y="108" text-anchor="middle" font-size="10" fill="#1565C0">Autorización</text>
+        </svg>
+      </div>
+      La flecha roja punteada (⚠️) va del actor <strong>Médico</strong> al sistema sin ninguna etiqueta.`,
+    opciones: [
+      { letra: 'A', texto: 'No hay ningún problema: en UML se permite tener flechas sin etiqueta.' },
+      { letra: 'B', texto: 'El problema es que el Médico debería ser un sistema cooperativo, no un actor.' },
+      { letra: 'C', texto: 'La flecha no tiene etiqueta: no se puede saber qué dato fluye ni en qué sentido, violando la notación.' },
+      { letra: 'D', texto: 'La flecha es redundante porque el Médico ya está conectado a través del Paciente.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Flujo de datos sin etiquetar — violación de notación',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Regla de los flujos de datos:</strong><br>
+        El material establece: <em>"El nombre de la asociación indica los datos que llegan
+        o salen desde o hacia el trabajo."</em>
+        Una flecha sin etiqueta es simplemente información incompleta: ¿qué dato envía el Médico?
+        ¿Confirmación de disponibilidad? ¿Su agenda? ¿Diagnóstico? Sin la etiqueta no podemos saberlo.
+      </div>
+      <div class="swal-arg-box">
+        <strong>Propósito del diagrama de contexto:</strong><br>
+        Se usa para "generar y mostrar el consenso entre las partes interesadas sobre el
+        <em>alcance del trabajo</em>". Una flecha sin etiquetar no genera consenso: genera ambigüedad.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué no es problema de tipo de actor?</strong><br>
+        El Médico es un humano que interactúa con el sistema → es correctamente un <em>activo</em>.
+        El problema no es su clasificación, sino la ausencia del nombre del flujo de datos.
+      </div>`
+  },
+
+  /* 03 ─ Customer journey map */
+  {
+    numero: '03', tema: 'Customer Journey Map', icono: 'bi-map',
+    pregunta: '¿Qué elemento clave del customer journey map está faltando en este análisis?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Un equipo analiza cómo los clientes contratan internet en una empresa de telecomunicaciones.
+      Documentan meticulosamente <strong>cada paso del proceso</strong>:
+      búsqueda en Google → visita al sitio web → chat de ventas → firma del contrato → instalación → primera factura.
+      El documento resultante detalla todas las acciones y puntos de contacto,
+      pero <em>no menciona en ningún momento cómo se siente el cliente en cada etapa</em>.`,
+    opciones: [
+      { letra: 'A', texto: 'Falta el diagrama de contexto que muestre los sistemas adyacentes involucrados.' },
+      { letra: 'B', texto: 'Falta documentar los estados emocionales del cliente en cada punto de contacto.' },
+      { letra: 'C', texto: 'Falta identificar los casos de uso UML para cada interacción del cliente.' },
+      { letra: 'D', texto: 'Falta indicar los flujos de datos entre el cliente y los sistemas de la empresa.' }
+    ],
+    correcta: 1,
+    solutionTitle: 'Estados emocionales — el corazón del journey map',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Definición del material:</strong><br>
+        <em>"Esta representación cuenta una historia detallada que captura no solo las acciones
+        del usuario, sino <strong>fundamentalmente también sus estados emocionales</strong>,
+        presentándolos de manera comprensible y accesible."</em>
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué los estados emocionales son tan importantes?</strong><br>
+        El customer journey map no es un simple flujograma de pasos: su valor está en revelar
+        <em>cómo se siente</em> el cliente en cada momento. Un cliente puede completar todos los pasos
+        pero sentir frustración en la etapa de instalación o confusión en la primera factura.
+        Sin esa dimensión emocional, se pierde la esencia de la herramienta.
+      </div>
+      <div class="swal-arg-box">
+        <strong>Lo que sí tienen bien:</strong><br>
+        Las acciones y los puntos de contacto (touchpoints) son efectivamente parte del journey map.
+        Simplemente les falta la capa emocional que convierte un listado de pasos en
+        un verdadero mapa del recorrido del cliente.
+      </div>`
+  },
+
+  /* 04 ─ Abstracción: niveles y jerarquías */
+  {
+    numero: '04', tema: 'Abstracción', icono: 'bi-layers-half',
+    pregunta: '¿Cuál afirmación sobre los niveles de abstracción es INCORRECTA?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Un equipo de arquitectura está diseñando un sistema de gestión hospitalaria.
+      Trabajan en simultáneo con:
+      un <strong>diagrama de clases</strong> (entidades del dominio),
+      un <strong>diagrama de secuencia</strong> (interacciones entre objetos) y
+      un <strong>diagrama de actividades</strong> (flujos de procesos).
+      Los tres representan la misma pieza del sistema.
+      El equipo debate cuál de las siguientes afirmaciones es incorrecta.`,
+    opciones: [
+      { letra: 'A', texto: 'Los tres diagramas pueden estar al mismo nivel de abstracción, complementándose entre sí.' },
+      { letra: 'B', texto: 'La abstracción implica concentrarse en un nivel a la vez, confiando en que los niveles se pueden conectar.' },
+      { letra: 'C', texto: 'Los elementos abstractos siempre deben tener una construcción concreta equivalente en la realidad.' },
+      { letra: 'D', texto: 'Una jerarquía de abstracciones puede tomar forma de árbol, donde cada abstracción puede tener múltiples sucesores.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Las abstracciones NO necesitan corresponder a la realidad concreta',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Cita exacta del material:</strong><br>
+        <em>"Los elementos abstractos <strong>no necesariamente corresponden con construcciones
+        concretas en la realidad o en el dominio del problema</strong>."</em><br>
+        Por eso la opción C es incorrecta: exige algo que el concepto de abstracción explícitamente no requiere.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué las otras opciones son correctas?</strong><br>
+        • La A es correcta: "a veces es conveniente considerar múltiples abstracciones al mismo nivel
+        desde diferentes puntos de vista". Diagrama de clases, secuencia y actividades pueden convivir.<br>
+        • La B es correcta: "nos concentramos en un nivel a la vez, confiando en que podemos
+        conectar los conceptos con niveles superiores e inferiores".<br>
+        • La D es correcta: la estructura de abstracciones puede ser "tipo árbol, donde cada
+        abstracción tiene múltiples sucesores".
+      </div>
+      <div class="swal-arg-box">
+        <strong>Ejemplo concreto:</strong><br>
+        Una clase abstracta <code>Animal</code> en OOP no corresponde a ningún animal real concreto;
+        es una abstracción útil para el diseño sin necesidad de existir físicamente.
+      </div>`
+  },
+
+  /* 05 ─ Modularidad */
+  {
+    numero: '05', tema: 'Modularidad', icono: 'bi-puzzle-fill',
+    pregunta: '¿Cuál de estas afirmaciones describe mejor el concepto de modularidad según Parnas?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Dos desarrolladoras debaten cómo organizar un sistema de reservas de vuelos.
+      <strong>Lucía</strong> propone dividirlo en módulos donde cada uno tenga una responsabilidad clara,
+      oculte sus detalles internos detrás de una interfaz y pueda modificarse sin impactar a los demás.
+      <strong>Valentina</strong> propone separarlo en archivos por tecnología:
+      un archivo para todo el SQL, otro para toda la lógica de negocio y otro para las vistas.`,
+    opciones: [
+      { letra: 'A', texto: 'Valentina aplica modularidad porque divide el sistema en partes separadas.' },
+      { letra: 'B', texto: 'Lucía aplica modularidad: módulos cohesivos que ocultan implementación y son modificables independientemente.' },
+      { letra: 'C', texto: 'Ambas aplican modularidad porque en los dos casos el sistema queda dividido en componentes.' },
+      { letra: 'D', texto: 'Ninguna aplica modularidad porque no mencionan el concepto de co-nascencia.' }
+    ],
+    correcta: 1,
+    solutionTitle: 'Modularidad según Parnas — cohesión + ocultamiento',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Definición del material:</strong><br>
+        David Parnas definió modularidad como <em>"la descomposición de un sistema de software en
+        módulos <strong>altamente cohesivos y poco acoplados</strong>, donde cada módulo
+        <strong>oculta los detalles de su implementación</strong> detrás de una interfaz y puede ser
+        modificado independientemente con muy poco o ningún impacto en otros módulos."</em>
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué Lucía sí y Valentina no?</strong><br>
+        Lucía cumple los tres criterios: responsabilidad clara (cohesión), interfaz que oculta detalles
+        (encapsulamiento) e independencia de modificación.<br>
+        Valentina divide por <em>tecnología</em>, no por responsabilidad: el módulo SQL
+        tendría código de múltiples dominios mezclados, lo que genera baja cohesión y
+        alto acoplamiento entre capas. No oculta nada.
+      </div>
+      <div class="swal-arg-box">
+        <strong>Dividir ≠ modularizar:</strong><br>
+        Separar archivos es una decisión de organización, no necesariamente de modularidad.
+        El criterio de Parnas exige que los módulos sean <em>cohesivos</em> y que <em>oculten</em> su implementación.
+      </div>`
+  },
+
+  /* 06 ─ Co-nascencia estática: de significado */
+  {
+    numero: '06', tema: 'Co-nascencia', icono: 'bi-braces-asterisk',
+    pregunta: '¿Qué tipo de co-nascencia representa el problema encontrado?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      En un sistema de gestión de turnos, el módulo de <strong>reservas</strong> guarda el estado del turno
+      como un número entero: <code>0</code> = disponible, <code>1</code> = reservado, <code>2</code> = cancelado.
+      El módulo de <strong>reportes</strong> asume que <code>1</code> = cancelado y <code>2</code> = reservado.
+      El módulo de <strong>notificaciones</strong> usa <code>0</code> = cancelado.
+      <div class="code-snippet"><span class="cm">// Reservas guarda:</span>
+estado = <span class="num">1</span>;  <span class="cm">// significa: RESERVADO</span>
+
+<span class="cm">// Reportes lee:</span>
+<span class="kw">if</span> (estado == <span class="num">1</span>) mostrar(<span class="str">"CANCELADO"</span>); <span class="cm">// ← interpretación incorrecta</span></div>`,
+    opciones: [
+      { letra: 'A', texto: 'Co-nascencia de nombres — los módulos usan nombres distintos para el mismo concepto.' },
+      { letra: 'B', texto: 'Co-nascencia de tipos — los módulos usan tipos de datos incompatibles (entero vs. string).' },
+      { letra: 'C', texto: 'Co-nascencia de significado o convención — los módulos no acuerdan la semántica de los valores.' },
+      { letra: 'D', texto: 'Co-nascencia de orden de ejecución — los módulos deben ejecutarse en un orden específico.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Co-nascencia de significado o convención',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Definición exacta:</strong><br>
+        <em>"Co-nascencia de significado o de convención: múltiples partes deben ponerse de acuerdo
+        en la semántica de ciertos valores. Por ejemplo, que <code>true</code> es <code>1</code>
+        y que <code>false</code> es <code>0</code>."</em>
+      </div>
+      <div class="swal-arg-box">
+        <strong>En este caso:</strong><br>
+        Los tres módulos usan el <em>mismo tipo</em> (entero) y los <em>mismos nombres</em>
+        de variable, pero <em>discrepan en lo que significan los valores</em>:
+        para uno el <code>1</code> es "reservado", para otro es "cancelado".
+        Eso es exactamente una discrepancia de <em>semántica / convención</em>.
+      </div>
+      <div class="swal-arg-box">
+        <strong>Solución típica:</strong><br>
+        Usar un <code>enum</code> o constantes nombradas compartidas en un módulo común:
+        <code>DISPONIBLE=0, RESERVADO=1, CANCELADO=2</code>.
+        Así la semántica queda centralizada y todos los módulos deben acordar el mismo significado.
+      </div>`
+  },
+
+  /* 07 ─ Cohesión vs acoplamiento */
+  {
+    numero: '07', tema: 'Cohesión & Acoplamiento', icono: 'bi-bezier2',
+    pregunta: '¿Cuál afirmación describe correctamente la relación entre cohesión y acoplamiento?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Un equipo refactoriza un módulo gigante de <strong>5000 líneas</strong> que mezcla:
+      autenticación, lógica de negocio, acceso a base de datos y envío de emails.
+      Deciden dividirlo en <strong>4 módulos especializados</strong>.
+      Al hacerlo, observan que ahora los módulos necesitan llamarse entre sí con frecuencia.
+      Un desarrollador junior dice: <em>"Algo salió mal, hay mucho acoplamiento."</em>
+      Otro responde: <em>"Es esperable, la cohesión y el acoplamiento van de la mano."</em>`,
+    opciones: [
+      { letra: 'A', texto: 'El junior tiene razón: mayor cohesión siempre debería reducir el acoplamiento simultáneamente.' },
+      { letra: 'B', texto: 'Ambos están equivocados: cohesión y acoplamiento son métricas completamente independientes.' },
+      { letra: 'C', texto: 'El segundo tiene razón: cuando aumenta la cohesión tiende a aumentar el acoplamiento. El desafío es lograr alta cohesión con bajo acoplamiento.' },
+      { letra: 'D', texto: 'El problema es que dividieron en muy pocos módulos; con más módulos el acoplamiento desaparecería.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Cohesión y acoplamiento van de la mano — la tensión central',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>El material es claro:</strong><br>
+        <em>"Cohesión y acoplamiento van de la mano, es decir, cuando aumenta la cohesión
+        también tiende a aumentar el acoplamiento, y cuando disminuye la cohesión también
+        tiende a disminuir el acoplamiento. El problema es que es bueno para la modularidad
+        que la cohesión sea <strong>alta</strong>, pero también que al mismo tiempo el acoplamiento
+        sea <strong>bajo</strong>."</em>
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué sucede esto?</strong><br>
+        Al separar el módulo gigante en partes cohesivas (cada módulo hace una sola cosa bien),
+        esas partes necesitan colaborar entre sí → nuevas conexiones → más acoplamiento.
+        Un módulo monolítico "no tiene acoplamiento" porque todo está junto, pero su cohesión es terrible.
+      </div>
+      <div class="swal-arg-box">
+        <strong>El objetivo de la arquitectura:</strong><br>
+        Lograr el balance difícil: módulos <em>altamente cohesivos internamente</em> pero con
+        <em>pocas dependencias hacia afuera</em>. Interfaces bien diseñadas y responsabilidades
+        claras son la clave para minimizar el acoplamiento sin sacrificar cohesión.
+      </div>`
+  },
+
+  /* 08 ─ Co-nascencia dinámica: de valores */
+  {
+    numero: '08', tema: 'Co-nascencia', icono: 'bi-braces-asterisk',
+    pregunta: '¿Qué tipo de co-nascencia describe el problema de este sistema de pagos?',
+    escenario: `<span class="scenario-label">📋 Escenario</span>
+      Un sistema de pagos realiza una transferencia bancaria: debe
+      <strong>debitar</strong> de la cuenta origen y <strong>acreditar</strong> en la cuenta destino.
+      Si el sistema debita correctamente pero falla antes de acreditar,
+      la base de datos queda en un <em>estado inconsistente</em>: el dinero salió de un lado pero no llegó al otro.
+      <div class="code-snippet"><span class="cm">// Sin control de co-nascencia:</span>
+cuenta_origen.saldo  -= monto;  <span class="cm">// ✓ se ejecuta</span>
+<span class="cm">// ← falla aquí por error de red</span>
+cuenta_destino.saldo += monto;  <span class="cm">// ✗ nunca se ejecuta</span></div>`,
+    opciones: [
+      { letra: 'A', texto: 'Co-nascencia de orden de ejecución — el débito debe ejecutarse antes que el crédito.' },
+      { letra: 'B', texto: 'Co-nascencia de identidad — ambas cuentas referencian la misma entidad bancaria.' },
+      { letra: 'C', texto: 'Co-nascencia de valores — múltiples valores (saldos) están relacionados y deben cambiar simultáneamente.' },
+      { letra: 'D', texto: 'Co-nascencia de nombres — las variables "debitar" y "acreditar" deben tener el mismo identificador.' }
+    ],
+    correcta: 2,
+    solutionTitle: 'Co-nascencia de valores — transacciones como solución',
+    solutionHtml: `
+      <div class="swal-arg-box">
+        <strong>Definición del material:</strong><br>
+        <em>"Co-nascencia de valores: cuando varios valores están relacionados entre sí y
+        deben cambiar <strong>simultáneamente</strong>. Por ejemplo, las <strong>transacciones
+        en una base de datos</strong> permiten lidiar con este tipo de acoplamiento."</em>
+      </div>
+      <div class="swal-arg-box">
+        <strong>En este caso:</strong><br>
+        El saldo de la cuenta origen y el de la cuenta destino son dos valores relacionados
+        que <em>deben cambiar al mismo tiempo</em>: si uno cambia, el otro también debe cambiar.
+        Si solo cambia uno, el sistema es inconsistente. Eso es exactamente co-nascencia de valores.
+      </div>
+      <div class="swal-arg-box">
+        <strong>¿Por qué no es de orden de ejecución?</strong><br>
+        La co-nascencia de <em>orden</em> implica que el <em>orden</em> importa pero ambas operaciones
+        pueden ejecutarse separadas. Aquí el problema es más profundo: no alcanza con ordenarlas,
+        deben ser <em>atómicas</em> (todas o ninguna). La solución es una transacción (ACID).
+      </div>
+      <div class="swal-arg-box">
+        <strong>Solución:</strong><br>
+        <code>BEGIN TRANSACTION</code> → débito → crédito → <code>COMMIT</code>.<br>
+        Si algo falla entre medio: <code>ROLLBACK</code>. Ambos saldos cambian juntos o ninguno cambia.
+      </div>`
+  }
+];
+
+/* ═══════════════════════════════════════════════════
+   ESTADO
+════════════════════════════════════════════════════ */
+let actual     = 0;
+let puntaje    = 0;
+let respondido = false;
+let seleccion  = null;
+let historial  = [];   // {correcto, tema, numero}
+
+/* ═══════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════════ */
+function render() {
+  const ej = ejercicios[actual];
+  respondido = false; seleccion = null;
+
+  document.getElementById('ex-number').textContent    = `Ejercicio ${ej.numero}`;
+  document.getElementById('ex-topic-text').textContent = ej.tema;
+  document.getElementById('ex-topic').querySelector('i').className = `bi ${ej.icono}`;
+  document.getElementById('ex-question').textContent  = ej.pregunta;
+  document.getElementById('ex-scenario').innerHTML   = ej.escenario;
+
+  const cont = document.getElementById('options-container');
+  cont.innerHTML = '';
+  ej.opciones.forEach((op, i) => {
+    cont.innerHTML += `
+      <div class="option-item" id="opt-wrap-${i}">
+        <input type="radio" name="opcion" id="opt-${i}" value="${i}" onchange="seleccionar(${i})">
+        <label class="option-label" for="opt-${i}">
+          <span class="option-dot">${op.letra}</span>
+          <span>${op.texto}</span>
+        </label>
+      </div>`;
+  });
+
+  document.getElementById('btn-verificar').disabled = true;
+  document.getElementById('btn-verificar').style.display = 'inline-flex';
+  const fb = document.getElementById('feedback-inline');
+  fb.style.display = 'none'; fb.className = 'feedback-inline'; fb.innerHTML = '';
+
+  const pct = (actual / ejercicios.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('prog-label').textContent   = `Ejercicio ${actual + 1} de ${ejercicios.length}`;
+  document.getElementById('score-display').textContent= `${puntaje} / ${ejercicios.length}`;
+
+  const card = document.getElementById('exercise-panel');
+  card.className = 'exercise-card animate__animated animate__fadeIn';
+  card.style.animationDuration = '.4s';
+}
+
+function seleccionar(idx) {
+  if (respondido) return;
+  seleccion = idx;
+  document.getElementById('btn-verificar').disabled = false;
+  soundClick();
+}
+
+/* ═══════════════════════════════════════════════════
+   VERIFICAR
+════════════════════════════════════════════════════ */
+function verificar() {
+  if (seleccion === null || respondido) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  respondido = true;
+
+  const ej = ejercicios[actual];
+  const correcta   = ej.correcta;
+  const esCorrecta = seleccion === correcta;
+
+  for (let i = 0; i < ej.opciones.length; i++) {
+    document.getElementById(`opt-${i}`).disabled = true;
+    const w = document.getElementById(`opt-wrap-${i}`);
+    if (i === correcta)            w.classList.add('correcto');
+    if (i === seleccion && !esCorrecta) w.classList.add('incorrecto');
+  }
+
+  if (esCorrecta) { puntaje++; soundOk(); } else { soundErr(); }
+  historial.push({ correcto: esCorrecta, tema: ej.tema, numero: ej.numero });
+  document.getElementById('score-display').textContent = `${puntaje} / ${ejercicios.length}`;
+
+  const fb = document.getElementById('feedback-inline');
+  if (esCorrecta) {
+    fb.className = 'feedback-inline correcto animate__animated animate__fadeIn';
+    fb.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i><strong>¡Correcto!</strong> Vas muy bien. Revisá los argumentos completos en la solución.`;
+  } else {
+    fb.className = 'feedback-inline incorrecto animate__animated animate__shakeX';
+    fb.innerHTML = `<i class="bi bi-x-circle-fill me-2"></i><strong>No es la opción correcta.</strong> La respuesta correcta es la opción <strong>${ej.opciones[correcta].letra}</strong>.`;
+  }
+  fb.style.display = 'block';
+  document.getElementById('btn-verificar').style.display = 'none';
+
+  setTimeout(() => {
+    const verdict = esCorrecta
+      ? `<div class="swal-verdict ok"><i class="bi bi-check-circle-fill"></i>¡Correcto! — ${ej.opciones[correcta].letra}</div>`
+      : `<div class="swal-verdict err"><i class="bi bi-x-circle-fill"></i>Incorrecto — la respuesta es ${ej.opciones[correcta].letra}</div>`;
+
+    const esSiguiente = actual < ejercicios.length - 1;
+    Swal.fire({
+      title: ej.solutionTitle,
+      html: verdict + ej.solutionHtml,
+      confirmButtonText: esSiguiente
+        ? 'Entendido — siguiente <i class="bi bi-arrow-right ms-1"></i>'
+        : 'Ver resultados <i class="bi bi-trophy ms-1"></i>',
+      icon: esCorrecta ? 'success' : 'info',
+      width: 640,
+      allowOutsideClick: false,
+    }).then(() => {
+      if (esSiguiente) { actual++; render(); }
+      else { mostrarResultados(); }
+    });
+  }, 700);
+}
+
+/* ═══════════════════════════════════════════════════
+   RESULTADOS
+════════════════════════════════════════════════════ */
+function mostrarResultados() {
+  soundFinal();
+  document.getElementById('exercise-panel').style.display = 'none';
+  const panel = document.getElementById('results-panel');
+  panel.style.display = 'block';
+  panel.className = 'exercise-card animate__animated animate__zoomIn';
+
+  document.getElementById('res-score').textContent = puntaje;
+  document.getElementById('res-total').textContent = `/ ${ejercicios.length}`;
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('prog-label').textContent   = '¡Completado!';
+  document.getElementById('score-display').textContent= `${puntaje} / ${ejercicios.length}`;
+
+  const pct = puntaje / ejercicios.length;
+  let titulo, msg;
+  if (pct === 1)        { titulo='¡Perfecto! Serie II dominada 🏆'; msg='Excelente: respondiste todo correctamente. Tenés un dominio sólido de los conceptos más complejos del módulo.'; }
+  else if (pct >= .75)  { titulo='¡Muy buen resultado! 🎯'; msg=`${puntaje} de ${ejercicios.length} correctas. Dominás los conceptos principales. Revisá los que fallaste antes del parcial.`; }
+  else if (pct >= .5)   { titulo='Resultado aceptable 📘'; msg=`${puntaje} de ${ejercicios.length}. Hay conceptos para repasar, especialmente co-nascencia y la relación cohesión-acoplamiento.`; }
+  else                  { titulo='Seguí practicando 💪'; msg=`${puntaje} de ${ejercicios.length}. Te recomendamos releer el material detenidamente y volver a intentarlo.`; }
+
+  document.getElementById('res-title').textContent = titulo;
+  document.getElementById('res-msg').textContent   = msg;
+
+  // Lista de repaso
+  const reviewEl = document.getElementById('review-list');
+  reviewEl.innerHTML = '<p style="font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--azul-brillante);margin-bottom:.6rem;"><i class="bi bi-clipboard-check me-1"></i>Detalle por ejercicio</p>';
+  historial.forEach(h => {
+    reviewEl.innerHTML += `
+      <div class="review-item ${h.correcto ? 'ok' : 'err'}">
+        <i class="bi ${h.correcto ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+        <span><strong>Ej. ${h.numero}</strong> — ${h.tema}</span>
+      </div>`;
+  });
+}
+
+function reiniciar() {
+  actual = 0; puntaje = 0; historial = [];
+  document.getElementById('results-panel').style.display  = 'none';
+  document.getElementById('exercise-panel').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
