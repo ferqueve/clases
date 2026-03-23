@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagramas de Componentes UML — Modelos de Estructura</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700;800&family=Source+Code+Pro:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --azul-oscuro: #0d3b5e;
+    --azul-medio: #1565a0;
+    --azul-claro: #2e86c1;
+    --celeste: #5dade2;
+    --celeste-suave: #aed6f1;
+    --celeste-bg: #eaf4fb;
+    --celeste-muy-suave: #f0f8ff;
+    --blanco: #ffffff;
+    --gris-texto: #1c2e3e;
+    --gris-suave: #6c8da8;
+    --acento: #1a7abd;
+    --success: #1e8449;
+    --danger: #c0392b;
+    --nota-bg: #e8f6fd;
+    --nota-border: #2e86c1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: #0a1f35;
+    color: var(--gris-texto);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #presentation {
+    width: 100vw; height: 100vh;
+    position: relative; overflow: hidden;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    background: var(--blanco); overflow: hidden;
+  }
+  .slide.active { display: flex; }
+
+  /* ─── HEADER ─── */
+  .slide-header {
+    background: linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 60%, var(--azul-claro) 100%);
+    color: white;
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; min-height: 68px;
+  }
+  .slide-header .titulo-slide {
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .slide-header .subtitulo-slide {
+    font-size: 0.8rem; opacity: 0.75; font-weight: 300;
+    letter-spacing: 1px; text-transform: uppercase; margin-top: 2px;
+  }
+  .badge-seccion {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; white-space: nowrap;
+  }
+
+  /* ─── BODY ─── */
+  .slide-body {
+    flex: 1; overflow-y: auto;
+    padding: 24px 40px;
+    background: var(--celeste-muy-suave);
+  }
+  .slide-body::-webkit-scrollbar { width: 6px; }
+  .slide-body::-webkit-scrollbar-thumb { background: var(--celeste-suave); border-radius: 3px; }
+
+  /* ─── PORTADA ─── */
+  .portada {
+    background: linear-gradient(160deg, #0a1f35 0%, #0d3b5e 40%, #1565a0 100%);
+    align-items: center; justify-content: center; text-align: center; color: white;
+  }
+  .portada-content { max-width: 780px; padding: 40px; }
+  .portada .badge-top {
+    background: rgba(93,173,226,0.2); border: 1px solid rgba(93,173,226,0.5);
+    color: var(--celeste-suave); border-radius: 30px; padding: 6px 20px;
+    font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 20px; display: inline-block;
+  }
+  .portada h1 {
+    font-family: 'Raleway', sans-serif; font-size: 3rem; font-weight: 800;
+    line-height: 1.1; margin-bottom: 12px;
+  }
+  .portada h1 span { color: var(--celeste); }
+  .portada .subtitulo { font-size: 1.1rem; opacity: 0.7; font-weight: 300; margin-bottom: 32px; }
+  .portada .meta-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+  .portada .meta-chip {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 10px 20px; font-size: 0.85rem;
+  }
+  .portada .meta-chip i { color: var(--celeste); margin-right: 8px; }
+  .portada-divider {
+    width: 80px; height: 3px;
+    background: linear-gradient(to right, var(--celeste), transparent);
+    margin: 24px auto; border-radius: 2px;
+  }
+
+  /* ─── CARDS ─── */
+  .card-concepto {
+    background: white; border-radius: 10px; border: 1px solid #d0e8f5;
+    box-shadow: 0 2px 12px rgba(21,101,160,0.07);
+    padding: 18px 20px; margin-bottom: 14px; transition: box-shadow 0.2s;
+  }
+  .card-concepto:hover { box-shadow: 0 4px 20px rgba(21,101,160,0.13); }
+  .card-concepto h5 {
+    font-family: 'Raleway', sans-serif; font-weight: 700;
+    color: var(--azul-medio); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-concepto h5 i { color: var(--celeste); font-size: 1rem; }
+  .card-concepto p { font-size: 0.88rem; color: #3a4f62; line-height: 1.65; }
+
+  /* ─── NOTA ─── */
+  .nota {
+    background: var(--nota-bg); border-left: 4px solid var(--nota-border);
+    border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0;
+    font-size: 0.87rem; color: #1a3a56; line-height: 1.6;
+  }
+  .nota strong { color: var(--azul-medio); }
+
+  /* ─── CODE ─── */
+  .code-block {
+    background: #0d2137; color: #aed6f1;
+    border-radius: 8px; padding: 12px 16px;
+    font-family: 'Source Code Pro', monospace; font-size: 0.83rem; line-height: 1.7;
+    margin: 10px 0; border: 1px solid #1a3a56;
+  }
+  .code-block .kw { color: #5dade2; font-weight: 600; }
+  .code-block .sym { color: #f0b27a; }
+  .code-block .com { color: #7f8c8d; font-style: italic; }
+
+  /* ─── DIAGRAMAS ─── */
+  .diagrama-wrap {
+    background: white; border: 1px solid #c8e0f0; border-radius: 10px;
+    padding: 14px; margin: 12px 0; text-align: center;
+    box-shadow: 0 2px 8px rgba(21,101,160,0.06);
+  }
+  .diagrama-wrap figcaption {
+    font-style: italic; font-size: 0.78rem; color: var(--gris-suave); margin-top: 8px;
+  }
+
+  /* ─── SECTION INTRO ─── */
+  .section-intro {
+    background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+    color: white; border-radius: 12px; padding: 18px 22px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-intro .si-icon { font-size: 2rem; opacity: 0.9; flex-shrink: 0; }
+  .section-intro h4 { font-family: 'Raleway', sans-serif; font-weight: 700; margin-bottom: 4px; }
+  .section-intro p { font-size: 0.87rem; opacity: 0.85; margin: 0; }
+
+  /* ─── VISIB TABLE ─── */
+  .vis-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+  .vis-table td { padding: 9px 14px; background: white; border: 1px solid #d0e8f5; font-size: 0.86rem; }
+  .vis-table td:first-child {
+    background: var(--azul-medio); color: white;
+    font-family: 'Source Code Pro', monospace; font-size: 0.85rem; font-weight: 700;
+    text-align: center; width: 60px; border-radius: 6px 0 0 6px; white-space: nowrap;
+  }
+  .vis-table td:last-child { border-radius: 0 6px 6px 0; }
+
+  /* ─── QUIZ ─── */
+  .quiz-slide .slide-body { background: linear-gradient(135deg, #eaf4fb 0%, #f0f8ff 100%); }
+  .quiz-header { text-align: center; padding: 8px 0 18px; }
+  .quiz-header .quiz-icon {
+    width: 60px; height: 60px; background: var(--azul-medio); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px; box-shadow: 0 4px 15px rgba(21,101,160,0.3);
+  }
+  .quiz-header .quiz-icon i { color: white; font-size: 1.5rem; }
+  .quiz-header h3 { font-family: 'Raleway', sans-serif; font-weight: 800; color: var(--azul-oscuro); font-size: 1.35rem; }
+  .quiz-header p { color: var(--gris-suave); font-size: 0.88rem; }
+
+  .pregunta-card {
+    background: white; border-radius: 12px; border: 1px solid #c8e0f0;
+    padding: 18px 22px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(21,101,160,0.07);
+  }
+  .pregunta-card .num-pregunta {
+    background: var(--azul-medio); color: white; border-radius: 50%;
+    width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .pregunta-card .pregunta-texto {
+    font-weight: 600; color: var(--azul-oscuro); font-size: 0.92rem;
+    margin-bottom: 12px; display: flex; align-items: flex-start;
+  }
+  .opciones { list-style: none; padding: 0; }
+  .opciones li { margin-bottom: 7px; }
+  .opcion-btn {
+    width: 100%; text-align: left; background: #f0f8ff;
+    border: 2px solid #c8e0f0; border-radius: 8px;
+    padding: 9px 14px; font-size: 0.86rem; color: var(--gris-texto);
+    cursor: pointer; transition: all 0.2s; font-family: 'Lato', sans-serif;
+  }
+  .opcion-btn:hover { border-color: var(--celeste); background: #dbeeff; }
+  .opcion-btn.correcta { background: #d5f5e3; border-color: var(--success); color: #145a32; }
+  .opcion-btn.incorrecta { background: #fadbd8; border-color: var(--danger); color: #7b241c; }
+  .opcion-btn.deshabilitada { cursor: default; pointer-events: none; }
+  .feedback { margin-top: 10px; padding: 9px 13px; border-radius: 8px; font-size: 0.83rem; display: none; }
+  .feedback.show { display: block; }
+  .feedback.ok { background: #d5f5e3; color: #1e8449; border: 1px solid #82e0aa; }
+  .feedback.ko { background: #fadbd8; color: var(--danger); border: 1px solid #f1948a; }
+
+  /* ─── EJERCICIOS ─── */
+  .ejercicio-card {
+    background: white; border-radius: 12px; border: 2px solid #aed6f1;
+    padding: 20px 24px; margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .ejercicio-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 5px; height: 100%;
+    background: linear-gradient(to bottom, var(--azul-claro), var(--celeste));
+  }
+  .ejercicio-card .ej-num {
+    font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 0.72rem;
+    color: var(--azul-claro); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;
+  }
+  .ejercicio-card h5 {
+    font-family: 'Raleway', sans-serif; font-weight: 700;
+    color: var(--azul-oscuro); margin-bottom: 8px; font-size: 0.98rem;
+  }
+  .ejercicio-card p { font-size: 0.86rem; color: #3a4f62; line-height: 1.65; }
+  .ejercicio-card .pistas {
+    margin-top: 10px; background: var(--celeste-bg);
+    border-radius: 8px; padding: 9px 13px;
+  }
+  .ejercicio-card .pistas strong { color: var(--azul-medio); font-size: 0.81rem; }
+  .ejercicio-card .pistas ul { margin: 5px 0 0 16px; font-size: 0.82rem; color: #2c4a62; }
+
+  /* ─── NAV ─── */
+  #nav-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to right, var(--azul-oscuro), #0d3b5e);
+    padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
+    z-index: 100; box-shadow: 0 -3px 15px rgba(0,0,0,0.3);
+  }
+  .nav-btn {
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    color: white; border-radius: 8px; padding: 8px 20px; font-size: 0.85rem;
+    font-family: 'Lato', sans-serif; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; transform: none; }
+  .nav-btn.primary { background: var(--azul-claro); border-color: var(--celeste); }
+  .nav-btn.primary:hover { background: var(--celeste); }
+  #progress-info { color: rgba(255,255,255,0.8); font-size: 0.82rem; text-align: center; }
+  #progress-info span { color: var(--celeste); font-weight: 700; }
+  #progress-bar-wrap { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); z-index: 200; }
+  #progress-bar { height: 100%; background: linear-gradient(to right, var(--celeste), #82c4e8); transition: width 0.4s ease; }
+
+  /* ─── DOTS ─── */
+  .toc-dots { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; max-width: 260px; justify-content: center; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.25); cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
+  .dot:hover { background: rgba(255,255,255,0.5); }
+  .dot.active { background: var(--celeste); width: 10px; height: 10px; }
+  .dot.quiz-dot { background: rgba(93,173,226,0.3); border-color: var(--celeste); }
+  .dot.quiz-dot.active { background: var(--celeste); }
+
+  /* ─── GRID ─── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 768px) {
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .portada h1 { font-size: 2rem; }
+    .slide-body { padding: 14px 18px; }
+  }
+
+  /* ─── CIERRE ─── */
+  .cierre-slide {
+    background: linear-gradient(160deg, #0a1f35 0%, #0d3b5e 60%, #1565a0 100%);
+    color: white; align-items: center; justify-content: center; text-align: center;
+  }
+  .cierre-content { max-width: 650px; padding: 40px; }
+  .cierre-content h2 { font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 2.2rem; margin-bottom: 16px; }
+  .cierre-content h2 span { color: var(--celeste); }
+  .cierre-content p { opacity: 0.75; font-size: 0.98rem; line-height: 1.7; }
+  .conceptos-finales { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 22px; }
+  .cf-chip { background: rgba(93,173,226,0.15); border: 1px solid rgba(93,173,226,0.35); border-radius: 20px; padding: 6px 16px; font-size: 0.82rem; color: var(--celeste-suave); }
+
+  /* ─── SYMBOL LEGEND CHIP ─── */
+  .sym-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: white; border: 1px solid #d0e8f5; border-radius: 8px;
+    padding: 8px 14px; margin: 4px; font-size: 0.84rem; color: #1a3a56;
+  }
+  .sym-chip strong { color: var(--azul-medio); }
+
+  /* ─── COMPONENT BOX helper ─── */
+  .comp-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #dbeeff; border: 1.5px solid var(--azul-claro); border-radius: 6px;
+    padding: 6px 12px; font-family: 'Source Code Pro', monospace; font-size: 0.82rem;
+    color: var(--azul-oscuro); margin: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<div id="presentation">
+
+<!-- ══════════════════════════════════════════
+     SLIDE 0 — PORTADA
+══════════════════════════════════════════ -->
+<div class="slide portada active" data-slide="0">
+  <div class="portada-content animate__animated animate__fadeIn">
+    <div class="badge-top"><i class="fas fa-puzzle-piece me-2"></i>Modelos de Estructura · Sección 2.3</div>
+    <h1>Diagramas de <span>Componentes UML</span></h1>
+    <p class="subtitulo">Estructura del software, interfaces y dependencias</p>
+    <div class="portada-divider"></div>
+    <div class="meta-row">
+      <div class="meta-chip"><i class="fas fa-book-open"></i>Basado en UML 2.5.1</div>
+      <div class="meta-chip"><i class="fas fa-layer-group"></i>5 conceptos clave</div>
+      <div class="meta-chip"><i class="fas fa-question-circle"></i>Quizzes + Ejercicios</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 1 — INTRODUCCIÓN
+══════════════════════════════════════════ -->
+<div class="slide" data-slide="1">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-info-circle me-2"></i>¿Qué son los Diagramas de Componentes?</div>
+      <div class="subtitulo-slide">Introducción y propósito</div>
+    </div>
+    <div class="badge-seccion">Slide 2 / 14</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro animate__animated animate__fadeIn">
+      <div class="si-icon"><i class="fas fa-cubes"></i></div>
+      <div>
+        <h4>Estructura del software</h4>
+        <p>Los diagramas de componentes muestran la <strong>estructura del software</strong>: sus componentes, las interfaces que proveen y requieren, y las dependencias entre ellos.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card-concepto animate__animated animate__fadeInLeft">
+        <h5><i class="fas fa-circle-question"></i>¿Qué modelan?</h5>
+        <p>Muestran cómo el sistema se divide en <strong>partes independientes e intercambiables</strong> (componentes), cómo se conectan a través de <strong>interfaces</strong> y cuáles son sus <strong>dependencias</strong>.</p>
+      </div>
+      <div class="card-concepto animate__animated animate__fadeInRight">
+        <h5><i class="fas fa-not-equal"></i>¿Son iguales a los de despliegue?</h5>
+        <p><strong>No.</strong> El diagrama de componentes define la <em>composición</em> de componentes y artefactos. El diagrama de despliegue muestra dónde se <em>ejecutan</em> en el sistema implementado.</p>
+      </div>
+    </div>
+
+    <h5 class="mt-3 mb-2" style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;">Elementos principales</h5>
+    <div class="three-col">
+      <div class="card-concepto">
+        <h5><i class="fas fa-puzzle-piece"></i>Componentes</h5>
+        <p>Partes independientes e intercambiables del sistema. Proveen y consumen comportamiento a través de interfaces.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-folder-open"></i>Paquetes</h5>
+        <p>Agrupan componentes y otros paquetes del modelo.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-file-code"></i>Artefactos</h5>
+        <p>Entidades físicas del sistema: ejecutables, bibliotecas, documentos, bases de datos.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-plug"></i>Interfaces provistas</h5>
+        <p>Operaciones que el componente <strong>ofrece</strong>. Símbolo: lollipop (círculo en palito).</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-plug-circle-xmark"></i>Interfaces requeridas</h5>
+        <p>Operaciones que el componente <strong>necesita</strong>. Símbolo: medio círculo o flecha punteada.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-arrows-left-right"></i>Relaciones</h5>
+        <p>Conexiones entre elementos: implementación, requerimiento, pertenencia a paquete, despliegue en artefacto.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 2 — COMPONENTES Y ARTEFACTOS
+══════════════════════════════════════════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-puzzle-piece me-2"></i>Componentes, Paquetes y Artefactos</div>
+      <div class="subtitulo-slide">Notación y representación</div>
+    </div>
+    <div class="badge-seccion">Slide 3 / 14</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:12px;">Componentes</h5>
+        <div class="card-concepto">
+          <h5><i class="fas fa-cube"></i>¿Qué es un componente?</h5>
+          <p>Elemento del modelo que representa una <strong>parte independiente e intercambiable</strong> de un sistema. Proporciona comportamiento a través de <em>interfaces provistas</em> y consume comportamiento a través de <em>interfaces requeridas</em>.</p>
+        </div>
+        <div class="diagrama-wrap mt-2">
+          <svg viewBox="0 0 340 100" width="100%" style="max-width:360px;">
+            <!-- Componente con ícono -->
+            <rect x="10" y="20" width="120" height="50" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="62" y="50" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="13" font-weight="700">Name</text>
+            <!-- ícono componente (2 rectángulitos) -->
+            <rect x="110" y="25" width="18" height="14" rx="1" fill="white" stroke="#2e86c1" stroke-width="1.2"/>
+            <rect x="106" y="29" width="8" height="5" rx="1" fill="white" stroke="#2e86c1" stroke-width="1"/>
+            <rect x="106" y="35" width="8" height="5" rx="1" fill="white" stroke="#2e86c1" stroke-width="1"/>
+            <text x="70" y="80" text-anchor="middle" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Con ícono</text>
+            <!-- Componente con estereotipo -->
+            <rect x="200" y="15" width="130" height="55" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="265" y="38" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="10">«component»</text>
+            <text x="265" y="56" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="13" font-weight="700">Name</text>
+            <text x="265" y="82" text-anchor="middle" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Con estereotipo</text>
+          </svg>
+          <figcaption>Dos formas de representar un componente.</figcaption>
+        </div>
+
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin:14px 0 8px;">Paquetes</h5>
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 180 90" width="100%" style="max-width:200px;">
+            <rect x="10" y="22" width="100" height="60" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <rect x="10" y="10" width="45" height="16" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="32" y="22" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="11" font-weight="700">Package</text>
+          </svg>
+          <figcaption>Representación de un paquete.</figcaption>
+        </div>
+      </div>
+
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:12px;">Artefactos</h5>
+        <div class="card-concepto">
+          <h5><i class="fas fa-file-code"></i>¿Qué es un artefacto?</h5>
+          <p>Elemento del modelo que representa <strong>entidades físicas</strong> en un sistema. Son unidades de implementación físicas como:</p>
+          <div class="mt-2" style="display:flex;flex-wrap:wrap;gap:4px;">
+            <span class="comp-chip"><i class="fas fa-file-code" style="color:var(--celeste)"></i> Ejecutables</span>
+            <span class="comp-chip"><i class="fas fa-book" style="color:var(--celeste)"></i> Bibliotecas</span>
+            <span class="comp-chip"><i class="fas fa-puzzle-piece" style="color:var(--celeste)"></i> Componentes SW</span>
+            <span class="comp-chip"><i class="fas fa-file-alt" style="color:var(--celeste)"></i> Documentos</span>
+            <span class="comp-chip"><i class="fas fa-database" style="color:var(--celeste)"></i> Bases de datos</span>
+          </div>
+        </div>
+        <div class="diagrama-wrap mt-2">
+          <svg viewBox="0 0 180 80" width="100%" style="max-width:200px;">
+            <rect x="20" y="12" width="140" height="52" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="90" y="32" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="10">«artifact»</text>
+            <text x="90" y="50" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="13" font-weight="700">Name</text>
+          </svg>
+          <figcaption>Representación de un artefacto.</figcaption>
+        </div>
+
+        <div class="nota mt-3">
+          <strong>Diferencia clave:</strong><br>
+          • <strong>Componente</strong> → modelo lógico (parte del diseño)<br>
+          • <strong>Artefacto</strong> → implementación física (lo que existe en disco/memoria)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 3 — INTERFACES
+══════════════════════════════════════════ -->
+<div class="slide" data-slide="3">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-plug me-2"></i>Interfaces: Provistas y Requeridas</div>
+      <div class="subtitulo-slide">Lollipop, medio círculo y estereotipo «interface»</div>
+    </div>
+    <div class="badge-seccion">Slide 4 / 14</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro animate__animated animate__fadeIn">
+      <div class="si-icon"><i class="fas fa-handshake"></i></div>
+      <div>
+        <h4>El contrato entre componentes</h4>
+        <p>Las interfaces definen conjuntos de <strong>operaciones</strong>. Las provistas son lo que el componente ofrece; las requeridas son lo que necesita de otros componentes.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Notación de interfaces</h5>
+        <table class="vis-table mb-3">
+          <tr>
+            <td>Provista</td>
+            <td>Símbolo <strong>lollipop</strong> (círculo lleno en palito). El componente <em>expone</em> esta funcionalidad.</td>
+          </tr>
+          <tr>
+            <td>Requerida</td>
+            <td>Símbolo de <strong>medio círculo</strong> (socket) o <strong>flecha punteada</strong>. El componente <em>necesita</em> esta interfaz de otro.</td>
+          </tr>
+          <tr>
+            <td>«interface»</td>
+            <td>También se puede representar como clasificador (rectángulo con estereotipo), pues las interfaces también son clasificadores.</td>
+          </tr>
+        </table>
+
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 300 80" width="100%" style="max-width:320px;">
+            <!-- Con estereotipo: Exposing → interface → Consuming -->
+            <rect x="5" y="15" width="95" height="44" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="52" y="32" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="8">«component»</text>
+            <text x="52" y="48" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="11" font-weight="700">Exposing</text>
+            <!-- flecha llena hacia interfaz -->
+            <line x1="100" y1="37" x2="148" y2="37" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="148,33 158,37 148,41" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <!-- interfaz -->
+            <rect x="158" y="15" width="80" height="44" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="198" y="32" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="8">«interface»</text>
+            <text x="198" y="48" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="11" font-weight="700">Name</text>
+            <!-- flecha punteada desde Consuming -->
+            <line x1="238" y1="37" x2="258" y2="37" stroke="#1565a0" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <polygon points="238,33 228,37 238,41" fill="#1565a0"/>
+            <rect x="258" y="15" width="36" height="44" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="276" y="32" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="7">«comp»</text>
+            <text x="276" y="48" text-anchor="middle" fill="#0d3b5e" font-family="Lato,sans-serif" font-size="8" font-weight="700">Cons.</text>
+          </svg>
+          <figcaption>Notación con estereotipo «interface» y flecha punteada.</figcaption>
+        </div>
+      </div>
+
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Notación lollipop / socket</h5>
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 320 130" width="100%" style="max-width:340px;">
+            <!-- lollipop notation -->
+            <text x="10" y="16" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Lollipop (provista) + Socket (requerida):</text>
+            <!-- Exposing -->
+            <rect x="10" y="22" width="95" height="44" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="57" y="39" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="8">«component»</text>
+            <text x="57" y="55" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="11" font-weight="700">Exposing</text>
+            <!-- lollipop -->
+            <line x1="105" y1="44" x2="128" y2="44" stroke="#1565a0" stroke-width="1.5"/>
+            <circle cx="135" cy="44" r="7" fill="#1565a0" stroke="none"/>
+            <!-- socket -->
+            <path d="M 148,37 A 7,7 0 0,1 148,51" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+            <line x1="148" y1="44" x2="175" y2="44" stroke="#1565a0" stroke-width="1.5"/>
+            <!-- Consuming -->
+            <rect x="175" y="22" width="100" height="44" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="225" y="39" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="8">«component»</text>
+            <text x="225" y="55" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="11" font-weight="700">Consuming</text>
+
+            <!-- leyenda -->
+            <line x1="20" y1="90" x2="40" y2="90" stroke="#1565a0" stroke-width="1.5"/>
+            <circle cx="47" cy="90" r="6" fill="#1565a0"/>
+            <text x="58" y="94" fill="#555" font-family="Lato,sans-serif" font-size="10">Interfaz provista (lollipop)</text>
+            <path d="M 28,110 A 6,6 0 0,1 28,122" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+            <line x1="20" y1="116" x2="28" y2="116" stroke="#1565a0" stroke-width="1.5"/>
+            <text x="38" y="120" fill="#555" font-family="Lato,sans-serif" font-size="10">Interfaz requerida (socket)</text>
+          </svg>
+          <figcaption>Notación compacta con lollipop y socket.</figcaption>
+        </div>
+
+        <div class="nota mt-2">
+          <strong>Ambas notaciones son válidas en UML 2.5:</strong><br>
+          La notación con rectángulo y «interface» es más detallada. La notación lollipop/socket es más compacta y visual.
+        </div>
+
+        <div class="card-concepto mt-2">
+          <h5><i class="fas fa-port"></i>Puertos</h5>
+          <p>Las interfaces se exponen a través de <strong>puertos</strong> — puntos de interacción del componente con su entorno. Un puerto puede proveer o requerir interfaces.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 4 — QUIZ 1
+══════════════════════════════════════════ -->
+<div class="slide quiz-slide" data-slide="4">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-circle-question me-2"></i>Verificación de Conocimiento</div>
+      <div class="subtitulo-slide">Quiz 1 · Conceptos básicos de componentes</div>
+    </div>
+    <div class="badge-seccion">Quiz 1 / 3</div>
+  </div>
+  <div class="slide-body">
+    <div class="quiz-header">
+      <div class="quiz-icon"><i class="fas fa-brain"></i></div>
+      <h3>¡A probar lo aprendido!</h3>
+      <p>Seleccioná la respuesta correcta.</p>
+    </div>
+
+    <div class="pregunta-card" id="q1">
+      <div class="pregunta-texto"><span class="num-pregunta">1</span>&nbsp;¿Cuál es la diferencia entre un diagrama de componentes y uno de despliegue?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q1',this,false)">a) No hay diferencia, son lo mismo</button></li>
+        <li><button class="opcion-btn" onclick="responder('q1',true,true)" onclick="responder('q1',this,true)">b) Componentes define composición del sistema; despliegue muestra dónde se ejecuta</button></li>
+        <li><button class="opcion-btn" onclick="responder('q1',this,false)">c) El de componentes muestra la ejecución y el de despliegue la composición</button></li>
+        <li><button class="opcion-btn" onclick="responder('q1',this,false)">d) Solo el de despliegue incluye interfaces</button></li>
+      </ul>
+      <div class="feedback" id="fb-q1"></div>
+    </div>
+
+    <div class="pregunta-card" id="q2">
+      <div class="pregunta-texto"><span class="num-pregunta">2</span>&nbsp;¿Qué símbolo se usa para representar una <strong>interfaz provista</strong>?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q2',this,false)">a) Medio círculo (socket)</button></li>
+        <li><button class="opcion-btn" onclick="responder('q2',this,false)">b) Flecha punteada</button></li>
+        <li><button class="opcion-btn" onclick="responder('q2',this,true)">c) Lollipop (círculo lleno en palito)</button></li>
+        <li><button class="opcion-btn" onclick="responder('q2',this,false)">d) Diamante hueco</button></li>
+      </ul>
+      <div class="feedback" id="fb-q2"></div>
+    </div>
+
+    <div class="pregunta-card" id="q3">
+      <div class="pregunta-texto"><span class="num-pregunta">3</span>&nbsp;¿Qué representa un <strong>artefacto</strong> en UML?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q3',this,false)">a) Una parte lógica e intercambiable del diseño</button></li>
+        <li><button class="opcion-btn" onclick="responder('q3',this,false)">b) Una agrupación de componentes</button></li>
+        <li><button class="opcion-btn" onclick="responder('q3',this,true)">c) Una entidad física del sistema (ejecutable, biblioteca, base de datos, etc.)</button></li>
+        <li><button class="opcion-btn" onclick="responder('q3',this,false)">d) Una interfaz requerida por un componente</button></li>
+      </ul>
+      <div class="feedback" id="fb-q3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 5 — RELACIONES Y PUERTOS
+══════════════════════════════════════════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-arrows-left-right me-2"></i>Relaciones entre Componentes</div>
+      <div class="subtitulo-slide">Puertos, delegación y dependencias</div>
+    </div>
+    <div class="badge-seccion">Slide 6 / 14</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro animate__animated animate__fadeIn">
+      <div class="si-icon"><i class="fas fa-network-wired"></i></div>
+      <div>
+        <h4>Conexiones entre elementos del modelo</h4>
+        <p>Una relación es una <strong>conexión</strong> entre elementos: un componente implementa una interfaz, requiere una interfaz, pertenece a un paquete, o se implementa en un artefacto.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Tipos de relaciones</h5>
+        <table class="vis-table mb-3">
+          <tr>
+            <td>Implementa</td>
+            <td>Un componente implementa (realiza) una interfaz.</td>
+          </tr>
+          <tr>
+            <td>Requiere</td>
+            <td>Un componente necesita una interfaz de otro.</td>
+          </tr>
+          <tr>
+            <td>Pertenencia</td>
+            <td>Un componente es parte de un paquete.</td>
+          </tr>
+          <tr>
+            <td>Despliegue</td>
+            <td>Un componente se implementa en un artefacto.</td>
+          </tr>
+          <tr>
+            <td>Dependencia</td>
+            <td>Una interfaz requerida se conecta con una provista (flecha punteada).</td>
+          </tr>
+        </table>
+
+        <div class="nota">
+          <strong>Puertos:</strong> Son los <em>puntos de interacción</em> de un componente con su entorno. Las interfaces se exponen/consumen a través de puertos, representados como pequeños cuadrados en el borde del componente.
+        </div>
+      </div>
+
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Delegación</h5>
+        <div class="card-concepto">
+          <h5><i class="fas fa-share"></i>¿Qué es la delegación?</h5>
+          <p>Cuando un subsistema <strong>delega</strong> una interfaz a un componente interno, significa que el subsistema "pasa" la responsabilidad de ese comportamiento al componente interno correspondiente.</p>
+          <p class="mt-2">Ejemplo: el subsistema <code>WebStore</code> delega la interfaz <code>ProductSearch</code> al componente <code>:SearchEngine</code> que vive dentro de él.</p>
+        </div>
+
+        <div class="diagrama-wrap mt-3">
+          <svg viewBox="0 0 340 140" width="100%" style="max-width:360px;">
+            <!-- Subsistema exterior -->
+            <rect x="5" y="10" width="330" height="120" rx="4" fill="#f5faff" stroke="#2e86c1" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <text x="180" y="26" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="9">«subsystem»  SubSistema</text>
+            <!-- Puerto izquierdo (provisto) -->
+            <rect x="2" y="55" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <!-- lollipop izq -->
+            <line x1="14" y1="61" x2="30" y2="61" stroke="#1565a0" stroke-width="1.5"/>
+            <circle cx="37" cy="61" r="6" fill="#1565a0"/>
+            <!-- componente interno -->
+            <rect x="90" y="38" width="120" height="46" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <!-- ícono comp -->
+            <rect x="196" y="42" width="12" height="9" rx="1" fill="white" stroke="#2e86c1" stroke-width="1"/>
+            <rect x="192" y="44" width="5" height="3" rx="0.5" fill="white" stroke="#2e86c1" stroke-width="0.8"/>
+            <rect x="192" y="48" width="5" height="3" rx="0.5" fill="white" stroke="#2e86c1" stroke-width="0.8"/>
+            <text x="150" y="58" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="11">:ComponenteInt</text>
+            <!-- delegación flecha desde puerto a lollipop interno (izq) -->
+            <line x1="43" y1="61" x2="80" y2="61" stroke="#1565a0" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <rect x="80" y="55" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="92" y1="61" x2="90" y2="61" stroke="#1565a0" stroke-width="1.2"/>
+            <!-- Puerto derecho (requerido) -->
+            <path d="M 218,55 A 8,8 0 0,1 218,67" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+            <line x1="218" y1="61" x2="250" y2="61" stroke="#1565a0" stroke-width="1.5"/>
+            <rect x="250" y="55" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <!-- delegación hacia afuera -->
+            <line x1="262" y1="61" x2="300" y2="61" stroke="#1565a0" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <rect x="300" y="55" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <path d="M 312,55 A 8,8 0 0,1 312,67" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+
+            <!-- leyenda -->
+            <rect x="10" y="100" width="10" height="10" rx="1" fill="white" stroke="#1565a0" stroke-width="1.2"/>
+            <text x="25" y="110" fill="#555" font-family="Lato,sans-serif" font-size="9">Puerto</text>
+            <line x1="90" y1="107" x2="110" y2="107" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+            <text x="115" y="110" fill="#555" font-family="Lato,sans-serif" font-size="9">Delegación</text>
+          </svg>
+          <figcaption>Puerto externo delegado a componente interno.</figcaption>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 6 — EJEMPLO WEBSTORE (parte 1)
+══════════════════════════════════════════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-store me-2"></i>Ejemplo: Sistema WebStore (Figura 1)</div>
+      <div class="subtitulo-slide">Análisis del diagrama completo</div>
+    </div>
+    <div class="badge-seccion">Slide 7 / 14</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro animate__animated animate__fadeIn">
+      <div class="si-icon"><i class="fas fa-shop"></i></div>
+      <div>
+        <h4>Tres subsistemas interconectados</h4>
+        <p>El diagrama muestra <strong>WebStore</strong>, <strong>Warehouses</strong> y <strong>Accounting</strong> como subsistemas («subsystem») con componentes internos, puertos, interfaces provistas y requeridas.</p>
+      </div>
+    </div>
+
+    <!-- El gran diagrama Figura 1 recreado -->
+    <div class="diagrama-wrap animate__animated animate__fadeIn">
+      <svg viewBox="0 0 820 340" width="100%" style="max-width:900px;">
+        <!-- ═══ WEBSTORE ═══ -->
+        <rect x="80" y="10" width="280" height="310" rx="4" fill="#f5faff" stroke="#2e86c1" stroke-width="1.8"/>
+        <rect x="80" y="10" width="22" height="16" rx="2" fill="#f5faff" stroke="#2e86c1" stroke-width="1"/>
+        <text x="195" y="26" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="9">«subsystem»</text>
+        <text x="195" y="38" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="11" font-weight="800">WebStore</text>
+
+        <!-- ─ SearchEngine ─ -->
+        <rect x="155" y="50" width="110" height="55" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.3"/>
+        <rect x="249" y="54" width="13" height="10" rx="1" fill="white" stroke="#2e86c1" stroke-width="1"/>
+        <rect x="245" y="56" width="5" height="3" rx="0" fill="white" stroke="#2e86c1" stroke-width="0.7"/>
+        <rect x="245" y="60" width="5" height="3" rx="0" fill="white" stroke="#2e86c1" stroke-width="0.7"/>
+        <text x="200" y="75" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="10">:SearchEngine</text>
+
+        <!-- ─ ShoppingCart ─ -->
+        <rect x="155" y="135" width="110" height="55" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.3"/>
+        <rect x="249" y="139" width="13" height="10" rx="1" fill="white" stroke="#2e86c1" stroke-width="1"/>
+        <rect x="245" y="141" width="5" height="3" rx="0" fill="white" stroke="#2e86c1" stroke-width="0.7"/>
+        <rect x="245" y="145" width="5" height="3" rx="0" fill="white" stroke="#2e86c1" stroke-width="0.7"/>
+        <text x="200" y="160" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="10">:ShoppingCart</text>
+
+        <!-- ─ Authentication ─ -->
+        <rect x="155" y="230" width="110" height="55" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.3"/>
+        <rect x="249" y="234" width="13" height="10" rx="1" fill="white" stroke="#2e86c1" stroke-width="1"/>
+        <rect x="245" y="236" width="5" height="3" rx="0" fill="white" stroke="#2e86c1" stroke-width="0.7"/>
+        <rect x="245" y="240" width="5" height="3" rx="0" fill="white" stroke="#2e86c1" stroke-width="0.7"/>
+        <text x="200" y="255" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="10">:Authentication</text>
+
+        <!-- Puertos izq WebStore -->
+        <rect x="76" y="72" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <rect x="76" y="157" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <rect x="76" y="252" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <!-- Lollipops izq -->
+        <line x1="50" y1="78" x2="76" y2="78" stroke="#1565a0" stroke-width="1.3"/>
+        <circle cx="43" cy="78" r="7" fill="#1565a0"/>
+        <line x1="50" y1="163" x2="76" y2="163" stroke="#1565a0" stroke-width="1.3"/>
+        <circle cx="43" cy="163" r="7" fill="#1565a0"/>
+        <line x1="50" y1="258" x2="76" y2="258" stroke="#1565a0" stroke-width="1.3"/>
+        <circle cx="43" cy="258" r="7" fill="#1565a0"/>
+
+        <!-- labels izq -->
+        <text x="5" y="68" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Product</text>
+        <text x="5" y="78" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Search</text>
+        <text x="5" y="152" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Online</text>
+        <text x="5" y="162" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Shopping</text>
+        <text x="5" y="250" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">User</text>
+        <text x="5" y="260" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Session</text>
+
+        <!-- delegaciones lollipop internas -->
+        <line x1="88" y1="78" x2="143" y2="78" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="143" y="72" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.2"/>
+        <circle cx="162" cy="78" r="6" fill="#1565a0"/>
+        <line x1="155" y1="78" x2="168" y2="78" stroke="#1565a0" stroke-width="1.2"/>
+
+        <line x1="88" y1="163" x2="143" y2="163" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="143" y="157" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.2"/>
+        <circle cx="162" cy="163" r="6" fill="#1565a0"/>
+        <line x1="155" y1="163" x2="168" y2="163" stroke="#1565a0" stroke-width="1.2"/>
+
+        <line x1="88" y1="258" x2="143" y2="258" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="143" y="252" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.2"/>
+        <circle cx="162" cy="258" r="6" fill="#1565a0"/>
+        <line x1="155" y1="258" x2="168" y2="258" stroke="#1565a0" stroke-width="1.2"/>
+
+        <!-- sockets derechos componentes WebStore -->
+        <path d="M 265,72 A 7,7 0 0,1 265,84" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+        <line x1="265" y1="78" x2="282" y2="78" stroke="#1565a0" stroke-width="1.3"/>
+        <rect x="282" y="72" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+
+        <path d="M 265,157 A 7,7 0 0,1 265,169" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+        <line x1="265" y1="163" x2="282" y2="163" stroke="#1565a0" stroke-width="1.3"/>
+        <rect x="282" y="157" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+
+        <path d="M 265,252 A 7,7 0 0,1 265,264" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+        <line x1="265" y1="258" x2="282" y2="258" stroke="#1565a0" stroke-width="1.3"/>
+        <rect x="282" y="252" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+
+        <!-- delegaciones sockets derecha -->
+        <line x1="294" y1="78" x2="345" y2="78" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="345" y="72" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <path d="M 357,72 A 7,7 0 0,1 357,84" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+
+        <line x1="294" y1="163" x2="345" y2="163" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="345" y="157" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <path d="M 357,157 A 7,7 0 0,1 357,169" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+
+        <line x1="294" y1="258" x2="345" y2="258" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="345" y="252" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <path d="M 357,252 A 7,7 0 0,1 357,264" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+
+        <!-- dependencia arrows entre sockets y WAREHOUSES / ACCOUNTING -->
+        <line x1="357" y1="78" x2="420" y2="78" stroke="#1565a0" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <polygon points="420,74 430,78 420,82" fill="#1565a0"/>
+
+        <line x1="357" y1="163" x2="420" y2="185" stroke="#1565a0" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <polygon points="418,181 430,185 420,190" fill="#1565a0"/>
+
+        <line x1="357" y1="258" x2="420" y2="258" stroke="#1565a0" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <polygon points="420,254 430,258 420,262" fill="#1565a0"/>
+
+        <!-- labels derecha WebStore -->
+        <text x="362" y="66" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Search</text>
+        <text x="362" y="76" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Inventory</text>
+        <text x="362" y="150" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Manage</text>
+        <text x="362" y="160" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Orders</text>
+        <text x="362" y="248" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Manage</text>
+        <text x="362" y="258" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Customers</text>
+
+        <!-- ═══ WAREHOUSES ═══ -->
+        <rect x="430" y="10" width="200" height="155" rx="4" fill="#f5faff" stroke="#2e86c1" stroke-width="1.8"/>
+        <rect x="430" y="10" width="22" height="16" rx="2" fill="#f5faff" stroke="#2e86c1" stroke-width="1"/>
+        <text x="530" y="26" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="9">«subsystem»</text>
+        <text x="530" y="38" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="11" font-weight="800">Warehouses</text>
+
+        <!-- :Inventory -->
+        <rect x="490" y="50" width="100" height="55" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.3"/>
+        <rect x="578" y="54" width="10" height="8" rx="1" fill="white" stroke="#2e86c1" stroke-width="0.9"/>
+        <rect x="574" y="56" width="5" height="3" rx="0" fill="white" stroke="#2e86c1" stroke-width="0.7"/>
+        <rect x="574" y="60" width="5" height="3" rx="0" fill="white" stroke="#2e86c1" stroke-width="0.7"/>
+        <text x="538" y="80" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="10">:Inventory</text>
+
+        <!-- puerto izq Warehouses -->
+        <rect x="426" y="72" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <circle cx="445" cy="78" r="6" fill="#1565a0"/>
+        <line x1="438" y1="78" x2="451" y2="78" stroke="#1565a0" stroke-width="1.2"/>
+        <!-- delegación -->
+        <line x1="451" y1="78" x2="480" y2="78" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="480" y="72" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.2"/>
+        <circle cx="499" cy="78" r="5" fill="#1565a0"/>
+        <line x1="492" y1="78" x2="504" y2="78" stroke="#1565a0" stroke-width="1.2"/>
+
+        <!-- puerto derecho ManageInventory -->
+        <path d="M 590,72 A 7,7 0 0,1 590,84" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+        <line x1="590" y1="78" x2="610" y2="78" stroke="#1565a0" stroke-width="1.3"/>
+        <rect x="610" y="72" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <line x1="622" y1="78" x2="650" y2="78" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="650" y="72" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <path d="M 662,72 A 7,7 0 0,1 662,84" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+        <text x="668" y="74" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Manage</text>
+        <text x="668" y="84" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Inventory</text>
+
+        <!-- ═══ ACCOUNTING ═══ -->
+        <rect x="430" y="185" width="200" height="135" rx="4" fill="#f5faff" stroke="#2e86c1" stroke-width="1.8"/>
+        <rect x="430" y="185" width="22" height="16" rx="2" fill="#f5faff" stroke="#2e86c1" stroke-width="1"/>
+        <text x="530" y="200" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="9">«subsystem»</text>
+        <text x="530" y="212" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="11" font-weight="800">Accounting</text>
+
+        <!-- :Orders -->
+        <rect x="470" y="220" width="85" height="50" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.3"/>
+        <text x="512" y="249" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="10">:Orders</text>
+
+        <!-- :Customers -->
+        <rect x="470" y="280" width="100" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.3"/>
+        <text x="520" y="300" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="10">:Customers</text>
+
+        <!-- puerto izq Accounting ManageOrders -->
+        <rect x="426" y="239" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <circle cx="444" cy="245" r="6" fill="#1565a0"/>
+        <line x1="437" y1="245" x2="450" y2="245" stroke="#1565a0" stroke-width="1.2"/>
+        <line x1="450" y1="245" x2="470" y2="245" stroke="#1565a0" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <!-- puerto izq Accounting ManageCustomers -->
+        <rect x="426" y="289" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <circle cx="444" cy="295" r="6" fill="#1565a0"/>
+        <line x1="437" y1="295" x2="470" y2="295" stroke="#1565a0" stroke-width="1.2"/>
+
+        <!-- ManageInventory requerida Accounting (flecha a Warehouses) -->
+        <path d="M 555,220 A 7,7 0 0,1 555,232" fill="none" stroke="#1565a0" stroke-width="1.8"/>
+        <line x1="555" y1="226" x2="580" y2="226" stroke="#1565a0" stroke-width="1.3"/>
+        <rect x="580" y="220" width="12" height="12" rx="1" fill="white" stroke="#1565a0" stroke-width="1.3"/>
+        <line x1="592" y1="226" x2="640" y2="160" stroke="#1565a0" stroke-width="1.3" stroke-dasharray="5,3"/>
+        <polygon points="638,156 648,160 638,164" fill="#1565a0"/>
+        <text x="665" y="226" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Manage</text>
+        <text x="665" y="236" fill="#2e86c1" font-family="Lato,sans-serif" font-size="8" font-weight="700">Inventory</text>
+
+        <!-- Leyenda -->
+        <circle cx="25" cy="325" r="5" fill="#1565a0"/>
+        <line x1="15" y1="325" x2="25" y2="325" stroke="#1565a0" stroke-width="1.2"/>
+        <text x="35" y="329" fill="#555" font-family="Lato,sans-serif" font-size="9">Interfaz provista (lollipop)</text>
+        <path d="M 180,320 A 5,5 0 0,1 180,330" fill="none" stroke="#1565a0" stroke-width="1.5"/>
+        <line x1="172" y1="325" x2="180" y2="325" stroke="#1565a0" stroke-width="1.2"/>
+        <text x="190" y="329" fill="#555" font-family="Lato,sans-serif" font-size="9">Interfaz requerida (socket)</text>
+        <line x1="370" y1="325" x2="390" y2="325" stroke="#1565a0" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <polygon points="390,322 398,325 390,328" fill="#1565a0"/>
+        <text x="403" y="329" fill="#555" font-family="Lato,sans-serif" font-size="9">Dependencia</text>
+      </svg>
+      <figcaption>Figura 1: Diagrama de componentes — WebStore, Warehouses y Accounting.</figcaption>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 7 — ANÁLISIS WEBSTORE
+══════════════════════════════════════════ -->
+<div class="slide" data-slide="7">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-magnifying-glass-chart me-2"></i>Análisis del Ejemplo WebStore</div>
+      <div class="subtitulo-slide">Interfaces, delegación y dependencias explicadas</div>
+    </div>
+    <div class="badge-seccion">Slide 8 / 14</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:12px;">WebStore — Interfaces provistas (izquierda)</h5>
+        <table class="vis-table mb-3">
+          <tr><td>ProductSearch</td><td>Expuesta por WebStore, implementada internamente por <code>:SearchEngine</code></td></tr>
+          <tr><td>OnlineShopping</td><td>Expuesta por WebStore, implementada por <code>:ShoppingCart</code></td></tr>
+          <tr><td>UserSession</td><td>Expuesta por WebStore, implementada por <code>:Authentication</code></td></tr>
+        </table>
+
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">WebStore — Interfaces requeridas (derecha)</h5>
+        <table class="vis-table mb-3">
+          <tr><td>SearchInventory</td><td>Requerida por <code>:SearchEngine</code>, provista por <strong>Warehouses</strong></td></tr>
+          <tr><td>ManageOrders</td><td>Requerida por <code>:ShoppingCart</code>, provista por <strong>Accounting</strong></td></tr>
+          <tr><td>ManageCustomers</td><td>Requerida por <code>:Authentication</code>, provista por <strong>Accounting</strong></td></tr>
+        </table>
+      </div>
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:12px;">Dependencias entre subsistemas</h5>
+        <div class="card-concepto">
+          <h5><i class="fas fa-arrow-right-arrow-left"></i>WebStore → Warehouses</h5>
+          <p>La interfaz <strong>SearchInventory</strong> requerida por WebStore (a través de :SearchEngine) es provista por Warehouses (a través de :Inventory).</p>
+        </div>
+        <div class="card-concepto">
+          <h5><i class="fas fa-arrow-right-arrow-left"></i>WebStore → Accounting</h5>
+          <p>Las interfaces <strong>ManageOrders</strong> y <strong>ManageCustomers</strong> requeridas por WebStore son provistas por Accounting (a través de :Orders y :Customers).</p>
+        </div>
+        <div class="card-concepto">
+          <h5><i class="fas fa-arrow-right-arrow-left"></i>Accounting → Warehouses</h5>
+          <p>La interfaz <strong>ManageInventory</strong> requerida por Accounting es provista por Warehouses.</p>
+        </div>
+        <div class="nota mt-2">
+          <strong>Mecanismo de delegación:</strong> Los puertos del subsistema WebStore <em>delegan</em> las interfaces a los componentes internos correspondientes. El subsistema actúa como intermediario: recibe la llamada y la pasa al componente interno.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 8 — QUIZ 2
+══════════════════════════════════════════ -->
+<div class="slide quiz-slide" data-slide="8">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-circle-question me-2"></i>Verificación de Conocimiento</div>
+      <div class="subtitulo-slide">Quiz 2 · Interfaces y Ejemplo WebStore</div>
+    </div>
+    <div class="badge-seccion">Quiz 2 / 3</div>
+  </div>
+  <div class="slide-body">
+    <div class="quiz-header">
+      <div class="quiz-icon"><i class="fas fa-store"></i></div>
+      <h3>Interfaces y el ejemplo WebStore</h3>
+      <p>Demostrá que entendiste el diagrama.</p>
+    </div>
+
+    <div class="pregunta-card" id="q4">
+      <div class="pregunta-texto"><span class="num-pregunta">4</span>&nbsp;¿Qué componente interno de WebStore implementa la interfaz <strong>ProductSearch</strong>?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q4',this,false)">a) :ShoppingCart</button></li>
+        <li><button class="opcion-btn" onclick="responder('q4',this,true)">b) :SearchEngine</button></li>
+        <li><button class="opcion-btn" onclick="responder('q4',this,false)">c) :Authentication</button></li>
+        <li><button class="opcion-btn" onclick="responder('q4',this,false)">d) :Inventory</button></li>
+      </ul>
+      <div class="feedback" id="fb-q4"></div>
+    </div>
+
+    <div class="pregunta-card" id="q5">
+      <div class="pregunta-texto"><span class="num-pregunta">5</span>&nbsp;¿Qué subsistema provee la interfaz <strong>ManageInventory</strong>?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q5',this,false)">a) WebStore</button></li>
+        <li><button class="opcion-btn" onclick="responder('q5',this,false)">b) Accounting</button></li>
+        <li><button class="opcion-btn" onclick="responder('q5',this,true)">c) Warehouses</button></li>
+        <li><button class="opcion-btn" onclick="responder('q5',this,false)">d) ninguno, es requerida por todos</button></li>
+      </ul>
+      <div class="feedback" id="fb-q5"></div>
+    </div>
+
+    <div class="pregunta-card" id="q6">
+      <div class="pregunta-texto"><span class="num-pregunta">6</span>&nbsp;¿Qué significa que WebStore <strong>delega</strong> la interfaz ProductSearch a :SearchEngine?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q6',this,false)">a) WebStore prohíbe que :SearchEngine use ProductSearch</button></li>
+        <li><button class="opcion-btn" onclick="responder('q6',this,false)">b) :SearchEngine es el único componente del sistema</button></li>
+        <li><button class="opcion-btn" onclick="responder('q6',this,true)">c) Cuando WebStore recibe una llamada a ProductSearch, la pasa a :SearchEngine</button></li>
+        <li><button class="opcion-btn" onclick="responder('q6',this,false)">d) ProductSearch es una interfaz requerida por WebStore</button></li>
+      </ul>
+      <div class="feedback" id="fb-q6"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 9 — SUBSISTEMAS Y COMPARACIÓN
+══════════════════════════════════════════ -->
+<div class="slide" data-slide="9">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-layer-group me-2"></i>Subsistemas y Resumen de Conceptos</div>
+      <div class="subtitulo-slide">«subsystem», estructura interna y cuadro comparativo</div>
+    </div>
+    <div class="badge-seccion">Slide 10 / 14</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="card-concepto animate__animated animate__fadeIn">
+          <h5><i class="fas fa-boxes-stacked"></i>Subsistema («subsystem»)</h5>
+          <p>Un <strong>subsistema</strong> es un componente con el estereotipo «subsystem». Tiene su propia <strong>estructura interna</strong> con otros componentes y delega sus interfaces a los componentes que viven dentro.</p>
+        </div>
+        <div class="nota">
+          En el ejemplo, <strong>WebStore</strong>, <strong>Warehouses</strong> y <strong>Accounting</strong> son subsistemas. Cada uno agrupa componentes internos que realizan las operaciones reales.
+        </div>
+        <div class="card-concepto mt-2">
+          <h5><i class="fas fa-diagram-project"></i>Estructura del diagrama</h5>
+          <p>Un componente puede tener:</p>
+          <ul style="margin: 8px 0 0 16px; font-size:0.86rem; color:#3a4f62; line-height:1.8">
+            <li>Puertos (cuadraditos en el borde)</li>
+            <li>Interfaces provistas (lollipop) en los puertos</li>
+            <li>Interfaces requeridas (socket) en los puertos</li>
+            <li>Componentes internos (estructura interna)</li>
+            <li>Delegaciones hacia componentes internos</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:12px;">Comparativa: Componentes vs Despliegue</h5>
+        <table class="vis-table mb-3">
+          <tr>
+            <td style="white-space:nowrap;font-size:0.78rem;">Componentes</td>
+            <td>¿Qué partes tiene el software y cómo se conectan? Visión <strong>lógica</strong>.</td>
+          </tr>
+          <tr>
+            <td style="white-space:nowrap;font-size:0.78rem;">Despliegue</td>
+            <td>¿Dónde se ejecutan los componentes? Visión <strong>física/infraestructura</strong>.</td>
+          </tr>
+        </table>
+
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin:14px 0 10px;">Estereotipos clave</h5>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="comp-chip">«component»</span>
+          <span class="comp-chip">«subsystem»</span>
+          <span class="comp-chip">«artifact»</span>
+          <span class="comp-chip">«interface»</span>
+          <span class="comp-chip">«package»</span>
+        </div>
+
+        <div class="card-concepto mt-3">
+          <h5><i class="fas fa-recycle"></i>Intercambiabilidad</h5>
+          <p>La clave de los componentes es que son <strong>intercambiables</strong>: si dos componentes exponen la misma interfaz, uno puede reemplazar al otro sin afectar el resto del sistema.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 10 — QUIZ 3
+══════════════════════════════════════════ -->
+<div class="slide quiz-slide" data-slide="10">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-circle-question me-2"></i>Verificación de Conocimiento</div>
+      <div class="subtitulo-slide">Quiz 3 · Subsistemas, relaciones y conceptos integrados</div>
+    </div>
+    <div class="badge-seccion">Quiz 3 / 3</div>
+  </div>
+  <div class="slide-body">
+    <div class="quiz-header">
+      <div class="quiz-icon"><i class="fas fa-puzzle-piece"></i></div>
+      <h3>Conceptos integrados</h3>
+      <p>¡El último quiz antes de los ejercicios!</p>
+    </div>
+
+    <div class="pregunta-card" id="q7">
+      <div class="pregunta-texto"><span class="num-pregunta">7</span>&nbsp;¿Cómo se representa un <strong>subsistema</strong> en un diagrama de componentes?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q7',this,false)">a) Con un rectángulo con diamante hueco</button></li>
+        <li><button class="opcion-btn" onclick="responder('q7',this,true)">b) Como un componente con el estereotipo «subsystem»</button></li>
+        <li><button class="opcion-btn" onclick="responder('q7',this,false)">c) Con un triángulo apuntando hacia arriba</button></li>
+        <li><button class="opcion-btn" onclick="responder('q7',this,false)">d) Con una solapa como los paquetes</button></li>
+      </ul>
+      <div class="feedback" id="fb-q7"></div>
+    </div>
+
+    <div class="pregunta-card" id="q8">
+      <div class="pregunta-texto"><span class="num-pregunta">8</span>&nbsp;¿Qué son los <strong>puertos</strong> en un diagrama de componentes?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q8',this,false)">a) Los artefactos físicos del sistema</button></li>
+        <li><button class="opcion-btn" onclick="responder('q8',this,false)">b) Las operaciones definidas en una interfaz</button></li>
+        <li><button class="opcion-btn" onclick="responder('q8',this,true)">c) Los puntos de interacción del componente con su entorno</button></li>
+        <li><button class="opcion-btn" onclick="responder('q8',this,false)">d) Los paquetes que agrupan componentes</button></li>
+      </ul>
+      <div class="feedback" id="fb-q8"></div>
+    </div>
+
+    <div class="pregunta-card" id="q9">
+      <div class="pregunta-texto"><span class="num-pregunta">9</span>&nbsp;¿Por qué los componentes son <strong>intercambiables</strong>?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q9',this,false)">a) Porque todos tienen el mismo nombre</button></li>
+        <li><button class="opcion-btn" onclick="responder('q9',this,false)">b) Porque comparten los mismos atributos internos</button></li>
+        <li><button class="opcion-btn" onclick="responder('q9',this,true)">c) Porque si exponen la misma interfaz, uno puede reemplazar al otro sin afectar el sistema</button></li>
+        <li><button class="opcion-btn" onclick="responder('q9',this,false)">d) Porque pertenecen al mismo paquete</button></li>
+      </ul>
+      <div class="feedback" id="fb-q9"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 11 — EJERCICIOS
+══════════════════════════════════════════ -->
+<div class="slide" data-slide="11">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-pencil-ruler me-2"></i>Ejercicios Prácticos</div>
+      <div class="subtitulo-slide">Modelado con Diagramas de Componentes UML</div>
+    </div>
+    <div class="badge-seccion">Ejercicios</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro mb-3">
+      <div class="si-icon"><i class="fas fa-dumbbell"></i></div>
+      <div>
+        <h4>¡A practicar!</h4>
+        <p>Usá papel, draw.io, Lucidchart o cualquier editor UML. Identificá componentes, interfaces, artefactos y dependencias en cada escenario.</p>
+      </div>
+    </div>
+
+    <div class="ejercicio-card animate__animated animate__fadeInUp">
+      <div class="ej-num">Ejercicio 1 — Identificación de elementos</div>
+      <h5><i class="fas fa-search me-2" style="color:var(--celeste)"></i>Análisis del diagrama WebStore</h5>
+      <p>A partir del diagrama de la Figura 1 (WebStore, Warehouses, Accounting), respondé:</p>
+      <ul style="margin: 10px 0 0 18px; font-size:0.87rem; color:#3a4f62; line-height:2">
+        <li>¿Cuántos subsistemas hay? ¿Cómo se identifican en el diagrama?</li>
+        <li>¿Cuántas interfaces provistas expone WebStore al exterior? Listálas.</li>
+        <li>¿Cuántas interfaces requeridas tiene WebStore? ¿Qué componentes internos las generan?</li>
+        <li>¿Qué subsistema tiene la única dependencia entrante hacia Warehouses además de WebStore?</li>
+        <li>Describí el rol de los puertos en la estructura de WebStore.</li>
+      </ul>
+      <div class="pistas">
+        <strong><i class="fas fa-lightbulb me-1"></i>Pistas:</strong>
+        <ul>
+          <li>Las interfaces provistas se ven como lollipops en el borde izquierdo del subsistema.</li>
+          <li>Las interfaces requeridas se ven como sockets (medio círculo) en el borde derecho.</li>
+          <li>Los puertos son los cuadraditos en el borde del componente.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ejercicio-card animate__animated animate__fadeInUp" style="animation-delay:0.1s">
+      <div class="ej-num">Ejercicio 2 — Diseño de componentes básico</div>
+      <h5><i class="fas fa-mobile-screen me-2" style="color:var(--celeste)"></i>Sistema de Noticias Online</h5>
+      <p>Diseñá un diagrama de componentes para el siguiente sistema:</p>
+      <ul style="margin: 10px 0 0 18px; font-size:0.87rem; color:#3a4f62; line-height:2">
+        <li>Un componente <strong>ArticleManager</strong> que provee la interfaz <code>PublishArticle</code> y <code>SearchArticles</code>.</li>
+        <li>Un componente <strong>UserAuth</strong> que provee la interfaz <code>Login</code> y <code>Register</code>.</li>
+        <li>Un componente <strong>NotificationService</strong> que requiere las interfaces <code>Login</code> y <code>PublishArticle</code> para enviar alertas.</li>
+        <li>Un artefacto <strong>news-app.jar</strong> que implementa los tres componentes.</li>
+        <li>Mostrá las dependencias entre NotificationService y los otros dos componentes.</li>
+      </ul>
+      <div class="pistas">
+        <strong><i class="fas fa-lightbulb me-1"></i>Pistas:</strong>
+        <ul>
+          <li>Usá el símbolo lollipop para las interfaces provistas.</li>
+          <li>Las interfaces requeridas por NotificationService se conectan con socket o flecha punteada.</li>
+          <li>El artefacto se representa con estereotipo «artifact».</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ejercicio-card animate__animated animate__fadeInUp" style="animation-delay:0.2s">
+      <div class="ej-num">Ejercicio 3 — Subsistema con estructura interna</div>
+      <h5><i class="fas fa-cart-shopping me-2" style="color:var(--celeste)"></i>E-Commerce con dos subsistemas</h5>
+      <p>Modelá el siguiente sistema de comercio electrónico:</p>
+      <ul style="margin: 10px 0 0 18px; font-size:0.87rem; color:#3a4f62; line-height:2">
+        <li>Subsistema <strong>«subsystem» CatalogSystem</strong> que expone las interfaces <code>BrowseProducts</code> y <code>GetProductDetail</code>. Internamente contiene los componentes <code>:ProductDB</code> y <code>:SearchIndex</code>.</li>
+        <li>Subsistema <strong>«subsystem» CheckoutSystem</strong> que expone <code>AddToCart</code> y <code>ProcessPayment</code>. Requiere <code>GetProductDetail</code> de CatalogSystem y <code>PaymentGateway</code> de un componente externo.</li>
+        <li>Componente externo <strong>PaymentProvider</strong> que provee la interfaz <code>PaymentGateway</code>.</li>
+        <li>Mostrá los puertos y delegaciones internas de ambos subsistemas.</li>
+      </ul>
+      <div class="pistas">
+        <strong><i class="fas fa-lightbulb me-1"></i>Pistas:</strong>
+        <ul>
+          <li>Las delegaciones se muestran con líneas punteadas entre puertos externos e internos.</li>
+          <li>Cada subsistema tiene puertos en el borde que conectan al exterior.</li>
+          <li>CheckoutSystem necesita una dependencia hacia CatalogSystem y hacia PaymentProvider.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ejercicio-card animate__animated animate__fadeInUp" style="animation-delay:0.3s">
+      <div class="ej-num">Ejercicio 4 — Integrador con paquetes y artefactos</div>
+      <h5><i class="fas fa-hospital me-2" style="color:var(--celeste)"></i>Sistema de Gestión Hospitalaria</h5>
+      <p>Diseñá el diagrama de componentes para un sistema hospitalario completo:</p>
+      <ul style="margin: 10px 0 0 18px; font-size:0.87rem; color:#3a4f62; line-height:2">
+        <li>Paquete <strong>«package» ClinicalModule</strong> que contiene los componentes <code>PatientManager</code> (provee: <code>RegisterPatient</code>, <code>GetHistory</code>) y <code>AppointmentScheduler</code> (provee: <code>BookAppointment</code>; requiere: <code>GetHistory</code>).</li>
+        <li>Paquete <strong>«package» AdminModule</strong> que contiene <code>BillingService</code> (requiere: <code>BookAppointment</code> y <code>RegisterPatient</code>) y <code>StaffManager</code> (provee: <code>ManageStaff</code>).</li>
+        <li>Mostrá las dependencias entre paquetes con los estereotipos apropiados («use» o «call»).</li>
+        <li>Definí al menos dos artefactos físicos (p.ej. <code>clinical.war</code>, <code>admin.jar</code>) y mostrá qué componentes despliegan en cada uno.</li>
+      </ul>
+      <div class="pistas">
+        <strong><i class="fas fa-lightbulb me-1"></i>Pistas:</strong>
+        <ul>
+          <li>AdminModule depende de ClinicalModule porque usa sus interfaces.</li>
+          <li>Los artefactos se conectan a los componentes con una relación de despliegue.</li>
+          <li>Pensá si la dependencia entre paquetes es «use» (usa instancias) o «call» (invoca operaciones).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 12 — CIERRE
+══════════════════════════════════════════ -->
+<div class="slide cierre-slide" data-slide="12">
+  <div class="cierre-content animate__animated animate__fadeIn">
+    <div style="font-size:3rem;margin-bottom:16px;">🔧</div>
+    <h2>¡Excelente! Dominás los <span>Componentes UML</span></h2>
+    <p>Completaste el recorrido por los Diagramas de Componentes UML. Estos son los conceptos que manejás ahora:</p>
+    <div class="conceptos-finales">
+      <div class="cf-chip"><i class="fas fa-puzzle-piece me-1"></i>Componentes</div>
+      <div class="cf-chip"><i class="fas fa-folder-open me-1"></i>Paquetes</div>
+      <div class="cf-chip"><i class="fas fa-file-code me-1"></i>Artefactos</div>
+      <div class="cf-chip"><i class="fas fa-plug me-1"></i>Interfaz provista (lollipop)</div>
+      <div class="cf-chip"><i class="fas fa-plug-circle-xmark me-1"></i>Interfaz requerida (socket)</div>
+      <div class="cf-chip"><i class="fas fa-square me-1"></i>Puertos</div>
+      <div class="cf-chip"><i class="fas fa-share me-1"></i>Delegación</div>
+      <div class="cf-chip"><i class="fas fa-boxes-stacked me-1"></i>Subsistemas</div>
+      <div class="cf-chip"><i class="fas fa-arrows-left-right me-1"></i>Dependencias</div>
+      <div class="cf-chip"><i class="fas fa-recycle me-1"></i>Intercambiabilidad</div>
+    </div>
+    <div class="portada-divider" style="margin-top:26px;"></div>
+    <p style="font-size:0.83rem;margin-top:14px;opacity:0.6;">Basado en UML 2.5.1 — Técnicas y Herramientas · Sección 2.3</p>
+  </div>
+</div>
+
+</div><!-- /presentation -->
+
+<!-- ─── NAV BAR ─── -->
+<div id="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>
+    <i class="fas fa-chevron-left"></i> Anterior
+  </button>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div class="toc-dots" id="toc-dots"></div>
+    <div id="progress-info">Diapositiva <span id="slide-num">1</span> de <span id="slide-total">13</span></div>
+  </div>
+  <button class="nav-btn primary" id="btn-next" onclick="navigate(1)">
+    Siguiente <i class="fas fa-chevron-right"></i>
+  </button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+  const TOTAL = document.querySelectorAll('.slide').length;
+  let current = 0;
+
+  const dotsWrap = document.getElementById('toc-dots');
+  const quizSlides = [4, 8, 10];
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (quizSlides.includes(i) ? ' quiz-dot' : '') + (i === 0 ? ' active' : '');
+    d.title = 'Ir a diapositiva ' + (i + 1);
+    d.onclick = () => goTo(i);
+    dotsWrap.appendChild(d);
+  }
+  document.getElementById('slide-total').textContent = TOTAL;
+
+  function goTo(n) {
+    document.querySelectorAll('.slide')[current].classList.remove('active');
+    document.querySelectorAll('.dot')[current].classList.remove('active');
+    current = Math.max(0, Math.min(TOTAL - 1, n));
+    const slide = document.querySelectorAll('.slide')[current];
+    slide.classList.add('active');
+    slide.querySelectorAll('.animate__animated').forEach(el => {
+      el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+    });
+    document.querySelectorAll('.dot')[current].classList.add('active');
+    document.getElementById('slide-num').textContent = current + 1;
+    document.getElementById('btn-prev').disabled = current === 0;
+    document.getElementById('btn-next').disabled = current === TOTAL - 1;
+    document.getElementById('progress-bar').style.width = ((current / (TOTAL - 1)) * 100) + '%';
+  }
+
+  function navigate(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+  });
+
+  let touchX = 0;
+  document.addEventListener('touchstart', e => touchX = e.touches[0].clientX);
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+  });
+
+  goTo(0);
+
+  const respuestas_correctas = {
+    q1: 'El diagrama de componentes define la composición lógica del sistema; el de despliegue muestra dónde físicamente se ejecutan esos componentes.',
+    q2: 'La interfaz provista se representa con el símbolo lollipop: un círculo lleno en un palito, del lado del componente que la expone.',
+    q3: 'Los artefactos representan entidades físicas: archivos ejecutables, bibliotecas, bases de datos. No son partes lógicas del diseño.',
+    q4: 'En el diagrama, :SearchEngine es el componente interno de WebStore que implementa la interfaz ProductSearch.',
+    q5: 'Warehouses provee ManageInventory. Accounting la requiere para gestionar su inventario.',
+    q6: 'Delegación significa que el subsistema redirige la llamada a su puerto externo al componente interno correspondiente.',
+    q7: 'Un subsistema es un componente con el estereotipo «subsystem» que tiene estructura interna propia.',
+    q8: 'Los puertos son los puntos de interacción del componente con su entorno, representados como cuadraditos en el borde.',
+    q9: 'La intercambiabilidad se logra a través de interfaces: si dos componentes exponen la misma interfaz, son mutuamente reemplazables.',
+  };
+
+  function responder(qId, btn, esCorrecta) {
+    const card = document.getElementById(qId);
+    if (card.dataset.respondida) return;
+    card.dataset.respondida = '1';
+    const btns = card.querySelectorAll('.opcion-btn');
+    btns.forEach(b => b.classList.add('deshabilitada'));
+    const fb = document.getElementById('fb-' + qId);
+    fb.classList.add('show');
+    if (esCorrecta) {
+      btn.classList.add('correcta');
+      fb.classList.add('ok');
+      fb.innerHTML = '<i class="fas fa-check-circle me-1"></i><strong>¡Correcto!</strong> ' + respuestas_correctas[qId];
+    } else {
+      btn.classList.add('incorrecta');
+      fb.classList.add('ko');
+      fb.innerHTML = '<i class="fas fa-times-circle me-1"></i><strong>Incorrecto.</strong> ' + respuestas_correctas[qId];
+      btns.forEach(b => {
+        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(',true)')) {
+          b.classList.add('correcta');
+        }
+      });
+    }
+  }
+</script>
+</body>
+</html>

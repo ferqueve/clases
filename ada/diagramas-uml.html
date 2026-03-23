@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagramas de Clases UML — Modelos de Estructura</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700;800&family=Source+Code+Pro:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --azul-oscuro: #0d3b5e;
+    --azul-medio: #1565a0;
+    --azul-claro: #2e86c1;
+    --celeste: #5dade2;
+    --celeste-suave: #aed6f1;
+    --celeste-bg: #eaf4fb;
+    --celeste-muy-suave: #f0f8ff;
+    --blanco: #ffffff;
+    --gris-texto: #1c2e3e;
+    --gris-suave: #6c8da8;
+    --acento: #1a7abd;
+    --success: #1e8449;
+    --danger: #c0392b;
+    --nota-bg: #e8f6fd;
+    --nota-border: #2e86c1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: #0a1f35;
+    color: var(--gris-texto);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ─── WRAPPER ─── */
+  #presentation {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ─── SLIDE ─── */
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--blanco);
+    overflow: hidden;
+  }
+  .slide.active { display: flex; }
+
+  /* ─── HEADER BAR ─── */
+  .slide-header {
+    background: linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 60%, var(--azul-claro) 100%);
+    color: white;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    min-height: 68px;
+  }
+  .slide-header .titulo-slide {
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .slide-header .subtitulo-slide {
+    font-size: 0.8rem;
+    opacity: 0.75;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .badge-seccion {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  /* ─── SLIDE CONTENT ─── */
+  .slide-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 40px;
+    background: var(--celeste-muy-suave);
+  }
+  .slide-body::-webkit-scrollbar { width: 6px; }
+  .slide-body::-webkit-scrollbar-thumb { background: var(--celeste-suave); border-radius: 3px; }
+
+  /* ─── PORTADA ─── */
+  .portada {
+    background: linear-gradient(160deg, #0a1f35 0%, #0d3b5e 40%, #1565a0 100%);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+  }
+  .portada-content { max-width: 780px; padding: 40px; }
+  .portada .badge-top {
+    background: rgba(93,173,226,0.2);
+    border: 1px solid rgba(93,173,226,0.5);
+    color: var(--celeste-suave);
+    border-radius: 30px;
+    padding: 6px 20px;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: inline-block;
+  }
+  .portada h1 {
+    font-family: 'Raleway', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .portada h1 span { color: var(--celeste); }
+  .portada .subtitulo {
+    font-size: 1.1rem;
+    opacity: 0.7;
+    font-weight: 300;
+    margin-bottom: 32px;
+    letter-spacing: 0.5px;
+  }
+  .portada .meta-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .portada .meta-chip {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+  .portada .meta-chip i { color: var(--celeste); margin-right: 8px; }
+  .portada-divider {
+    width: 80px; height: 3px;
+    background: linear-gradient(to right, var(--celeste), transparent);
+    margin: 24px auto;
+    border-radius: 2px;
+  }
+
+  /* ─── CARDS ─── */
+  .card-concepto {
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #d0e8f5;
+    box-shadow: 0 2px 12px rgba(21,101,160,0.07);
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s;
+  }
+  .card-concepto:hover { box-shadow: 0 4px 20px rgba(21,101,160,0.13); }
+  .card-concepto h5 {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 700;
+    color: var(--azul-medio);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-concepto h5 i { color: var(--celeste); font-size: 1rem; }
+  .card-concepto p { font-size: 0.9rem; color: #3a4f62; line-height: 1.6; }
+
+  /* ─── NOTA ─── */
+  .nota {
+    background: var(--nota-bg);
+    border-left: 4px solid var(--nota-border);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 0.88rem;
+    color: #1a3a56;
+  }
+  .nota strong { color: var(--azul-medio); }
+
+  /* ─── CODE ─── */
+  .code-block {
+    background: #0d2137;
+    color: #aed6f1;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    margin: 10px 0;
+    border: 1px solid #1a3a56;
+  }
+  .code-block .kw { color: #5dade2; font-weight: 600; }
+  .code-block .sym { color: #f0b27a; }
+  .code-block .val { color: #82e0aa; }
+  .code-block .com { color: #7f8c8d; font-style: italic; }
+
+  /* ─── SVG DIAGRAMS ─── */
+  .diagrama-wrap {
+    background: white;
+    border: 1px solid #c8e0f0;
+    border-radius: 10px;
+    padding: 16px;
+    margin: 12px 0;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(21,101,160,0.06);
+  }
+  .diagrama-wrap figcaption {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--gris-suave);
+    margin-top: 8px;
+  }
+  .uml-class {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 13px;
+  }
+
+  /* ─── VISIBILIDAD TABLE ─── */
+  .vis-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+  .vis-table td {
+    padding: 10px 16px;
+    background: white;
+    border: 1px solid #d0e8f5;
+    font-size: 0.88rem;
+  }
+  .vis-table td:first-child {
+    background: var(--azul-medio);
+    color: white;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    width: 50px;
+    border-radius: 6px 0 0 6px;
+  }
+  .vis-table td:last-child { border-radius: 0 6px 6px 0; }
+
+  /* ─── QUIZ SLIDE ─── */
+  .quiz-slide .slide-body { background: linear-gradient(135deg, #eaf4fb 0%, #f0f8ff 100%); }
+  .quiz-header {
+    text-align: center;
+    padding: 10px 0 20px;
+  }
+  .quiz-header .quiz-icon {
+    width: 60px; height: 60px;
+    background: var(--azul-medio);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 15px rgba(21,101,160,0.3);
+  }
+  .quiz-header .quiz-icon i { color: white; font-size: 1.5rem; }
+  .quiz-header h3 {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 800;
+    color: var(--azul-oscuro);
+    font-size: 1.4rem;
+  }
+  .quiz-header p { color: var(--gris-suave); font-size: 0.9rem; }
+
+  .pregunta-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #c8e0f0;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 10px rgba(21,101,160,0.07);
+  }
+  .pregunta-card .num-pregunta {
+    background: var(--azul-medio);
+    color: white;
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+  .pregunta-card .pregunta-texto {
+    font-weight: 600;
+    color: var(--azul-oscuro);
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .opciones { list-style: none; padding: 0; }
+  .opciones li {
+    margin-bottom: 8px;
+  }
+  .opcion-btn {
+    width: 100%;
+    text-align: left;
+    background: #f0f8ff;
+    border: 2px solid #c8e0f0;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    color: var(--gris-texto);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Lato', sans-serif;
+  }
+  .opcion-btn:hover { border-color: var(--celeste); background: #dbeeff; }
+  .opcion-btn.correcta { background: #d5f5e3; border-color: var(--success); color: #145a32; }
+  .opcion-btn.incorrecta { background: #fadbd8; border-color: var(--danger); color: #7b241c; }
+  .opcion-btn.deshabilitada { cursor: default; pointer-events: none; }
+  .feedback {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok { background: #d5f5e3; color: #1e8449; border: 1px solid #82e0aa; }
+  .feedback.ko { background: #fadbd8; color: var(--danger); border: 1px solid #f1948a; }
+
+  /* ─── EJERCICIOS ─── */
+  .ejercicio-card {
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #aed6f1;
+    padding: 22px 26px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ejercicio-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 5px; height: 100%;
+    background: linear-gradient(to bottom, var(--azul-claro), var(--celeste));
+  }
+  .ejercicio-card .ej-num {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: var(--azul-claro);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .ejercicio-card h5 {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 700;
+    color: var(--azul-oscuro);
+    margin-bottom: 10px;
+    font-size: 1rem;
+  }
+  .ejercicio-card p { font-size: 0.88rem; color: #3a4f62; line-height: 1.65; }
+  .ejercicio-card .pistas {
+    margin-top: 12px;
+    background: var(--celeste-bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .ejercicio-card .pistas strong { color: var(--azul-medio); font-size: 0.82rem; }
+  .ejercicio-card .pistas ul { margin: 6px 0 0 16px; font-size: 0.83rem; color: #2c4a62; }
+
+  /* ─── NAVIGATION ─── */
+  #nav-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to right, var(--azul-oscuro), #0d3b5e);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    box-shadow: 0 -3px 15px rgba(0,0,0,0.3);
+  }
+  .nav-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-family: 'Lato', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; transform: none; }
+  .nav-btn.primary {
+    background: var(--azul-claro);
+    border-color: var(--celeste);
+  }
+  .nav-btn.primary:hover { background: var(--celeste); }
+
+  #progress-info {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.82rem;
+    text-align: center;
+  }
+  #progress-info span { color: var(--celeste); font-weight: 700; }
+
+  #progress-bar-wrap {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    z-index: 200;
+  }
+  #progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, var(--celeste), #82c4e8);
+    transition: width 0.4s ease;
+  }
+
+  /* ─── TOC DOTS ─── */
+  .toc-dots {
+    display: flex; gap: 5px; align-items: center;
+    flex-wrap: wrap; max-width: 280px; justify-content: center;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .dot:hover { background: rgba(255,255,255,0.5); }
+  .dot.active { background: var(--celeste); width: 10px; height: 10px; }
+  .dot.quiz-dot { background: rgba(93,173,226,0.3); border-color: var(--celeste); }
+  .dot.quiz-dot.active { background: var(--celeste); }
+
+  /* ─── GRID LAYOUTS ─── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 768px) {
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .portada h1 { font-size: 2rem; }
+    .slide-body { padding: 16px 20px; }
+  }
+
+  /* ─── SECTION INTRO ─── */
+  .section-intro {
+    background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+    color: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .section-intro .si-icon { font-size: 2rem; opacity: 0.9; }
+  .section-intro h4 {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .section-intro p { font-size: 0.88rem; opacity: 0.85; margin: 0; }
+
+  /* ─── TAGS ─── */
+  .tag {
+    display: inline-block;
+    background: var(--celeste-bg);
+    color: var(--azul-medio);
+    border: 1px solid #aed6f1;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin: 3px 2px;
+  }
+
+  /* ─── ANIMATE HELPERS ─── */
+  .fade-in { animation: fadeIn 0.4s ease both; }
+  .slide-up { animation: slideInUp 0.4s ease both; }
+
+  /* ─── CIERRE ─── */
+  .cierre-slide {
+    background: linear-gradient(160deg, #0a1f35 0%, #0d3b5e 60%, #1565a0 100%);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .cierre-content { max-width: 650px; padding: 40px; }
+  .cierre-content h2 {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 800;
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+  }
+  .cierre-content h2 span { color: var(--celeste); }
+  .cierre-content p { opacity: 0.75; font-size: 1rem; line-height: 1.7; }
+  .conceptos-finales {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center; margin-top: 24px;
+  }
+  .cf-chip {
+    background: rgba(93,173,226,0.15);
+    border: 1px solid rgba(93,173,226,0.35);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    color: var(--celeste-suave);
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<div id="presentation">
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 0 — PORTADA
+═══════════════════════════════════════════════════════ -->
+<div class="slide portada active" data-slide="0">
+  <div class="portada-content animate__animated animate__fadeIn">
+    <div class="badge-top"><i class="fas fa-diagram-project me-2"></i>Modelos de Estructura · Sección 2.3</div>
+    <h1>Diagramas de <span>Clases UML</span></h1>
+    <p class="subtitulo">Capturando la estructura estática de un sistema</p>
+    <div class="portada-divider"></div>
+    <div class="meta-row">
+      <div class="meta-chip"><i class="fas fa-book-open"></i>Basado en UML 2.5.1</div>
+      <div class="meta-chip"><i class="fas fa-layer-group"></i>12 conceptos clave</div>
+      <div class="meta-chip"><i class="fas fa-question-circle"></i>Quizzes + Ejercicios</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 1 — ¿QUÉ SON?
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="1">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-info-circle me-2"></i>¿Qué son los Diagramas de Clases?</div>
+      <div class="subtitulo-slide">Introducción</div>
+    </div>
+    <div class="badge-seccion">Slide 2 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro animate__animated animate__fadeIn">
+      <div class="si-icon"><i class="fas fa-sitemap"></i></div>
+      <div>
+        <h4>El diagrama más importante de UML</h4>
+        <p>Los diagramas de clases capturan la <strong>estructura estática</strong> de un sistema: sus clases, atributos, métodos y las relaciones entre ellas.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card-concepto animate__animated animate__fadeInLeft">
+        <h5><i class="fas fa-cubes"></i>¿Qué modelan?</h5>
+        <p>Muestran las <strong>clases</strong> del sistema junto con sus <strong>atributos</strong> (datos) y <strong>operaciones</strong> (comportamiento), y cómo estas clases se relacionan entre sí.</p>
+      </div>
+      <div class="card-concepto animate__animated animate__fadeInRight">
+        <h5><i class="fas fa-shapes"></i>¿Solo clases?</h5>
+        <p>No. Además de clases pueden aparecer <strong>interfaces</strong>, <strong>tipos de datos</strong>, <strong>clases plantilla</strong>, <strong>meta-clases</strong> y cualquier otro <em>clasificador</em> UML.</p>
+      </div>
+    </div>
+
+    <h5 class="mt-3 mb-3" style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;">Elementos principales del diagrama</h5>
+    <div class="three-col">
+      <div class="card-concepto">
+        <h5><i class="fas fa-square"></i>Clases</h5>
+        <p>Rectángulo con nombre, atributos y métodos divididos por líneas horizontales.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-arrows-left-right"></i>Asociaciones</h5>
+        <p>Línea entre clases: modela vínculos entre instancias.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-diamond"></i>Agregaciones</h5>
+        <p>Relación "es parte de" — diamante <strong>hueco</strong> en el todo.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-gem"></i>Composiciones</h5>
+        <p>Relación de pertenencia fuerte — diamante <strong>relleno</strong> en el compuesto.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-code-branch"></i>Generalizaciones</h5>
+        <p>Herencia — flecha con triángulo apuntando a la clase base.</p>
+      </div>
+      <div class="card-concepto">
+        <h5><i class="fas fa-arrow-right-arrow-left"></i>Dependencias</h5>
+        <p>Flecha punteada: un cambio en A afecta a B.</p>
+      </div>
+    </div>
+
+    <div class="nota">
+      <strong><i class="fas fa-lightbulb me-1"></i>Nota importante:</strong> Aunque dibujamos asociaciones, agregaciones y composiciones entre <em>clases</em>, la relación en sí es entre <em>instancias</em> de esas clases.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 2 — ESTRUCTURA DE UNA CLASE
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-square me-2"></i>Estructura de una Clase</div>
+      <div class="subtitulo-slide">Notación, atributos y operaciones</div>
+    </div>
+    <div class="badge-seccion">Slide 3 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="diagrama-wrap animate__animated animate__fadeIn">
+          <svg viewBox="0 0 340 200" width="100%" style="max-width:340px;">
+            <!-- Clase simple -->
+            <rect x="20" y="30" width="120" height="50" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="80" y="60" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="14">Clase</text>
+            <!-- Clase con secciones -->
+            <rect x="170" y="20" width="150" height="160" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="170" y1="50" x2="320" y2="50" stroke="#2e86c1" stroke-width="1"/>
+            <line x1="170" y1="105" x2="320" y2="105" stroke="#2e86c1" stroke-width="1"/>
+            <text x="245" y="41" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="13">Clase</text>
+            <text x="185" y="74" fill="#1565a0" font-family="Source Code Pro,monospace" font-size="11">+ nombre : String</text>
+            <text x="185" y="92" fill="#1565a0" font-family="Source Code Pro,monospace" font-size="11">- código : int</text>
+            <text x="185" y="125" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="11">+ método(s): bool</text>
+            <text x="185" y="144" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="11">- calcular(): int</text>
+            <!-- labels -->
+            <text x="80" y="100" text-anchor="middle" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Solo nombre</text>
+            <text x="245" y="10" text-anchor="middle" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Con secciones</text>
+          </svg>
+          <figcaption>Figura 1: Clase sin y con secciones de atributos y operaciones.</figcaption>
+        </div>
+
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 200 130" width="100%" style="max-width:220px;">
+            <!-- Interfaz -->
+            <rect x="30" y="10" width="145" height="110" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="30" y1="50" x2="175" y2="50" stroke="#2e86c1" stroke-width="1"/>
+            <line x1="30" y1="80" x2="175" y2="80" stroke="#2e86c1" stroke-width="1"/>
+            <text x="103" y="28" text-anchor="middle" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="10">«interface»</text>
+            <text x="103" y="44" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="13">Interfaz</text>
+            <text x="44" y="68" fill="#1565a0" font-family="Source Code Pro,monospace" font-size="10">+ atributo : int</text>
+            <text x="44" y="97" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="10">+ método(s): bool</text>
+          </svg>
+          <figcaption>Figura 2: Interfaz con estereotipo «interface».</figcaption>
+        </div>
+      </div>
+
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:12px;">Notación formal</h5>
+        <div class="code-block">
+<span class="com">// Atributo</span>
+<span class="kw">Nombre</span> [<span class="sym">:</span> Tipo] [<span class="sym">=</span> <span class="val">Valor inicial</span>]
+
+<span class="com">// Operación</span>
+<span class="kw">Nombre</span><span class="sym">(</span>[Lista args]<span class="sym">)</span> [<span class="sym">:</span> Tipo]
+
+<span class="com">// Argumento</span>
+<span class="kw">Nombre</span> [<span class="sym">:</span> Tipo] [<span class="sym">=</span> <span class="val">Defecto</span>]
+        </div>
+
+        <div class="nota mt-3">
+          <strong>Ejemplos de operaciones:</strong><br>
+          <code>calcularPrecio(cant: int): float</code><br>
+          <code>setNombre(n: String)</code><br>
+          <code>getEdad(): int</code>
+        </div>
+
+        <div class="card-concepto mt-3">
+          <h5><i class="fas fa-layer-group"></i>Secciones del rectángulo</h5>
+          <p>
+            <strong>1ª sección:</strong> Nombre de la clase (obligatorio)<br>
+            <strong>2ª sección:</strong> Atributos<br>
+            <strong>3ª sección:</strong> Operaciones (métodos)
+          </p>
+          <p class="mt-2">Las secciones son opcionales; siempre debe aparecer el nombre.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 3 — VISIBILIDAD
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="3">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-eye me-2"></i>Visibilidad de Elementos</div>
+      <div class="subtitulo-slide">Modificadores de acceso en UML</div>
+    </div>
+    <div class="badge-seccion">Slide 4 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro">
+      <div class="si-icon"><i class="fas fa-shield-halved"></i></div>
+      <div>
+        <h4>Controlando el acceso</h4>
+        <p>La visibilidad define quién puede ver y usar clases, atributos, operaciones y relaciones. Se indica con un símbolo <strong>antes del nombre</strong> del elemento.</p>
+      </div>
+    </div>
+
+    <table class="vis-table mb-3 animate__animated animate__fadeIn">
+      <tr>
+        <td>+</td>
+        <td><strong>Público</strong></td>
+        <td>Cualquier elemento que pueda ver el contenedor puede ver y usar este elemento.</td>
+      </tr>
+      <tr>
+        <td>-</td>
+        <td><strong>Privado</strong></td>
+        <td>Solo otros elementos <em>dentro del mismo contenedor</em> pueden verlo y usarlo.</td>
+      </tr>
+      <tr>
+        <td>#</td>
+        <td><strong>Protegido</strong></td>
+        <td>Elementos en el mismo contenedor <em>o en un descendiente</em> (herencia) pueden accederlo.</td>
+      </tr>
+      <tr>
+        <td>~</td>
+        <td><strong>Paquete</strong></td>
+        <td>Solo elementos <em>dentro del mismo paquete</em> que el contenedor pueden verlo y usarlo.</td>
+      </tr>
+    </table>
+
+    <div class="nota">
+      <strong>El término "contenedor" significa:</strong><br>
+      • En <em>atributos y operaciones</em>: el contenedor es la <strong>clase</strong>.<br>
+      • En <em>clases</em>: el contenedor es el <strong>paquete</strong> donde se declara la clase.<br>
+      • En <em>relaciones</em>: el contenedor es la <strong>clase de origen</strong> de la relación.
+    </div>
+
+    <div class="diagrama-wrap mt-3">
+      <svg viewBox="0 0 380 160" width="100%" style="max-width:420px;">
+        <rect x="80" y="10" width="220" height="140" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+        <line x1="80" y1="38" x2="300" y2="38" stroke="#2e86c1" stroke-width="1"/>
+        <line x1="80" y1="98" x2="300" y2="98" stroke="#2e86c1" stroke-width="1"/>
+        <text x="190" y="29" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="14" font-weight="bold">Persona</text>
+        <!-- attrs -->
+        <text x="95" y="56" fill="#1e8449" font-family="Source Code Pro,monospace" font-size="11">+ nombre : String</text>
+        <text x="95" y="72" fill="#c0392b" font-family="Source Code Pro,monospace" font-size="11">- cédula : String</text>
+        <text x="95" y="88" fill="#d68910" font-family="Source Code Pro,monospace" font-size="11"># edad : int</text>
+        <!-- methods -->
+        <text x="95" y="116" fill="#1e8449" font-family="Source Code Pro,monospace" font-size="11">+ getNombre(): String</text>
+        <text x="95" y="132" fill="#c0392b" font-family="Source Code Pro,monospace" font-size="11">- validar(): bool</text>
+        <text x="95" y="148" fill="#1565a0" font-family="Source Code Pro,monospace" font-size="11">~ info(): void</text>
+        <!-- leyenda -->
+        <circle cx="340" cy="56" r="5" fill="#1e8449"/>
+        <text x="350" y="60" fill="#1e8449" font-family="Lato,sans-serif" font-size="10">Público</text>
+        <circle cx="340" cy="76" r="5" fill="#c0392b"/>
+        <text x="350" y="80" fill="#c0392b" font-family="Lato,sans-serif" font-size="10">Privado</text>
+        <circle cx="340" cy="96" r="5" fill="#d68910"/>
+        <text x="350" y="100" fill="#d68910" font-family="Lato,sans-serif" font-size="10">Protegido</text>
+        <circle cx="340" cy="116" r="5" fill="#1565a0"/>
+        <text x="350" y="120" fill="#1565a0" font-family="Lato,sans-serif" font-size="10">Paquete</text>
+      </svg>
+      <figcaption>Ejemplo de visibilidades aplicadas a una clase Persona.</figcaption>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 4 — QUIZ 1
+═══════════════════════════════════════════════════════ -->
+<div class="slide quiz-slide" data-slide="4">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-circle-question me-2"></i>Verificación de Conocimiento</div>
+      <div class="subtitulo-slide">Quiz 1 · Clases y Visibilidad</div>
+    </div>
+    <div class="badge-seccion">Quiz 1 / 5</div>
+  </div>
+  <div class="slide-body">
+    <div class="quiz-header">
+      <div class="quiz-icon"><i class="fas fa-brain"></i></div>
+      <h3>¡A probar lo aprendido!</h3>
+      <p>Seleccioná la respuesta correcta para cada pregunta.</p>
+    </div>
+
+    <div class="pregunta-card" id="q1">
+      <div class="pregunta-texto"><span class="num-pregunta">1</span>&nbsp;¿Cuál es el símbolo que indica visibilidad <strong>protegida</strong> en UML?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q1',this,false)">a) <code>+</code> (más)</button></li>
+        <li><button class="opcion-btn" onclick="responder('q1',this,false)">b) <code>-</code> (menos)</button></li>
+        <li><button class="opcion-btn" onclick="responder('q1',this,true)">c) <code>#</code> (numeral)</button></li>
+        <li><button class="opcion-btn" onclick="responder('q1',this,false)">d) <code>~</code> (tilde)</button></li>
+      </ul>
+      <div class="feedback" id="fb-q1"></div>
+    </div>
+
+    <div class="pregunta-card" id="q2">
+      <div class="pregunta-texto"><span class="num-pregunta">2</span>&nbsp;¿Qué secciones puede tener opcionalmente un rectángulo de clase en UML?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q2',this,false)">a) Solo el nombre y los métodos</button></li>
+        <li><button class="opcion-btn" onclick="responder('q2',this,true)">b) Nombre (obligatorio), atributos y operaciones</button></li>
+        <li><button class="opcion-btn" onclick="responder('q2',this,false)">c) Nombre, tipo y visibilidad</button></li>
+        <li><button class="opcion-btn" onclick="responder('q2',this,false)">d) Atributos y operaciones únicamente</button></li>
+      </ul>
+      <div class="feedback" id="fb-q2"></div>
+    </div>
+
+    <div class="pregunta-card" id="q3">
+      <div class="pregunta-texto"><span class="num-pregunta">3</span>&nbsp;¿Qué estereotipo se usa en UML para representar una interfaz?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q3',this,false)">a) «abstract»</button></li>
+        <li><button class="opcion-btn" onclick="responder('q3',this,false)">b) «type»</button></li>
+        <li><button class="opcion-btn" onclick="responder('q3',this,true)">c) «interface»</button></li>
+        <li><button class="opcion-btn" onclick="responder('q3',this,false)">d) «template»</button></li>
+      </ul>
+      <div class="feedback" id="fb-q3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 5 — ASOCIACIONES
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-arrows-left-right me-2"></i>Asociaciones</div>
+      <div class="subtitulo-slide">Vínculos entre instancias de clases</div>
+    </div>
+    <div class="badge-seccion">Slide 6 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="card-concepto animate__animated animate__fadeIn">
+      <h5><i class="fas fa-link"></i>¿Qué es una asociación?</h5>
+      <p>Modela un conjunto de <strong>vínculos entre instancias</strong> de clases relacionadas. Se representa con una línea que une dos o más clases. Típicamente representa la responsabilidad de una clase de <em>conocer</em> a otra.</p>
+    </div>
+
+    <h5 class="mt-3 mb-2" style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;">Asociaciones: nombre, clase de asociación y dirección</h5>
+    <div class="diagrama-wrap animate__animated animate__fadeIn">
+      <svg viewBox="0 0 560 220" width="100%" style="max-width:580px;">
+        <!-- Ejemplo 1: asociación simple -->
+        <text x="10" y="16" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Asociación simple con nombre:</text>
+        <rect x="10" y="22" width="100" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+        <text x="60" y="44" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12">Persona</text>
+        <line x1="110" y1="40" x2="200" y2="40" stroke="#1565a0" stroke-width="1.5"/>
+        <text x="155" y="32" text-anchor="middle" fill="#0d3b5e" font-family="Lato,sans-serif" font-size="10">trabaja para</text>
+        <rect x="200" y="22" width="100" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+        <text x="250" y="44" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12">Empresa</text>
+
+        <!-- Ejemplo 2: asociación dirigida -->
+        <text x="10" y="90" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Asociación dirigida (Camión → Zorra):</text>
+        <rect x="10" y="97" width="100" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+        <text x="60" y="119" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12">Camión</text>
+        <line x1="110" y1="115" x2="195" y2="115" stroke="#1565a0" stroke-width="1.5"/>
+        <polygon points="195,111 205,115 195,119" fill="#1565a0"/>
+        <text x="155" y="107" text-anchor="middle" fill="#0d3b5e" font-family="Lato,sans-serif" font-size="10">arrastra</text>
+        <rect x="205" y="97" width="100" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+        <text x="255" y="119" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12">Zorra</text>
+
+        <!-- Ejemplo 3: clase de asociación -->
+        <text x="10" y="165" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Clase de asociación:</text>
+        <rect x="10" y="172" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+        <text x="55" y="194" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Persona</text>
+        <line x1="100" y1="190" x2="200" y2="190" stroke="#1565a0" stroke-width="1.5"/>
+        <text x="150" y="182" text-anchor="middle" fill="#0d3b5e" font-family="Lato,sans-serif" font-size="10">trabaja para</text>
+        <rect x="200" y="172" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+        <text x="245" y="194" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Empresa</text>
+        <!-- clase de asociación -->
+        <rect x="310" y="172" width="95" height="44" rx="2" fill="white" stroke="#e67e22" stroke-width="1.5"/>
+        <line x1="310" y1="188" x2="405" y2="188" stroke="#e67e22" stroke-width="1"/>
+        <text x="357" y="183" text-anchor="middle" fill="#e67e22" font-family="Source Code Pro,monospace" font-size="11" font-weight="bold">Trabajo</text>
+        <text x="317" y="200" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Cargo</text>
+        <text x="317" y="212" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Salario</text>
+        <line x1="245" y1="190" x2="310" y2="190" stroke="#e67e22" stroke-width="1" stroke-dasharray="4"/>
+      </svg>
+      <figcaption>Figura 3: Asociaciones entre clases y clase de asociación.</figcaption>
+    </div>
+
+    <div class="nota">
+      <strong>Clase de asociación:</strong> Cuando la asociación necesita atributos propios (p.ej. el cargo y salario que tiene una persona <em>en esa empresa</em>), se modela con una clase de asociación conectada por línea punteada.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 6 — MULTIPLICIDAD
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-hashtag me-2"></i>Multiplicidad en Asociaciones</div>
+      <div class="subtitulo-slide">Rangos válidos de instancias relacionadas</div>
+    </div>
+    <div class="badge-seccion">Slide 7 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Notación de multiplicidad</h5>
+        <table class="vis-table mb-3">
+          <tr><td style="font-size:0.85rem;padding:6px 10px;">1</td><td>Exactamente uno</td></tr>
+          <tr><td style="font-size:0.85rem;padding:6px 10px;">0..1</td><td>Cero o uno (opcional)</td></tr>
+          <tr><td style="font-size:0.85rem;padding:6px 10px;">1..*</td><td>Uno o más</td></tr>
+          <tr><td style="font-size:0.85rem;padding:6px 10px;">*</td><td>Cero o más (sin límite)</td></tr>
+          <tr><td style="font-size:0.85rem;padding:6px 10px;">m..n</td><td>Entre m y n instancias</td></tr>
+          <tr><td style="font-size:0.85rem;padding:6px 10px;">1..4,6</td><td>Valores discretos permitidos</td></tr>
+        </table>
+        <div class="nota">
+          <strong>¿Dónde se coloca?</strong><br>
+          La multiplicidad de A respecto a B se coloca <em>junto a B</em> en el diagrama (al final de la asociación del lado de B).
+        </div>
+      </div>
+      <div>
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 300 260" width="100%" style="max-width:320px;">
+            <!-- Persona - Empresa -->
+            <rect x="10" y="10" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="55" y="32" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Persona</text>
+            <text x="108" y="28" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="9">1..*</text>
+            <text x="108" y="40" text-anchor="middle" fill="#888" font-family="Lato,sans-serif" font-size="8" font-style="italic">Empleado</text>
+            <line x1="100" y1="28" x2="190" y2="28" stroke="#1565a0" stroke-width="1.5"/>
+            <text x="178" y="18" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="9">0..1</text>
+            <text x="178" y="40" text-anchor="middle" fill="#888" font-family="Lato,sans-serif" font-size="8" font-style="italic">Empleador</text>
+            <rect x="190" y="10" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="235" y="32" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Empresa</text>
+            <!-- label -->
+            <text x="148" y="50" text-anchor="middle" fill="#e67e22" font-family="Lato,sans-serif" font-size="8" font-style="italic">trabaja para</text>
+
+            <!-- Camion - Zorra -->
+            <rect x="10" y="80" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="55" y="102" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Camión</text>
+            <text x="108" y="98" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="9">1</text>
+            <line x1="100" y1="98" x2="190" y2="98" stroke="#1565a0" stroke-width="1.5"/>
+            <text x="178" y="88" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="9">0..1</text>
+            <rect x="190" y="80" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="235" y="102" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Zorra</text>
+            <text x="148" y="118" text-anchor="middle" fill="#e67e22" font-family="Lato,sans-serif" font-size="8" font-style="italic">arrastra</text>
+
+            <!-- Vehiculo - Rueda -->
+            <rect x="10" y="150" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="55" y="172" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Vehículo</text>
+            <text x="108" y="168" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="9">1</text>
+            <line x1="100" y1="168" x2="190" y2="168" stroke="#1565a0" stroke-width="1.5"/>
+            <text x="175" y="158" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="8">1..4,6,10,14</text>
+            <rect x="190" y="150" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="235" y="172" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Rueda</text>
+            <text x="148" y="188" text-anchor="middle" fill="#e67e22" font-family="Lato,sans-serif" font-size="8" font-style="italic">rueda sobre</text>
+
+            <!-- Jefe - Empleado -->
+            <rect x="10" y="220" width="80" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="50" y="242" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Jefe</text>
+            <line x1="90" y1="238" x2="190" y2="238" stroke="#1565a0" stroke-width="1.5"/>
+            <text x="175" y="228" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="9">*</text>
+            <rect x="190" y="220" width="95" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="237" y="242" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Empleado</text>
+            <text x="148" y="258" text-anchor="middle" fill="#e67e22" font-family="Lato,sans-serif" font-size="8" font-style="italic">manda</text>
+          </svg>
+          <figcaption>Figura 5: Ejemplos de multiplicidad en asociaciones.</figcaption>
+        </div>
+      </div>
+    </div>
+
+    <div class="nota mt-2">
+      <strong>Roles:</strong> Cuando una clase aparece en múltiples asociaciones o en relaciones recursivas, se agregan roles para aclarar el significado (p.ej. <em>Empleado</em> y <em>Empleador</em>).
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 7 — QUIZ 2
+═══════════════════════════════════════════════════════ -->
+<div class="slide quiz-slide" data-slide="7">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-circle-question me-2"></i>Verificación de Conocimiento</div>
+      <div class="subtitulo-slide">Quiz 2 · Asociaciones y Multiplicidad</div>
+    </div>
+    <div class="badge-seccion">Quiz 2 / 5</div>
+  </div>
+  <div class="slide-body">
+    <div class="quiz-header">
+      <div class="quiz-icon"><i class="fas fa-puzzle-piece"></i></div>
+      <h3>Asociaciones y Multiplicidad</h3>
+      <p>Seleccioná la opción correcta.</p>
+    </div>
+
+    <div class="pregunta-card" id="q4">
+      <div class="pregunta-texto"><span class="num-pregunta">4</span>&nbsp;¿Qué significa la multiplicidad <code>0..1</code> en una asociación?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q4',this,false)">a) Exactamente una instancia relacionada</button></li>
+        <li><button class="opcion-btn" onclick="responder('q4',this,true)">b) Ninguna o exactamente una instancia</button></li>
+        <li><button class="opcion-btn" onclick="responder('q4',this,false)">c) Una o más instancias</button></li>
+        <li><button class="opcion-btn" onclick="responder('q4',this,false)">d) Cero o más instancias sin límite</button></li>
+      </ul>
+      <div class="feedback" id="fb-q4"></div>
+    </div>
+
+    <div class="pregunta-card" id="q5">
+      <div class="pregunta-texto"><span class="num-pregunta">5</span>&nbsp;Si una asociación <strong>está dirigida</strong> desde Camión hacia Zorra, ¿qué implica esto?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q5',this,false)">a) Zorra conoce a Camión pero no al revés</button></li>
+        <li><button class="opcion-btn" onclick="responder('q5',this,false)">b) Ambas clases se conocen mutuamente</button></li>
+        <li><button class="opcion-btn" onclick="responder('q5',this,true)">c) Camión conoce a Zorra, pero Zorra no conoce a Camión</button></li>
+        <li><button class="opcion-btn" onclick="responder('q5',this,false)">d) Ninguna clase conoce a la otra</button></li>
+      </ul>
+      <div class="feedback" id="fb-q5"></div>
+    </div>
+
+    <div class="pregunta-card" id="q6">
+      <div class="pregunta-texto"><span class="num-pregunta">6</span>&nbsp;¿Para qué sirve una <strong>clase de asociación</strong>?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q6',this,false)">a) Para heredar de dos clases al mismo tiempo</button></li>
+        <li><button class="opcion-btn" onclick="responder('q6',this,true)">b) Para agregar atributos propios a una asociación</button></li>
+        <li><button class="opcion-btn" onclick="responder('q6',this,false)">c) Para indicar que la relación es opcional</button></li>
+        <li><button class="opcion-btn" onclick="responder('q6',this,false)">d) Para modelar dependencias entre paquetes</button></li>
+      </ul>
+      <div class="feedback" id="fb-q6"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 8 — AGREGACIONES
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="8">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-object-group me-2"></i>Agregaciones</div>
+      <div class="subtitulo-slide">Relación "es parte de" — diamante hueco</div>
+    </div>
+    <div class="badge-seccion">Slide 9 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro">
+      <div class="si-icon"><i class="fas fa-shapes"></i></div>
+      <div>
+        <h4>Forma especial de asociación</h4>
+        <p>La agregación especifica una relación <strong>"es parte de"</strong> entre el todo y sus partes. Se representa con un <strong>diamante hueco (◇)</strong> del lado del todo.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="diagrama-wrap animate__animated animate__fadeIn">
+          <svg viewBox="0 0 320 190" width="100%" style="max-width:340px;">
+            <!-- Curso - Alumno -->
+            <text x="10" y="16" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Un alumno es parte de un curso:</text>
+            <rect x="10" y="22" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="55" y="44" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12">Curso</text>
+            <!-- diamante hueco -->
+            <polygon points="100,40 112,33 124,40 112,47" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="124" y1="40" x2="200" y2="40" stroke="#1565a0" stroke-width="1.5"/>
+            <text x="165" y="32" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="9">1..*</text>
+            <rect x="200" y="22" width="90" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="245" y="44" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12">Alumno</text>
+
+            <!-- Polígono - Punto -->
+            <text x="10" y="100" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="10" font-style="italic">Un polígono está formado por puntos:</text>
+            <rect x="10" y="108" width="100" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="60" y="130" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Polígono</text>
+            <!-- diamante hueco -->
+            <polygon points="110,126 122,119 134,126 122,133" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="134" y1="126" x2="205" y2="126" stroke="#1565a0" stroke-width="1.5"/>
+            <text x="170" y="115" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="9">3..*</text>
+            <text x="170" y="143" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="8">{ordenados}</text>
+            <rect x="205" y="108" width="80" height="36" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="245" y="130" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12">Punto</text>
+            <text x="155" y="100" text-anchor="middle" fill="#e67e22" font-family="Lato,sans-serif" font-size="9" font-style="italic">está formado por</text>
+          </svg>
+          <figcaption>Figura 6: Ejemplos de agregaciones.</figcaption>
+        </div>
+      </div>
+      <div>
+        <div class="card-concepto">
+          <h5><i class="fas fa-circle-info"></i>Características de la agregación</h5>
+          <p>Las partes pueden <strong>existir independientemente</strong> del todo. Si se elimina el todo, las partes no necesariamente se destruyen.</p>
+          <p class="mt-2">Ejemplo: si se elimina un <em>Curso</em>, los <em>Alumnos</em> siguen existiendo.</p>
+        </div>
+        <div class="card-concepto mt-2">
+          <h5><i class="fas fa-list-check"></i>Se aplica todo lo de las asociaciones</h5>
+          <p>Nombre, dirección, multiplicidad y roles funcionan igual que en las asociaciones simples.</p>
+        </div>
+        <div class="nota mt-2">
+          <strong>Restricciones:</strong> La restricción <code>{ordenados}</code> indica que el orden de las partes es importante. Se pueden agregar otras restricciones entre llaves.
+        </div>
+        <div class="card-concepto mt-2">
+          <h5><i class="fas fa-diamond"></i>Símbolo</h5>
+          <p>Diamante <strong>hueco (vacío)</strong> del lado del todo. Si el diamante estuviera relleno, sería una composición.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 9 — COMPOSICIONES
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="9">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-gem me-2"></i>Composiciones</div>
+      <div class="subtitulo-slide">Pertenencia fuerte — diamante relleno</div>
+    </div>
+    <div class="badge-seccion">Slide 10 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="diagrama-wrap animate__animated animate__fadeIn">
+          <svg viewBox="0 0 320 260" width="100%" style="max-width:340px;">
+            <!-- Ventana -->
+            <text x="10" y="14" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="9" font-style="italic">Ventana compuesta por Slider, Barra, Panel:</text>
+            <rect x="105" y="18" width="100" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="155" y="38" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12">Ventana</text>
+            <!-- composición diamante relleno -->
+            <!-- slider -->
+            <line x1="105" y1="34" x2="50" y2="80" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="50,68 62,73 50,80 38,73" fill="#1565a0" stroke="#1565a0" stroke-width="1"/>
+            <text x="55" y="62" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="8">2</text>
+            <text x="10" y="76" fill="#888" font-family="Lato,sans-serif" font-size="8" font-style="italic">Scrollbar</text>
+            <rect x="10" y="82" width="80" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="50" y="102" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Slider</text>
+            <!-- barra -->
+            <line x1="155" y1="50" x2="155" y2="80" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="155,68 167,74 155,80 143,74" fill="#1565a0" stroke="#1565a0" stroke-width="1"/>
+            <text x="162" y="62" fill="#555" font-family="Source Code Pro,monospace" font-size="8">1</text>
+            <text x="125" y="76" fill="#888" font-family="Lato,sans-serif" font-size="8" font-style="italic">Título</text>
+            <rect x="110" y="82" width="80" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="150" y="102" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Barra</text>
+            <!-- panel -->
+            <line x1="205" y1="34" x2="260" y2="80" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="260,68 272,73 260,80 248,73" fill="#1565a0" stroke="#1565a0" stroke-width="1"/>
+            <text x="245" y="62" text-anchor="middle" fill="#555" font-family="Source Code Pro,monospace" font-size="8">1</text>
+            <text x="225" y="76" fill="#888" font-family="Lato,sans-serif" font-size="8" font-style="italic">Cuerpo</text>
+            <rect x="220" y="82" width="80" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="260" y="102" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Panel</text>
+
+            <!-- Factura -->
+            <text x="10" y="140" fill="#7f8c8d" font-family="Lato,sans-serif" font-size="9" font-style="italic">Factura compuesta por Cabezal y Líneas:</text>
+            <rect x="10" y="148" width="90" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="55" y="168" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Factura</text>
+            <!-- cabezal -->
+            <line x1="100" y1="160" x2="190" y2="148" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="100,152 112,155 100,162 88,157" fill="#1565a0" stroke="#1565a0" stroke-width="1"/>
+            <text x="148" y="143" fill="#555" font-family="Source Code Pro,monospace" font-size="8">1</text>
+            <rect x="190" y="136" width="90" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="235" y="156" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Cabezal</text>
+            <!-- linea -->
+            <line x1="100" y1="168" x2="190" y2="192" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="100,160 112,164 100,172 88,166" fill="#1565a0" stroke="#1565a0" stroke-width="1"/>
+            <text x="150" y="190" fill="#555" font-family="Source Code Pro,monospace" font-size="8">1..*</text>
+            <rect x="190" y="178" width="90" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="235" y="198" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Línea</text>
+          </svg>
+          <figcaption>Figura 7: Composiciones — Ventana y Factura.</figcaption>
+        </div>
+      </div>
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:12px;">Reglas de la Composición</h5>
+        <div class="card-concepto">
+          <h5><i class="fas fa-1"></i>No compartida</h5>
+          <p>La multiplicidad del compuesto del lado del todo <strong>nunca puede ser mayor que 1</strong>. Una <em>Línea</em> de factura no puede pertenecer a dos facturas.</p>
+        </div>
+        <div class="card-concepto">
+          <h5><i class="fas fa-2"></i>Ciclo de vida coincidente</h5>
+          <p>Las partes se eliminan junto con el todo. Si se borra la <em>Factura</em>, se borran todas sus <em>Líneas</em>.</p>
+        </div>
+        <div class="card-concepto">
+          <h5><i class="fas fa-3"></i>Remoción posible</h5>
+          <p>Se pueden remover partes, <strong>pero antes</strong> de que se elimine el todo.</p>
+        </div>
+        <div class="nota mt-2">
+          <strong>Diferencia clave con la agregación:</strong><br>
+          Agregación → diamante <strong>hueco</strong>, partes independientes<br>
+          Composición → diamante <strong>relleno</strong>, partes dependientes del todo
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 10 — QUIZ 3
+═══════════════════════════════════════════════════════ -->
+<div class="slide quiz-slide" data-slide="10">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-circle-question me-2"></i>Verificación de Conocimiento</div>
+      <div class="subtitulo-slide">Quiz 3 · Agregación y Composición</div>
+    </div>
+    <div class="badge-seccion">Quiz 3 / 5</div>
+  </div>
+  <div class="slide-body">
+    <div class="quiz-header">
+      <div class="quiz-icon"><i class="fas fa-gem"></i></div>
+      <h3>Agregación vs Composición</h3>
+      <p>Elegí la respuesta correcta.</p>
+    </div>
+
+    <div class="pregunta-card" id="q7">
+      <div class="pregunta-texto"><span class="num-pregunta">7</span>&nbsp;¿Cómo se representa una composición en UML?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q7',this,false)">a) Diamante hueco del lado del todo</button></li>
+        <li><button class="opcion-btn" onclick="responder('q7',this,true)">b) Diamante relleno del lado del compuesto</button></li>
+        <li><button class="opcion-btn" onclick="responder('q7',this,false)">c) Flecha punteada apuntando al todo</button></li>
+        <li><button class="opcion-btn" onclick="responder('q7',this,false)">d) Triángulo del lado de la parte</button></li>
+      </ul>
+      <div class="feedback" id="fb-q7"></div>
+    </div>
+
+    <div class="pregunta-card" id="q8">
+      <div class="pregunta-texto"><span class="num-pregunta">8</span>&nbsp;En una composición, ¿qué pasa con las partes cuando se elimina el todo?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q8',this,false)">a) Las partes siguen existiendo independientemente</button></li>
+        <li><button class="opcion-btn" onclick="responder('q8',this,true)">b) Las partes también se eliminan junto con el todo</button></li>
+        <li><button class="opcion-btn" onclick="responder('q8',this,false)">c) Las partes se transfieren a otro objeto</button></li>
+        <li><button class="opcion-btn" onclick="responder('q8',this,false)">d) Depende de la multiplicidad</button></li>
+      </ul>
+      <div class="feedback" id="fb-q8"></div>
+    </div>
+
+    <div class="pregunta-card" id="q9">
+      <div class="pregunta-texto"><span class="num-pregunta">9</span>&nbsp;¿Cuál es la diferencia principal entre agregación y composición?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q9',this,false)">a) La agregación usa línea punteada y la composición línea sólida</button></li>
+        <li><button class="opcion-btn" onclick="responder('q9',this,false)">b) Solo la composición puede tener multiplicidad</button></li>
+        <li><button class="opcion-btn" onclick="responder('q9',this,true)">c) En composición las partes no existen sin el todo; en agregación sí pueden</button></li>
+        <li><button class="opcion-btn" onclick="responder('q9',this,false)">d) No hay diferencia, son sinónimos</button></li>
+      </ul>
+      <div class="feedback" id="fb-q9"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 11 — GENERALIZACIÓN / HERENCIA
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="11">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-code-branch me-2"></i>Generalización y Especialización</div>
+      <div class="subtitulo-slide">Herencia entre clasificadores</div>
+    </div>
+    <div class="badge-seccion">Slide 12 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="card-concepto animate__animated animate__fadeIn">
+          <h5><i class="fas fa-sitemap"></i>¿Qué es la generalización?</h5>
+          <p>Define una relación de <strong>generalización-especialización</strong>. Entre clases, es la <em>herencia</em>. Se representa con una línea terminada en un <strong>triángulo</strong> del lado de la clase más general (la base).</p>
+        </div>
+        <div class="card-concepto">
+          <h5><i class="fas fa-share-nodes"></i>Qué hereda la subclase</h5>
+          <p>Las clases sucesoras <strong>comparten</strong> los atributos y operaciones de la clase base, y además <strong>agregan</strong> sus propios atributos y operaciones.</p>
+        </div>
+        <div class="nota">
+          <strong>Reglas:</strong><br>
+          • Las clases abstractas («abstract») solo se heredan, nunca se instancian.<br>
+          • Las clases concretas están diseñadas para tener instancias.<br>
+          • Una clase abstracta no puede ser subclase de una clase concreta.<br>
+          • Se cumple la afirmación: "un Círculo <em>es un</em> tipo de Figura".
+        </div>
+      </div>
+      <div>
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 340 300" width="100%" style="max-width:360px;">
+            <!-- Figura -->
+            <rect x="100" y="5" width="140" height="68" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="100" y1="25" x2="240" y2="25" stroke="#2e86c1" stroke-width="1"/>
+            <line x1="100" y1="52" x2="240" y2="52" stroke="#2e86c1" stroke-width="1"/>
+            <text x="170" y="19" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="12" font-weight="bold">Figura</text>
+            <text x="108" y="38" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Color, Posición...</text>
+            <text x="108" y="65" fill="#333" font-family="Source Code Pro,monospace" font-size="9">Mover(), Rotar()</text>
+
+            <!-- líneas a 2do nivel -->
+            <line x1="170" y1="73" x2="170" y2="88" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="50" y1="88" x2="290" y2="88" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="50" y1="88" x2="50" y2="100" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="170" y1="88" x2="170" y2="100" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="290" y1="88" x2="290" y2="100" stroke="#1565a0" stroke-width="1.5"/>
+            <!-- triángulo en figura -->
+            <polygon points="162,88 178,88 170,73" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+
+            <!-- Adimensional -->
+            <rect x="5" y="100" width="90" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="50" y="120" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Adimensional</text>
+            <!-- Unidimensional -->
+            <rect x="120" y="100" width="100" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="170" y="115" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Unidimensional</text>
+            <text x="128" y="126" fill="#333" font-family="Source Code Pro,monospace" font-size="8">Orientación</text>
+            <!-- Bidimensional -->
+            <rect x="238" y="100" width="95" height="32" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="285" y="115" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Bidimensional</text>
+            <text x="244" y="126" fill="#333" font-family="Source Code Pro,monospace" font-size="8">Tipo relleno</text>
+
+            <!-- Nivel 3 -->
+            <!-- Punto -->
+            <line x1="50" y1="132" x2="50" y2="145" stroke="#1565a0" stroke-width="1.2"/>
+            <polygon points="44,145 56,145 50,132" fill="white" stroke="#1565a0" stroke-width="1.2"/>
+            <rect x="15" y="148" width="70" height="28" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="50" y="163" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Punto</text>
+            <text x="18" y="173" fill="#333" font-family="Source Code Pro,monospace" font-size="8">Dibujar()</text>
+
+            <!-- Arco, Línea, Spline -->
+            <line x1="170" y1="132" x2="170" y2="148" stroke="#1565a0" stroke-width="1.2"/>
+            <polygon points="164,148 176,148 170,132" fill="white" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="95" y1="148" x2="245" y2="148" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="95" y1="148" x2="95" y2="160" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="170" y1="148" x2="170" y2="160" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="245" y1="148" x2="245" y2="160" stroke="#1565a0" stroke-width="1.2"/>
+            <rect x="65" y="160" width="60" height="26" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="95" y="177" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Arco</text>
+            <rect x="138" y="160" width="64" height="26" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="170" y="177" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Línea</text>
+            <rect x="212" y="160" width="66" height="26" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="245" y="177" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Spline</text>
+
+            <!-- Círculo, Polígono -->
+            <line x1="285" y1="132" x2="285" y2="148" stroke="#1565a0" stroke-width="1.2"/>
+            <polygon points="279,148 291,148 285,132" fill="white" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="245" y1="148" x2="325" y2="148" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="247" y1="148" x2="247" y2="160" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="320" y1="148" x2="320" y2="160" stroke="#1565a0" stroke-width="1.2"/>
+            <rect x="215" y="220" width="70" height="26" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="250" y="237" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Círculo</text>
+            <rect x="290" y="220" width="75" height="26" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="327" y="237" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Polígono</text>
+            <line x1="250" y1="160" x2="250" y2="220" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="327" y1="160" x2="327" y2="220" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="250" y1="160" x2="327" y2="160" stroke="#1565a0" stroke-width="1.2"/>
+            <rect x="215" y="160" width="70" height="24" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="250" y="176" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Círculo</text>
+            <rect x="291" y="160" width="74" height="24" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="328" y="176" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="9">Polígono</text>
+          </svg>
+          <figcaption>Figura 8: Jerarquía de herencia — Figura y subclases.</figcaption>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 12 — HERENCIA MÚLTIPLE
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="12">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-network-wired me-2"></i>Herencia Múltiple y Alternativas</div>
+      <div class="subtitulo-slide">Composición y delegación como solución</div>
+    </div>
+    <div class="badge-seccion">Slide 13 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Herencia múltiple</h5>
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 280 200" width="100%" style="max-width:300px;">
+            <rect x="85" y="5" width="110" height="30" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="140" y="24" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Vehículo</text>
+            <line x1="140" y1="35" x2="140" y2="48" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="65" y1="48" x2="215" y2="48" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="65" y1="48" x2="65" y2="60" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="215" y1="48" x2="215" y2="60" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="132,48 148,48 140,35" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <rect x="5" y="60" width="120" height="30" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="65" y="79" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Vehículo acuático</text>
+            <rect x="155" y="60" width="120" height="30" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="215" y="79" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Vehículo terrestre</text>
+            <!-- Vehículo anfibio hereda de ambos -->
+            <line x1="65" y1="90" x2="65" y2="135" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="215" y1="90" x2="215" y2="135" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="65" y1="135" x2="215" y2="135" stroke="#1565a0" stroke-width="1.5"/>
+            <line x1="140" y1="135" x2="140" y2="148" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="132,148 148,148 140,135" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <rect x="80" y="150" width="120" height="30" rx="2" fill="#dbeeff" stroke="#2e86c1" stroke-width="2"/>
+            <text x="140" y="168" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="10" font-weight="bold">Vehículo anfibio</text>
+            <!-- Barco, Automóvil -->
+            <rect x="5" y="135" width="55" height="26" rx="2" fill="white" stroke="#aed6f1" stroke-width="1"/>
+            <text x="32" y="152" text-anchor="middle" fill="#5dade2" font-family="Source Code Pro,monospace" font-size="9">Barco</text>
+            <rect x="220" y="135" width="55" height="26" rx="2" fill="white" stroke="#aed6f1" stroke-width="1"/>
+            <text x="247" y="152" text-anchor="middle" fill="#5dade2" font-family="Source Code Pro,monospace" font-size="9">Automóvil</text>
+          </svg>
+          <figcaption>Figura 9: Herencia múltiple — Vehículo anfibio.</figcaption>
+        </div>
+      </div>
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Alternativa: Composición + Delegación</h5>
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 310 200" width="100%" style="max-width:330px;">
+            <rect x="90" y="5" width="80" height="28" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <text x="130" y="22" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Animal</text>
+            <line x1="130" y1="33" x2="130" y2="50" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="122,50 138,50 130,33" fill="white" stroke="#1565a0" stroke-width="1.5"/>
+            <!-- Murciélago hereda de Animal -->
+            <rect x="75" y="50" width="110" height="46" rx="2" fill="#dbeeff" stroke="#2e86c1" stroke-width="2"/>
+            <line x1="75" y1="68" x2="185" y2="68" stroke="#2e86c1" stroke-width="1"/>
+            <text x="130" y="63" text-anchor="middle" fill="#0d3b5e" font-family="Source Code Pro,monospace" font-size="11" font-weight="bold">Murciélago</text>
+            <text x="82" y="82" fill="#333" font-family="Source Code Pro,monospace" font-size="8">Volar() ⇒ volador.Volar()</text>
+            <text x="82" y="92" fill="#333" font-family="Source Code Pro,monospace" font-size="8">Mamar() ⇒ mamífero.Mamar()</text>
+            <!-- composición con Volador -->
+            <line x1="75" y1="73" x2="25" y2="130" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="20,120 30,120 25,130 15,128" fill="#1565a0" stroke="#1565a0" stroke-width="1"/>
+            <rect x="5" y="130" width="80" height="38" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="5" y1="148" x2="85" y2="148" stroke="#2e86c1" stroke-width="1"/>
+            <text x="45" y="143" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Volador</text>
+            <text x="12" y="162" fill="#333" font-family="Source Code Pro,monospace" font-size="8">Volar()</text>
+            <!-- composición con Mamífero -->
+            <line x1="185" y1="73" x2="240" y2="130" stroke="#1565a0" stroke-width="1.5"/>
+            <polygon points="235,120 245,120 240,130 230,128" fill="#1565a0" stroke="#1565a0" stroke-width="1"/>
+            <rect x="225" y="130" width="80" height="38" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="225" y1="148" x2="305" y2="148" stroke="#2e86c1" stroke-width="1"/>
+            <text x="265" y="143" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Mamífero</text>
+            <text x="232" y="162" fill="#333" font-family="Source Code Pro,monospace" font-size="8">Mamar()</text>
+          </svg>
+          <figcaption>Figura 10: Composición + delegación como alternativa.</figcaption>
+        </div>
+        <div class="nota">
+          <strong>¿Cuándo usar composición?</strong> Cuando el lenguaje no soporta herencia múltiple (Java, C#). Murciélago <em>delega</em> Volar() a su instancia de Volador y Mamar() a su instancia de Mamífero.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 13 — QUIZ 4
+═══════════════════════════════════════════════════════ -->
+<div class="slide quiz-slide" data-slide="13">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-circle-question me-2"></i>Verificación de Conocimiento</div>
+      <div class="subtitulo-slide">Quiz 4 · Herencia y Generalización</div>
+    </div>
+    <div class="badge-seccion">Quiz 4 / 5</div>
+  </div>
+  <div class="slide-body">
+    <div class="quiz-header">
+      <div class="quiz-icon"><i class="fas fa-code-branch"></i></div>
+      <h3>Herencia y Clases Abstractas</h3>
+      <p>Seleccioná la respuesta correcta.</p>
+    </div>
+
+    <div class="pregunta-card" id="q10">
+      <div class="pregunta-texto"><span class="num-pregunta">10</span>&nbsp;¿Cuál es una regla válida sobre las <strong>clases abstractas</strong>?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q10',this,false)">a) Pueden tener instancias propias</button></li>
+        <li><button class="opcion-btn" onclick="responder('q10',this,true)">b) Están diseñadas solo para ser heredadas, nunca instanciadas</button></li>
+        <li><button class="opcion-btn" onclick="responder('q10',this,false)">c) Pueden ser subclase de cualquier clase concreta</button></li>
+        <li><button class="opcion-btn" onclick="responder('q10',this,false)">d) No pueden tener operaciones</button></li>
+      </ul>
+      <div class="feedback" id="fb-q10"></div>
+    </div>
+
+    <div class="pregunta-card" id="q11">
+      <div class="pregunta-texto"><span class="num-pregunta">11</span>&nbsp;¿Cuál es la ventaja de usar <strong>composición + delegación</strong> en lugar de herencia múltiple?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q11',this,false)">a) Es más eficiente en tiempo de ejecución</button></li>
+        <li><button class="opcion-btn" onclick="responder('q11',this,false)">b) Permite más multiplicidad en las relaciones</button></li>
+        <li><button class="opcion-btn" onclick="responder('q11',this,true)">c) Es una solución para lenguajes que no soportan herencia múltiple</button></li>
+        <li><button class="opcion-btn" onclick="responder('q11',this,false)">d) Elimina la necesidad de clases abstractas</button></li>
+      </ul>
+      <div class="feedback" id="fb-q11"></div>
+    </div>
+
+    <div class="pregunta-card" id="q12">
+      <div class="pregunta-texto"><span class="num-pregunta">12</span>&nbsp;¿Cómo se representa la generalización/herencia en UML?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q12',this,false)">a) Flecha punteada apuntando a la subclase</button></li>
+        <li><button class="opcion-btn" onclick="responder('q12',this,false)">b) Diamante relleno del lado de la subclase</button></li>
+        <li><button class="opcion-btn" onclick="responder('q12',this,true)">c) Línea con triángulo apuntando a la clase más general (base)</button></li>
+        <li><button class="opcion-btn" onclick="responder('q12',this,false)">d) Línea doble entre las dos clases</button></li>
+      </ul>
+      <div class="feedback" id="fb-q12"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 14 — DEPENDENCIAS
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="14">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-arrow-right-arrow-left me-2"></i>Dependencias y Paquetes</div>
+      <div class="subtitulo-slide">Relaciones de impacto entre clasificadores</div>
+    </div>
+    <div class="badge-seccion">Slide 15 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro">
+      <div class="si-icon"><i class="fas fa-plug"></i></div>
+      <div>
+        <h4>¿Qué es una dependencia?</h4>
+        <p>Modela que un cambio en el <strong>elemento independiente</strong> puede afectar al <strong>elemento dependiente</strong>. Se representa con una <em>flecha punteada</em> apuntando al elemento independiente.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Estereotipos de dependencia</h5>
+        <table class="vis-table mb-3">
+          <tr>
+            <td style="font-size:0.8rem;padding:6px 8px;white-space:nowrap;">«use»</td>
+            <td>La clase dependiente tiene atributos, parámetros o variables locales que son instancias de la clase independiente.</td>
+          </tr>
+          <tr>
+            <td style="font-size:0.8rem;padding:6px 8px;white-space:nowrap;">«create»</td>
+            <td>La clase dependiente <strong>crea instancias</strong> de la clase independiente.</td>
+          </tr>
+          <tr>
+            <td style="font-size:0.8rem;padding:6px 8px;white-space:nowrap;">«call»</td>
+            <td>Una operación de la clase dependiente <strong>invoca</strong> una operación de la clase independiente.</td>
+          </tr>
+        </table>
+        <div class="nota">
+          Los paquetes se representan con un rectángulo con nombre y una "solapa" en la esquina superior izquierda con el estereotipo «package».
+        </div>
+      </div>
+      <div>
+        <h5 style="font-family:'Raleway',sans-serif;color:var(--azul-medio);font-weight:700;margin-bottom:10px;">Patrón MVC — Dependencias entre paquetes</h5>
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 300 200" width="100%" style="max-width:320px;">
+            <!-- Model -->
+            <rect x="95" y="5" width="110" height="55" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <rect x="95" y="5" width="30" height="16" rx="2" fill="white" stroke="#2e86c1" stroke-width="1"/>
+            <text x="96" y="14" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="7">«package»</text>
+            <text x="150" y="42" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="14" font-weight="800">Model</text>
+            <!-- View -->
+            <rect x="5" y="135" width="110" height="55" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <rect x="5" y="135" width="30" height="16" rx="2" fill="white" stroke="#2e86c1" stroke-width="1"/>
+            <text x="6" y="144" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="7">«package»</text>
+            <text x="60" y="172" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="13" font-weight="700">View</text>
+            <!-- Controller -->
+            <rect x="185" y="135" width="110" height="55" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <rect x="185" y="135" width="30" height="16" rx="2" fill="white" stroke="#2e86c1" stroke-width="1"/>
+            <text x="186" y="144" fill="#7f8c8d" font-family="Source Code Pro,monospace" font-size="7">«package»</text>
+            <text x="240" y="172" text-anchor="middle" fill="#0d3b5e" font-family="Raleway,sans-serif" font-size="13" font-weight="700">Controller</text>
+            <!-- Flechas punteadas -->
+            <!-- View -> Model -->
+            <line x1="85" y1="145" x2="118" y2="60" stroke="#1565a0" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <polygon points="118,60 110,70 120,72" fill="#1565a0"/>
+            <!-- Controller -> Model -->
+            <line x1="215" y1="145" x2="182" y2="60" stroke="#1565a0" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <polygon points="182,60 180,72 190,70" fill="#1565a0"/>
+            <!-- View <-> Controller -->
+            <line x1="115" y1="163" x2="185" y2="163" stroke="#1565a0" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <polygon points="185,163 174,158 174,168" fill="#1565a0"/>
+            <polygon points="115,163 126,158 126,168" fill="#1565a0"/>
+          </svg>
+          <figcaption>Figura 11: Patrón MVC — dependencias entre paquetes.</figcaption>
+        </div>
+        <div class="card-concepto">
+          <h5><i class="fas fa-diagram-project"></i>¿Qué es MVC?</h5>
+          <p><strong>Model:</strong> estado de la aplicación. <strong>View:</strong> muestra datos del modelo. <strong>Controller:</strong> procesa acciones del usuario y actualiza Model o View.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 15 — ELEMENTOS DERIVADOS
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="15">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-calculator me-2"></i>Elementos Derivados</div>
+      <div class="subtitulo-slide">Atributos y relaciones calculadas</div>
+    </div>
+    <div class="badge-seccion">Slide 16 / 19</div>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div>
+        <div class="card-concepto animate__animated animate__fadeIn">
+          <h5><i class="fas fa-function"></i>¿Qué es un elemento derivado?</h5>
+          <p>Un elemento que se puede <strong>calcular</strong> a partir de otro, pero se muestra por claridad o se incluye por razones de diseño. Se indica con <code>/</code> antes del nombre.</p>
+        </div>
+        <div class="code-block">
+<span class="com">// En clase Persona:</span>
+<span class="kw">Fecha de nacimiento</span> : Date
+<span class="sym">/</span><span class="kw">Edad</span> : int
+<span class="com">// Restricción:</span>
+{<span class="val">Edad = Hoy - Fecha de nacimiento</span>}
+        </div>
+        <div class="nota mt-3">
+          <strong>Relación derivada:</strong> La relación <code>/trabaja para</code> entre Persona y Empresa se puede calcular navegando por: <em>Persona → Departamento → División → Empresa</em>. No agrega información nueva pero puede incluirse por claridad.
+        </div>
+        <div class="card-concepto mt-2">
+          <h5><i class="fas fa-info-circle"></i>¿Cuándo usarlos?</h5>
+          <p>Cuando un valor o relación puede deducirse, pero mostrarlo explícitamente mejora la comprensión del modelo o es relevante para el diseño.</p>
+        </div>
+      </div>
+      <div>
+        <div class="diagrama-wrap">
+          <svg viewBox="0 0 340 260" width="100%" style="max-width:360px;">
+            <!-- Restricción -->
+            <text x="10" y="12" fill="#e67e22" font-family="Source Code Pro,monospace" font-size="9">{Edad = Hoy - Fecha de nacimiento}</text>
+            <!-- Persona -->
+            <rect x="5" y="18" width="110" height="58" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="5" y1="36" x2="115" y2="36" stroke="#2e86c1" stroke-width="1"/>
+            <text x="60" y="30" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Persona</text>
+            <text x="12" y="50" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Nombre</text>
+            <text x="12" y="62" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Fecha de nacimiento</text>
+            <text x="12" y="74" fill="#e67e22" font-family="Source Code Pro,monospace" font-size="9">/Edad</text>
+
+            <!-- relación /trabaja para (derivada) -->
+            <text x="130" y="26" fill="#888" font-family="Source Code Pro,monospace" font-size="8">Empleado</text>
+            <text x="135" y="42" fill="#e67e22" font-family="Source Code Pro,monospace" font-size="9">/trabaja para</text>
+            <text x="220" y="26" fill="#888" font-family="Source Code Pro,monospace" font-size="8">Empleador</text>
+            <line x1="115" y1="38" x2="230" y2="38" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4"/>
+
+            <!-- Empresa -->
+            <rect x="230" y="18" width="100" height="50" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="230" y1="36" x2="330" y2="36" stroke="#2e86c1" stroke-width="1"/>
+            <text x="280" y="30" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="11">Empresa</text>
+            <text x="237" y="50" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Nombre</text>
+            <text x="237" y="62" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Dirección</text>
+
+            <!-- Departamento -->
+            <rect x="130" y="110" width="100" height="40" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="130" y1="126" x2="230" y2="126" stroke="#2e86c1" stroke-width="1"/>
+            <text x="180" y="120" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Departamento</text>
+            <text x="137" y="142" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Nombre</text>
+
+            <!-- División -->
+            <rect x="230" y="110" width="100" height="40" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="230" y1="126" x2="330" y2="126" stroke="#2e86c1" stroke-width="1"/>
+            <text x="280" y="120" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">División</text>
+            <text x="237" y="142" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Nombre</text>
+
+            <!-- Edificio -->
+            <rect x="5" y="110" width="90" height="40" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="5" y1="126" x2="95" y2="126" stroke="#2e86c1" stroke-width="1"/>
+            <text x="50" y="120" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Edificio</text>
+            <text x="12" y="142" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Ubicación</text>
+
+            <!-- Oficina -->
+            <rect x="5" y="200" width="90" height="40" rx="2" fill="white" stroke="#2e86c1" stroke-width="1.5"/>
+            <line x1="5" y1="216" x2="95" y2="216" stroke="#2e86c1" stroke-width="1"/>
+            <text x="50" y="210" text-anchor="middle" fill="#2e86c1" font-family="Source Code Pro,monospace" font-size="10">Oficina</text>
+            <text x="12" y="230" fill="#555" font-family="Source Code Pro,monospace" font-size="9">Piso / Número</text>
+
+            <!-- conexiones -->
+            <line x1="60" y1="76" x2="60" y2="100" stroke="#1565a0" stroke-width="1.2"/>
+            <text x="68" y="92" fill="#555" font-family="Source Code Pro,monospace" font-size="8">1..*</text>
+            <line x1="60" y1="100" x2="130" y2="130" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="180" y1="150" x2="180" y2="175" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="180" y1="175" x2="230" y2="130" stroke="#1565a0" stroke-width="1.2"/>
+            <line x1="280" y1="68" x2="280" y2="110" stroke="#1565a0" stroke-width="1.2"/>
+            <polygon points="4" fill="#1565a0"/>
+            <line x1="50" y1="150" x2="50" y2="200" stroke="#1565a0" stroke-width="1.2"/>
+            <text x="12" y="178" fill="#e67e22" font-family="Source Code Pro,monospace" font-size="8">/ocupa</text>
+          </svg>
+          <figcaption>Figura 12: Elementos derivados en un diagrama de clases.</figcaption>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 16 — QUIZ 5
+═══════════════════════════════════════════════════════ -->
+<div class="slide quiz-slide" data-slide="16">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-circle-question me-2"></i>Verificación de Conocimiento</div>
+      <div class="subtitulo-slide">Quiz 5 · Dependencias y Elementos Derivados</div>
+    </div>
+    <div class="badge-seccion">Quiz 5 / 5</div>
+  </div>
+  <div class="slide-body">
+    <div class="quiz-header">
+      <div class="quiz-icon"><i class="fas fa-calculator"></i></div>
+      <h3>Dependencias y Elementos Derivados</h3>
+      <p>Último quiz antes de los ejercicios — ¡a fondo!</p>
+    </div>
+
+    <div class="pregunta-card" id="q13">
+      <div class="pregunta-texto"><span class="num-pregunta">13</span>&nbsp;¿Cómo se indica que un atributo o relación es <strong>derivado</strong> en UML?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q13',this,false)">a) Agregando el símbolo <code>*</code> antes del nombre</button></li>
+        <li><button class="opcion-btn" onclick="responder('q13',this,true)">b) Agregando el símbolo <code>/</code> antes del nombre</button></li>
+        <li><button class="opcion-btn" onclick="responder('q13',this,false)">c) Usando línea punteada para el atributo</button></li>
+        <li><button class="opcion-btn" onclick="responder('q13',this,false)">d) Con el estereotipo «derived»</button></li>
+      </ul>
+      <div class="feedback" id="fb-q13"></div>
+    </div>
+
+    <div class="pregunta-card" id="q14">
+      <div class="pregunta-texto"><span class="num-pregunta">14</span>&nbsp;¿Qué estereotipo de dependencia se usa cuando una clase <strong>crea instancias</strong> de otra?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q14',this,false)">a) «use»</button></li>
+        <li><button class="opcion-btn" onclick="responder('q14',this,true)">b) «create»</button></li>
+        <li><button class="opcion-btn" onclick="responder('q14',this,false)">c) «call»</button></li>
+        <li><button class="opcion-btn" onclick="responder('q14',this,false)">d) «instance»</button></li>
+      </ul>
+      <div class="feedback" id="fb-q14"></div>
+    </div>
+
+    <div class="pregunta-card" id="q15">
+      <div class="pregunta-texto"><span class="num-pregunta">15</span>&nbsp;En el patrón MVC, ¿cuál paquete representa el <strong>estado de la aplicación</strong>?</div>
+      <ul class="opciones">
+        <li><button class="opcion-btn" onclick="responder('q15',this,false)">a) View</button></li>
+        <li><button class="opcion-btn" onclick="responder('q15',this,false)">b) Controller</button></li>
+        <li><button class="opcion-btn" onclick="responder('q15',this,true)">c) Model</button></li>
+        <li><button class="opcion-btn" onclick="responder('q15',this,false)">d) Repository</button></li>
+      </ul>
+      <div class="feedback" id="fb-q15"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 17 — EJERCICIOS PRÁCTICOS
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="17">
+  <div class="slide-header">
+    <div>
+      <div class="titulo-slide"><i class="fas fa-pencil-ruler me-2"></i>Ejercicios Prácticos</div>
+      <div class="subtitulo-slide">Modelado con Diagramas de Clases UML</div>
+    </div>
+    <div class="badge-seccion">Ejercicios</div>
+  </div>
+  <div class="slide-body">
+    <div class="section-intro mb-3">
+      <div class="si-icon"><i class="fas fa-dumbbell"></i></div>
+      <div>
+        <h4>Hora de practicar</h4>
+        <p>Resolvé los siguientes ejercicios utilizando los conceptos aprendidos. Podés usar papel, una herramienta online (draw.io, Lucidchart) o cualquier editor UML.</p>
+      </div>
+    </div>
+
+    <div class="ejercicio-card animate__animated animate__fadeInUp">
+      <div class="ej-num">Ejercicio 1 — Asociaciones y Multiplicidad</div>
+      <h5><i class="fas fa-graduation-cap me-2" style="color:var(--celeste)"></i>Sistema de Universidad</h5>
+      <p>Modelá el siguiente escenario con un diagrama de clases UML:</p>
+      <ul style="margin: 10px 0 0 18px; font-size:0.88rem; color:#3a4f62; line-height:1.9">
+        <li>Un <strong>Estudiante</strong> tiene nombre, cédula y email.</li>
+        <li>Un <strong>Curso</strong> tiene nombre, código y créditos.</li>
+        <li>Un estudiante puede <strong>inscribirse en varios cursos</strong> (0 o más), y un curso puede tener muchos estudiantes inscritos (1 o más).</li>
+        <li>La inscripción tiene su propia fecha y estado (aprobado/pendiente). Modelá esto correctamente.</li>
+        <li>Un <strong>Docente</strong> tiene nombre y puede dictar entre 1 y 4 cursos. Un curso tiene exactamente un docente.</li>
+      </ul>
+      <div class="pistas">
+        <strong><i class="fas fa-lightbulb me-1"></i>Pistas:</strong>
+        <ul>
+          <li>¿Necesitás una clase de asociación? ¿Dónde van los atributos de la inscripción?</li>
+          <li>Identificá los roles en las asociaciones donde no sean evidentes.</li>
+          <li>No olvides indicar la multiplicidad en ambos extremos.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ejercicio-card animate__animated animate__fadeInUp" style="animation-delay:0.1s">
+      <div class="ej-num">Ejercicio 2 — Herencia y Clases Abstractas</div>
+      <h5><i class="fas fa-shapes me-2" style="color:var(--celeste)"></i>Jerarquía de Vehículos</h5>
+      <p>Diseñá una jerarquía de herencia para el siguiente sistema de transporte:</p>
+      <ul style="margin: 10px 0 0 18px; font-size:0.88rem; color:#3a4f62; line-height:1.9">
+        <li>Existe una clase abstracta <strong>Vehículo</strong> con atributos: matrícula, color, año. Y operaciones: arrancar(), detener().</li>
+        <li><strong>VehículoTerrestre</strong> agrega: ruedas, tipoCombustible. Operación: circular().</li>
+        <li><strong>VehículoAcuático</strong> agrega: calado, tipoCasco. Operación: navegar().</li>
+        <li>De VehículoTerrestre heredan: <strong>Auto</strong> (nroPuertas), <strong>Camión</strong> (tonelaje, nroPasajeros).</li>
+        <li>De VehículoAcuático hereda: <strong>Barco</strong> (capacidadCarga).</li>
+        <li>Indicá qué clases son abstractas y cuáles concretas.</li>
+      </ul>
+      <div class="pistas">
+        <strong><i class="fas fa-lightbulb me-1"></i>Pistas:</strong>
+        <ul>
+          <li>Usá el estereotipo «abstract» para las clases abstractas.</li>
+          <li>¿Qué operaciones se heredan a todas las subclases?</li>
+          <li>Verificá que se cumpla la relación "es un tipo de" en cada nivel.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ejercicio-card animate__animated animate__fadeInUp" style="animation-delay:0.2s">
+      <div class="ej-num">Ejercicio 3 — Composición y Agregación</div>
+      <h5><i class="fas fa-building me-2" style="color:var(--celeste)"></i>Sistema de Pedidos</h5>
+      <p>Modelá el siguiente sistema de pedidos de una tienda:</p>
+      <ul style="margin: 10px 0 0 18px; font-size:0.88rem; color:#3a4f62; line-height:1.9">
+        <li>Un <strong>Pedido</strong> tiene número, fecha y estado.</li>
+        <li>Todo pedido está compuesto por al menos 1 y hasta 50 <strong>ÍtemPedido</strong> (cantidad, precioUnitario). Los ítems no existen sin el pedido.</li>
+        <li>Cada ÍtemPedido referencia a un <strong>Producto</strong> (nombre, precio, stock). Un producto puede aparecer en muchos ítems.</li>
+        <li>Un <strong>Cliente</strong> puede tener 0 o más pedidos. Un pedido pertenece a exactamente un cliente.</li>
+        <li>El pedido tiene un atributo derivado <code>/total</code> que se calcula sumando cantidad × precioUnitario de cada ítem.</li>
+      </ul>
+      <div class="pistas">
+        <strong><i class="fas fa-lightbulb me-1"></i>Pistas:</strong>
+        <ul>
+          <li>¿La relación entre Pedido e ÍtemPedido es composición o agregación? ¿Por qué?</li>
+          <li>¿La relación entre ÍtemPedido y Producto es composición o asociación?</li>
+          <li>Indicá el atributo derivado con la restricción de cálculo.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ejercicio-card animate__animated animate__fadeInUp" style="animation-delay:0.3s">
+      <div class="ej-num">Ejercicio 4 — Integrador</div>
+      <h5><i class="fas fa-hospital me-2" style="color:var(--celeste)"></i>Sistema de Clínica Médica</h5>
+      <p>Diseñá un diagrama completo para un sistema de gestión de una clínica:</p>
+      <ul style="margin: 10px 0 0 18px; font-size:0.88rem; color:#3a4f62; line-height:1.9">
+        <li>Existe una clase abstracta <strong>Persona</strong> (nombre, cédula, fechaNacimiento, /edad).</li>
+        <li><strong>Paciente</strong> y <strong>Médico</strong> heredan de Persona. Médico tiene especialidad y matrícula.</li>
+        <li>Un médico puede tener 0 o más <strong>Turnos</strong> (fecha, hora, estado). Un turno tiene exactamente un médico y un paciente.</li>
+        <li>Una <strong>HistoriaClínica</strong> pertenece a un paciente (composición). Contiene 1 o más <strong>Consulta</strong>s (fecha, diagnóstico, tratamiento).</li>
+        <li>Modelá la dependencia del módulo de reportes hacia los paquetes de pacientes y turnos con estereotipos apropiados.</li>
+      </ul>
+      <div class="pistas">
+        <strong><i class="fas fa-lightbulb me-1"></i>Pistas:</strong>
+        <ul>
+          <li>Identificá todas las visibilidades (+ público, - privado, # protegido).</li>
+          <li>¿Cuántas relaciones de composición hay? ¿De agregación?</li>
+          <li>¿El atributo /edad dónde va y cómo se calcula?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 18 — CIERRE / RESUMEN
+═══════════════════════════════════════════════════════ -->
+<div class="slide cierre-slide" data-slide="18">
+  <div class="cierre-content animate__animated animate__fadeIn">
+    <div style="font-size:3rem;margin-bottom:16px;">🎓</div>
+    <h2>¡Excelente trabajo con <span>UML!</span></h2>
+    <p>Completaste el recorrido por los Diagramas de Clases UML. Estos son los conceptos que dominás ahora:</p>
+    <div class="conceptos-finales">
+      <div class="cf-chip"><i class="fas fa-square me-1"></i>Clases y Atributos</div>
+      <div class="cf-chip"><i class="fas fa-eye me-1"></i>Visibilidad</div>
+      <div class="cf-chip"><i class="fas fa-arrows-left-right me-1"></i>Asociaciones</div>
+      <div class="cf-chip"><i class="fas fa-hashtag me-1"></i>Multiplicidad</div>
+      <div class="cf-chip"><i class="fas fa-shapes me-1"></i>Agregación</div>
+      <div class="cf-chip"><i class="fas fa-gem me-1"></i>Composición</div>
+      <div class="cf-chip"><i class="fas fa-code-branch me-1"></i>Herencia</div>
+      <div class="cf-chip"><i class="fas fa-network-wired me-1"></i>Herencia Múltiple</div>
+      <div class="cf-chip"><i class="fas fa-plug me-1"></i>Dependencias</div>
+      <div class="cf-chip"><i class="fas fa-calculator me-1"></i>Elementos Derivados</div>
+      <div class="cf-chip"><i class="fas fa-diagram-project me-1"></i>Paquetes · MVC</div>
+      <div class="cf-chip"><i class="fas fa-star me-1"></i>Clases Abstractas</div>
+    </div>
+    <div class="portada-divider" style="margin-top:28px;"></div>
+    <p style="font-size:0.85rem;margin-top:16px;opacity:0.6;">Basado en UML 2.5.1 — Técnicas y Herramientas · Sección 2.3</p>
+  </div>
+</div>
+
+</div><!-- /presentation -->
+
+<!-- ─── NAV BAR ─── -->
+<div id="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>
+    <i class="fas fa-chevron-left"></i> Anterior
+  </button>
+
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div class="toc-dots" id="toc-dots"></div>
+    <div id="progress-info">Diapositiva <span id="slide-num">1</span> de <span id="slide-total">19</span></div>
+  </div>
+
+  <button class="nav-btn primary" id="btn-next" onclick="navigate(1)">
+    Siguiente <i class="fas fa-chevron-right"></i>
+  </button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+  const TOTAL = document.querySelectorAll('.slide').length;
+  let current = 0;
+
+  // Build TOC dots
+  const dotsWrap = document.getElementById('toc-dots');
+  const quizSlides = [4,7,10,13,16];
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (quizSlides.includes(i) ? ' quiz-dot' : '') + (i === 0 ? ' active' : '');
+    d.title = 'Ir a diapositiva ' + (i + 1);
+    d.onclick = () => goTo(i);
+    dotsWrap.appendChild(d);
+  }
+  document.getElementById('slide-total').textContent = TOTAL;
+
+  function goTo(n) {
+    document.querySelectorAll('.slide')[current].classList.remove('active');
+    document.querySelectorAll('.dot')[current].classList.remove('active');
+    current = Math.max(0, Math.min(TOTAL - 1, n));
+    const slide = document.querySelectorAll('.slide')[current];
+    slide.classList.add('active');
+    // Re-trigger animate
+    slide.querySelectorAll('.animate__animated').forEach(el => {
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = '';
+    });
+    document.querySelectorAll('.dot')[current].classList.add('active');
+    document.getElementById('slide-num').textContent = current + 1;
+    document.getElementById('btn-prev').disabled = current === 0;
+    document.getElementById('btn-next').disabled = current === TOTAL - 1;
+    document.getElementById('progress-bar').style.width = ((current / (TOTAL - 1)) * 100) + '%';
+  }
+
+  function navigate(dir) { goTo(current + dir); }
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+  });
+
+  // Touch swipe
+  let touchX = 0;
+  document.addEventListener('touchstart', e => touchX = e.touches[0].clientX);
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+  });
+
+  // Init
+  goTo(0);
+
+  // ─── QUIZ LOGIC ───
+  const respuestas_correctas = {
+    q1: 'Visibilidad protegida: permite acceso desde la misma clase y sus descendientes (subclases).',
+    q2: 'El nombre es obligatorio; las secciones de atributos y operaciones son opcionales.',
+    q3: 'El estereotipo «interface» indica que el clasificador es una interfaz, no una clase.',
+    q4: '0..1 significa "ninguna o exactamente una instancia" — se usa para asociaciones opcionales.',
+    q5: 'La dirección indica que Camión "conoce" a Zorra, pero la Zorra no tiene referencia al Camión.',
+    q6: 'La clase de asociación permite agregar atributos propios a la relación (cargo, salario, etc.).',
+    q7: 'El diamante relleno (◆) representa composición; el hueco (◇) representa agregación.',
+    q8: 'En composición, el ciclo de vida de las partes está ligado al todo. Se eliminan juntos.',
+    q9: 'La diferencia clave es el ciclo de vida: en composición las partes no existen sin el todo.',
+    q10: 'Las clases abstractas (estereotipo «abstract») nunca se instancian; solo se heredan.',
+    q11: 'Composición + delegación es la alternativa en lenguajes como Java o C# que no soportan herencia múltiple.',
+    q12: 'La generalización se representa con una línea terminada en triángulo apuntando a la clase base.',
+    q13: 'El símbolo / antes del nombre indica que el elemento se calcula a partir de otro.',
+    q14: '«create» se usa cuando la clase dependiente crea instancias de la clase independiente.',
+    q15: 'En MVC, el paquete Model contiene las clases del dominio y representa el estado de la aplicación.',
+  };
+
+  function responder(qId, btn, esCorrecta) {
+    const card = document.getElementById(qId);
+    if (card.dataset.respondida) return;
+    card.dataset.respondida = '1';
+
+    const btns = card.querySelectorAll('.opcion-btn');
+    btns.forEach(b => b.classList.add('deshabilitada'));
+
+    const fb = document.getElementById('fb-' + qId);
+    fb.classList.add('show');
+
+    if (esCorrecta) {
+      btn.classList.add('correcta');
+      fb.classList.add('ok');
+      fb.innerHTML = '<i class="fas fa-check-circle me-1"></i><strong>¡Correcto!</strong> ' + respuestas_correctas[qId];
+    } else {
+      btn.classList.add('incorrecta');
+      fb.classList.add('ko');
+      fb.innerHTML = '<i class="fas fa-times-circle me-1"></i><strong>Incorrecto.</strong> ' + respuestas_correctas[qId];
+      // highlight correct
+      btns.forEach(b => {
+        const idx = Array.from(btns).indexOf(b);
+        // find correct by checking onclick
+        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(',true)')) {
+          b.classList.add('correcta');
+        }
+      });
+    }
+  }
+</script>
+</body>
+</html>
