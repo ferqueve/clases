@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Truck &amp; Roll — Entrevista de requerimientos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --amber: #BA7517; --amber-dark: #854F0B; --amber-light: #FAEEDA;
+    --green: #1D9E75; --bg: #f4f1ec; --surface: #ffffff; --surface2: #f7f5f0;
+    --border: rgba(0,0,0,0.1); --text: #1a1a18; --text2: #6b6b68; --text3: #9b9b97;
+    --radius: 12px; --radius-sm: 8px;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif; background: var(--bg);
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 24px 16px 40px; color: var(--text);
+  }
+  .page-header { width: 100%; max-width: 720px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+  .logo { width: 44px; height: 44px; border-radius: 50%; background: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .page-title { font-family: 'Playfair Display', serif; font-size: 22px; }
+  .page-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+  /* Pantalla de clave */
+  .key-screen {
+    width: 100%; max-width: 480px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .key-screen h2 { font-family: 'Playfair Display', serif; font-size: 19px; }
+  .key-screen p { font-size: 13.5px; color: var(--text2); line-height: 1.6; }
+  .key-input {
+    width: 100%; padding: 11px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 15px; font-family: 'DM Sans', sans-serif;
+    background: var(--surface2); color: var(--text);
+    outline: none; transition: border-color 0.15s; letter-spacing: 0.03em;
+  }
+  .key-input:focus { border-color: var(--amber); }
+  .btn-enter {
+    width: 100%; padding: 11px;
+    background: var(--amber); color: white; border: none;
+    border-radius: var(--radius-sm); font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .btn-enter:hover { background: var(--amber-dark); }
+  .key-error { font-size: 13px; color: #A32D2D; display: none; }
+
+  /* Chat */
+  .chat-wrap { width: 100%; max-width: 720px; display: none; flex-direction: column; gap: 0; }
+  .chat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .chat-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
+  .avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--amber); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; color: var(--amber-light); flex-shrink: 0; position: relative; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); position: absolute; bottom: 2px; right: 2px; border: 2px solid white; }
+  .client-name { font-family: 'Playfair Display', serif; font-size: 15px; }
+  .client-role { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--amber-light); color: var(--amber-dark); font-weight: 500; }
+  .btn-reset { margin-left: auto; background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 14px; font-size: 12px; color: var(--text2); cursor: pointer; transition: background 0.15s; }
+  .btn-reset:hover { background: var(--bg); }
+
+  .messages { flex: 1; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 380px; max-height: 420px; }
+  .msg { display: flex; gap: 8px; align-items: flex-end; }
+  .msg.user { flex-direction: row-reverse; }
+  .bubble { max-width: 78%; padding: 11px 15px; border-radius: 18px; font-size: 14.5px; line-height: 1.6; }
+  .msg.bot .bubble { background: var(--surface2); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text); }
+  .msg.user .bubble { background: var(--amber); color: white; border-bottom-right-radius: 4px; }
+  .msg-av { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+  .msg.bot .msg-av { background: var(--amber); color: var(--amber-light); }
+  .msg.user .msg-av { background: var(--surface2); color: var(--text2); }
+
+  .typing { display: flex; gap: 5px; padding: 12px 15px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); animation: bounce 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  .input-area { background: var(--surface); border-top: 1px solid var(--border); padding: 12px 14px; display: flex; gap: 8px; align-items: center; }
+  .text-input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: 'DM Sans', sans-serif; background: var(--surface2); color: var(--text); outline: none; transition: border-color 0.15s; }
+  .text-input:focus { border-color: var(--amber); }
+  .btn-icon { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, transform 0.1s; flex-shrink: 0; }
+  .btn-icon:hover { background: var(--bg); }
+  .btn-icon:active { transform: scale(0.95); }
+  .btn-send { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--amber); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, transform 0.1s; flex-shrink: 0; }
+  .btn-send:hover { background: var(--amber-dark); }
+  .btn-send:active { transform: scale(0.95); }
+  .btn-send:disabled { opacity: 0.5; cursor: default; }
+  .btn-mic.recording { background: #FCEBEB; border-color: #E24B4A; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(226,75,74,0.3)} 50%{box-shadow:0 0 0 6px rgba(226,75,74,0)} }
+  .voice-hint { font-size: 11px; color: var(--text3); text-align: center; padding: 5px 0 2px; }
+  .info-banner { margin: 0 18px 10px; padding: 8px 13px; background: var(--amber-light); border: 1px solid rgba(186,117,23,0.25); border-radius: var(--radius-sm); font-size: 12.5px; color: var(--amber-dark); }
+
+  .tips { margin-top: 16px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12.5px; color: var(--text2); display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; }
+  .tips-title { grid-column: 1/-1; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="logo">🚚</div>
+  <div>
+    <div class="page-title">Truck &amp; Roll</div>
+    <div class="page-sub">Análisis y Diseño de Aplicaciones — Simulación de entrevista al cliente</div>
+  </div>
+</div>
+
+<!-- Pantalla de ingreso de clave -->
+<div class="key-screen" id="key-screen">
+  <h2>Ingresá la clave de acceso</h2>
+  <p>Tu docente compartió una clave por la plataforma. Copiala y pegala acá para comenzar la entrevista.</p>
+  <input class="key-input" id="key-input" type="password" placeholder="Pegá la clave aquí..." autocomplete="off" />
+  <div class="key-error" id="key-error">La clave no es válida. Revisá que la copiaste completa.</div>
+  <button class="btn-enter" id="btn-enter">Comenzar entrevista →</button>
+</div>
+
+<!-- Chat (oculto hasta ingresar clave) -->
+<div class="chat-wrap" id="chat-wrap">
+  <div class="chat-card">
+    <div class="chat-header">
+      <div class="avatar">MG<div class="status-dot"></div></div>
+      <div>
+        <div class="client-name">Marcelo Gómez</div>
+        <div class="client-role">Dueño · Truck &amp; Roll — Red de food trucks, Montevideo</div>
+      </div>
+      <div class="badge">Cliente ficticio</div>
+      <button class="btn-reset" id="btn-reset">↺ Reiniciar</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="info-banner">
+      Entrevistá a Marcelo para relevar los requerimientos del sistema. Solo responde lo que le pregunten.
+    </div>
+
+    <div class="input-area">
+      <button class="btn-icon btn-mic" id="btn-mic" title="Hablar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b6b68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
+      <input class="text-input" id="text-input" type="text" placeholder="Escribí tu pregunta al cliente..." />
+      <button class="btn-send" id="btn-send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+    <div class="voice-hint" id="voice-hint">Presioná el micrófono para hablar · Recomendado: Chrome</div>
+  </div>
+
+  <div class="tips">
+    <div class="tips-title">💡 Guía para la entrevista (8 minutos)</div>
+    <div>· Preguntá sobre los <strong>problemas actuales</strong></div>
+    <div>· Investigá cómo es el <strong>proceso de pago</strong></div>
+    <div>· Consultá quiénes son los <strong>usuarios del sistema</strong></div>
+    <div>· Preguntá sobre el <strong>hardware disponible</strong></div>
+    <div>· Averiguá qué <strong>no quiere</strong> cambiar</div>
+    <div>· Preguntá por <strong>presupuesto y restricciones</strong></div>
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `Sos Marcelo Gómez, dueño de "Truck & Roll", una red de tres food trucks que venden hamburguesas y comida rápida en ferias y eventos gastronómicos de Montevideo.
+
+SITUACIÓN GENERAL:
+- Tenés tres food trucks en distintos eventos y ferias gastronómicas.
+- Cada food truck tiene solo dos personas: un cocinero y un cajero.
+- El negocio funciona bien pero cuando hay mucha gente se desordena.
+- Los pedidos se anotan en papel (comanda tradicional) y eso funciona bien. El cocinero no usa computadora.
+
+PROBLEMAS PRINCIPALES (contá esto cuando te pregunten sobre los problemas):
+- Se forman filas largas en eventos concurridos.
+- Los clientes quedan esperando cerca del mostrador preguntando si su pedido está pronto.
+- A veces no encuentran al cliente cuando el pedido está listo.
+- Con mucho ruido, llamar al cliente por nombre o número no se escucha.
+- Confusión al momento de retirar los pedidos.
+
+DISPOSITIVOS VIBRADORES (solo si preguntan por soluciones previas):
+- Probaron aparatitos que vibran cuando el pedido está pronto.
+- Son caros, se pierden, y algunos clientes se los llevan por error.
+
+PAGOS (solo si preguntan):
+- Muchos clientes preguntan si pueden pagar con tarjeta o Mercado Pago.
+- Algunos preguntan si pueden pagar desde el celular.
+- No todos los trucks aceptan pagos digitales actualmente.
+
+LO QUE QUERÉS (solo cuando pregunten qué buscarías en una solución):
+- Algo que avise al cliente cuando su pedido está pronto, sin que tenga que quedarse en el mostrador.
+- Que permita cobrar con tarjeta o Mercado Pago.
+- Algo sencillo (solo hay 2 personas por truck).
+- Que sea económico.
+
+LO QUE NO QUERÉS (solo si preguntan directamente):
+- No cambiar la comanda en papel que ya funciona.
+- No querés sistemas complicados de aprender.
+- No querés algo caro de mantener.
+
+TU ANÁLISIS DEL CUELLO DE BOTELLA (solo si preguntan tu opinión):
+- Creés que el problema principal es que los clientes tardan en decidir qué pedir porque no ven bien el menú.
+- También el retiro del pedido es caótico.
+
+DATOS ADICIONALES (solo si preguntan):
+- Los eventos tienen entre 500 y 5.000 personas.
+- Los eventos duran todo el día, a veces hasta medianoche.
+- Cada truck atiende en un puesto diferente del evento.
+
+PERSONALIDAD:
+- Sos práctico, directo, con poco tiempo.
+- Hablás rioplatense: "vos", "che", "ta", "mirá", "dale".
+- Sabés poco de tecnología pero estás dispuesto a escuchar.
+- Si te preguntan algo vago, pedís que sean más específicos.
+- Si te preguntan algo que no pensaste, decís "uh, no lo había pensado...".
+- A veces preguntás de vuelta: "¿eso es difícil?" o "¿sale caro?".
+- Respondé en 2 a 4 oraciones. No cuentes todo de una. Dejá que descubran con buenas preguntas.
+- Nunca rompas el personaje. Sos Marcelo Gómez, no una IA.`;
+
+const FIRST_MSG = '¡Hola, buenas! Pasen, pasen. Tengo un ratito antes del evento de esta tarde así que aprovechen. Quiero ver si la tecnología nos puede dar una mano con el negocio. ¿Por dónde empezamos?';
+
+let GROQ_API_KEY = '';
+let history = [{ role: 'assistant', content: FIRST_MSG }];
+let isLoading = false;
+let recognition = null;
+let isRecording = false;
+const synth = window.speechSynthesis;
+
+const keyScreen  = document.getElementById('key-screen');
+const chatWrap   = document.getElementById('chat-wrap');
+const keyInput   = document.getElementById('key-input');
+const btnEnter   = document.getElementById('btn-enter');
+const keyError   = document.getElementById('key-error');
+const messagesEl = document.getElementById('messages');
+const textInput  = document.getElementById('text-input');
+const btnSend    = document.getElementById('btn-send');
+const btnMic     = document.getElementById('btn-mic');
+const btnReset   = document.getElementById('btn-reset');
+const voiceHint  = document.getElementById('voice-hint');
+
+function activateChat() {
+  const val = keyInput.value.trim();
+  if (!val.startsWith('gsk_')) {
+    keyError.style.display = 'block';
+    keyInput.focus();
+    return;
+  }
+  GROQ_API_KEY = val;
+  keyError.style.display = 'none';
+  keyScreen.style.display = 'none';
+  chatWrap.style.display = 'flex';
+  renderHistory();
+  textInput.focus();
+}
+
+btnEnter.addEventListener('click', activateChat);
+keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') activateChat(); });
+
+function scrollBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+
+function addMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  const av = document.createElement('div');
+  av.className = 'msg-av';
+  av.textContent = role === 'bot' ? 'MG' : 'Est';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  div.appendChild(av); div.appendChild(bubble);
+  messagesEl.appendChild(div); scrollBottom();
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg bot'; div.id = 'typing';
+  const av = document.createElement('div'); av.className = 'msg-av'; av.textContent = 'MG';
+  const b = document.createElement('div'); b.className = 'bubble typing';
+  b.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  div.appendChild(av); div.appendChild(b);
+  messagesEl.appendChild(div); scrollBottom();
+}
+function removeTyping() { const el = document.getElementById('typing'); if (el) el.remove(); }
+
+function renderHistory() {
+  messagesEl.innerHTML = '';
+  history.forEach(m => addMessage(m.role === 'assistant' ? 'bot' : 'user', m.content));
+}
+
+btnReset.addEventListener('click', () => {
+  if (!confirm('¿Reiniciar la conversación? Se borrará el historial del grupo.')) return;
+  history = [{ role: 'assistant', content: FIRST_MSG }];
+  renderHistory();
+  synth.cancel();
+});
+
+async function sendMessage(userText) {
+  if (!userText.trim() || isLoading) return;
+  isLoading = true;
+  addMessage('user', userText);
+  history.push({ role: 'user', content: userText });
+  showTyping();
+  btnSend.disabled = true; textInput.disabled = true;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + GROQ_API_KEY
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        max_tokens: 300,
+        temperature: 0.8,
+        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || 'Error HTTP ' + res.status);
+    }
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'No pude responder.';
+    removeTyping();
+    addMessage('bot', reply);
+    history.push({ role: 'assistant', content: reply });
+    speak(reply);
+  } catch (e) {
+    removeTyping();
+    addMessage('bot', '⚠ Error al conectar: ' + e.message);
+  }
+
+  isLoading = false;
+  btnSend.disabled = false; textInput.disabled = false;
+  textInput.focus();
+}
+
+btnSend.addEventListener('click', () => {
+  const val = textInput.value.trim(); textInput.value = ''; sendMessage(val);
+});
+textInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { const val = textInput.value.trim(); textInput.value = ''; sendMessage(val); }
+});
+
+function speak(text) {
+  if (!synth) return;
+  synth.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'es-419'; utt.rate = 0.95;
+  const voices = synth.getVoices();
+  const esVoice = voices.find(v => v.lang.startsWith('es'));
+  if (esVoice) utt.voice = esVoice;
+  synth.speak(utt);
+}
+
+if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'es-419'; recognition.continuous = false; recognition.interimResults = true;
+  recognition.onstart = () => {
+    isRecording = true; btnMic.classList.add('recording');
+    voiceHint.textContent = '🔴 Escuchando... hablá tu pregunta';
+    textInput.placeholder = 'Escuchando...';
+  };
+  recognition.onresult = e => {
+    let final = '', interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    textInput.value = final || interim;
+  };
+  recognition.onend = () => {
+    isRecording = false; btnMic.classList.remove('recording');
+    voiceHint.textContent = 'Presioná el micrófono para hablar · Recomendado: Chrome';
+    textInput.placeholder = 'Escribí tu pregunta al cliente...';
+    const val = textInput.value.trim();
+    if (val) { textInput.value = ''; sendMessage(val); }
+  };
+  recognition.onerror = e => {
+    isRecording = false; btnMic.classList.remove('recording');
+    voiceHint.textContent = e.error === 'no-speech' ? 'No se detectó voz. Intentá de nuevo.' : 'Error micrófono: ' + e.error;
+  };
+  btnMic.addEventListener('click', () => {
+    if (isRecording) recognition.stop(); else { synth.cancel(); recognition.start(); }
+  });
+} else {
+  btnMic.style.display = 'none';
+  voiceHint.textContent = 'Reconocimiento de voz no disponible · Usá Chrome para activarlo';
+}
+</script>
+</body>
+</html>
