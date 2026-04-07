@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GRASP · Expert — Principio de Experto en Información</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Animate.css -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+  <!-- SweetAlert2 -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+
+  <!-- Estilos propios -->
+  <link href="css/styles.css" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== TOP BAR ===== -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="grasp-badge">GRASP</span>
+      <span>Expert — Experto en Información</span>
+    </div>
+    <div class="topbar-nav">
+      <button id="btn-prev" class="nav-btn" onclick="prevSlide()">
+        <i class="fa-solid fa-chevron-left"></i> Anterior
+      </button>
+      <span class="slide-counter" id="slide-counter">1 / 9</span>
+      <button id="btn-next" class="nav-btn" onclick="nextSlide()">
+        Siguiente <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== PROGRESS BAR ===== -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" style="width: 11%"></div>
+  </div>
+
+  <!-- ===== SLIDES ===== -->
+  <div class="slides-wrapper">
+    <div id="slides-container" style="width:100%">
+      <!-- Slides rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ===== EXERCISES SECTION ===== -->
+  <section id="exercises-section" class="exercises-wrapper">
+    <div class="container-xl">
+      <div class="ex-header">
+        <div class="slide-label">Práctica</div>
+        <h2><i class="fa-solid fa-dumbbell me-2 text-warning"></i>Ejercicios — GRASP Expert</h2>
+        <p class="text-muted">Aplicá el principio Expert en los siguientes escenarios. Podés resolver en Rider antes de verificar.</p>
+      </div>
+      <div id="exercises-container">
+        <!-- Exercises rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav">
+    <div class="bottom-dots">
+      <!-- Dots rendered by JS -->
+    </div>
+    <button class="btn-exercises" onclick="toggleMode()">
+      <i class="fa-solid fa-dumbbell"></i> Ejercicios
+    </button>
+  </nav>
+
+  <!-- ===== KEYBOARD HINT ===== -->
+  <div class="keyboard-hint">← → para navegar</div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+  <!-- Data -->
+  <script src="data/slides.js"></script>
+  <script src="data/exercises.js"></script>
+
+  <!-- App -->
+  <script src="js/app.js"></script>
+</body>
+</html>
