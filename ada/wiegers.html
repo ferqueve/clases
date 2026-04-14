@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Priorización de Requisitos – Karl Wiegers</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root {
+      --bg:      #080c12;
+      --bg2:     #0f1620;
+      --bg3:     #1a2332;
+      --border:  #1e2d42;
+      --accent:  #38bdf8;
+      --accent2: #818cf8;
+      --green:   #34d399;
+      --yellow:  #fbbf24;
+      --red:     #f87171;
+      --orange:  #fb923c;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --mono:    'Space Mono', monospace;
+      --sans:    'Sora', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(56,189,248,.06), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 90%, rgba(129,140,248,.05), transparent),
+        linear-gradient(rgba(56,189,248,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,.025) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── SLIDES ── */
+    .slide {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 1.5rem;
+      position: relative;
+      z-index: 1;
+      border-bottom: 1px solid var(--border);
+    }
+    .slide-inner { width: 100%; max-width: 900px; }
+
+    /* ── NAV DOT ── */
+    .nav-dots {
+      position: fixed;
+      right: 1.5rem; top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: .6rem;
+      z-index: 100;
+    }
+    .nav-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: all .3s;
+      border: none;
+    }
+    .nav-dot.active, .nav-dot:hover {
+      background: var(--accent);
+      transform: scale(1.4);
+    }
+
+    /* ── CHIP / BADGE ── */
+    .chip {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-family: var(--mono);
+      font-size: .65rem;
+      letter-spacing: .12em;
+      padding: .3rem .8rem;
+      border-radius: 2rem;
+      border: 1px solid;
+    }
+    .chip-blue  { color: var(--accent);  border-color: rgba(56,189,248,.3);  background: rgba(56,189,248,.07); }
+    .chip-indigo{ color: var(--accent2); border-color: rgba(129,140,248,.3); background: rgba(129,140,248,.07); }
+    .chip-green { color: var(--green);   border-color: rgba(52,211,153,.3);  background: rgba(52,211,153,.07); }
+    .chip-yellow{ color: var(--yellow);  border-color: rgba(251,191,36,.3);  background: rgba(251,191,36,.07); }
+    .chip-red   { color: var(--red);     border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.07); }
+
+    /* ── HEADINGS ── */
+    .slide-label {
+      font-family: var(--mono);
+      font-size: .65rem;
+      letter-spacing: .2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    h1.big {
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    h2.section-h {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+    }
+    .accent { color: var(--accent); }
+    .indigo  { color: var(--accent2); }
+    .green   { color: var(--green); }
+    .yellow  { color: var(--yellow); }
+    .red     { color: var(--red); }
+
+    p.lead-text {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 680px;
+    }
+
+    /* ── DIVIDER LINE ── */
+    .h-line {
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      margin: 1.5rem 0;
+      border: none;
+    }
+
+    /* ── CARD ── */
+    .card-dark {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem;
+      height: 100%;
+    }
+    .card-dark .card-icon {
+      font-size: 1.8rem;
+      margin-bottom: .8rem;
+      display: block;
+    }
+    .card-dark h5 {
+      font-size: .95rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+    }
+    .card-dark p {
+      font-size: .82rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── PROBLEM CARDS ── */
+    .problem-card {
+      background: rgba(248,113,113,.06);
+      border: 1px solid rgba(248,113,113,.2);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: .8rem;
+      display: flex; align-items: flex-start; gap: .8rem;
+    }
+    .problem-card .icon { color: var(--red); font-size: 1.1rem; flex-shrink: 0; margin-top:.1rem }
+    .problem-card p { font-size: .82rem; color: var(--muted); line-height: 1.6; margin: 0; }
+
+    /* ── FORMULA HERO ── */
+    .formula-hero {
+      background: linear-gradient(135deg, rgba(129,140,248,.08), rgba(56,189,248,.05));
+      border: 1px solid rgba(129,140,248,.25);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+    .formula-display {
+      font-family: var(--mono);
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: var(--text);
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+    .formula-display .frac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    .formula-display .frac-num {
+      border-bottom: 2px solid var(--muted);
+      padding-bottom: .2rem;
+      margin-bottom: .2rem;
+    }
+    .formula-display .eq { color: var(--muted); font-size: 1.4rem; }
+
+    /* ── VARIABLE LEGEND ── */
+    .var-legend {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 1.2rem;
+    }
+    .var-item {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+    .var-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── STEP CARDS ── */
+    .step-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .2s, border-color .2s;
+    }
+    .step-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+    .step-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+    }
+    .step-card.s1::before { background: var(--accent); }
+    .step-card.s2::before { background: var(--green); }
+    .step-card.s3::before { background: var(--yellow); }
+    .step-card.s4::before { background: var(--accent2); }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 2rem;
+      font-weight: 700;
+      opacity: .15;
+      position: absolute;
+      top: .8rem; right: 1.2rem;
+      line-height: 1;
+    }
+    .step-card h5 {
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+    }
+    .step-card p {
+      font-size: .8rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── EXAMPLE TABLE ── */
+    .ex-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .8rem;
+    }
+    .ex-table thead th {
+      background: var(--bg3);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .62rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .6rem .9rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .ex-table tbody tr { border-bottom: 1px solid var(--border); transition: background .2s; }
+    .ex-table tbody tr:last-child { border-bottom: none; }
+    .ex-table tbody tr:hover { background: rgba(56,189,248,.04); }
+    .ex-table td { padding: .6rem .9rem; vertical-align: middle; }
+    .ex-table .mono { font-family: var(--mono); font-size: .75rem; }
+    .ex-table .pri { font-family: var(--mono); font-weight: 700; color: var(--accent2); }
+    .rank-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      font-family: var(--mono);
+      font-size: .65rem;
+      font-weight: 700;
+    }
+    .rk1 { background: var(--yellow); color: #000; }
+    .rk2 { background: var(--muted); color: #000; }
+    .rk3 { background: #b45309; color: #fff; }
+    .rk4, .rk5 { background: rgba(255,255,255,.1); color: var(--muted); }
+
+    /* ── SCALE PILLS ── */
+    .scale-row {
+      display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .8rem;
+    }
+    .scale-pill {
+      display: inline-flex; flex-direction: column; align-items: center;
+      min-width: 52px;
+      padding: .5rem .4rem;
+      border-radius: 8px;
+      font-family: var(--mono);
+      border: 1px solid var(--border);
+      font-size: .7rem;
+      cursor: default;
+      transition: transform .15s;
+    }
+    .scale-pill:hover { transform: scale(1.07); }
+    .scale-pill .sn { font-size: 1rem; font-weight: 700; }
+    .scale-pill .sl { font-size: .55rem; color: var(--muted); margin-top: .1rem; text-align: center; line-height: 1.3; }
+
+    /* ── TIPS ── */
+    .tip-box {
+      background: rgba(52,211,153,.06);
+      border: 1px solid rgba(52,211,153,.2);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: .8rem;
+      display: flex; gap: .8rem; align-items: flex-start;
+    }
+    .tip-box .icon { color: var(--green); font-size: 1rem; flex-shrink: 0; margin-top: .1rem; }
+    .tip-box p { font-size: .82rem; color: var(--muted); line-height: 1.6; margin: 0; }
+
+    /* ── CTA ── */
+    .cta-box {
+      background: linear-gradient(135deg, rgba(56,189,248,.1), rgba(129,140,248,.1));
+      border: 1px solid rgba(129,140,248,.3);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    .btn-cta {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      color: #fff;
+      font-family: var(--mono);
+      font-size: .8rem;
+      letter-spacing: .08em;
+      padding: .75rem 2.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      display: inline-flex; align-items: center; gap: .5rem;
+    }
+    .btn-cta:hover { opacity: .9; transform: translateY(-2px); }
+
+    /* ── INTERACTIVE BAR ── */
+    .bar-sim { margin-top: 1rem; }
+    .bar-row {
+      display: flex; align-items: center; gap: .8rem;
+      margin-bottom: .7rem;
+    }
+    .bar-label { font-family: var(--mono); font-size: .7rem; color: var(--muted); width: 40px; flex-shrink: 0; }
+    .bar-track {
+      flex: 1;
+      height: 10px;
+      background: rgba(255,255,255,.06);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    }
+    .bar-val { font-family: var(--mono); font-size: .7rem; color: var(--text); width: 40px; flex-shrink: 0; text-align: right; }
+
+    /* ── SCROLL HINT ── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: .4rem;
+      color: var(--muted);
+      font-size: .7rem;
+      font-family: var(--mono);
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(6px); }
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    @media(max-width:576px) {
+      .formula-display { font-size: .85rem; }
+      .nav-dots { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 1: PORTADA -->
+<section class="slide" id="slide-1">
+  <div class="slide-inner">
+    <div class="animate__animated animate__fadeInDown">
+      <div class="chip chip-blue mb-3"><i class="bi bi-diagram-3"></i> ANÁLISIS Y ESPECIFICACIÓN</div>
+      <h1 class="big">Priorización<br>de <span class="accent">Requisitos</span></h1>
+      <h1 class="big" style="color:var(--muted);font-weight:300">con Karl <span class="indigo">Wiegers</span></h1>
+      <hr class="h-line" style="max-width:300px;margin-left:0"/>
+      <p class="lead-text">Una técnica cuantitativa para decidir <strong style="color:var(--text)">qué construir primero</strong> balanceando valor de negocio, riesgo y costo de implementación.</p>
+    </div>
+    <div class="scroll-hint mt-5">
+      <i class="bi bi-chevron-double-down"></i>
+      SCROLL
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 2: EL PROBLEMA -->
+<section class="slide" id="slide-2">
+  <div class="slide-inner">
+    <div class="slide-label"><i class="bi bi-exclamation-triangle"></i> &nbsp;El problema</div>
+    <h2 class="section-h">¿Por qué <span class="red">no</span> podemos hacer todo?</h2>
+    <p class="lead-text mb-4">En todo proyecto real, los recursos son limitados. El cliente siempre quiere más de lo que se puede construir en tiempo y presupuesto.</p>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="problem-card">
+          <i class="bi bi-hourglass-split icon"></i>
+          <p><strong style="color:var(--text)">Tiempo limitado</strong><br>Los proyectos tienen fechas de entrega. No se puede implementar todo en el primer release.</p>
+        </div>
+        <div class="problem-card">
+          <i class="bi bi-cash-stack icon"></i>
+          <p><strong style="color:var(--text)">Presupuesto finito</strong><br>Cada funcionalidad tiene un costo. Hacer "todo" agota los recursos antes de lanzar.</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="problem-card">
+          <i class="bi bi-people icon"></i>
+          <p><strong style="color:var(--text)">Stakeholders con distintas prioridades</strong><br>Cada actor del sistema cree que SU requisito es el más importante.</p>
+        </div>
+        <div class="problem-card">
+          <i class="bi bi-shuffle icon"></i>
+          <p><strong style="color:var(--text)">Decisiones subjetivas</strong><br>Sin una técnica formal, la priorización queda a criterio político o de la persona que más habla.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box mt-4">
+      <i class="bi bi-lightbulb icon"></i>
+      <p><strong style="color:var(--green)">La solución:</strong> Necesitamos una forma <em>objetiva y reproducible</em> de ordenar los requisitos por valor real para el negocio. Ahí entra Wiegers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 3: QUIÉN ES WIEGERS -->
+<section class="slide" id="slide-3">
+  <div class="slide-inner">
+    <div class="slide-label"><i class="bi bi-person-badge"></i> &nbsp;El autor</div>
+    <h2 class="section-h"><span class="indigo">Karl Wiegers</span> — ¿quién es?</h2>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-4">
+        <div class="card-dark">
+          <span class="card-icon">📘</span>
+          <h5>Autor de referencia</h5>
+          <p>Autor de <em>Software Requirements</em>, uno de los libros más influyentes sobre ingeniería de requisitos, con múltiples ediciones desde 1999.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-dark">
+          <span class="card-icon">🏭</span>
+          <h5>Experiencia industrial</h5>
+          <p>Trabajó más de 18 años en Eastman Kodak como desarrollador e investigador en procesos de software antes de dedicarse a consultoría y escritura.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-dark">
+          <span class="card-icon">⚖️</span>
+          <h5>Contribución clave</h5>
+          <p>Propuso una fórmula para convertir juicios cualitativos de los stakeholders en <strong>valores numéricos comparables</strong> y objetivos.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="formula-hero" style="padding:1.5rem;text-align:left">
+      <div class="chip chip-indigo mb-2"><i class="bi bi-quote"></i> IDEA CENTRAL</div>
+      <p style="font-size:1rem;line-height:1.7;color:var(--text)">
+        <em>"No todos los requisitos tienen el mismo valor. Antes de construir, hay que medir cuánto vale cada uno — y cuánto cuesta no tenerlo."</em>
+      </p>
+      <p class="mt-2" style="font-size:.8rem;color:var(--muted)">— Principio base de la técnica de Wiegers</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 4: LAS 3 VARIABLES -->
+<section class="slide" id="slide-4">
+  <div class="slide-inner">
+    <div class="slide-label"><i class="bi bi-123"></i> &nbsp;Las variables</div>
+    <h2 class="section-h">Tres dimensiones para <span class="accent">evaluar</span> cada requisito</h2>
+    <p class="lead-text mb-4">Cada requisito se califica en una escala del <strong style="color:var(--text)">1 al 9</strong> en tres dimensiones distintas, respondiendo tres preguntas clave.</p>
+
+    <div class="row g-3 mb-4">
+
+      <div class="col-md-4">
+        <div class="card-dark" style="border-color:rgba(52,211,153,.3)">
+          <span class="card-icon">🏆</span>
+          <div class="chip chip-green mb-2" style="font-size:.6rem">BENEFICIO</div>
+          <h5 class="green">Recompensa</h5>
+          <p>¿Qué valor le aporta al negocio y al usuario <em>implementar</em> este requisito?</p>
+          <div class="scale-row mt-3">
+            <div class="scale-pill" style="background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.2)">
+              <span class="sn green">1</span>
+              <span class="sl">Muy<br>bajo</span>
+            </div>
+            <div class="scale-pill" style="background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.2)">
+              <span class="sn green">5</span>
+              <span class="sl">Medio</span>
+            </div>
+            <div class="scale-pill" style="background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.4)">
+              <span class="sn green">9</span>
+              <span class="sl">Crítico</span>
+            </div>
+          </div>
+          <p class="mt-2" style="font-size:.75rem"><strong style="color:var(--green)">Ej. 9:</strong> permite al usuario completar pagos → sin esto no hay negocio.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card-dark" style="border-color:rgba(251,191,36,.3)">
+          <span class="card-icon">⚠️</span>
+          <div class="chip chip-yellow mb-2" style="font-size:.6rem">RIESGO DE OMISIÓN</div>
+          <h5 class="yellow">Penalización</h5>
+          <p>¿Cuánto daño causa al negocio y al usuario <em>no implementar</em> este requisito?</p>
+          <div class="scale-row mt-3">
+            <div class="scale-pill" style="background:rgba(251,191,36,.05);border-color:rgba(251,191,36,.2)">
+              <span class="sn yellow">1</span>
+              <span class="sl">Sin<br>impacto</span>
+            </div>
+            <div class="scale-pill" style="background:rgba(251,191,36,.05);border-color:rgba(251,191,36,.2)">
+              <span class="sn yellow">5</span>
+              <span class="sl">Notable</span>
+            </div>
+            <div class="scale-pill" style="background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.4)">
+              <span class="sn yellow">9</span>
+              <span class="sl">Catastrófico</span>
+            </div>
+          </div>
+          <p class="mt-2" style="font-size:.75rem"><strong style="color:var(--yellow)">Ej. 9:</strong> sin registro de usuarios la app es inutilizable — pérdida total.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card-dark" style="border-color:rgba(248,113,113,.3)">
+          <span class="card-icon">🔧</span>
+          <div class="chip chip-red mb-2" style="font-size:.6rem">ESFUERZO TÉCNICO</div>
+          <h5 class="red">Costo</h5>
+          <p>¿Cuánto esfuerzo, tiempo y complejidad técnica requiere <em>implementarlo</em>?</p>
+          <div class="scale-row mt-3">
+            <div class="scale-pill" style="background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.2)">
+              <span class="sn red">1</span>
+              <span class="sl">Trivial</span>
+            </div>
+            <div class="scale-pill" style="background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.2)">
+              <span class="sn red">5</span>
+              <span class="sl">Moderado</span>
+            </div>
+            <div class="scale-pill" style="background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.4)">
+              <span class="sn red">9</span>
+              <span class="sl">Muy<br>complejo</span>
+            </div>
+          </div>
+          <p class="mt-2" style="font-size:.75rem"><strong style="color:var(--red)">Ej. 9:</strong> tracking GPS en tiempo real — requiere infraestructura compleja.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tip-box">
+      <i class="bi bi-people-fill icon"></i>
+      <p>Los valores los asignan <strong style="color:var(--green)">los stakeholders</strong> (clientes, usuarios, product owners) con apoyo del equipo técnico para el costo. La discusión en sí ya es valiosa.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 5: LA FÓRMULA -->
+<section class="slide" id="slide-5">
+  <div class="slide-inner">
+    <div class="slide-label"><i class="bi bi-function"></i> &nbsp;La fórmula</div>
+    <h2 class="section-h">Cómo se <span class="accent">calcula</span> la prioridad</h2>
+
+    <div class="formula-hero">
+      <div class="chip chip-indigo mb-3"><i class="bi bi-calculator"></i> FÓRMULA DE WIEGERS</div>
+
+      <div class="formula-display">
+        <span style="color:var(--accent2)">Prioridad</span>
+        <span class="eq">=</span>
+        <span class="frac">
+          <span class="frac-num">
+            (<span style="color:var(--green)">Recompensa%</span>
+            <span style="color:var(--muted)"> + </span>
+            <span style="color:var(--yellow)">Penalización%</span>)
+          </span>
+          <span style="color:var(--red)">Costo%</span>
+        </span>
+      </div>
+
+      <div class="var-legend">
+        <div class="var-item">
+          <div class="var-dot" style="background:var(--green)"></div>
+          <span><strong style="color:var(--green)">Recompensa%</strong> = valor<sub>i</sub> ÷ Σ Recompensa × 100</span>
+        </div>
+        <div class="var-item">
+          <div class="var-dot" style="background:var(--yellow)"></div>
+          <span><strong style="color:var(--yellow)">Penalización%</strong> = valor<sub>i</sub> ÷ Σ Penalización × 100</span>
+        </div>
+        <div class="var-item">
+          <div class="var-dot" style="background:var(--red)"></div>
+          <span><strong style="color:var(--red)">Costo%</strong> = valor<sub>i</sub> ÷ Σ Costo × 100</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+      <div class="col-md-4">
+        <div class="card-dark" style="text-align:center">
+          <span style="font-size:1.5rem">📊</span>
+          <h5 class="mt-2 accent">¿Por qué porcentajes?</h5>
+          <p>Normaliza los valores para que sean comparables entre sí sin importar cuántos requisitos haya en la lista.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-dark" style="text-align:center">
+          <span style="font-size:1.5rem">⬆️</span>
+          <h5 class="mt-2 green">Numerador alto = bueno</h5>
+          <p>Cuanto mayor sea la recompensa y la penalización, más urgente es implementar el requisito.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-dark" style="text-align:center">
+          <span style="font-size:1.5rem">⬇️</span>
+          <h5 class="mt-2 red">Denominador alto = penaliza</h5>
+          <p>Si implementarlo cuesta mucho, el valor de prioridad baja — aunque el requisito sea valioso.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 6: PASOS -->
+<section class="slide" id="slide-6">
+  <div class="slide-inner">
+    <div class="slide-label"><i class="bi bi-list-ol"></i> &nbsp;Procedimiento</div>
+    <h2 class="section-h">Cómo se <span class="green">aplica</span> paso a paso</h2>
+    <p class="lead-text mb-4">La técnica sigue cuatro pasos concretos. Hacé click en cada uno para más detalle.</p>
+
+    <div class="row g-3">
+
+      <div class="col-md-6">
+        <div class="step-card s1" onclick="showStep(1)">
+          <div class="step-num">01</div>
+          <div class="chip chip-blue mb-2" style="font-size:.6rem">PASO 1</div>
+          <h5 class="accent">Listar los requisitos</h5>
+          <p>Reunir todos los requisitos funcionales del sistema en una tabla. Cada uno ocupa una fila.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="step-card s2" onclick="showStep(2)">
+          <div class="step-num">02</div>
+          <div class="chip chip-green mb-2" style="font-size:.6rem">PASO 2</div>
+          <h5 class="green">Asignar valores (1–9)</h5>
+          <p>Los stakeholders califican cada requisito en Recompensa, Penalización y Costo. El equipo técnico aporta la estimación de Costo.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="step-card s3" onclick="showStep(3)">
+          <div class="step-num">03</div>
+          <div class="chip chip-yellow mb-2" style="font-size:.6rem">PASO 3</div>
+          <h5 class="yellow">Calcular porcentajes y prioridad</h5>
+          <p>Aplicar la fórmula: convertir cada valor a porcentaje de su columna y calcular la prioridad de Wiegers.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="step-card s4" onclick="showStep(4)">
+          <div class="step-num">04</div>
+          <div class="chip chip-indigo mb-2" style="font-size:.6rem">PASO 4</div>
+          <h5 class="indigo">Ordenar y planificar</h5>
+          <p>Ordenar descendente por prioridad. Los primeros de la lista van al próximo sprint o release. Los últimos al backlog.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tip-box mt-4">
+      <i class="bi bi-arrow-repeat icon"></i>
+      <p>La técnica es <strong style="color:var(--green)">iterativa</strong>: a medida que el proyecto avanza o cambian los stakeholders, los valores pueden revisarse y la priorización se actualiza.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 7: EJEMPLO -->
+<section class="slide" id="slide-7">
+  <div class="slide-inner">
+    <div class="slide-label"><i class="bi bi-table"></i> &nbsp;Ejemplo práctico</div>
+    <h2 class="section-h">Ejemplo <span class="accent">calculado</span> — App de Delivery</h2>
+    <p class="lead-text mb-3">Supongamos 5 requisitos con los siguientes valores asignados:</p>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.5rem">
+      <div class="table-responsive">
+        <table class="ex-table" id="exTable">
+          <thead>
+            <tr>
+              <th>Requisito</th>
+              <th style="color:var(--green)">Recompensa</th>
+              <th style="color:var(--yellow)">Penalización</th>
+              <th style="color:var(--red)">Costo</th>
+              <th style="color:var(--green)">R%</th>
+              <th style="color:var(--yellow)">P%</th>
+              <th style="color:var(--red)">C%</th>
+              <th style="color:var(--accent2)">Prioridad</th>
+              <th>Ranking</th>
+            </tr>
+          </thead>
+          <tbody id="exBody"></tbody>
+          <tfoot>
+            <tr style="background:var(--bg3)">
+              <td class="mono" style="color:var(--muted)">TOTAL</td>
+              <td class="mono" id="totalR" style="color:var(--green)">—</td>
+              <td class="mono" id="totalP" style="color:var(--yellow)">—</td>
+              <td class="mono" id="totalC" style="color:var(--red)">—</td>
+              <td class="mono" style="color:var(--muted)">100%</td>
+              <td class="mono" style="color:var(--muted)">100%</td>
+              <td class="mono" style="color:var(--muted)">100%</td>
+              <td></td><td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <button class="btn-cta" onclick="animarTabla()" style="margin-bottom:1.5rem">
+      <i class="bi bi-play-fill"></i> Calcular en vivo
+    </button>
+
+    <div id="barSim" class="bar-sim" style="display:none">
+      <div class="section-label mb-2" style="font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;color:var(--muted)">RANKING VISUAL</div>
+      <div id="barRows"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 8: CUÁNDO USAR -->
+<section class="slide" id="slide-8">
+  <div class="slide-inner">
+    <div class="slide-label"><i class="bi bi-calendar-check"></i> &nbsp;Cuándo usar</div>
+    <h2 class="section-h">¿Cuándo y dónde <span class="yellow">aplicarla</span>?</h2>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card-dark" style="border-color:rgba(52,211,153,.3)">
+          <span class="card-icon">✅</span>
+          <h5 class="green">Ideal cuando...</h5>
+          <ul style="font-size:.82rem;color:var(--muted);line-height:1.9;padding-left:1.2rem;margin:0">
+            <li>Hay más requisitos de los que se pueden implementar en el tiempo disponible</li>
+            <li>Los stakeholders tienen opiniones distintas sobre qué es importante</li>
+            <li>Se necesita justificar ante el cliente <em>por qué</em> algo va primero</li>
+            <li>Se trabaja con sprints o releases incrementales</li>
+            <li>El equipo necesita una base objetiva para negociar alcance</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-dark" style="border-color:rgba(248,113,113,.3)">
+          <span class="card-icon">⚡</span>
+          <h5 class="red">Limitaciones a tener en cuenta</h5>
+          <ul style="font-size:.82rem;color:var(--muted);line-height:1.9;padding-left:1.2rem;margin:0">
+            <li>Los valores son <em>percepciones</em> — distintos stakeholders darán distintos números</li>
+            <li>No contempla dependencias entre requisitos (A requiere B)</li>
+            <li>No tiene en cuenta riesgo técnico explícitamente (en la versión básica)</li>
+            <li>Puede politizarse si hay sesgo al asignar valores</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card-dark" style="text-align:center">
+          <span style="font-size:1.5rem">🗺️</span>
+          <h5 class="mt-2">Inicio del proyecto</h5>
+          <p>Para definir el MVP — qué entra al primer release.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-dark" style="text-align:center">
+          <span style="font-size:1.5rem">🔄</span>
+          <h5 class="mt-2">Refinamiento de backlog</h5>
+          <p>Antes de cada sprint, para ordenar los ítems del product backlog.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-dark" style="text-align:center">
+          <span style="font-size:1.5rem">📋</span>
+          <h5 class="mt-2">Change requests</h5>
+          <p>Para evaluar si un nuevo requisito desplaza a uno existente en el plan.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 9: CIERRE -->
+<section class="slide" id="slide-9">
+  <div class="slide-inner">
+    <div class="slide-label"><i class="bi bi-flag-fill"></i> &nbsp;Resumen</div>
+    <h2 class="section-h">Lo que hay que <span class="indigo">recordar</span></h2>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="card-dark" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:.5rem">🎯</div>
+          <h5 style="font-size:.85rem">Objetivo</h5>
+          <p>Ordenar requisitos por su valor real para el negocio, de forma objetiva.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card-dark" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:.5rem">📐</div>
+          <h5 style="font-size:.85rem">Variables</h5>
+          <p>Recompensa + Penalización = valor total. Costo = esfuerzo técnico.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card-dark" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:.5rem">➗</div>
+          <h5 style="font-size:.85rem">Fórmula</h5>
+          <p>Prioridad = (R% + P%) ÷ C% — mayor resultado = mayor urgencia.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card-dark" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:.5rem">🔁</div>
+          <h5 style="font-size:.85rem">Proceso</h5>
+          <p>Listar → Asignar → Calcular → Ordenar → Planificar.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-box">
+      <div class="chip chip-indigo mb-3"><i class="bi bi-rocket-takeoff"></i> SIGUIENTE PASO</div>
+      <h3 style="font-size:1.4rem;font-weight:700;margin-bottom:.8rem">¡Ahora te toca a vos!</h3>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:1.5rem">Aplicá la técnica en el Trabajo de Aplicación 1 — completá los valores para los 15 requisitos de la app de delivery y calculá el ranking.</p>
+      <button class="btn-cta" onclick="showResumen()">
+        <i class="bi bi-clipboard-check-fill"></i> Ver resumen de la técnica
+      </button>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+// ── SLIDES NAV ────────────────────────────────────────────────────────────
+const slides = document.querySelectorAll('.slide');
+const navDots = document.getElementById('navDots');
+
+slides.forEach((s, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'nav-dot';
+  btn.title = `Slide ${i+1}`;
+  btn.onclick = () => s.scrollIntoView({ behavior: 'smooth' });
+  navDots.appendChild(btn);
+});
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = Array.from(slides).indexOf(e.target);
+      document.querySelectorAll('.nav-dot').forEach((d,i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: .5 });
+slides.forEach(s => observer.observe(s));
+
+// ── STEP MODALS ───────────────────────────────────────────────────────────
+const stepData = {
+  1: {
+    title: 'Paso 1 — Listar los requisitos',
+    color: '#38bdf8',
+    icon: 'bi-list-task',
+    content: `
+      <ul style="font-size:.87rem;color:#94a3b8;line-height:1.9;padding-left:1.2rem">
+        <li>Reunir <strong style="color:#e2e8f0">todos</strong> los requisitos funcionales del proyecto en una tabla.</li>
+        <li>Asignar un <strong style="color:#38bdf8">identificador único</strong> a cada uno (R001, R002…).</li>
+        <li>Escribir una <strong style="color:#e2e8f0">descripción clara y concisa</strong> de lo que debe hacer el sistema.</li>
+        <li>No priorizar aún — primero se listan, luego se evalúan.</li>
+        <li>Los requisitos no funcionales se pueden incluir, pero generalmente se priorizan por separado.</li>
+      </ul>
+      <div style="background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.2);border-radius:8px;padding:.8rem;margin-top:.8rem;font-size:.8rem;color:#94a3b8">
+        <strong style="color:#38bdf8">Tip:</strong> Si hay muchos requisitos (+30), se puede hacer una pre-selección inicial eliminando los claramente fuera de alcance.
+      </div>
+    `
+  },
+  2: {
+    title: 'Paso 2 — Asignar valores (1–9)',
+    color: '#34d399',
+    icon: 'bi-sliders',
+    content: `
+      <p style="font-size:.87rem;color:#94a3b8;margin-bottom:.8rem">Para cada requisito, los stakeholders responden tres preguntas en escala 1–9:</p>
+      <div style="display:flex;flex-direction:column;gap:.6rem;font-size:.84rem">
+        <div style="background:rgba(52,211,153,.07);border-radius:8px;padding:.7rem 1rem">
+          <strong style="color:#34d399">Recompensa (1–9):</strong><br>
+          <span style="color:#94a3b8">¿Cuánto valor aporta al negocio implementar esto? ¿El usuario lo percibe como valioso?</span>
+        </div>
+        <div style="background:rgba(251,191,36,.07);border-radius:8px;padding:.7rem 1rem">
+          <strong style="color:#fbbf24">Penalización (1–9):</strong><br>
+          <span style="color:#94a3b8">Si NO lo implementamos, ¿qué perdemos? ¿Afecta la reputación, los ingresos, la usabilidad?</span>
+        </div>
+        <div style="background:rgba(248,113,113,.07);border-radius:8px;padding:.7rem 1rem">
+          <strong style="color:#f87171">Costo (1–9):</strong><br>
+          <span style="color:#94a3b8">¿Cuánto tiempo y complejidad técnica requiere? El equipo de desarrollo es quien mejor responde esto.</span>
+        </div>
+      </div>
+      <p style="font-size:.78rem;color:#64748b;margin-top:.8rem">💡 Si hay desacuerdo, promediar los valores o debatir hasta consenso.</p>
+    `
+  },
+  3: {
+    title: 'Paso 3 — Calcular porcentajes y prioridad',
+    color: '#fbbf24',
+    icon: 'bi-calculator',
+    content: `
+      <p style="font-size:.87rem;color:#94a3b8;margin-bottom:.8rem">Con los valores asignados, se aplica la fórmula en dos etapas:</p>
+      <div style="display:flex;flex-direction:column;gap:.7rem;font-size:.84rem">
+        <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.8rem 1rem;font-family:'Space Mono',monospace">
+          <div style="color:#94a3b8;font-size:.65rem;margin-bottom:.4rem">ETAPA 1 — PORCENTAJES</div>
+          <div style="color:#34d399">R%<sub>i</sub> = R<sub>i</sub> / ΣR × 100</div>
+          <div style="color:#fbbf24">P%<sub>i</sub> = P<sub>i</sub> / ΣP × 100</div>
+          <div style="color:#f87171">C%<sub>i</sub> = C<sub>i</sub> / ΣC × 100</div>
+        </div>
+        <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.8rem 1rem;font-family:'Space Mono',monospace">
+          <div style="color:#94a3b8;font-size:.65rem;margin-bottom:.4rem">ETAPA 2 — PRIORIDAD</div>
+          <div style="color:#818cf8">Pri<sub>i</sub> = (R%<sub>i</sub> + P%<sub>i</sub>) / C%<sub>i</sub></div>
+        </div>
+      </div>
+      <p style="font-size:.78rem;color:#64748b;margin-top:.8rem">Los porcentajes hacen que todos los valores sean comparables entre sí independientemente de la cantidad de requisitos.</p>
+    `
+  },
+  4: {
+    title: 'Paso 4 — Ordenar y planificar',
+    color: '#818cf8',
+    icon: 'bi-sort-down',
+    content: `
+      <p style="font-size:.87rem;color:#94a3b8;margin-bottom:.8rem">Con los valores de prioridad calculados:</p>
+      <ul style="font-size:.84rem;color:#94a3b8;line-height:1.9;padding-left:1.2rem">
+        <li>Ordenar los requisitos de <strong style="color:#818cf8">mayor a menor</strong> prioridad.</li>
+        <li>Los de mayor prioridad entran al <strong style="color:#e2e8f0">primer release o sprint</strong>.</li>
+        <li>Los de menor prioridad van al <strong style="color:#e2e8f0">backlog</strong> para iteraciones futuras.</li>
+        <li>Si hay <strong style="color:#fbbf24">dependencias</strong> entre requisitos, respetar el orden lógico aunque la prioridad indique otra cosa.</li>
+        <li>Revisar el ranking cada vez que cambian los stakeholders, el contexto o el mercado.</li>
+      </ul>
+      <div style="background:rgba(129,140,248,.07);border:1px solid rgba(129,140,248,.2);border-radius:8px;padding:.8rem;margin-top:.8rem;font-size:.8rem;color:#94a3b8">
+        <strong style="color:#818cf8">Resultado:</strong> Un plan basado en datos que cualquier stakeholder puede entender y cuestionar con argumentos, no con política.
+      </div>
+    `
+  }
+};
+
+function showStep(n) {
+  const s = stepData[n];
+  Swal.fire({
+    background: '#0f1620',
+    color: '#e2e8f0',
+    title: `<span style="font-family:'Space Mono',monospace;color:${s.color}"><i class="bi ${s.icon}" style="margin-right:.4rem"></i>${s.title}</span>`,
+    html: `<div style="text-align:left;font-family:'Sora',sans-serif">${s.content}</div>`,
+    confirmButtonColor: s.color,
+    confirmButtonText: 'Cerrar',
+    width: '540px'
+  });
+}
+
+// ── EXAMPLE TABLE ─────────────────────────────────────────────────────────
+const exReqs = [
+  { id:'R001', desc:'Registro de usuarios',       r:5, p:5, c:1 },
+  { id:'R002', desc:'Buscar restaurantes cercanos',r:3, p:2, c:4 },
+  { id:'R005', desc:'Pago en línea',               r:9, p:8, c:6 },
+  { id:'R007', desc:'Notificaciones de estado',    r:6, p:5, c:3 },
+  { id:'R011', desc:'Tracking GPS del repartidor', r:5, p:3, c:8 },
+];
+
+const totalR = exReqs.reduce((s,r)=>s+r.r,0);
+const totalP = exReqs.reduce((s,r)=>s+r.p,0);
+const totalC = exReqs.reduce((s,r)=>s+r.c,0);
+
+document.getElementById('totalR').textContent = totalR;
+document.getElementById('totalP').textContent = totalP;
+document.getElementById('totalC').textContent = totalC;
+
+let calculated = false;
+
+function buildExTable(withCalc) {
+  const tbody = document.getElementById('exBody');
+  tbody.innerHTML = '';
+
+  const withPri = exReqs.map(r => {
+    const rp = (r.r/totalR)*100, pp = (r.p/totalP)*100, cp = (r.c/totalC)*100;
+    return { ...r, rp, pp, cp, pri: (rp+pp)/cp };
+  });
+
+  const sorted = withCalc ? [...withPri].sort((a,b)=>b.pri-a.pri) : withPri;
+
+  sorted.forEach((r, i) => {
+    const rank = withCalc ? i+1 : null;
+    const rankClass = ['','rk1','rk2','rk3','rk4','rk5'][rank] || 'rk4';
+    const tr = document.createElement('tr');
+    if (withCalc) tr.classList.add('animate__animated','animate__fadeIn');
+    tr.innerHTML = `
+      <td class="mono" style="color:var(--accent)">${r.id}</td>
+      <td style="color:var(--muted);font-size:.78rem">${r.desc}</td>
+      <td class="mono" style="color:var(--green)">${r.r}</td>
+      <td class="mono" style="color:var(--yellow)">${r.p}</td>
+      <td class="mono" style="color:var(--red)">${r.c}</td>
+      <td class="mono" style="color:var(--green)">${withCalc ? r.rp.toFixed(1)+'%' : '—'}</td>
+      <td class="mono" style="color:var(--yellow)">${withCalc ? r.pp.toFixed(1)+'%' : '—'}</td>
+      <td class="mono" style="color:var(--red)">${withCalc ? r.cp.toFixed(1)+'%' : '—'}</td>
+      <td class="${withCalc?'pri':''}"> ${withCalc ? r.pri.toFixed(3) : '—'}</td>
+      <td>${withCalc ? `<span class="rank-pill ${rankClass}">${rank}</span>` : '—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  return withCalc ? sorted : null;
+}
+
+buildExTable(false);
+
+function animarTabla() {
+  if (calculated) { buildExTable(false); calculated=false; document.getElementById('barSim').style.display='none'; return; }
+  calculated = true;
+  const sorted = buildExTable(true);
+  const maxPri = sorted[0].pri;
+
+  const barSim = document.getElementById('barSim');
+  const barRows = document.getElementById('barRows');
+  barRows.innerHTML = '';
+  sorted.forEach((r, i) => {
+    const pct = (r.pri / maxPri) * 100;
+    const colors = ['var(--yellow)','var(--muted)','var(--orange)','var(--accent)','var(--accent2)'];
+    const div = document.createElement('div');
+    div.className = 'bar-row';
+    div.innerHTML = `
+      <div class="bar-label">${r.id}</div>
+      <div class="bar-track"><div class="bar-fill" id="bf-${r.id}" style="width:0%;background:${colors[i]}"></div></div>
+      <div class="bar-val">${r.pri.toFixed(2)}</div>
+    `;
+    barRows.appendChild(div);
+  });
+  barSim.style.display = 'block';
+  setTimeout(() => {
+    sorted.forEach((r, i) => {
+      const pct = (r.pri / maxPri) * 100;
+      document.getElementById(`bf-${r.id}`).style.width = pct + '%';
+    });
+  }, 100);
+}
+
+// ── RESUMEN MODAL ─────────────────────────────────────────────────────────
+function showResumen() {
+  Swal.fire({
+    background: '#0f1620',
+    color: '#e2e8f0',
+    title: `<span style="font-family:'Space Mono',monospace;color:#818cf8">Resumen — Técnica de Wiegers</span>`,
+    html: `
+      <div style="text-align:left;font-family:'Sora',sans-serif;font-size:.84rem;color:#94a3b8">
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <div style="background:rgba(56,189,248,.07);border-radius:8px;padding:.6rem .9rem"><strong style="color:#38bdf8">¿Qué es?</strong> Técnica cuantitativa para priorizar requisitos según valor de negocio y esfuerzo.</div>
+          <div style="background:rgba(52,211,153,.07);border-radius:8px;padding:.6rem .9rem"><strong style="color:#34d399">Variables:</strong> Recompensa (beneficio), Penalización (costo de omisión), Costo (esfuerzo técnico). Escala 1–9.</div>
+          <div style="background:rgba(129,140,248,.07);border-radius:8px;padding:.6rem .9rem;font-family:'Space Mono',monospace;font-size:.78rem">
+            <strong style="color:#818cf8">Fórmula:</strong><br>
+            Prioridad = (<span style="color:#34d399">R%</span> + <span style="color:#fbbf24">P%</span>) ÷ <span style="color:#f87171">C%</span>
+          </div>
+          <div style="background:rgba(251,191,36,.07);border-radius:8px;padding:.6rem .9rem"><strong style="color:#fbbf24">Pasos:</strong> Listar → Asignar (stakeholders) → Calcular % → Ordenar → Planificar.</div>
+          <div style="background:rgba(248,113,113,.07);border-radius:8px;padding:.6rem .9rem"><strong style="color:#f87171">Limitación clave:</strong> No contempla dependencias entre requisitos. Complementar con criterio técnico.</div>
+        </div>
+      </div>
+    `,
+    confirmButtonColor: '#818cf8',
+    confirmButtonText: '¡A practicar!',
+    width: '520px'
+  });
+}
+</script>
+</body>
+</html>
