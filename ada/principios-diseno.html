@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Principios de Diseño de Software — ADA</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<style>
+:root{
+  --bg:#060d1a;--bg2:#0c1a2e;--card:#0f2035;--card2:#132840;
+  --accent:#00c8ff;--accent2:#0080ff;--accent3:#00e5a0;
+  --danger:#ff4d6d;--warn:#ffd166;--ok:#06d6a0;
+  --text:#c8d8f0;--muted:#6e8aaa;--border:#1a3050;
+  --code:#070f1c;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;}
+
+/* ── PROGRESS ── */
+#pbar-wrap{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.07);z-index:900;}
+#pbar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .4s ease;box-shadow:0 0 12px var(--accent);}
+
+/* ── SLIDES ── */
+#sw{position:relative;width:100vw;height:100vh;overflow:hidden;}
+.slide{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  padding:52px 80px 70px;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease;
+  transform:translateX(50px);
+  overflow-y:auto;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.slide.exit{opacity:0;transform:translateX(-50px);}
+
+/* ── NAV BUTTONS ── */
+.nav-btn{
+  position:fixed;bottom:24px;width:46px;height:46px;border-radius:50%;
+  border:2px solid var(--border);background:var(--card);color:var(--accent);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:all .2s;z-index:200;
+}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 0 18px rgba(0,200,255,.3);}
+#prevBtn{left:28px;}#nextBtn{right:28px;}
+#scount{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);z-index:200;}
+
+/* ── QUIZ LAUNCH ── */
+#quizLaunchBtn{
+  position:fixed;top:16px;right:16px;z-index:300;
+  background:linear-gradient(135deg,var(--accent2),#006bc7);
+  border:none;border-radius:22px;padding:8px 20px;color:#fff;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.95rem;
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  box-shadow:0 4px 18px rgba(0,110,220,.45);transition:all .2s;letter-spacing:.5px;
+}
+#quizLaunchBtn:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,110,220,.55);}
+
+/* ── TYPOGRAPHY ── */
+.stitle{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:2.2rem;letter-spacing:.5px;margin-bottom:6px;}
+.stitle .hi{color:var(--accent);}
+.stitle .hi2{color:var(--accent2);}
+.ssub{font-size:.78rem;color:var(--muted);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:20px;}
+.divider{height:3px;width:56px;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;margin-bottom:22px;}
+
+/* ── CARDS ── */
+.cc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:14px;border-left:4px solid var(--accent2);transition:transform .18s;}
+.cc:hover{transform:translateX(3px);}
+.cc.bad{border-left-color:var(--danger);}
+.cc.good{border-left-color:var(--ok);}
+.cc.warn{border-left-color:var(--warn);}
+.cc.neutral{border-left-color:var(--muted);}
+.cc h5{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:7px;}
+.cc p,.cc li{font-size:.88rem;color:var(--muted);line-height:1.7;}
+.cc ul{padding-left:18px;}
+
+/* ── HIGHLIGHT BOX ── */
+.hbox{
+  background:linear-gradient(135deg,rgba(0,128,255,.1),rgba(0,200,255,.05));
+  border:1px solid rgba(0,200,255,.18);border-radius:10px;
+  padding:16px 20px;margin-bottom:18px;
+}
+.hbox .hlabel{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.hbox .htext{font-size:1rem;font-weight:700;color:var(--text);line-height:1.5;}
+
+/* ── CODE ── */
+.cb{background:var(--code);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:10px 0;font-family:'JetBrains Mono',monospace;font-size:.79rem;}
+.cb-head{background:rgba(255,255,255,.04);padding:7px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);}
+.cb-head .d{width:9px;height:9px;border-radius:50%;}
+.d1{background:#ff5f57;}.d2{background:#ffbd2e;}.d3{background:#28c840;}
+.cb-lang{margin-left:auto;font-size:.7rem;color:var(--muted);}
+.cb pre{padding:14px 16px;margin:0;overflow-x:auto;line-height:1.65;color:#d4d4d4;}
+.kw{color:#569cd6;}.str{color:#ce9178;}.cm{color:#6a9955;font-style:italic;}
+.tp{color:#4ec9b0;}.fn{color:#dcdcaa;}.nm{color:#b5cea8;}.pp{color:#c586c0;}
+.op{color:#d4d4d4;}
+
+/* ── TWO COLUMN ── */
+.tcol{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.badge-bad{background:rgba(255,77,109,.18);color:var(--danger);border:1px solid var(--danger);border-radius:6px;padding:2px 10px;font-size:.72rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.badge-good{background:rgba(6,214,160,.18);color:var(--ok);border:1px solid var(--ok);border-radius:6px;padding:2px 10px;font-size:.72rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+
+/* ── COVER ── */
+#s1{justify-content:center;align-items:center;text-align:center;
+  background:radial-gradient(ellipse at 25% 60%,rgba(0,128,255,.12) 0%,transparent 55%),
+             radial-gradient(ellipse at 75% 30%,rgba(0,200,255,.08) 0%,transparent 50%);}
+.cov-icon{font-size:3.8rem;color:var(--accent);margin-bottom:22px;filter:drop-shadow(0 0 24px rgba(0,200,255,.5));}
+.cov-title{font-family:'Rajdhani',sans-serif;font-size:3.2rem;font-weight:700;line-height:1.1;margin-bottom:12px;}
+.cov-title .l2{color:var(--accent);font-size:2.4rem;}
+.cov-meta{font-size:.78rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:22px;}
+.cov-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px;}
+.cov-tag{background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.25);border-radius:20px;padding:5px 14px;font-size:.78rem;color:var(--accent);}
+
+/* ── INDEX GRID ── */
+.pidx-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px;}
+.pidx-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;transition:all .25s;cursor:default;}
+.pidx-item:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.3);}
+.pidx-item .pi-ic{font-size:1.7rem;margin-bottom:7px;}
+.pidx-item .pi-nm{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.88rem;color:var(--text);}
+.pidx-item .pi-ab{font-size:.72rem;color:var(--muted);}
+
+/* ── STEP LIST ── */
+.slist{list-style:none;padding:0;}
+.slist li{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;font-size:.88rem;color:var(--muted);}
+.slist li .sn{min-width:26px;height:26px;border-radius:50%;background:rgba(0,128,255,.2);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.85rem;}
+
+/* ── EXERCISES ── */
+.ex-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.ex-badge{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;padding:5px 14px;border-radius:16px;letter-spacing:.5px;}
+.ex-tag{background:rgba(0,200,255,.12);color:var(--accent);border:1px solid rgba(0,200,255,.28);border-radius:16px;padding:3px 12px;font-size:.76rem;}
+.sol-area{display:none;margin-top:14px;}
+.sol-area.open{display:block;}
+.btn-reveal{background:linear-gradient(135deg,#0c3565,#1058a0);border:1px solid var(--accent2);color:var(--accent);border-radius:8px;padding:9px 22px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;letter-spacing:.5px;transition:all .2s;margin-top:10px;display:inline-flex;align-items:center;gap:8px;}
+.btn-reveal:hover{background:linear-gradient(135deg,#1058a0,var(--accent2));box-shadow:0 0 18px rgba(0,128,255,.4);transform:translateY(-2px);}
+
+/* ── TABLE ── */
+.ptable{width:100%;border-collapse:collapse;font-size:.82rem;}
+.ptable th{background:rgba(0,128,255,.18);color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:700;padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);}
+.ptable td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;}
+.ptable tr:hover td{background:rgba(255,255,255,.02);color:var(--text);}
+
+/* ── QUIZ OVERLAY ── */
+#quiz-sec{
+  display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:var(--bg);z-index:600;overflow-y:auto;padding:40px 80px 80px;
+}
+#quiz-sec.on{display:block;}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:18px;}
+.qnum{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;}
+.qtext{font-size:.96rem;font-weight:700;margin-bottom:13px;line-height:1.5;color:var(--text);}
+.opt-lbl{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;
+  padding:9px 14px;margin-bottom:7px;cursor:pointer;font-size:.87rem;
+  transition:all .2s;color:var(--muted);
+}
+.opt-lbl:hover{border-color:var(--accent2);background:rgba(0,128,255,.1);color:var(--text);}
+.opt-lbl.correct{border-color:var(--ok)!important;background:rgba(6,214,160,.1)!important;color:var(--ok)!important;}
+.opt-lbl.wrong-sel{border-color:var(--danger)!important;background:rgba(255,77,109,.1)!important;color:var(--danger)!important;}
+.opt-lbl input[type=radio]{accent-color:var(--accent2);width:15px;height:15px;}
+.expl-box{
+  background:rgba(0,128,255,.08);border:1px solid rgba(0,128,255,.18);
+  border-radius:8px;padding:11px 15px;margin-top:11px;
+  font-size:.84rem;color:#a0bde0;display:none;line-height:1.6;
+}
+.expl-box.on{display:block;}
+.expl-box .expl-label{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.8rem;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+
+/* ── SUBMIT QUIZ BTN ── */
+.btn-submit{
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  border:none;border-radius:10px;padding:13px 36px;color:#fff;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.1rem;
+  cursor:pointer;letter-spacing:1px;transition:all .2s;
+  box-shadow:0 4px 20px rgba(0,128,255,.4);display:inline-flex;align-items:center;gap:10px;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 6px 26px rgba(0,128,255,.5);}
+
+/* ── RESULTS ── */
+#res-sec{
+  display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:var(--bg);z-index:700;overflow-y:auto;padding:40px 80px 80px;
+}
+#res-sec.on{display:block;}
+.score-wrap{text-align:center;margin-bottom:36px;}
+.score-ring{
+  width:150px;height:150px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;position:relative;
+}
+.score-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.score-inner{font-family:'Rajdhani',sans-serif;text-align:center;position:relative;z-index:2;}
+.score-big{font-size:3rem;font-weight:700;line-height:1;}
+.score-of{font-size:.8rem;color:var(--muted);}
+.grade-label{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;letter-spacing:1px;}
+.res-qcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:12px;border-left:4px solid var(--border);}
+.res-qcard.ok{border-left-color:var(--ok);}
+.res-qcard.fail{border-left-color:var(--danger);}
+.res-qtxt{font-size:.88rem;font-weight:600;margin-bottom:6px;color:var(--text);}
+.res-ans{font-size:.82rem;color:var(--muted);}
+.res-ans .ok{color:var(--ok);}
+.res-ans .fail{color:var(--danger);}
+
+/* ── BACK BTNS ── */
+.btn-back-pill{
+  background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:22px;
+  padding:7px 18px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:700;
+  font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+  transition:all .2s;letter-spacing:.5px;
+}
+.btn-back-pill:hover{border-color:var(--accent);color:var(--text);}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .slide{padding:46px 28px 70px;}
+  .tcol{grid-template-columns:1fr;}
+  .pidx-grid{grid-template-columns:repeat(2,1fr);}
+  .cov-title{font-size:2.2rem;}
+}
+</style>
+</head>
+<body>
+
+<div id="pbar-wrap"><div id="pbar" style="width:4%"></div></div>
+
+<button id="quizLaunchBtn" onclick="launchQuiz()">
+  <i class="fa fa-question-circle"></i> Cuestionario
+</button>
+
+<!-- ══════════════════════════════ SLIDES ══════════════════════════════ -->
+<div id="sw">
+
+<!-- S1 COVER -->
+<div class="slide active" id="s1">
+  <div class="cov-icon animate__animated animate__fadeInDown"><i class="fa fa-layer-group"></i></div>
+  <div class="animate__animated animate__fadeInUp">
+    <div class="cov-title">Principios de<br><span class="l2">Diseño de Software</span></div>
+    <div class="cov-meta">Análisis y Diseño de Aplicaciones · <span id="yearLabel"></span></div>
+    <div class="cov-tags">
+      <span class="cov-tag"><i class="fa fa-link-slash me-1"></i>Minimize Coupling</span>
+      <span class="cov-tag"><i class="fa fa-circle-nodes me-1"></i>Maximize Cohesion</span>
+      <span class="cov-tag"><i class="fa fa-ban me-1"></i>Law of Demeter</span>
+      <span class="cov-tag"><i class="fa fa-s me-1"></i>SRP</span>
+      <span class="cov-tag"><i class="fa fa-o me-1"></i>OCP</span>
+      <span class="cov-tag"><i class="fa fa-l me-1"></i>LSP</span>
+      <span class="cov-tag"><i class="fa fa-i me-1"></i>ISP</span>
+    </div>
+  </div>
+</div>
+
+<!-- S2 ÍNDICE -->
+<div class="slide" id="s2">
+  <div class="ssub"><i class="fa fa-map me-2"></i>Contenidos</div>
+  <div class="stitle">Mapa de <span class="hi">Principios</span></div>
+  <div class="divider"></div>
+  <div class="pidx-grid">
+    <div class="pidx-item"><div class="pi-ic" style="color:#ff6b9d">🔗</div><div class="pi-nm">Minimize Coupling</div><div class="pi-ab">Acoplamiento mínimo</div></div>
+    <div class="pidx-item"><div class="pi-ic" style="color:#00e5a0">⚙️</div><div class="pi-nm">Maximize Cohesion</div><div class="pi-ab">Cohesión máxima</div></div>
+    <div class="pidx-item"><div class="pi-ic" style="color:#ffd166">🚫</div><div class="pi-nm">Law of Demeter</div><div class="pi-ab">LoD / Principio de mínimo conocimiento</div></div>
+    <div class="pidx-item"><div class="pi-ic" style="color:#00c8ff">📋</div><div class="pi-nm">SRP</div><div class="pi-ab">Single Responsibility</div></div>
+    <div class="pidx-item"><div class="pi-ic" style="color:#a78bfa">🔓</div><div class="pi-nm">OCP</div><div class="pi-ab">Open / Closed</div></div>
+    <div class="pidx-item"><div class="pi-ic" style="color:#f97316">🔄</div><div class="pi-nm">LSP</div><div class="pi-ab">Liskov Substitution</div></div>
+    <div class="pidx-item"><div class="pi-ic" style="color:#22d3ee">✂️</div><div class="pi-nm">ISP</div><div class="pi-ab">Interface Segregation</div></div>
+    <div class="pidx-item" style="background:rgba(0,128,255,.07);border-color:rgba(0,128,255,.25)">
+      <div class="pi-ic">📝</div><div class="pi-nm">Ejercicios</div><div class="pi-ab">Práctica guiada</div></div>
+  </div>
+  <div class="cc mt-3" style="border-left-color:var(--accent3)">
+    <p><i class="fa fa-lightbulb me-2" style="color:var(--accent3)"></i>Estos principios guían el diseño de software mantenible, extensible y de bajo acoplamiento. Los principios <strong style="color:var(--text)">SRP, OCP, LSP e ISP</strong> forman parte de los principios <strong style="color:var(--text)">SOLID</strong>.</p>
+  </div>
+</div>
+
+<!-- S3 COUPLING CONCEPTO -->
+<div class="slide" id="s3" style="background:radial-gradient(ellipse at 5% 95%,rgba(255,77,109,.07) 0%,transparent 50%);">
+  <div class="ssub"><i class="fa fa-link-slash me-2"></i>Principio 1</div>
+  <div class="stitle"><span class="hi2">Minimize</span> Coupling</div>
+  <div class="divider"></div>
+  <div class="hbox">
+    <div class="hlabel">Definición</div>
+    <div class="htext">El acoplamiento mide el grado de dependencia entre módulos. Minimizarlo significa diseñar componentes que conozcan lo menos posible sobre los demás.</div>
+  </div>
+  <div class="tcol">
+    <div>
+      <div class="cc bad">
+        <h5><i class="fa fa-triangle-exclamation me-2" style="color:var(--danger)"></i>Acoplamiento fuerte (malo)</h5>
+        <ul>
+          <li>Una clase instancia directamente otras clases concretas</li>
+          <li>Cambiar la implementación obliga a cambiar el cliente</li>
+          <li>Dificulta las pruebas unitarias</li>
+          <li>Alta resistencia al cambio</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="cc good">
+        <h5><i class="fa fa-circle-check me-2" style="color:var(--ok)"></i>Acoplamiento débil (bueno)</h5>
+        <ul>
+          <li>Programar contra interfaces, no implementaciones</li>
+          <li>Inyección de dependencias (DI)</li>
+          <li>Fácil de sustituir implementaciones</li>
+          <li>Testeable en aislamiento</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="cc warn">
+    <h5><i class="fa fa-ruler me-2" style="color:var(--warn)"></i>Tipos de acoplamiento (de peor a mejor)</h5>
+    <p>Contenido → Común → Control → Estampa → Datos → Sin acoplamiento</p>
+  </div>
+</div>
+
+<!-- S4 COUPLING CÓDIGO -->
+<div class="slide" id="s4">
+  <div class="ssub"><i class="fa fa-code me-2"></i>Minimize Coupling</div>
+  <div class="stitle">Ejemplo en <span class="hi">C#</span></div>
+  <div class="divider"></div>
+  <div class="tcol">
+    <div>
+      <div class="mb-2"><span class="badge-bad">❌ TIGHT COUPLING</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+  <span class="cm">// Instancia concreta: fuerte acoplamiento</span>
+  <span class="kw">private</span> <span class="tp">SqlDatabase</span> _db = <span class="kw">new</span> <span class="tp">SqlDatabase</span>();
+  <span class="kw">private</span> <span class="tp">GmailSender</span> _mail = <span class="kw">new</span> <span class="tp">GmailSender</span>();
+
+  <span class="kw">public void</span> <span class="fn">Process</span>(<span class="tp">Order</span> order)
+  {
+    _db.<span class="fn">Save</span>(order);
+    _mail.<span class="fn">Send</span>(order.Email, <span class="str">"Confirmado"</span>);
+  }
+}</pre></div>
+    </div>
+    <div>
+      <div class="mb-2"><span class="badge-good">✓ LOOSE COUPLING</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public interface</span> <span class="tp">IDatabase</span>  { <span class="kw">void</span> <span class="fn">Save</span>(<span class="tp">Order</span> o); }
+<span class="kw">public interface</span> <span class="tp">IMailSender</span> { <span class="kw">void</span> <span class="fn">Send</span>(<span class="tp">string</span> t, <span class="tp">string</span> m); }
+
+<span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+  <span class="kw">private readonly</span> <span class="tp">IDatabase</span>  _db;
+  <span class="kw">private readonly</span> <span class="tp">IMailSender</span> _mail;
+
+  <span class="kw">public</span> <span class="fn">OrderService</span>(<span class="tp">IDatabase</span> db, <span class="tp">IMailSender</span> m)
+    => (_db, _mail) = (db, m); <span class="cm">// Inyección de dependencias</span>
+
+  <span class="kw">public void</span> <span class="fn">Process</span>(<span class="tp">Order</span> order)
+  {
+    _db.<span class="fn">Save</span>(order);
+    _mail.<span class="fn">Send</span>(order.Email, <span class="str">"Confirmado"</span>);
+  }
+}</pre></div>
+    </div>
+  </div>
+  <div class="cc" style="margin-top:8px">
+    <p><i class="fa fa-lightbulb me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">Beneficio:</strong> Ahora se puede cambiar <code style="color:var(--accent)">SqlDatabase</code> por <code style="color:var(--accent)">MongoDatabase</code> sin tocar <code style="color:var(--accent)">OrderService</code>, y testear con mocks.</p>
+  </div>
+</div>
+
+<!-- S5 COHESION -->
+<div class="slide" id="s5" style="background:radial-gradient(ellipse at 95% 5%,rgba(0,229,160,.07) 0%,transparent 50%);">
+  <div class="ssub"><i class="fa fa-circle-nodes me-2"></i>Principio 2</div>
+  <div class="stitle"><span class="hi2">Maximize</span> Cohesion</div>
+  <div class="divider"></div>
+  <div class="hbox">
+    <div class="hlabel">Definición</div>
+    <div class="htext">La cohesión mide cuán relacionadas están las responsabilidades dentro de un módulo. Alta cohesión = todos los métodos y atributos trabajan hacia un único propósito bien definido.</div>
+  </div>
+  <div class="tcol">
+    <div>
+      <div class="cc bad">
+        <h5><i class="fa fa-triangle-exclamation me-2" style="color:var(--danger)"></i>Baja cohesión (God Class)</h5>
+        <ul>
+          <li>Una clase hace "todo": UI, BD, emails, lógica de negocio</li>
+          <li>Métodos sin relación entre sí</li>
+          <li>Difícil de mantener y entender</li>
+          <li>Alta probabilidad de introducir bugs al cambiar</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="cc good">
+        <h5><i class="fa fa-circle-check me-2" style="color:var(--ok)"></i>Alta cohesión</h5>
+        <ul>
+          <li>Cada clase tiene un único propósito claro</li>
+          <li>Los métodos usan los atributos de la clase</li>
+          <li>Código reutilizable y comprensible</li>
+          <li>Fácil de cambiar sin efectos secundarios</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="cc warn">
+    <h5><i class="fa fa-layer-group me-2" style="color:var(--warn)"></i>Tipos de cohesión (de mayor a menor calidad)</h5>
+    <p>Funcional → Secuencial → Comunicacional → Procedimental → Temporal → Lógica → Coincidental</p>
+  </div>
+</div>
+
+<!-- S6 COHESION CÓDIGO -->
+<div class="slide" id="s6">
+  <div class="ssub"><i class="fa fa-code me-2"></i>Maximize Cohesion</div>
+  <div class="stitle">Ejemplo en <span class="hi">C#</span></div>
+  <div class="divider"></div>
+  <div class="tcol">
+    <div>
+      <div class="mb-2"><span class="badge-bad">❌ BAJA COHESIÓN</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Employee</span>
+{
+  <span class="kw">public string</span> Name { <span class="kw">get</span>; <span class="kw">set</span>; }
+  <span class="kw">public decimal</span> Salary { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+  <span class="cm">// Lógica de negocio</span>
+  <span class="kw">public decimal</span> <span class="fn">CalculateTax</span>() => Salary * <span class="nm">0.25m</span>;
+
+  <span class="cm">// Acceso a datos (otra responsabilidad)</span>
+  <span class="kw">public void</span> <span class="fn">Save</span>() { <span class="cm">/* SQL directo */</span> }
+
+  <span class="cm">// Notificaciones (otra responsabilidad)</span>
+  <span class="kw">public void</span> <span class="fn">SendWelcomeEmail</span>() { <span class="cm">/* SMTP */</span> }
+
+  <span class="cm">// Reportes (otra responsabilidad)</span>
+  <span class="kw">public string</span> <span class="fn">GeneratePdfReport</span>() => <span class="str">"..."</span>;
+}</pre></div>
+    </div>
+    <div>
+      <div class="mb-2"><span class="badge-good">✓ ALTA COHESIÓN</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Employee</span>  <span class="cm">// solo datos + lógica propia</span>
+{
+  <span class="kw">public string</span> Name { <span class="kw">get</span>; <span class="kw">set</span>; }
+  <span class="kw">public decimal</span> Salary { <span class="kw">get</span>; <span class="kw">set</span>; }
+  <span class="kw">public decimal</span> <span class="fn">CalculateTax</span>() => Salary * <span class="nm">0.25m</span>;
+}
+
+<span class="kw">public class</span> <span class="tp">EmployeeRepository</span> <span class="cm">// persistencia</span>
+{
+  <span class="kw">public void</span> <span class="fn">Save</span>(<span class="tp">Employee</span> e) { <span class="cm">/* DB */</span> }
+}
+
+<span class="kw">public class</span> <span class="tp">EmployeeNotifier</span>   <span class="cm">// notificaciones</span>
+{
+  <span class="kw">public void</span> <span class="fn">SendWelcome</span>(<span class="tp">Employee</span> e) { <span class="cm">/* Email */</span> }
+}
+
+<span class="kw">public class</span> <span class="tp">EmployeeReporter</span>   <span class="cm">// reportes</span>
+{
+  <span class="kw">public string</span> <span class="fn">GeneratePdf</span>(<span class="tp">Employee</span> e) => <span class="str">"..."</span>;
+}</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- S7 LAW OF DEMETER -->
+<div class="slide" id="s7" style="background:radial-gradient(ellipse at 20% 20%,rgba(255,209,102,.06) 0%,transparent 50%);">
+  <div class="ssub"><i class="fa fa-ban me-2"></i>Principio 3</div>
+  <div class="stitle"><span class="hi2">Law of</span> Demeter</div>
+  <div class="divider"></div>
+  <div class="hbox">
+    <div class="hlabel">Definición</div>
+    <div class="htext">"No hables con desconocidos." Un objeto debe interactuar solo con sus colaboradores directos, nunca navegar por cadenas de objetos para acceder a datos.</div>
+  </div>
+  <div class="cc" style="border-left-color:var(--warn)">
+    <h5><i class="fa fa-handshake me-2" style="color:var(--warn)"></i>Un método solo puede llamar a:</h5>
+    <ul class="slist mt-2">
+      <li><span class="sn">1</span>Métodos del <strong style="color:var(--text)">propio objeto</strong> (this)</li>
+      <li><span class="sn">2</span>Métodos de sus <strong style="color:var(--text)">atributos directos</strong></li>
+      <li><span class="sn">3</span>Métodos de objetos recibidos como <strong style="color:var(--text)">parámetros</strong></li>
+      <li><span class="sn">4</span>Métodos de objetos <strong style="color:var(--text)">creados localmente</strong> en el método</li>
+    </ul>
+  </div>
+  <div class="tcol mt-1">
+    <div class="cc bad">
+      <h5 style="color:var(--danger)">❌ Violación LoD</h5>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span></div>
+<pre><span class="cm">// "Cadena de trenes"</span>
+string city = customer
+  .<span class="fn">GetAddress</span>()
+  .<span class="fn">GetCity</span>()
+  .<span class="fn">GetName</span>();  <span class="cm">// ❌</span></pre></div>
+    </div>
+    <div class="cc good">
+      <h5 style="color:var(--ok)">✓ Cumple LoD</h5>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span></div>
+<pre><span class="cm">// Customer expone lo necesario</span>
+string city = customer
+  .<span class="fn">GetCityName</span>();   <span class="cm">// ✓</span>
+
+<span class="cm">// Customer internamente accede
+// a Address y City</span></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- S8 LOD CÓDIGO -->
+<div class="slide" id="s8">
+  <div class="ssub"><i class="fa fa-code me-2"></i>Law of Demeter</div>
+  <div class="stitle">Ejemplo completo en <span class="hi">C#</span></div>
+  <div class="divider"></div>
+  <div class="tcol">
+    <div>
+      <div class="mb-2"><span class="badge-bad">❌ VIOLA LoD</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Invoice</span>
+{
+  <span class="kw">public void</span> <span class="fn">Print</span>(<span class="tp">Customer</span> customer)
+  {
+    <span class="cm">// Viaja por Customer→Address→City→Name</span>
+    <span class="kw">var</span> city = customer
+      .<span class="fn">GetAddress</span>()
+      .<span class="fn">GetCity</span>()
+      .<span class="fn">GetName</span>();  <span class="cm">// ❌ 3 niveles de profundidad</span>
+
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Ciudad: {city}"</span>);
+  }
+}</pre></div>
+    </div>
+    <div>
+      <div class="mb-2"><span class="badge-good">✓ CUMPLE LoD</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Customer</span>
+{
+  <span class="kw">private</span> <span class="tp">Address</span> _address;
+
+  <span class="cm">// Customer delega internamente</span>
+  <span class="kw">public string</span> <span class="fn">GetCityName</span>()
+    => _address.<span class="fn">GetCityName</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">Invoice</span>
+{
+  <span class="kw">public void</span> <span class="fn">Print</span>(<span class="tp">Customer</span> customer)
+  {
+    <span class="cm">// Solo habla con el colaborador directo</span>
+    <span class="kw">var</span> city = customer.<span class="fn">GetCityName</span>();  <span class="cm">// ✓</span>
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"Ciudad: {city}"</span>);
+  }
+}</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- S9 SRP -->
+<div class="slide" id="s9" style="background:radial-gradient(ellipse at 90% 90%,rgba(0,200,255,.07) 0%,transparent 50%);">
+  <div class="ssub"><i class="fa fa-s me-2"></i>SOLID — S</div>
+  <div class="stitle">Single <span class="hi">Responsibility</span> Principle</div>
+  <div class="divider"></div>
+  <div class="hbox">
+    <div class="hlabel">Definición (Robert C. Martin)</div>
+    <div class="htext">"Una clase debe tener una, y solo una, razón para cambiar."</div>
+  </div>
+  <div class="tcol">
+    <div>
+      <div class="mb-2"><span class="badge-bad">❌ VIOLA SRP</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Report</span>
+{
+  <span class="kw">public string</span> Title;
+
+  <span class="cm">// Responsabilidad 1: lógica de negocio</span>
+  <span class="kw">public string</span> <span class="fn">GenerateContent</span>() => <span class="str">"..."</span>;
+
+  <span class="cm">// Responsabilidad 2: persistencia</span>
+  <span class="kw">public void</span> <span class="fn">SaveToDb</span>() { <span class="cm">/* SQL */</span> }
+
+  <span class="cm">// Responsabilidad 3: presentación</span>
+  <span class="kw">public void</span> <span class="fn">PrintToPdf</span>() { <span class="cm">/* PDF lib */</span> }
+}</pre></div>
+    </div>
+    <div>
+      <div class="mb-2"><span class="badge-good">✓ CUMPLE SRP</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Report</span>        <span class="cm">// solo lógica</span>
+{
+  <span class="kw">public string</span> Title;
+  <span class="kw">public string</span> <span class="fn">GenerateContent</span>() => <span class="str">"..."</span>;
+}
+
+<span class="kw">public class</span> <span class="tp">ReportRepository</span>  <span class="cm">// persistencia</span>
+{
+  <span class="kw">public void</span> <span class="fn">Save</span>(<span class="tp">Report</span> r) { <span class="cm">/* SQL */</span> }
+}
+
+<span class="kw">public class</span> <span class="tp">ReportPrinter</span>     <span class="cm">// presentación</span>
+{
+  <span class="kw">public void</span> <span class="fn">PrintToPdf</span>(<span class="tp">Report</span> r) { }
+}</pre></div>
+    </div>
+  </div>
+  <div class="cc" style="margin-top:8px">
+    <p><i class="fa fa-lightbulb me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">"Razón para cambiar":</strong> Si cambia el formato PDF, solo toca <code style="color:var(--accent)">ReportPrinter</code>. Si cambia la BD, solo toca <code style="color:var(--accent)">ReportRepository</code>.</p>
+  </div>
+</div>
+
+<!-- S10 OCP -->
+<div class="slide" id="s10" style="background:radial-gradient(ellipse at 80% 80%,rgba(167,139,250,.06) 0%,transparent 50%);">
+  <div class="ssub"><i class="fa fa-o me-2"></i>SOLID — O</div>
+  <div class="stitle">Open/<span class="hi">Closed</span> Principle</div>
+  <div class="divider"></div>
+  <div class="hbox">
+    <div class="hlabel">Definición (Bertrand Meyer)</div>
+    <div class="htext">"El software debe estar <strong>abierto para extensión</strong> pero <strong>cerrado para modificación</strong>."</div>
+  </div>
+  <div class="tcol">
+    <div>
+      <div class="mb-2"><span class="badge-bad">❌ VIOLA OCP</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">AreaCalc</span>
+{
+  <span class="kw">public double</span> <span class="fn">Calculate</span>(<span class="kw">object</span> shape)
+  {
+    <span class="kw">if</span> (shape <span class="kw">is</span> <span class="tp">Circle</span> c)
+      <span class="kw">return</span> Math.PI * c.Radius * c.Radius;
+    <span class="kw">if</span> (shape <span class="kw">is</span> <span class="tp">Rectangle</span> r)
+      <span class="kw">return</span> r.Width * r.Height;
+    <span class="cm">// ❌ Hay que editar aquí por cada forma nueva</span>
+    <span class="kw">return</span> <span class="nm">0</span>;
+  }
+}</pre></div>
+    </div>
+    <div>
+      <div class="mb-2"><span class="badge-good">✓ CUMPLE OCP</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public abstract class</span> <span class="tp">Shape</span>
+{
+  <span class="kw">public abstract double</span> <span class="fn">Area</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">Circle</span> : <span class="tp">Shape</span>
+{
+  <span class="kw">public double</span> Radius;
+  <span class="kw">public override double</span> <span class="fn">Area</span>()
+    => Math.PI * Radius * Radius;
+}
+<span class="kw">public class</span> <span class="tp">Triangle</span> : <span class="tp">Shape</span>  <span class="cm">// ✓ Nueva forma: no modifica nada</span>
+{
+  <span class="kw">public double</span> Base, Height;
+  <span class="kw">public override double</span> <span class="fn">Area</span>() => Base * Height / <span class="nm">2</span>;
+}</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- S11 LSP -->
+<div class="slide" id="s11" style="background:radial-gradient(ellipse at 10% 80%,rgba(249,115,22,.06) 0%,transparent 50%);">
+  <div class="ssub"><i class="fa fa-l me-2"></i>SOLID — L</div>
+  <div class="stitle">Liskov <span class="hi">Substitution</span> Principle</div>
+  <div class="divider"></div>
+  <div class="hbox">
+    <div class="hlabel">Definición (Barbara Liskov, 1987)</div>
+    <div class="htext">"Los objetos de una subclase deben poder reemplazar a los de su clase base sin alterar el comportamiento correcto del programa."</div>
+  </div>
+  <div class="tcol">
+    <div>
+      <div class="mb-2"><span class="badge-bad">❌ VIOLA LSP</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Rectangle</span>
+{
+  <span class="kw">public virtual int</span> Width  { <span class="kw">get</span>; <span class="kw">set</span>; }
+  <span class="kw">public virtual int</span> Height { <span class="kw">get</span>; <span class="kw">set</span>; }
+  <span class="kw">public int</span> <span class="fn">Area</span>() => Width * Height;
+}
+<span class="kw">public class</span> <span class="tp">Square</span> : <span class="tp">Rectangle</span>
+{
+  <span class="kw">public override int</span> Width
+  { <span class="kw">set</span> { <span class="kw">base</span>.Width = <span class="kw">base</span>.Height = <span class="kw">value</span>; } }
+  <span class="kw">public override int</span> Height
+  { <span class="kw">set</span> { <span class="kw">base</span>.Width = <span class="kw">base</span>.Height = <span class="kw">value</span>; } }
+}
+<span class="cm">// Resize(r, 5, 3) → espera área 15
+// Con Square devuelve 9 ❌</span></pre></div>
+    </div>
+    <div>
+      <div class="mb-2"><span class="badge-good">✓ CUMPLE LSP</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public abstract class</span> <span class="tp">Shape</span>
+{
+  <span class="kw">public abstract int</span> <span class="fn">Area</span>();
+}
+<span class="kw">public class</span> <span class="tp">Rectangle</span> : <span class="tp">Shape</span>
+{
+  <span class="kw">public int</span> Width, Height;
+  <span class="kw">public override int</span> <span class="fn">Area</span>() => Width * Height;
+}
+<span class="kw">public class</span> <span class="tp">Square</span> : <span class="tp">Shape</span>
+{
+  <span class="kw">public int</span> Side;
+  <span class="kw">public override int</span> <span class="fn">Area</span>() => Side * Side;
+}
+<span class="cm">// ✓ Ambas sustituibles como Shape</span></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- S12 ISP -->
+<div class="slide" id="s12" style="background:radial-gradient(ellipse at 90% 10%,rgba(34,211,238,.06) 0%,transparent 50%);">
+  <div class="ssub"><i class="fa fa-i me-2"></i>SOLID — I</div>
+  <div class="stitle">Interface <span class="hi">Segregation</span> Principle</div>
+  <div class="divider"></div>
+  <div class="hbox">
+    <div class="hlabel">Definición (Robert C. Martin)</div>
+    <div class="htext">"Los clientes no deben ser forzados a depender de interfaces que no utilizan."</div>
+  </div>
+  <div class="tcol">
+    <div>
+      <div class="mb-2"><span class="badge-bad">❌ INTERFAZ GORDA</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public interface</span> <span class="tp">IWorker</span>
+{
+  <span class="kw">void</span> <span class="fn">Work</span>();
+  <span class="kw">void</span> <span class="fn">Eat</span>();
+  <span class="kw">void</span> <span class="fn">Sleep</span>();
+}
+<span class="kw">public class</span> <span class="tp">Robot</span> : <span class="tp">IWorker</span>
+{
+  <span class="kw">public void</span> <span class="fn">Work</span>()  { <span class="cm">/* OK */</span> }
+  <span class="kw">public void</span> <span class="fn">Eat</span>()   <span class="cm">// ❌ Los robots no comen</span>
+    => <span class="kw">throw new</span> <span class="tp">NotImplementedException</span>();
+  <span class="kw">public void</span> <span class="fn">Sleep</span>() <span class="cm">// ❌ Los robots no duermen</span>
+    => <span class="kw">throw new</span> <span class="tp">NotImplementedException</span>();
+}</pre></div>
+    </div>
+    <div>
+      <div class="mb-2"><span class="badge-good">✓ INTERFACES SEGREGADAS</span></div>
+      <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C#</span></div>
+<pre><span class="kw">public interface</span> <span class="tp">IWorkable</span>  { <span class="kw">void</span> <span class="fn">Work</span>(); }
+<span class="kw">public interface</span> <span class="tp">IFeedable</span>  { <span class="kw">void</span> <span class="fn">Eat</span>(); }
+<span class="kw">public interface</span> <span class="tp">ISleepable</span> { <span class="kw">void</span> <span class="fn">Sleep</span>(); }
+
+<span class="kw">public class</span> <span class="tp">Robot</span> : <span class="tp">IWorkable</span>  <span class="cm">// ✓ Solo lo necesario</span>
+{
+  <span class="kw">public void</span> <span class="fn">Work</span>() { <span class="cm">/* OK */</span> }
+}
+
+<span class="kw">public class</span> <span class="tp">HumanWorker</span> : <span class="tp">IWorkable</span>, <span class="tp">IFeedable</span>, <span class="tp">ISleepable</span>
+{
+  <span class="kw">public void</span> <span class="fn">Work</span>()  { }
+  <span class="kw">public void</span> <span class="fn">Eat</span>()   { }
+  <span class="kw">public void</span> <span class="fn">Sleep</span>() { }
+}</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- S13 RESUMEN TABLA -->
+<div class="slide" id="s13">
+  <div class="ssub"><i class="fa fa-table me-2"></i>Resumen</div>
+  <div class="stitle">Tabla <span class="hi">Comparativa</span></div>
+  <div class="divider"></div>
+  <table class="ptable">
+    <thead><tr><th>Principio</th><th>Propósito</th><th>Señal de violación</th><th>Solución típica</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:#ff6b9d">Minimize Coupling</strong></td><td>Reducir dependencias entre módulos</td><td>Instanciar clases concretas en otras clases</td><td>Interfaces + Inyección de dependencias</td></tr>
+      <tr><td><strong style="color:#00e5a0">Maximize Cohesion</strong></td><td>Cada módulo tiene un propósito claro</td><td>"God class" con métodos sin relación</td><td>Separar clases por responsabilidad</td></tr>
+      <tr><td><strong style="color:#ffd166">Law of Demeter</strong></td><td>Limitar el conocimiento entre objetos</td><td>Cadenas: <code>a.b.c.doSomething()</code></td><td>Métodos delegados (Tell, Don't Ask)</td></tr>
+      <tr><td><strong style="color:#00c8ff">SRP</strong></td><td>Una sola razón para cambiar</td><td>Clase con BD + Email + UI + Negocio</td><td>Extraer responsabilidades a clases separadas</td></tr>
+      <tr><td><strong style="color:#a78bfa">OCP</strong></td><td>Extensible sin modificar código existente</td><td>If/else o switch para detectar tipos</td><td>Abstracción + polimorfismo</td></tr>
+      <tr><td><strong style="color:#f97316">LSP</strong></td><td>Subclases intercambiables con su base</td><td>Subclase lanza excepciones o rompe contratos</td><td>Revisión del modelo de herencia</td></tr>
+      <tr><td><strong style="color:#22d3ee">ISP</strong></td><td>Interfaces pequeñas y específicas</td><td>Implementar métodos con <code>throw new NotImplementedException()</code></td><td>Dividir interfaces por rol</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════ EJERCICIOS ════════════════ -->
+
+<!-- S14 EJ1 SRP -->
+<div class="slide" id="s14">
+  <div class="ex-head">
+    <span class="ex-badge"><i class="fa fa-dumbbell me-2"></i>Ejercicio 1</span>
+    <span class="ex-tag">Single Responsibility Principle</span>
+    <span class="ex-tag">Cohesión</span>
+  </div>
+  <div class="stitle">Identificar y <span class="hi">Refactorizar</span></div>
+  <div class="divider"></div>
+  <div class="cc warn"><p><i class="fa fa-tasks me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">Consigna:</strong> La siguiente clase <code>UserManager</code> viola el SRP. Identifica cuántas responsabilidades tiene y refactoriza separándolas en clases de alta cohesión.</p></div>
+  <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Código a refactorizar</span></div>
+<pre><span class="kw">public class</span> <span class="tp">UserManager</span>
+{
+  <span class="kw">private</span> <span class="tp">List</span>&lt;<span class="tp">User</span>&gt; _users = <span class="kw">new</span>();
+
+  <span class="kw">public void</span> <span class="fn">AddUser</span>(<span class="tp">User</span> u)   { _users.<span class="fn">Add</span>(u); }
+  <span class="kw">public void</span> <span class="fn">RemoveUser</span>(<span class="tp">User</span> u) { _users.<span class="fn">Remove</span>(u); }
+
+  <span class="kw">public void</span> <span class="fn">SaveToDatabase</span>(<span class="tp">User</span> u)
+    { <span class="cm">/* Conexión SQL, INSERT INTO users... */</span> }
+
+  <span class="kw">public void</span> <span class="fn">SendWelcomeEmail</span>(<span class="tp">User</span> u)
+    { <span class="cm">/* Conexión SMTP, envío de email */</span> }
+
+  <span class="kw">public string</span> <span class="fn">GenerateUserReport</span>()
+    { <span class="kw">return</span> <span class="str">"Reporte de usuarios..."</span>; }
+
+  <span class="kw">public bool</span> <span class="fn">ValidatePassword</span>(<span class="tp">string</span> password)
+    { <span class="kw">return</span> password.<span class="fn">Length</span> &gt;= <span class="nm">8</span>; }
+}</pre></div>
+  <button class="btn-reveal" onclick="toggleSol('sol1')"><i class="fa fa-eye me-2"></i>Ver Solución</button>
+  <div class="sol-area" id="sol1">
+    <div class="cc good mt-2"><h5><i class="fa fa-circle-check me-2" style="color:var(--ok)"></i>Solución</h5>
+    <p>La clase tiene <strong style="color:var(--text)">4 responsabilidades</strong>: gestión de usuarios, persistencia, notificaciones y reportes. Se separan así:</p></div>
+    <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Refactorizado</span></div>
+<pre><span class="kw">public class</span> <span class="tp">UserService</span>          <span class="cm">// gestión + validación</span>
+{
+  <span class="kw">private</span> <span class="tp">List</span>&lt;<span class="tp">User</span>&gt; _users = <span class="kw">new</span>();
+  <span class="kw">public void</span> <span class="fn">AddUser</span>(<span class="tp">User</span> u)    { _users.<span class="fn">Add</span>(u); }
+  <span class="kw">public void</span> <span class="fn">RemoveUser</span>(<span class="tp">User</span> u) { _users.<span class="fn">Remove</span>(u); }
+  <span class="kw">public bool</span> <span class="fn">ValidatePassword</span>(<span class="tp">string</span> p) => p.<span class="fn">Length</span> &gt;= <span class="nm">8</span>;
+}
+<span class="kw">public class</span> <span class="tp">UserRepository</span>       <span class="cm">// persistencia</span>
+{
+  <span class="kw">public void</span> <span class="fn">Save</span>(<span class="tp">User</span> u) { <span class="cm">/* SQL */</span> }
+}
+<span class="kw">public class</span> <span class="tp">UserNotifier</span>         <span class="cm">// notificaciones</span>
+{
+  <span class="kw">public void</span> <span class="fn">SendWelcomeEmail</span>(<span class="tp">User</span> u) { <span class="cm">/* SMTP */</span> }
+}
+<span class="kw">public class</span> <span class="tp">UserReporter</span>         <span class="cm">// reportes</span>
+{
+  <span class="kw">public string</span> <span class="fn">GenerateReport</span>() => <span class="str">"Reporte..."</span>;
+}</pre></div>
+  </div>
+</div>
+
+<!-- S15 EJ2 COUPLING -->
+<div class="slide" id="s15">
+  <div class="ex-head">
+    <span class="ex-badge"><i class="fa fa-dumbbell me-2"></i>Ejercicio 2</span>
+    <span class="ex-tag">Minimize Coupling</span>
+    <span class="ex-tag">Inyección de Dependencias</span>
+  </div>
+  <div class="stitle">Reducir <span class="hi">Acoplamiento</span></div>
+  <div class="divider"></div>
+  <div class="cc warn"><p><i class="fa fa-tasks me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">Consigna:</strong> <code>NotificationService</code> está fuertemente acoplado. Refactoriza para que pueda funcionar con cualquier sistema de notificación (Email, SMS, Push) sin modificar la clase.</p></div>
+  <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Código con acoplamiento fuerte</span></div>
+<pre><span class="kw">public class</span> <span class="tp">NotificationService</span>
+{
+  <span class="kw">private</span> <span class="tp">GmailClient</span> _gmail = <span class="kw">new</span> <span class="tp">GmailClient</span>();   <span class="cm">// ❌</span>
+  <span class="kw">private</span> <span class="tp">TwilioSms</span>   _sms   = <span class="kw">new</span> <span class="tp">TwilioSms</span>();     <span class="cm">// ❌</span>
+
+  <span class="kw">public void</span> <span class="fn">Notify</span>(<span class="tp">string</span> user, <span class="tp">string</span> message)
+  {
+    _gmail.<span class="fn">SendEmail</span>(user, message);
+    _sms.<span class="fn">SendText</span>(user, message);
+  }
+}</pre></div>
+  <button class="btn-reveal" onclick="toggleSol('sol2')"><i class="fa fa-eye me-2"></i>Ver Solución</button>
+  <div class="sol-area" id="sol2">
+    <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Bajo acoplamiento</span></div>
+<pre><span class="kw">public interface</span> <span class="tp">INotifier</span>
+{
+  <span class="kw">void</span> <span class="fn">Notify</span>(<span class="tp">string</span> user, <span class="tp">string</span> message);
+}
+
+<span class="kw">public class</span> <span class="tp">GmailNotifier</span>  : <span class="tp">INotifier</span> { <span class="kw">public void</span> <span class="fn">Notify</span>(<span class="tp">string</span> u, <span class="tp">string</span> m) { <span class="cm">/* Gmail */</span> } }
+<span class="kw">public class</span> <span class="tp">SmsNotifier</span>    : <span class="tp">INotifier</span> { <span class="kw">public void</span> <span class="fn">Notify</span>(<span class="tp">string</span> u, <span class="tp">string</span> m) { <span class="cm">/* SMS */</span> } }
+<span class="kw">public class</span> <span class="tp">PushNotifier</span>   : <span class="tp">INotifier</span> { <span class="kw">public void</span> <span class="fn">Notify</span>(<span class="tp">string</span> u, <span class="tp">string</span> m) { <span class="cm">/* Push */</span> } }
+
+<span class="kw">public class</span> <span class="tp">NotificationService</span>
+{
+  <span class="kw">private readonly</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">INotifier</span>&gt; _notifiers;
+
+  <span class="kw">public</span> <span class="fn">NotificationService</span>(<span class="tp">IEnumerable</span>&lt;<span class="tp">INotifier</span>&gt; notifiers)
+    => _notifiers = notifiers;  <span class="cm">// ✓ DI</span>
+
+  <span class="kw">public void</span> <span class="fn">Notify</span>(<span class="tp">string</span> user, <span class="tp">string</span> msg)
+    => _notifiers.<span class="fn">ToList</span>().<span class="fn">ForEach</span>(n => n.<span class="fn">Notify</span>(user, msg));
+}</pre></div>
+    <div class="cc good mt-2"><p><i class="fa fa-circle-check me-2" style="color:var(--ok)"></i>Ahora se puede agregar <code>WhatsAppNotifier</code> sin tocar <code>NotificationService</code>. Aplica también <strong style="color:var(--text)">OCP</strong>.</p></div>
+  </div>
+</div>
+
+<!-- S16 EJ3 LAW OF DEMETER -->
+<div class="slide" id="s16">
+  <div class="ex-head">
+    <span class="ex-badge"><i class="fa fa-dumbbell me-2"></i>Ejercicio 3</span>
+    <span class="ex-tag">Law of Demeter</span>
+  </div>
+  <div class="stitle">Corregir <span class="hi">Cadenas de Llamadas</span></div>
+  <div class="divider"></div>
+  <div class="cc warn"><p><i class="fa fa-tasks me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">Consigna:</strong> El método <code>PrintInvoice</code> viola la Ley de Demeter en tres lugares. Identifícalos y refactoriza aplicando delegación.</p></div>
+  <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Código con violaciones LoD</span></div>
+<pre><span class="kw">public class</span> <span class="tp">InvoicePrinter</span>
+{
+  <span class="kw">public void</span> <span class="fn">PrintInvoice</span>(<span class="tp">Order</span> order)
+  {
+    <span class="cm">// Violación 1: navegar Order → Customer → Address → City</span>
+    string city = order.<span class="fn">GetCustomer</span>().<span class="fn">GetAddress</span>().<span class="fn">GetCity</span>();
+
+    <span class="cm">// Violación 2: navegar Order → Items → first → Product → Name</span>
+    string firstItem = order.<span class="fn">GetItems</span>()[<span class="nm">0</span>].<span class="fn">GetProduct</span>().<span class="fn">GetName</span>();
+
+    <span class="cm">// Violación 3: navegar Order → Payment → Method → Description</span>
+    string payDesc = order.<span class="fn">GetPayment</span>().<span class="fn">GetMethod</span>().<span class="fn">GetDescription</span>();
+
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"{city} | {firstItem} | {payDesc}"</span>);
+  }
+}</pre></div>
+  <button class="btn-reveal" onclick="toggleSol('sol3')"><i class="fa fa-eye me-2"></i>Ver Solución</button>
+  <div class="sol-area" id="sol3">
+    <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Con delegación (LoD)</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Order</span>
+{
+  <span class="kw">public string</span> <span class="fn">GetCustomerCity</span>()      => _customer.<span class="fn">GetCity</span>();
+  <span class="kw">public string</span> <span class="fn">GetFirstItemName</span>()     => _items[<span class="nm">0</span>].<span class="fn">GetProductName</span>();
+  <span class="kw">public string</span> <span class="fn">GetPaymentDescription</span>() => _payment.<span class="fn">GetDescription</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">InvoicePrinter</span>
+{
+  <span class="kw">public void</span> <span class="fn">PrintInvoice</span>(<span class="tp">Order</span> order)
+  {
+    string city     = order.<span class="fn">GetCustomerCity</span>();       <span class="cm">// ✓</span>
+    string firstItem = order.<span class="fn">GetFirstItemName</span>();     <span class="cm">// ✓</span>
+    string payDesc   = order.<span class="fn">GetPaymentDescription</span>();<span class="cm">// ✓</span>
+    Console.<span class="fn">WriteLine</span>(<span class="str">$"{city} | {firstItem} | {payDesc}"</span>);
+  }
+}</pre></div>
+    <div class="cc good mt-2"><p><i class="fa fa-circle-check me-2" style="color:var(--ok)"></i><code>InvoicePrinter</code> ahora solo habla con <code>Order</code>. Si cambia la estructura interna de <code>Customer</code> o <code>Payment</code>, <code>InvoicePrinter</code> no necesita cambiar.</p></div>
+  </div>
+</div>
+
+<!-- S17 EJ4 LSP -->
+<div class="slide" id="s17">
+  <div class="ex-head">
+    <span class="ex-badge"><i class="fa fa-dumbbell me-2"></i>Ejercicio 4</span>
+    <span class="ex-tag">Liskov Substitution Principle</span>
+  </div>
+  <div class="stitle">Detectar Violación de <span class="hi">LSP</span></div>
+  <div class="divider"></div>
+  <div class="cc warn"><p><i class="fa fa-tasks me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">Consigna:</strong> Analiza este diseño de jerarquía de aves. ¿Qué ocurre cuando se llama a <code>MakeItFly()</code> con un <code>Pingüino</code>? ¿Cómo se soluciona?</p></div>
+  <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Violación LSP</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Bird</span>
+{
+  <span class="kw">public virtual void</span> <span class="fn">Fly</span>() => Console.<span class="fn">WriteLine</span>(<span class="str">"Volando..."</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">Eagle</span>  : <span class="tp">Bird</span> { } <span class="cm">// ✓ un águila vuela</span>
+
+<span class="kw">public class</span> <span class="tp">Penguin</span> : <span class="tp">Bird</span>
+{
+  <span class="kw">public override void</span> <span class="fn">Fly</span>()  <span class="cm">// ❌ El pingüino no puede volar</span>
+    => <span class="kw">throw new</span> <span class="tp">InvalidOperationException</span>(<span class="str">"¡No puedo volar!"</span>);
+}
+
+<span class="cm">// El código cliente explota con Penguin:</span>
+<span class="kw">public void</span> <span class="fn">MakeItFly</span>(<span class="tp">Bird</span> bird) => bird.<span class="fn">Fly</span>(); <span class="cm">// ❌ lanza excepción</span></pre></div>
+  <button class="btn-reveal" onclick="toggleSol('sol4')"><i class="fa fa-eye me-2"></i>Ver Solución</button>
+  <div class="sol-area" id="sol4">
+    <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Jerarquía corregida</span></div>
+<pre><span class="kw">public abstract class</span> <span class="tp">Bird</span>
+{
+  <span class="kw">public abstract void</span> <span class="fn">Move</span>();  <span class="cm">// todos los pájaros se mueven</span>
+}
+
+<span class="kw">public interface</span> <span class="tp">IFlyable</span> { <span class="kw">void</span> <span class="fn">Fly</span>(); }
+
+<span class="kw">public class</span> <span class="tp">Eagle</span> : <span class="tp">Bird</span>, <span class="tp">IFlyable</span>
+{
+  <span class="kw">public override void</span> <span class="fn">Move</span>() => <span class="fn">Fly</span>();
+  <span class="kw">public void</span> <span class="fn">Fly</span>() => Console.<span class="fn">WriteLine</span>(<span class="str">"Volando..."</span>);
+}
+<span class="kw">public class</span> <span class="tp">Penguin</span> : <span class="tp">Bird</span>   <span class="cm">// ✓ No implementa IFlyable</span>
+{
+  <span class="kw">public override void</span> <span class="fn">Move</span>() => Console.<span class="fn">WriteLine</span>(<span class="str">"Nadando..."</span>);
+}
+
+<span class="cm">// Solo las aves que vuelan reciben IFlyable:</span>
+<span class="kw">public void</span> <span class="fn">MakeItFly</span>(<span class="tp">IFlyable</span> bird) => bird.<span class="fn">Fly</span>(); <span class="cm">// ✓ seguro</span></pre></div>
+    <div class="cc good mt-2"><p><i class="fa fa-circle-check me-2" style="color:var(--ok)"></i>Separar la capacidad de volar en <code>IFlyable</code> aplica también <strong style="color:var(--text)">ISP</strong>. El compilador garantiza que nadie llame a <code>Fly()</code> en un pingüino.</p></div>
+  </div>
+</div>
+
+<!-- S18 EJ5 OCP -->
+<div class="slide" id="s18">
+  <div class="ex-head">
+    <span class="ex-badge"><i class="fa fa-dumbbell me-2"></i>Ejercicio 5</span>
+    <span class="ex-tag">Open / Closed Principle</span>
+  </div>
+  <div class="stitle">Extender sin <span class="hi">Modificar</span></div>
+  <div class="divider"></div>
+  <div class="cc warn"><p><i class="fa fa-tasks me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">Consigna:</strong> La clase <code>Discount</code> viola OCP: cada vez que se agrega un tipo de descuento hay que editar <code>Calculate()</code>. Refactoriza para que nuevos tipos se agreguen sin modificar código existente.</p></div>
+  <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Viola OCP</span></div>
+<pre><span class="kw">public class</span> <span class="tp">Discount</span>
+{
+  <span class="kw">public decimal</span> <span class="fn">Calculate</span>(<span class="tp">string</span> type, <span class="kw">decimal</span> price)
+  {
+    <span class="kw">if</span> (type == <span class="str">"Student"</span>)   <span class="kw">return</span> price * <span class="nm">0.80m</span>;
+    <span class="kw">if</span> (type == <span class="str">"Employee"</span>)  <span class="kw">return</span> price * <span class="nm">0.70m</span>;
+    <span class="kw">if</span> (type == <span class="str">"VIP"</span>)       <span class="kw">return</span> price * <span class="nm">0.50m</span>;
+    <span class="cm">// ❌ Cada nuevo tipo requiere editar este método</span>
+    <span class="kw">return</span> price;
+  }
+}</pre></div>
+  <button class="btn-reveal" onclick="toggleSol('sol5')"><i class="fa fa-eye me-2"></i>Ver Solución</button>
+  <div class="sol-area" id="sol5">
+    <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Cumple OCP</span></div>
+<pre><span class="kw">public abstract class</span> <span class="tp">Discount</span>
+{
+  <span class="kw">public abstract decimal</span> <span class="fn">Calculate</span>(<span class="kw">decimal</span> price);
+}
+
+<span class="kw">public class</span> <span class="tp">StudentDiscount</span>  : <span class="tp">Discount</span>
+  { <span class="kw">public override decimal</span> <span class="fn">Calculate</span>(<span class="kw">decimal</span> p) => p * <span class="nm">0.80m</span>; }
+
+<span class="kw">public class</span> <span class="tp">EmployeeDiscount</span> : <span class="tp">Discount</span>
+  { <span class="kw">public override decimal</span> <span class="fn">Calculate</span>(<span class="kw">decimal</span> p) => p * <span class="nm">0.70m</span>; }
+
+<span class="kw">public class</span> <span class="tp">VIPDiscount</span>      : <span class="tp">Discount</span>
+  { <span class="kw">public override decimal</span> <span class="fn">Calculate</span>(<span class="kw">decimal</span> p) => p * <span class="nm">0.50m</span>; }
+
+<span class="cm">// ✓ Nuevo tipo: solo agregar clase, sin tocar las existentes</span>
+<span class="kw">public class</span> <span class="tp">SeniorDiscount</span>   : <span class="tp">Discount</span>
+  { <span class="kw">public override decimal</span> <span class="fn">Calculate</span>(<span class="kw">decimal</span> p) => p * <span class="nm">0.75m</span>; }
+
+<span class="cm">// Uso:</span>
+<span class="kw">public decimal</span> <span class="fn">ApplyDiscount</span>(<span class="tp">Discount</span> d, <span class="kw">decimal</span> price)
+  => d.<span class="fn">Calculate</span>(price);</pre></div>
+  </div>
+</div>
+
+<!-- S19 EJ6 ISP -->
+<div class="slide" id="s19">
+  <div class="ex-head">
+    <span class="ex-badge"><i class="fa fa-dumbbell me-2"></i>Ejercicio 6</span>
+    <span class="ex-tag">Interface Segregation Principle</span>
+  </div>
+  <div class="stitle">Dividir una <span class="hi">Interfaz Gorda</span></div>
+  <div class="divider"></div>
+  <div class="cc warn"><p><i class="fa fa-tasks me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">Consigna:</strong> <code>IMultifunctionDevice</code> obliga a todas las impresoras a implementar fax y escáner, aunque no tengan esa capacidad. Aplica ISP para resolverlo.</p></div>
+  <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Interfaz gorda</span></div>
+<pre><span class="kw">public interface</span> <span class="tp">IMultifunctionDevice</span>
+{
+  <span class="kw">void</span> <span class="fn">Print</span>(<span class="tp">Document</span> doc);
+  <span class="kw">void</span> <span class="fn">Scan</span>(<span class="tp">Document</span> doc);
+  <span class="kw">void</span> <span class="fn">Fax</span>(<span class="tp">Document</span> doc);
+  <span class="kw">void</span> <span class="fn">Copy</span>(<span class="tp">Document</span> doc);
+}
+
+<span class="kw">public class</span> <span class="tp">OldPrinter</span> : <span class="tp">IMultifunctionDevice</span>
+{
+  <span class="kw">public void</span> <span class="fn">Print</span>(<span class="tp">Document</span> doc) { <span class="cm">/* OK */</span> }
+  <span class="kw">public void</span> <span class="fn">Scan</span>(<span class="tp">Document</span> doc)  => <span class="kw">throw new</span> <span class="tp">NotSupportedException</span>();  <span class="cm">// ❌</span>
+  <span class="kw">public void</span> <span class="fn">Fax</span>(<span class="tp">Document</span> doc)   => <span class="kw">throw new</span> <span class="tp">NotSupportedException</span>();  <span class="cm">// ❌</span>
+  <span class="kw">public void</span> <span class="fn">Copy</span>(<span class="tp">Document</span> doc)  => <span class="kw">throw new</span> <span class="tp">NotSupportedException</span>();  <span class="cm">// ❌</span>
+}</pre></div>
+  <button class="btn-reveal" onclick="toggleSol('sol6')"><i class="fa fa-eye me-2"></i>Ver Solución</button>
+  <div class="sol-area" id="sol6">
+    <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Interfaces segregadas</span></div>
+<pre><span class="kw">public interface</span> <span class="tp">IPrinter</span> { <span class="kw">void</span> <span class="fn">Print</span>(<span class="tp">Document</span> d); }
+<span class="kw">public interface</span> <span class="tp">IScanner</span> { <span class="kw">void</span> <span class="fn">Scan</span>(<span class="tp">Document</span> d);  }
+<span class="kw">public interface</span> <span class="tp">IFax</span>     { <span class="kw">void</span> <span class="fn">Fax</span>(<span class="tp">Document</span> d);   }
+<span class="kw">public interface</span> <span class="tp">ICopier</span>  { <span class="kw">void</span> <span class="fn">Copy</span>(<span class="tp">Document</span> d);  }
+
+<span class="cm">// Impresora básica: solo IPrinter</span>
+<span class="kw">public class</span> <span class="tp">OldPrinter</span> : <span class="tp">IPrinter</span>
+{
+  <span class="kw">public void</span> <span class="fn">Print</span>(<span class="tp">Document</span> d) { <span class="cm">/* OK ✓ */</span> }
+}
+
+<span class="cm">// Impresora multifunción: implementa todo</span>
+<span class="kw">public class</span> <span class="tp">AllInOne</span> : <span class="tp">IPrinter</span>, <span class="tp">IScanner</span>, <span class="tp">IFax</span>, <span class="tp">ICopier</span>
+{
+  <span class="kw">public void</span> <span class="fn">Print</span>(<span class="tp">Document</span> d) { }
+  <span class="kw">public void</span> <span class="fn">Scan</span>(<span class="tp">Document</span> d)  { }
+  <span class="kw">public void</span> <span class="fn">Fax</span>(<span class="tp">Document</span> d)   { }
+  <span class="kw">public void</span> <span class="fn">Copy</span>(<span class="tp">Document</span> d)  { }
+}</pre></div>
+  </div>
+</div>
+
+<!-- S20 EJ7 COHESION -->
+<div class="slide" id="s20">
+  <div class="ex-head">
+    <span class="ex-badge"><i class="fa fa-dumbbell me-2"></i>Ejercicio 7</span>
+    <span class="ex-tag">Cohesión + Acoplamiento</span>
+    <span class="ex-tag">Diseño integrador</span>
+  </div>
+  <div class="stitle">Reestructurar un <span class="hi">Módulo de Pagos</span></div>
+  <div class="divider"></div>
+  <div class="cc warn"><p><i class="fa fa-tasks me-2" style="color:var(--warn)"></i><strong style="color:var(--text)">Consigna:</strong> La clase <code>PaymentProcessor</code> tiene baja cohesión y alto acoplamiento. Identifica los problemas y propón el diseño refactorizado aplicando todos los principios vistos.</p></div>
+  <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Diseño con múltiples problemas</span></div>
+<pre><span class="kw">public class</span> <span class="tp">PaymentProcessor</span>
+{
+  <span class="kw">private</span> <span class="tp">MySqlConnection</span> _conn = <span class="kw">new</span> <span class="tp">MySqlConnection</span>(); <span class="cm">// AC</span>
+
+  <span class="kw">public void</span> <span class="fn">ProcessVisa</span>(<span class="nm">decimal</span> amount)  { <span class="cm">/* Visa API */</span> }
+  <span class="kw">public void</span> <span class="fn">ProcessMaster</span>(<span class="nm">decimal</span> amount){ <span class="cm">/* Master API*/</span> }
+  <span class="kw">public void</span> <span class="fn">SaveTransaction</span>(<span class="tp">Tx</span> tx) { _conn.<span class="fn">Execute</span>(<span class="str">"INSERT..."</span>); }
+  <span class="kw">public void</span> <span class="fn">SendReceipt</span>(<span class="tp">string</span> email)  { <span class="cm">/* SMTP directo */</span> }
+  <span class="kw">public string</span> <span class="fn">GenerateReport</span>() { <span class="kw">return</span> <span class="str">"reporte"</span>; }
+  <span class="kw">public bool</span> <span class="fn">ValidateCard</span>(<span class="tp">string</span> number) { <span class="kw">return</span> number.<span class="fn">Length</span>==<span class="nm">16</span>; }
+}</pre></div>
+  <button class="btn-reveal" onclick="toggleSol('sol7')"><i class="fa fa-eye me-2"></i>Ver Solución y Diagnóstico</button>
+  <div class="sol-area" id="sol7">
+    <div class="cc bad mb-2"><h5>Diagnóstico de problemas</h5>
+      <ul style="font-size:.85rem"><li><strong style="color:var(--text)">Coupling fuerte:</strong> <code>MySqlConnection</code> instanciada directamente.</li>
+      <li><strong style="color:var(--text)">Baja cohesión / SRP:</strong> procesa pagos, persiste, notifica y genera reportes.</li>
+      <li><strong style="color:var(--text)">OCP:</strong> métodos separados por tarjeta (si llega PayPal, hay que modificar la clase).</li></ul></div>
+    <div class="cb"><div class="cb-head"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="cb-lang">C# — Diseño refactorizado</span></div>
+<pre><span class="kw">public interface</span> <span class="tp">IPaymentGateway</span> { <span class="kw">void</span> <span class="fn">Process</span>(<span class="nm">decimal</span> amount); }
+<span class="kw">public class</span> <span class="tp">VisaGateway</span>    : <span class="tp">IPaymentGateway</span> { <span class="kw">public void</span> <span class="fn">Process</span>(<span class="nm">decimal</span> a){} }
+<span class="kw">public class</span> <span class="tp">MasterGateway</span>  : <span class="tp">IPaymentGateway</span> { <span class="kw">public void</span> <span class="fn">Process</span>(<span class="nm">decimal</span> a){} }
+
+<span class="kw">public class</span> <span class="tp">CardValidator</span>   { <span class="kw">public bool</span> <span class="fn">IsValid</span>(<span class="tp">string</span> n) => n.<span class="fn">Length</span>==<span class="nm">16</span>; }
+<span class="kw">public class</span> <span class="tp">TransactionRepo</span> { <span class="kw">public void</span> <span class="fn">Save</span>(<span class="tp">Tx</span> t) { <span class="cm">/* inyecta IDbContext */</span> } }
+<span class="kw">public class</span> <span class="tp">ReceiptSender</span>   { <span class="kw">public void</span> <span class="fn">Send</span>(<span class="tp">string</span> e) { <span class="cm">/* inyecta IMailer */</span>  } }
+<span class="kw">public class</span> <span class="tp">PaymentReporter</span> { <span class="kw">public string</span> <span class="fn">Generate</span>() => <span class="str">"reporte"</span>; }
+
+<span class="kw">public class</span> <span class="tp">PaymentProcessor</span>  <span class="cm">// ✓ alta cohesión: solo orquesta</span>
+{
+  <span class="kw">private readonly</span> <span class="tp">IPaymentGateway</span> _gateway;
+  <span class="kw">private readonly</span> <span class="tp">TransactionRepo</span> _repo;
+  <span class="kw">private readonly</span> <span class="tp">ReceiptSender</span>   _mailer;
+  <span class="kw">public</span> <span class="fn">PaymentProcessor</span>(<span class="tp">IPaymentGateway</span> gw, <span class="tp">TransactionRepo</span> r, <span class="tp">ReceiptSender</span> m)
+    => (_gateway, _repo, _mailer) = (gw, r, m);
+  <span class="kw">public void</span> <span class="fn">Process</span>(<span class="nm">decimal</span> amount, <span class="tp">string</span> email)
+  {
+    _gateway.<span class="fn">Process</span>(amount);
+    _repo.<span class="fn">Save</span>(<span class="kw">new</span> <span class="tp">Tx</span> { Amount = amount });
+    _mailer.<span class="fn">Send</span>(email);
+  }
+}</pre></div>
+  </div>
+</div>
+
+<!-- S21 LANZAR CUESTIONARIO -->
+<div class="slide" id="s21" style="justify-content:center;align-items:center;text-align:center;">
+  <div style="max-width:560px">
+    <div style="font-size:4rem;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(0,200,255,.4))">📋</div>
+    <div class="stitle">Cuestionario de <span class="hi">Evaluación</span></div>
+    <p style="color:var(--muted);margin:16px 0 28px;line-height:1.7;font-size:.95rem">
+      20 preguntas de opción múltiple sobre los 7 principios estudiados.<br>
+      Al finalizar verás tu puntuación con retroalimentación detallada por pregunta.
+    </p>
+    <button class="btn-submit" onclick="launchQuiz()" style="margin:0 auto">
+      <i class="fa fa-play-circle"></i> Iniciar Cuestionario
+    </button>
+    <div style="margin-top:20px;font-size:.8rem;color:var(--muted)">
+      <i class="fa fa-clock me-1"></i>Sin límite de tiempo &nbsp;·&nbsp;
+      <i class="fa fa-rotate-right me-1"></i>Puedes volver a intentarlo
+    </div>
+  </div>
+</div>
+
+</div><!-- /sw -->
+
+<!-- NAV BUTTONS -->
+<button class="nav-btn" id="prevBtn" onclick="go(-1)"><i class="fa fa-chevron-left"></i></button>
+<div id="scount">01 / 21</div>
+<button class="nav-btn" id="nextBtn" onclick="go(1)"><i class="fa fa-chevron-right"></i></button>
+
+<!-- ══════════════════════════ QUIZ SECTION ══════════════════════════ -->
+<div id="quiz-sec">
+  <div style="max-width:860px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px">
+      <button class="btn-back-pill" onclick="closeQuiz()"><i class="fa fa-arrow-left me-2"></i>Volver</button>
+      <div>
+        <div class="stitle" style="font-size:1.8rem">Cuestionario · <span class="hi">20 preguntas</span></div>
+        <div style="font-size:.78rem;color:var(--muted)">Selecciona la respuesta correcta y presiona Enviar al final.</div>
+      </div>
+    </div>
+    <div id="questions-container"></div>
+    <div style="text-align:center;margin-top:10px;padding-bottom:40px">
+      <button class="btn-submit" id="submitBtn" onclick="submitQuiz()">
+        <i class="fa fa-paper-plane"></i> Enviar respuestas
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ RESULTS ══════════════════════════ -->
+<div id="res-sec">
+  <div style="max-width:860px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px">
+      <button class="btn-back-pill" onclick="retryQuiz()"><i class="fa fa-rotate-right me-2"></i>Reintentar</button>
+      <button class="btn-back-pill" onclick="closeResults()"><i class="fa fa-home me-2"></i>Volver a la presentación</button>
+    </div>
+    <div class="score-wrap">
+      <div class="score-ring" id="scoreRing">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="12"/>
+          <circle id="scoreArc" cx="75" cy="75" r="65" fill="none" stroke="#00c8ff" stroke-width="12"
+            stroke-dasharray="408.41" stroke-dashoffset="408.41" stroke-linecap="round" style="transition:stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="score-inner">
+          <div class="score-big" id="scoreNum">0</div>
+          <div class="score-of">de 20</div>
+        </div>
+      </div>
+      <div class="grade-label" id="gradeLabel"></div>
+      <div style="font-size:.85rem;color:var(--muted);margin-top:6px" id="gradeMsg"></div>
+    </div>
+    <div id="results-container"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ SCRIPTS ══════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// ── SLIDE NAV ──
+const TOTAL = 21;
+let cur = 0;
+const slides = document.querySelectorAll('.slide');
+
+function go(dir) {
+  const next = cur + dir;
+  if (next < 0 || next >= TOTAL) return;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit');
+  setTimeout(() => slides[cur].classList.remove('exit'), 400);
+  cur = next;
+  slides[cur].classList.add('active');
+  updateNav();
+}
+
+function updateNav() {
+  document.getElementById('pbar').style.width = ((cur+1)/TOTAL*100)+'%';
+  document.getElementById('scount').textContent = String(cur+1).padStart(2,'0')+' / '+String(TOTAL).padStart(2,'0');
+  document.getElementById('prevBtn').style.opacity = cur===0?'0.3':'1';
+  document.getElementById('nextBtn').style.opacity = cur===TOTAL-1?'0.3':'1';
+  document.getElementById('yearLabel').textContent = new Date().getFullYear();
+}
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('quiz-sec').classList.contains('on')) return;
+  if (document.getElementById('res-sec').classList.contains('on')) return;
+  if (e.key==='ArrowRight'||e.key==='ArrowDown') go(1);
+  if (e.key==='ArrowLeft'||e.key==='ArrowUp') go(-1);
+});
+
+updateNav();
+
+// ── EXERCISE REVEAL ──
+function toggleSol(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling;
+  el.classList.toggle('open');
+  if (el.classList.contains('open')) {
+    btn.innerHTML = '<i class="fa fa-eye-slash me-2"></i>Ocultar Solución';
+  } else {
+    btn.innerHTML = '<i class="fa fa-eye me-2"></i>Ver Solución';
+  }
+}
+
+// ── QUIZ DATA ──
+const questions = [
+  {
+    q: '¿Qué mide el "acoplamiento" (coupling) en el diseño de software?',
+    opts: ['La cantidad de métodos que tiene una clase','El grado de dependencia entre módulos o clases','La profundidad de la jerarquía de herencia','El número de líneas de código'],
+    ans: 1,
+    expl: 'El acoplamiento indica cuánto depende un módulo de los detalles internos de otro. Alto acoplamiento → cambios en cascada. Minimizarlo es clave para la mantenibilidad.'
+  },
+  {
+    q: 'El Principio de Responsabilidad Única (SRP) establece que:',
+    opts: ['Una clase debe implementar todas las interfaces del sistema','Un sistema debe tener un único punto de entrada','Una clase debe tener solo una razón para cambiar','Los métodos deben tener solo un parámetro'],
+    ans: 2,
+    expl: 'SRP no dice que una clase tenga un solo método, sino que toda su funcionalidad debe cambiar por la misma causa. Si hay dos razones distintas para cambiarla, debería dividirse.'
+  },
+  {
+    q: 'La Ley de Demeter también se conoce popularmente como:',
+    opts: ['"Prefiere composición sobre herencia"','"No hables con desconocidos"','"Programa para interfaces, no para implementaciones"','"Cada objeto es responsable de sí mismo"'],
+    ans: 1,
+    expl: 'La LoD (Don\'t Talk to Strangers) limita la comunicación entre objetos: un método solo debe interactuar con sus colaboradores directos, no "viajar" a través de cadenas de objetos.'
+  },
+  {
+    q: '¿Qué principio SOLID viola el patrón Square extiende Rectangle cuando Square fuerza Width == Height?',
+    opts: ['Open/Closed Principle','Interface Segregation Principle','Single Responsibility Principle','Liskov Substitution Principle'],
+    ans: 3,
+    expl: 'LSP requiere que una subclase sea sustituible por su clase base sin alterar el comportamiento esperado. Un método que asume Rectangle independiente en Width y Height fallará con Square.'
+  },
+  {
+    q: 'El principio Open/Closed establece que el software debe estar:',
+    opts: ['Abierto al uso y cerrado al abuso','Abierto a la extensión y cerrado a la modificación','Abierto al testing y cerrado al deployment','Abierto a herencia y cerrado a composición'],
+    ans: 1,
+    expl: 'OCP (Bertrand Meyer) propone que una entidad de software no deba editarse para agregar nueva funcionalidad; en cambio se extiende mediante nuevas clases o implementaciones.'
+  },
+  {
+    q: 'Alta cohesión en una clase significa que:',
+    opts: ['La clase depende de muchas otras clases','La clase tiene muchos métodos públicos','Todos sus métodos y atributos contribuyen a un único propósito bien definido','La clase puede instanciarse en múltiples contextos'],
+    ans: 2,
+    expl: 'Cohesión mide qué tan relacionadas están las responsabilidades de un módulo. Alta cohesión → clase enfocada y comprensible. Baja cohesión → "God class" difícil de mantener.'
+  },
+  {
+    q: '¿Cuál de los siguientes es un ejemplo de acoplamiento fuerte (tight coupling)?',
+    opts: ['Usar inyección de dependencias por constructor','Programar contra interfaces','Instanciar directamente una clase concreta dentro de otra clase','Utilizar el patrón Strategy'],
+    ans: 2,
+    expl: 'Escribir new ConcreteClass() dentro de otra clase crea una dependencia directa: si cambia la implementación concreta, el cliente también debe cambiar.'
+  },
+  {
+    q: 'Según la Ley de Demeter, un método solo puede invocar métodos de:',
+    opts: ['Cualquier objeto accesible en el sistema','Sus atributos directos, parámetros recibidos y objetos que él mismo crea','Solo los objetos del mismo paquete/namespace','Exclusivamente el objeto this'],
+    ans: 1,
+    expl: 'Las cuatro "reglas de contacto" de LoD son: el propio objeto (this), sus atributos, los parámetros del método y los objetos que el método construye localmente.'
+  },
+  {
+    q: 'El Principio de Segregación de Interfaces (ISP) establece que:',
+    opts: ['Las interfaces deben ser implementadas por el mayor número posible de clases','Los clientes no deben depender de métodos que no usan','Toda clase debe implementar al menos una interfaz','Las interfaces deben contener la mayor cantidad posible de métodos'],
+    ans: 1,
+    expl: 'ISP evita las "interfaces gordas". Si una clase implementa métodos con NotImplementedException solo para satisfacer una interfaz, es una señal clara de violación del ISP.'
+  },
+  {
+    q: '¿Cuál de estas expresiones viola la Ley de Demeter?',
+    opts: ['this.ProcessOrder(order)','order.GetTotal()','customer.GetOrder().GetProduct().GetPrice()','new PaymentService().Process(total)'],
+    ans: 2,
+    expl: 'La "cadena de trenes" customer.GetOrder().GetProduct().GetPrice() navega tres niveles de profundidad. Se debe delegar: customer.GetProductPrice().'
+  },
+  {
+    q: 'Una clase que gestiona UI, accede a la base de datos, envía emails Y calcula impuestos viola principalmente:',
+    opts: ['Interface Segregation Principle','Open/Closed Principle','Single Responsibility Principle','Liskov Substitution Principle'],
+    ans: 2,
+    expl: 'Cuatro responsabilidades distintas implican cuatro razones diferentes para cambiar. Según SRP, cada responsabilidad debería estar en su propia clase.'
+  },
+  {
+    q: '¿Qué técnica es más efectiva para reducir el acoplamiento?',
+    opts: ['Usar clases base con muchos métodos protected','Crear métodos estáticos en clases utilitarias','Inyección de dependencias programando contra interfaces','Aumentar la cantidad de atributos públicos'],
+    ans: 2,
+    expl: 'DI + interfaces permite que el cliente dependa de una abstracción y no de una implementación concreta. Esto facilita sustituir implementaciones y hacer pruebas unitarias con mocks.'
+  },
+  {
+    q: 'El LSP establece formalmente que:',
+    opts: ['Las subclases deben poder sustituir a sus clases base sin alterar el comportamiento esperado','Las clases base nunca deben ser instanciadas directamente','Solo se puede heredar de clases abstractas','Las subclases no pueden agregar nuevos métodos'],
+    ans: 0,
+    expl: 'Barbara Liskov (1987): "Si S es subtipo de T, los objetos de tipo T pueden ser reemplazados por objetos de tipo S sin alterar las propiedades deseables del programa."'
+  },
+  {
+    q: 'El OCP se logra principalmente mediante:',
+    opts: ['Restringir el acceso a todos los métodos con private','Evitar completamente el uso de herencia','Abstracciones e interfaces que permiten extensión sin modificación de código existente','Compilar y empaquetar el código antes de distribuirlo'],
+    ans: 2,
+    expl: 'Polimorfismo y abstracción son los mecanismos clave del OCP. Al definir una interfaz o clase abstracta, se puede extender el comportamiento sin editar el código ya existente y probado.'
+  },
+  {
+    q: '¿Qué problema concreto resuelve el ISP en el desarrollo?',
+    opts: ['El problema de la herencia múltiple en C#','Las interfaces "gordas" que obligan a implementar métodos que no se necesitan','La falta de documentación en el código fuente','Los errores de conversión de tipos en runtime'],
+    ans: 1,
+    expl: 'Sin ISP, una clase que solo necesita una capacidad se ve forzada a implementar métodos irrelevantes, generalmente con throws o cuerpos vacíos, lo que introduce fragilidad.'
+  },
+  {
+    q: '¿Cuál es un claro ejemplo de violación del LSP?',
+    opts: ['Una subclase que agrega nuevos métodos no presentes en la base','Una subclase que lanza una excepción en un método que la clase base ejecuta correctamente','Una clase que implementa dos interfaces distintas','Un método que puede retornar null'],
+    ans: 1,
+    expl: 'Lanzar NotSupportedException o InvalidOperationException en métodos heredados rompe el "contrato" de la clase base. El código cliente que usa la base no espera esas excepciones.'
+  },
+  {
+    q: 'Alta cohesión es deseable principalmente porque:',
+    opts: ['Permite que las clases tengan más responsabilidades en un solo lugar','Hace que los módulos sean más reutilizables, comprensibles y fáciles de mantener','Facilita el acoplamiento entre módulos del sistema','Reduce la cantidad de clases necesarias en el sistema'],
+    ans: 1,
+    expl: 'Una clase de alta cohesión tiene un propósito claro: es más fácil de entender, testear, reutilizar y modificar sin efectos secundarios en otras partes del sistema.'
+  },
+  {
+    q: 'En el SRP, "razón para cambiar" se refiere a:',
+    opts: ['La necesidad de usar una versión más nueva del lenguaje de programación','Un cambio en los requisitos de una responsabilidad o actor específico del sistema','La decisión de agregar más métodos para ampliar la funcionalidad','El proceso de refactorización de código legacy'],
+    ans: 1,
+    expl: 'Cada "razón para cambiar" corresponde a un actor o stakeholder del sistema. Si contabilidad y RRHH piden cambios a la misma clase Employee, hay dos razones: debe separarse.'
+  },
+  {
+    q: '¿Cuál de estas es señal de bajo acoplamiento (loose coupling)?',
+    opts: ['Una clase que referencia directamente clases concretas de acceso a datos','Una clase que depende únicamente de interfaces, no de implementaciones concretas','Una clase con muchos atributos públicos compartidos con otras clases','Métodos que acceden directamente a métodos internos de otras clases'],
+    ans: 1,
+    expl: 'Depender de abstracciones (interfaces) y no de implementaciones concretas es la esencia del bajo acoplamiento. Permite cambiar la implementación sin afectar al cliente.'
+  },
+  {
+    q: '¿Qué principio está más directamente relacionado con el polimorfismo para habilitar extensión?',
+    opts: ['Single Responsibility Principle','Law of Demeter','Open/Closed Principle','Interface Segregation Principle'],
+    ans: 2,
+    expl: 'OCP aprovecha el polimorfismo: al definir comportamiento a través de clases abstractas o interfaces, nuevas variantes se agregan con nuevas clases que extienden la abstracción, sin modificar código existente.'
+  }
+];
+
+// ── BUILD QUIZ ──
+function buildQuiz() {
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    card.id = 'qcard_'+i;
+    let optsHtml = q.opts.map((o,j) => `
+      <label class="opt-lbl" id="lbl_${i}_${j}">
+        <input type="radio" name="q${i}" value="${j}" id="opt_${i}_${j}"> ${o}
+      </label>`).join('');
+    card.innerHTML = `
+      <div class="qnum">Pregunta ${i+1} / 20</div>
+      <div class="qtext">${q.q}</div>
+      ${optsHtml}
+      <div class="expl-box" id="expl_${i}">
+        <div class="expl-label"><i class="fa fa-circle-info me-1"></i>Explicación</div>
+        ${q.expl}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function launchQuiz() {
+  buildQuiz();
+  document.getElementById('quiz-sec').classList.add('on');
+  document.getElementById('submitBtn').style.display='inline-flex';
+  document.getElementById('quiz-sec').scrollTop = 0;
+}
+
+function closeQuiz() {
+  document.getElementById('quiz-sec').classList.remove('on');
+}
+
+function submitQuiz() {
+  let unanswered = [];
+  questions.forEach((_,i)=>{
+    if(!document.querySelector(`input[name="q${i}"]:checked`)) unanswered.push(i+1);
+  });
+  if(unanswered.length>0){
+    Swal.fire({
+      title:'Preguntas sin responder',
+      html:`<span style="color:#ccd6f6">Faltan responder: <strong style="color:#00c8ff">${unanswered.join(', ')}</strong></span>`,
+      icon:'warning',
+      background:'#0c1a2e',color:'#c8d8f0',
+      confirmButtonColor:'#0080ff',confirmButtonText:'Entendido',
+      iconColor:'#ffd166'
+    });
+    return;
+  }
+
+  let score = 0;
+  questions.forEach((q,i)=>{
+    const sel = +document.querySelector(`input[name="q${i}"]:checked`).value;
+    const correct = q.ans;
+    document.getElementById('expl_'+i).classList.add('on');
+    const labels = document.querySelectorAll(`label[id^="lbl_${i}_"]`);
+    labels.forEach(l=>{
+      l.style.pointerEvents='none';
+      const v = +l.querySelector('input').value;
+      if(v===correct) l.classList.add('correct');
+      if(v===sel && sel!==correct) l.classList.add('wrong-sel');
+    });
+    if(sel===correct) score++;
+  });
+
+  document.getElementById('submitBtn').style.display='none';
+  showResults(score);
+}
+
+function showResults(score){
+  document.getElementById('quiz-sec').classList.remove('on');
+  document.getElementById('res-sec').classList.add('on');
+  document.getElementById('res-sec').scrollTop=0;
+
+  // Score circle
+  document.getElementById('scoreNum').textContent = score;
+  const pct = score/20;
+  const circ = 2*Math.PI*65;
+  setTimeout(()=>{
+    document.getElementById('scoreArc').style.strokeDashoffset = circ*(1-pct);
+    const colors = ['#ff4d6d','#ffd166','#ffd166','#00e5a0','#00c8ff'];
+    const col = pct>=0.9?colors[4]:pct>=0.7?colors[3]:pct>=0.5?colors[2]:pct>=0.3?colors[1]:colors[0];
+    document.getElementById('scoreArc').style.stroke = col;
+    document.getElementById('scoreNum').style.color = col;
+  },100);
+
+  const grades=[
+    [0,4,'Insuficiente','Repasá los principios desde la presentación y volvé a intentar.'],
+    [5,9,'Necesita mejorar','Buen comienzo. Enfocate en los principios donde fallaste.'],
+    [10,13,'Regular','Vas bien, pero hay conceptos a reforzar. ¡Podés mejorar!'],
+    [14,17,'Bueno','¡Buen trabajo! Revisá los errores para alcanzar la excelencia.'],
+    [18,19,'Muy bueno','¡Excelente dominio de los principios! Solo pequeños detalles.'],
+    [20,20,'Sobresaliente 🏆','¡Perfecto! Dominás todos los principios de diseño.']
+  ];
+  const g = grades.find(([a,b])=>score>=a&&score<=b);
+  document.getElementById('gradeLabel').textContent = g[2];
+  document.getElementById('gradeMsg').textContent = g[3];
+
+  // Per-question results
+  const container = document.getElementById('results-container');
+  container.innerHTML = '<div style="font-family:\'Rajdhani\',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:16px;color:var(--accent)">Revisión por pregunta</div>';
+  questions.forEach((q,i)=>{
+    const selEl = document.querySelector(`input[name="q${i}"]:checked`);
+    const sel = selEl ? +selEl.value : -1;
+    const ok = sel===q.ans;
+    const card = document.createElement('div');
+    card.className = 'res-qcard '+(ok?'ok':'fail');
+    card.innerHTML=`
+      <div class="res-qtxt"><span style="color:${ok?'var(--ok)':'var(--danger)'};margin-right:8px">${ok?'✓':'✗'}</span>${q.q}</div>
+      <div class="res-ans">
+        ${!ok?`<span class="fail"><i class="fa fa-xmark me-1"></i>Tu respuesta: ${sel>=0?q.opts[sel]:'Sin responder'}</span><br>`:''}
+        <span class="ok"><i class="fa fa-check me-1"></i>Correcta: ${q.opts[q.ans]}</span>
+      </div>
+      <div style="font-size:.8rem;color:#7a9cc0;margin-top:6px;line-height:1.5"><i class="fa fa-circle-info me-1" style="color:var(--accent2)"></i>${q.expl}</div>`;
+    container.appendChild(card);
+  });
+
+  Swal.fire({
+    title: score===20?'🏆 ¡Perfecto!':score>=14?'🎉 ¡Muy bien!':score>=10?'👍 Aprobado':'📚 Seguí estudiando',
+    html:`<span style="color:#ccd6f6;font-size:1.05rem">Obtuviste <strong style="color:#00c8ff;font-size:1.3rem">${score}</strong> de 20 puntos<br><small style="color:#6e8aaa">${g[2]} — ${g[3]}</small></span>`,
+    background:'#0c1a2e',color:'#c8d8f0',
+    confirmButtonColor:'#0080ff',confirmButtonText:'Ver detalle',
+    iconColor:score>=14?'#00e5a0':'#ffd166',
+    icon: score>=14?'success':'info'
+  });
+}
+
+function retryQuiz() {
+  document.getElementById('res-sec').classList.remove('on');
+  buildQuiz();
+  document.getElementById('quiz-sec').classList.add('on');
+  document.getElementById('submitBtn').style.display='inline-flex';
+  document.getElementById('quiz-sec').scrollTop=0;
+}
+
+function closeResults() {
+  document.getElementById('res-sec').classList.remove('on');
+}
+
+// Año en portada
+document.getElementById('yearLabel').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
