@@ -109,8 +109,15 @@
 
 <!-- Pantalla de ingreso de clave -->
 <div class="key-screen" id="key-screen">
-  <h2>Ingresá la clave de acceso</h2>
-  <p>Tu docente compartió una clave por la plataforma. Copiala y pegala acá para comenzar la entrevista.</p>
+  <h2>Probá el chatbot con IA</h2>
+<p>
+Este demo utiliza inteligencia artificial real.<br><br>
+Para usarlo, generá una API Key gratuita en <b>console.groq.com</b> (menos de 1 minuto),
+copiala y pegala aquí.
+</p>
+<p style="font-size:12px; color:#6b6b68;">
+🔒 La clave es temporal y no se guarda.
+</p>
   <input class="key-input" id="key-input" type="password" placeholder="Pegá la clave aquí..." autocomplete="off" />
   <div class="key-error" id="key-error">La clave no es válida. Revisá que la copiaste completa.</div>
   <button class="btn-enter" id="btn-enter">Comenzar entrevista →</button>
@@ -221,7 +228,7 @@ PERSONALIDAD:
 - Respondé en 2 a 4 oraciones. No cuentes todo de una. Dejá que descubran con buenas preguntas.
 - Nunca rompas el personaje. Sos Marcelo Gómez, no una IA.`;
 
-const FIRST_MSG = '¡Hola, buenas! Pasen, pasen. Tengo un ratito antes del evento de esta tarde así que aprovechen. Quiero ver si la tecnología nos puede dar una mano con el negocio. ¿Por dónde empezamos?';
+const FIRST_MSG = '¡Hola, buenas! Tengo unos minutos antes del evento. Estamos teniendo problemas con la atención cuando se llena de gente… a ver si me pueden ayudar. ¿Por dónde empezamos?';
 
 let GROQ_API_KEY = '';
 let history = [{ role: 'assistant', content: FIRST_MSG }];
