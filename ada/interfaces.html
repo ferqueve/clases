@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>5.1.4 Interfaz de Usuario — Edición Profunda</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --p:#061d35;--p2:#0a2d50;
+  --acc:#1b6ca8;--acc2:#00c8d7;--acc3:#69f0ae;
+  --warn:#ffb74d;--err:#ff6b6b;
+  --txt:#daeaf8;--txt2:#8ab4cc;--txt3:#506a7a;
+  --card:rgba(255,255,255,.06);
+  --border:rgba(0,200,215,.18);
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Source Sans 3',sans-serif;
+  background:linear-gradient(160deg,#061d35 0%,#0a2d50 50%,#071e30 100%);
+  min-height:100vh;color:var(--txt);
+}
+/* ── NAV ── */
+#topNav{
+  position:fixed;top:0;left:0;right:0;z-index:999;
+  background:rgba(6,29,53,.97);
+  border-bottom:2px solid var(--acc2);
+  padding:0 1rem;min-height:54px;
+  display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;
+}
+.brand{
+  font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;
+  color:var(--acc2);margin-right:auto;white-space:nowrap;
+}
+.nb{
+  background:transparent;border:1px solid rgba(0,200,215,.3);
+  color:var(--txt2);font-size:.72rem;padding:.28rem .6rem;
+  border-radius:20px;cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.nb:hover,.nb.on{background:var(--acc2);color:var(--p);border-color:var(--acc2);font-weight:700}
+/* ── SLIDES ── */
+#wrap{padding-top:66px;padding-bottom:3rem;min-height:100vh}
+.slide{display:none;padding:1.8rem 1.2rem;animation:fiu .45s ease both}
+.slide.on{display:block}
+@keyframes fiu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+/* ── HEADER ── */
+.sh{text-align:center;margin-bottom:2rem}
+.badge-tag{
+  display:inline-block;background:var(--acc2);color:var(--p);
+  font-family:'Rajdhani',sans-serif;font-size:.72rem;font-weight:700;
+  letter-spacing:.12em;padding:.18rem .9rem;border-radius:20px;
+  margin-bottom:.7rem;text-transform:uppercase;
+}
+.stitle{
+  font-family:'Rajdhani',sans-serif;
+  font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;
+  color:#fff;line-height:1.1;margin-bottom:.5rem;
+}
+.ssub{color:var(--acc2);font-size:.95rem;font-style:italic;opacity:.9}
+/* ── TABS ── */
+.tab-bar{
+  display:flex;gap:.4rem;flex-wrap:wrap;
+  margin-bottom:1.4rem;
+  border-bottom:2px solid rgba(0,200,215,.15);
+  padding-bottom:.4rem;
+}
+.tbb{
+  background:transparent;border:1px solid rgba(0,200,215,.2);
+  color:var(--txt2);font-size:.82rem;padding:.38rem 1rem;
+  border-radius:6px 6px 0 0;cursor:pointer;transition:all .2s;
+  font-family:'Source Sans 3',sans-serif;
+}
+.tbb:hover{background:rgba(0,200,215,.1);color:#fff}
+.tbb.on{background:var(--acc2);color:var(--p);font-weight:700;border-color:var(--acc2)}
+.tab-pane{display:none}.tab-pane.on{display:block}
+/* ── CARDS ── */
+.grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.1rem}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.card-d{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.2rem 1.4rem;
+  transition:transform .2s,border-color .2s,background .2s;
+}
+.card-d:hover{transform:translateY(-3px);border-color:var(--acc2);background:rgba(0,200,215,.09)}
+.ci{font-size:1.9rem;color:var(--acc2);margin-bottom:.6rem;display:block}
+.ct{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:.35rem}
+.cd{font-size:.85rem;line-height:1.55;color:var(--txt2)}
+.tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.55rem}
+.tag{background:rgba(0,200,215,.15);color:var(--acc2);border-radius:20px;font-size:.7rem;padding:.12rem .5rem}
+/* ── HEURISTICS ── */
+.hlist{list-style:none;padding:0}
+.hi{
+  background:var(--card);border-left:4px solid var(--acc2);
+  border-radius:0 var(--r) var(--r) 0;padding:.9rem 1.1rem;
+  margin-bottom:.75rem;transition:background .2s,transform .2s;
+}
+.hi:hover{background:rgba(0,200,215,.1);transform:translateX(4px)}
+.hn{font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;color:var(--acc2);float:left;margin-right:.6rem;line-height:1}
+.hname{font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:.22rem}
+.hdesc{font-size:.84rem;line-height:1.5;color:var(--txt2)}
+/* ── CASE BOXES ── */
+.case-box{
+  background:rgba(0,0,0,.25);border:1px solid rgba(0,200,215,.2);
+  border-radius:var(--r);padding:1.2rem 1.4rem;margin-bottom:1.1rem;
+}
+.case-title{
+  font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;
+  color:var(--acc2);margin-bottom:.5rem;
+}
+.case-title i{margin-right:.4rem}
+.case-body{font-size:.86rem;line-height:1.6;color:var(--txt2)}
+.case-body strong{color:#fff}
+/* before/after */
+.ba-wrap{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:.7rem}
+@media(max-width:580px){.ba-wrap{grid-template-columns:1fr}}
+.ba-box{border-radius:8px;padding:.8rem 1rem;font-size:.82rem;line-height:1.5}
+.ba-bad{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.3);color:#ffb3b3}
+.ba-good{background:rgba(105,240,174,.08);border:1px solid rgba(105,240,174,.3);color:#b2dfdb}
+.ba-label{font-family:'Rajdhani',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.08em;margin-bottom:.35rem}
+.bad-lbl{color:#ff6b6b}.good-lbl{color:#69f0ae}
+/* violation / good example */
+.viol{background:rgba(255,107,107,.07);border-left:3px solid #ff6b6b;border-radius:0 6px 6px 0;padding:.65rem .9rem;margin:.5rem 0;font-size:.83rem;color:#ffb3b3}
+.viol strong{color:#ff6b6b}
+.good{background:rgba(105,240,174,.07);border-left:3px solid #69f0ae;border-radius:0 6px 6px 0;padding:.65rem .9rem;margin:.5rem 0;font-size:.83rem;color:#b2dfdb}
+.good strong{color:#69f0ae}
+/* principle cards */
+.pc{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1rem 1.1rem;transition:all .22s;
+}
+.pc:hover{background:rgba(0,200,215,.09);border-color:var(--acc2);transform:scale(1.02)}
+.pci{color:var(--acc2);font-size:1.35rem;margin-right:.45rem}
+.pcn{font-family:'Rajdhani',sans-serif;font-size:.98rem;font-weight:700;color:#fff;display:inline}
+.pcd{font-size:.82rem;color:var(--txt2);margin-top:.32rem;line-height:1.5}
+.pcex{font-size:.78rem;color:#69f0ae;margin-top:.3rem;font-style:italic}
+/* problem rows */
+.prob{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1rem 1.2rem;margin-bottom:.8rem;
+  display:flex;gap:.9rem;align-items:flex-start;
+}
+.prob:hover{background:rgba(0,200,215,.07)}
+.prob-ico{font-size:1.6rem;flex-shrink:0}
+.prob-t{font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:#fff}
+.prob-d{font-size:.83rem;color:var(--txt2);line-height:1.5;margin-top:.2rem}
+.prob-fix{font-size:.78rem;color:#69f0ae;margin-top:.3rem;font-style:italic}
+.prob-real{font-size:.78rem;color:var(--warn);margin-top:.25rem}
+/* mobile tips */
+.msect{margin-bottom:1.3rem}
+.mst{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--acc2);border-bottom:1px solid rgba(0,200,215,.25);padding-bottom:.25rem;margin-bottom:.7rem}
+.pill{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:rgba(255,255,255,.07);border:1px solid rgba(0,200,215,.18);
+  border-radius:20px;padding:.3rem .75rem;margin:.22rem;
+  color:var(--txt);font-size:.81rem;transition:all .2s;
+}
+.pill:hover{background:rgba(0,200,215,.18);color:#fff}
+.pill i{color:var(--acc2)}
+/* cover */
+#s0{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 66px);text-align:center}
+.cico{font-size:3.5rem;color:var(--acc2);margin-bottom:1rem}
+.ctitle{font-family:'Rajdhani',sans-serif;font-size:clamp(2rem,6vw,3.4rem);font-weight:700;color:#fff;line-height:1.1;margin-bottom:.7rem}
+.csub{font-size:1rem;color:var(--txt2);max-width:540px;margin:0 auto 1.4rem}
+.cpills{display:flex;flex-wrap:wrap;justify-content:center;gap:.45rem;margin-bottom:1.8rem}
+.cpill{background:rgba(0,200,215,.12);color:var(--acc2);border:1px solid rgba(0,200,215,.3);border-radius:20px;font-size:.76rem;padding:.28rem .85rem}
+.btn-s{background:var(--acc2);color:var(--p);border:none;padding:.7rem 2.1rem;border-radius:30px;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;transition:all .25s;letter-spacing:.05em}
+.btn-s:hover{background:#fff;transform:scale(1.05)}
+/* footer nav */
+.sfooter{display:flex;justify-content:space-between;align-items:center;margin-top:2rem;padding-top:1rem;border-top:1px solid rgba(0,200,215,.13)}
+.narr{background:rgba(0,200,215,.12);border:1px solid rgba(0,200,215,.28);color:var(--acc2);border-radius:30px;padding:.5rem 1.4rem;font-size:.88rem;cursor:pointer;transition:all .2s}
+.narr:hover{background:var(--acc2);color:var(--p);font-weight:700}
+.narr:disabled{opacity:.3;cursor:default}
+.scnt{font-family:'Rajdhani',sans-serif;color:#4a6a7a;font-size:.88rem}
+.scnt span{color:var(--acc2);font-weight:700}
+/* divider */
+.div{height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,215,.35),transparent);margin:1.4rem 0}
+/* info highlight box */
+.info-box{background:rgba(27,108,168,.15);border:1px solid rgba(27,108,168,.35);border-radius:var(--r);padding:1rem 1.2rem;margin:1rem 0;font-size:.86rem;color:var(--txt2);line-height:1.6}
+.info-box strong{color:var(--acc2)}
+/* stat badges */
+.stat-row{display:flex;flex-wrap:wrap;gap:.8rem;margin:.8rem 0}
+.stat{background:rgba(0,200,215,.1);border:1px solid rgba(0,200,215,.25);border-radius:8px;padding:.6rem 1rem;text-align:center;min-width:100px}
+.stat-num{font-family:'Rajdhani',sans-serif;font-size:1.6rem;font-weight:700;color:var(--acc2);display:block}
+.stat-lbl{font-size:.72rem;color:var(--txt2)}
+/* code snippet */
+.snippet{background:#061220;border:1px solid rgba(0,200,215,.2);border-radius:8px;padding:.8rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#a8d8ea;margin:.5rem 0;overflow-x:auto}
+.snippet .kw{color:#c792ea}
+.snippet .str{color:#c3e88d}
+.snippet .cm{color:#546e7a}
+/* table */
+.t-dark{border-collapse:collapse;width:100%;font-size:.82rem}
+.t-dark th{background:rgba(0,200,215,.18);color:var(--acc2);padding:.5rem .7rem;border:1px solid rgba(0,200,215,.2);font-family:'Rajdhani',sans-serif;font-size:.88rem}
+.t-dark td{padding:.45rem .7rem;border:1px solid rgba(0,200,215,.1);color:var(--txt2);vertical-align:top}
+.t-dark tr:hover td{background:rgba(0,200,215,.05)}
+/* accordion */
+.acc-item{border:1px solid var(--border);border-radius:var(--r);margin-bottom:.6rem;overflow:hidden}
+.acc-hdr{background:var(--card);padding:.85rem 1.1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
+.acc-hdr:hover{background:rgba(0,200,215,.1)}
+.acc-hdr-t{font-family:'Rajdhani',sans-serif;font-size:.98rem;font-weight:700;color:#fff}
+.acc-hdr i.arr{color:var(--acc2);transition:transform .3s}
+.acc-hdr.open i.arr{transform:rotate(180deg)}
+.acc-body{display:none;padding:1rem 1.1rem;background:rgba(0,0,0,.15);font-size:.85rem;line-height:1.6;color:var(--txt2)}
+.acc-body.open{display:block}
+/* quiz */
+#qwrap{max-width:820px;margin:0 auto}
+.qpbar{background:rgba(255,255,255,.08);border-radius:20px;height:8px;margin-bottom:1.8rem;overflow:hidden}
+.qpfill{background:linear-gradient(90deg,var(--acc2),var(--acc3));height:100%;border-radius:20px;transition:width .4s ease}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.7rem;margin-bottom:1rem;display:none}
+.qcard.on{display:block}
+.qnum{font-family:'Rajdhani',sans-serif;font-size:.78rem;color:var(--acc2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.45rem}
+.qtxt{font-size:1.02rem;color:#fff;margin-bottom:1.1rem;font-weight:600;line-height:1.5}
+.qcat{display:inline-block;background:rgba(0,200,215,.12);color:var(--acc2);border-radius:20px;font-size:.68rem;padding:.1rem .5rem;margin-bottom:.6rem;font-family:'Rajdhani',sans-serif;letter-spacing:.06em}
+.opt{
+  display:block;width:100%;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.13);border-radius:8px;
+  padding:.7rem 1rem;text-align:left;margin-bottom:.5rem;
+  color:#cde0f0;font-size:.9rem;cursor:pointer;transition:all .2s;
+}
+.opt:hover:not(:disabled){background:rgba(0,200,215,.16);border-color:var(--acc2);color:#fff}
+.opt.cor{background:rgba(105,240,174,.18);border-color:#69f0ae;color:#69f0ae}
+.opt.wrg{background:rgba(255,107,107,.13);border-color:#ff6b6b;color:#ff8a80}
+.opt:disabled{cursor:default}
+.qnav{display:flex;gap:.7rem;margin-top:1.1rem;justify-content:flex-end}
+.bq{background:var(--acc2);color:var(--p);border:none;padding:.55rem 1.7rem;border-radius:20px;font-family:'Rajdhani',sans-serif;font-size:.98rem;font-weight:700;cursor:pointer;transition:all .2s}
+.bq:hover{background:#fff}
+.bq.sec{background:transparent;border:1px solid rgba(0,200,215,.38);color:var(--acc2)}
+.bq.sec:hover{background:rgba(0,200,215,.14)}
+.fb{border-radius:8px;padding:.65rem .9rem;margin-top:.75rem;font-size:.84rem;display:none}
+.fb.cor{background:rgba(105,240,174,.09);border:1px solid rgba(105,240,174,.28);color:#69f0ae;display:block}
+.fb.wrg{background:rgba(255,107,107,.09);border:1px solid rgba(255,107,107,.28);color:#ff8a80;display:block}
+#rcard{background:var(--card);border:1px solid rgba(0,200,215,.28);border-radius:var(--r);padding:2rem;text-align:center;display:none}
+.rscore{font-family:'Rajdhani',sans-serif;font-size:4rem;font-weight:700;color:var(--acc2)}
+.rlbl{font-size:.95rem;color:var(--txt2);margin-bottom:1.1rem}
+.remoji{font-size:2.8rem;margin-bottom:.4rem}
+.rmsg{font-size:1.05rem;color:#fff;margin-bottom:1.4rem}
+.rev{border-radius:8px;padding:.7rem 1rem;margin-bottom:.55rem;font-size:.83rem;border-left:4px solid}
+.rev.rc{background:rgba(105,240,174,.07);border-color:#69f0ae;color:#b2dfdb}
+.rev.rw{background:rgba(255,107,107,.07);border-color:#ff6b6b;color:#ffccbc}
+.rev strong{display:block;margin-bottom:.18rem}
+/* thumb zone diagram */
+.thumb-zone{
+  display:flex;flex-direction:column;align-items:center;
+  background:rgba(0,0,0,.3);border:1px solid var(--border);
+  border-radius:var(--r);padding:1rem;margin:.8rem 0;
+}
+.phone-frame{
+  width:140px;height:240px;border:3px solid var(--acc2);
+  border-radius:20px;position:relative;background:rgba(0,0,0,.4);
+  overflow:hidden;
+}
+.zone-top{position:absolute;top:0;left:0;right:0;height:35%;background:rgba(255,107,107,.25);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#ff6b6b;text-align:center;padding:.2rem}
+.zone-mid{position:absolute;top:35%;left:0;right:0;height:30%;background:rgba(255,183,77,.2);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--warn);text-align:center;padding:.2rem}
+.zone-bot{position:absolute;bottom:0;left:0;right:0;height:35%;background:rgba(105,240,174,.2);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#69f0ae;text-align:center;padding:.2rem}
+@media(max-width:576px){.grid-2,.grid-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="topNav">
+  <div class="brand"><i class="fa-solid fa-display me-1"></i>UI — Edición Profunda</div>
+  <button class="nb" onclick="go(0)"><i class="fa-solid fa-house"></i></button>
+  <button class="nb" onclick="go(1)"><i class="fa-solid fa-layer-group me-1"></i>Tipos</button>
+  <button class="nb" onclick="go(2)"><i class="fa-solid fa-list-check me-1"></i>Nielsen</button>
+  <button class="nb" onclick="go(3)"><i class="fa-solid fa-compass-drafting me-1"></i>Tognazini</button>
+  <button class="nb" onclick="go(4)"><i class="fa-solid fa-triangle-exclamation me-1"></i>Problemas</button>
+  <button class="nb" onclick="go(5)"><i class="fa-solid fa-mobile-screen me-1"></i>Móvil</button>
+  <button class="nb" onclick="go(6)"><i class="fa-solid fa-circle-question me-1"></i>Quiz</button>
+</nav>
+
+<div id="wrap">
+
+<!-- ═══════════════════════ S0 — COVER ═══════════════════════ -->
+<div class="slide on" id="s0">
+  <div class="cico animate__animated animate__bounceIn"><i class="fa-solid fa-display"></i></div>
+  <h1 class="ctitle animate__animated animate__fadeInDown">Interfaz de Usuario</h1>
+  <p class="csub animate__animated animate__fadeIn animate__delay-1s">Unidad 5.1.4 · Análisis y Diseño de Aplicaciones I<br><strong style="color:var(--acc2)">Edición con casos prácticos y análisis en profundidad</strong></p>
+  <div class="cpills animate__animated animate__fadeInUp animate__delay-1s">
+    <span class="cpill"><i class="fa-solid fa-layer-group me-1"></i>Tipos de UI</span>
+    <span class="cpill"><i class="fa-solid fa-list-check me-1"></i>10 Heurísticas de Nielsen</span>
+    <span class="cpill"><i class="fa-solid fa-compass-drafting me-1"></i>Principios de Tognazini</span>
+    <span class="cpill"><i class="fa-solid fa-triangle-exclamation me-1"></i>Problemas de Usabilidad</span>
+    <span class="cpill"><i class="fa-solid fa-mobile-screen me-1"></i>Diseño Móvil</span>
+    <span class="cpill"><i class="fa-solid fa-circle-question me-1"></i>30 Preguntas</span>
+  </div>
+  <button class="btn-s animate__animated animate__pulse animate__infinite animate__slow" onclick="go(1)">
+    <i class="fa-solid fa-play me-2"></i>Comenzar
+  </button>
+</div>
+
+<!-- ═══════════════════════ S1 — TIPOS ═══════════════════════ -->
+<div class="slide" id="s1">
+  <div class="sh">
+    <div class="badge-tag">Tema 1</div>
+    <h2 class="stitle"><i class="fa-solid fa-layer-group me-2"></i>Tipos de Interfaz de Usuario</h2>
+    <p class="ssub">Clasificación, evolución histórica, casos de uso y análisis comparativo</p>
+  </div>
+
+  <div class="tab-bar" id="tb1">
+    <button class="tbb on" onclick="tab('tb1','tp1',0)"><i class="fa-solid fa-book me-1"></i>Teoría</button>
+    <button class="tbb" onclick="tab('tb1','tp1',1)"><i class="fa-solid fa-flask me-1"></i>Casos Prácticos</button>
+    <button class="tbb" onclick="tab('tb1','tp1',2)"><i class="fa-solid fa-scale-balanced me-1"></i>Comparativa</button>
+    <button class="tbb" onclick="tab('tb1','tp1',3)"><i class="fa-solid fa-timeline me-1"></i>Evolución</button>
+  </div>
+
+  <!-- TAB 1: TEORÍA -->
+  <div class="tab-pane on" id="tp1-0">
+    <div class="grid-2">
+      <div class="card-d">
+        <span class="ci"><i class="fa-solid fa-terminal"></i></span>
+        <div class="ct">CLI — Interfaz de Línea de Comandos</div>
+        <div class="cd">El usuario interactúa exclusivamente mediante texto. Fue la primera forma de interacción con computadoras (años 60-70). Requiere memorizar comandos específicos pero ofrece control total y máxima automatización.<br><br>
+        <strong style="color:#fff">Ventajas:</strong> velocidad extrema, automatizable con scripts, bajo consumo de recursos, acceso remoto sencillo (SSH).<br>
+        <strong style="color:#fff">Desventajas:</strong> curva de aprendizaje alta, no intuitiva para no-técnicos, difícil de descubrir funcionalidades.</div>
+        <div class="tags"><span class="tag">Windows CMD</span><span class="tag">Bash/Zsh</span><span class="tag">PowerShell</span><span class="tag">SSH</span><span class="tag">Git CLI</span></div>
+      </div>
+      <div class="card-d">
+        <span class="ci"><i class="fa-solid fa-window-restore"></i></span>
+        <div class="ct">GUI — Interfaz Gráfica de Usuario</div>
+        <div class="cd">Surgió con el Xerox Star (1981) y se popularizó con Mac (1984) y Windows. Usa el modelo WIMP: Ventanas (Windows), Íconos, Menús y Puntero. Es la interfaz más extendida en software de escritorio.<br><br>
+        <strong style="color:#fff">Ventajas:</strong> intuitiva, fácil de aprender, aprovecha metáforas visuales.<br>
+        <strong style="color:#fff">Desventajas:</strong> más lenta que CLI para expertos, mayor consumo de recursos.</div>
+        <div class="tags"><span class="tag">Windows OS</span><span class="tag">macOS</span><span class="tag">Photoshop</span><span class="tag">Word</span></div>
+      </div>
+      <div class="card-d">
+        <span class="ci"><i class="fa-solid fa-hand-pointer"></i></span>
+        <div class="ct">NUI — Interfaz Natural de Usuario</div>
+        <div class="cd">Elimina dispositivos intermediarios: el usuario interactúa con gestos táctiles, movimiento corporal o reconocimiento de objetos. El término "natural" implica que la curva de aprendizaje es mínima porque el input es similar al mundo físico.<br><br>
+        <strong style="color:#fff">Subtipos:</strong> táctil (touchscreen), gestual (Kinect, cámaras), tangible (objetos físicos como token).</div>
+        <div class="tags"><span class="tag">iPhone / Android</span><span class="tag">Surface</span><span class="tag">Kinect</span><span class="tag">Leap Motion</span></div>
+      </div>
+      <div class="card-d">
+        <span class="ci"><i class="fa-solid fa-microphone-lines"></i></span>
+        <div class="ct">VUI — Interfaz de Usuario por Voz</div>
+        <div class="cd">Usa reconocimiento de voz (ASR) y síntesis de texto a voz (TTS). Permite interacción en lenguaje natural hablado. Ideal para contextos de manos libres o para usuarios con discapacidades visuales o motrices.<br><br>
+        <strong style="color:#fff">Desafíos:</strong> ambigüedad del lenguaje, acentos y dialectos, ruido ambiental, privacidad.</div>
+        <div class="tags"><span class="tag">Siri</span><span class="tag">Alexa</span><span class="tag">Google Assistant</span><span class="tag">Cortana</span></div>
+      </div>
+      <div class="card-d">
+        <span class="ci"><i class="fa-solid fa-globe"></i></span>
+        <div class="ct">Web UI</div>
+        <div class="cd">Interfaces accesibles vía navegador. Combinan HTML, CSS y JavaScript. Con las SPAs (Single Page Applications) y PWAs se acercan al rendimiento de apps nativas. El modelo dominante del software empresarial moderno.<br><br>
+        <strong style="color:#fff">Estándares clave:</strong> WCAG 2.1, Web Vitals (LCP, CLS, FID), REST/GraphQL.</div>
+        <div class="tags"><span class="tag">Gmail</span><span class="tag">Figma Web</span><span class="tag">Notion</span><span class="tag">Trello</span></div>
+      </div>
+      <div class="card-d">
+        <span class="ci"><i class="fa-solid fa-mobile-screen-button"></i></span>
+        <div class="ct">Mobile UI</div>
+        <div class="cd">Diseñadas para smartphones y tablets. Priorizan el tacto sobre el ratón. Tienen restricciones únicas: pantalla pequeña, uso con una sola mano, batería limitada, conectividad variable, sensores (GPS, cámara, acelerómetro).<br><br>
+        <strong style="color:#fff">Guías oficiales:</strong> Material Design 3 (Google), Human Interface Guidelines (Apple).</div>
+        <div class="tags"><span class="tag">WhatsApp</span><span class="tag">Instagram</span><span class="tag">Spotify</span><span class="tag">Uber</span></div>
+      </div>
+      <div class="card-d">
+        <span class="ci"><i class="fa-solid fa-vr-cardboard"></i></span>
+        <div class="ct">AR / VR — Realidad Aumentada y Virtual</div>
+        <div class="cd">AR superpone información digital en el entorno real (cámara + pantalla). VR crea entornos completamente inmersivos. Requieren nuevos paradigmas de interacción: mirada, gestos 3D, controladores, voz.<br><br>
+        <strong style="color:#fff">Desafíos UX:</strong> mareo por movimiento (motion sickness), fatiga ocular, peso del dispositivo.</div>
+        <div class="tags"><span class="tag">Meta Quest</span><span class="tag">Apple Vision Pro</span><span class="tag">Pokémon GO</span><span class="tag">IKEA Place</span></div>
+      </div>
+      <div class="card-d">
+        <span class="ci"><i class="fa-solid fa-robot"></i></span>
+        <div class="ct">CUI — Interfaz Conversacional</div>
+        <div class="cd">El usuario dialoga en lenguaje natural (texto o voz) con el sistema. Basada en NLP/IA. Elimina la necesidad de aprender menús o formularios. Puede ser guiada (flujos predefinidos) o libre (IA generativa).<br><br>
+        <strong style="color:#fff">Tipos:</strong> chatbots con reglas, chatbots con IA, asistentes virtuales empresariales.</div>
+        <div class="tags"><span class="tag">ChatGPT</span><span class="tag">Copilot</span><span class="tag">Soporte bancario AI</span><span class="tag">Intercom</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: CASOS PRÁCTICOS -->
+  <div class="tab-pane" id="tp1-1">
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-terminal"></i>Caso 1 — GitHub y la combinación CLI + GUI</div>
+      <div class="case-body">
+        <strong>Situación:</strong> GitHub ofrece simultáneamente una CLI (<code>gh</code>), una GUI web y una app de escritorio. Esta decisión de producto no es arbitraria: responde a que distintos perfiles de usuario tienen necesidades distintas.<br><br>
+        <strong>Análisis:</strong> Un developer experimentado prefiere <code>gh pr create --title "Fix bug"</code> porque no necesita abrir el navegador, autenticarse y navegar menús. Un colaborador no-técnico prefiere la GUI web con su formulario visual.<br><br>
+        <strong>Conclusión:</strong> La elección del tipo de interfaz debe basarse en el perfil del usuario, la frecuencia de uso y el contexto de uso. No existe una única interfaz "mejor": existen interfaces más adecuadas para cada caso.
+      </div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-microphone"></i>Caso 2 — Amazon Alexa y los límites de la VUI</div>
+      <div class="case-body">
+        <strong>Situación:</strong> Amazon invirtió billones en Alexa como reemplazo de interfaces tradicionales. En 2023 reportaron que el uso mayoritario se limitaba a: reproducir música, preguntar el clima y configurar alarmas.<br><br>
+        <strong>Problemas identificados:</strong> Los usuarios no recuerdan qué frases exactas funcionan ("wake words"), el error de reconocimiento rompe la confianza, y la VUI no es viable para tareas complejas con muchas opciones.<br><br>
+        <strong>Lección:</strong> La VUI es excelente para comandos simples y frecuentes en contextos manos libres (cocina, auto). Es pobre para tareas de exploración o con muchas variables. Se debe diseñar VUI para casos de uso específicos, no como reemplazo general de GUI.
+        <div class="ba-wrap">
+          <div class="ba-box ba-bad"><div class="ba-label bad-lbl">❌ Caso de uso inadecuado para VUI</div>"Alexa, mostrame las facturas del mes de marzo filtradas por proveedor mayor a $5000 y exportalas en Excel" — demasiado complejo, múltiples parámetros.</div>
+          <div class="ba-box ba-good"><div class="ba-label good-lbl">✅ Caso de uso ideal para VUI</div>"Alexa, poneme una alarma para las 7 AM" — simple, frecuente, sin ambigüedad, contexto manos libres (dormitorio).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-vr-cardboard"></i>Caso 3 — Apple Vision Pro: UI espacial y sus desafíos</div>
+      <div class="case-body">
+        <strong>Situación:</strong> Apple Vision Pro (2024) introdujo un nuevo paradigma de UI: los ojos como puntero, los dedos como clicks, y la voz como entrada de texto.<br><br>
+        <strong>Problemas de UX reportados en primeros usuarios:</strong> fatiga ocular tras 30-45 minutos de uso continuo, incomodidad al escribir texto (teclado virtual lento), y aislamiento social al usar el dispositivo en público.<br><br>
+        <strong>Implicación para diseñadores:</strong> Cada nuevo tipo de interfaz crea nuevos problemas de usabilidad que los principios clásicos (Nielsen, Tognazini) no siempre anticipan. El diseño de UI espacial requiere considerar: campo visual, profundidad, fatiga muscular de brazos, y cómo el usuario "señala" sin mouse físico.
+      </div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-robot"></i>Caso 4 — Chatbots bancarios: cuando la CUI falla</div>
+      <div class="case-body">
+        <strong>Situación:</strong> Muchos bancos reemplazaron sus líneas de atención con chatbots. Los primeros intentos (basados en palabras clave) tuvieron tasas de abandono del 70%+.<br><br>
+        <strong>Error de diseño:</strong> Tratar la CUI como un formulario disfrazado de conversación. Preguntar "¿Cuál es tu número de cliente?" en un chat no mejora la experiencia respecto al formulario web.<br><br>
+        <strong>Buenas prácticas actuales:</strong> Diseñar flujos conversacionales que se adapten a cómo los usuarios expresan naturalmente sus necesidades. Incluir siempre opción de derivar a agente humano. Usar botones rápidos para opciones frecuentes.
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: COMPARATIVA -->
+  <div class="tab-pane" id="tp1-2">
+    <div style="overflow-x:auto">
+      <table class="t-dark">
+        <thead><tr><th>Tipo</th><th>Canal principal</th><th>Perfil de usuario ideal</th><th>Mejor contexto de uso</th><th>Mayor limitación</th><th>Ejemplo paradigmático</th></tr></thead>
+        <tbody>
+          <tr><td><strong style="color:var(--acc2)">CLI</strong></td><td>Texto</td><td>Técnico avanzado</td><td>Automatización, administración de sistemas</td><td>Curva de aprendizaje muy alta</td><td>Git, bash scripts</td></tr>
+          <tr><td><strong style="color:var(--acc2)">GUI</strong></td><td>Visual/Ratón</td><td>Cualquier perfil</td><td>Software de escritorio complejo</td><td>Más lenta que CLI para repetición</td><td>Photoshop, Word</td></tr>
+          <tr><td><strong style="color:var(--acc2)">NUI Táctil</strong></td><td>Tacto</td><td>Cualquier perfil, niños</td><td>Dispositivos portátiles</td><td>Precisión limitada, fatiga brazo</td><td>iPad apps</td></tr>
+          <tr><td><strong style="color:var(--acc2)">VUI</strong></td><td>Voz</td><td>Cualquier perfil</td><td>Manos libres, accesibilidad</td><td>Ambigüedad, privacidad, ruido</td><td>Alexa, Google Home</td></tr>
+          <tr><td><strong style="color:var(--acc2)">Web UI</strong></td><td>Navegador</td><td>Usuarios de empresa/consumidor</td><td>SaaS, apps colaborativas</td><td>Depende de conectividad</td><td>Notion, Figma</td></tr>
+          <tr><td><strong style="color:var(--acc2)">Mobile UI</strong></td><td>Táctil+sensores</td><td>Usuario móvil cotidiano</td><td>Tareas rápidas, localización</td><td>Pantalla reducida</td><td>Uber, WhatsApp</td></tr>
+          <tr><td><strong style="color:var(--acc2)">AR/VR</strong></td><td>Espacial</td><td>Industria, gaming, educación</td><td>Simulación, entrenamiento</td><td>Costo, fatiga, aislamiento</td><td>Vision Pro, Quest</td></tr>
+          <tr><td><strong style="color:var(--acc2)">CUI</strong></td><td>Lenguaje natural</td><td>Cualquier perfil</td><td>Soporte, onboarding, exploración</td><td>Complejidad en tareas multivariable</td><td>ChatGPT, Copilot</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-box" style="margin-top:1rem">
+      <strong>Criterio de elección clave:</strong> No existe la "mejor" interfaz. La decisión debe basarse en: (1) perfil y contexto del usuario, (2) complejidad de la tarea, (3) frecuencia de uso, (4) entorno físico de uso, (5) necesidades de accesibilidad. Las mejores aplicaciones combinan múltiples tipos según la tarea.
+    </div>
+  </div>
+
+  <!-- TAB 4: EVOLUCIÓN -->
+  <div class="tab-pane" id="tp1-3">
+    <div style="position:relative;padding-left:2rem;border-left:2px solid rgba(0,200,215,.3)">
+      <div style="margin-bottom:1.5rem">
+        <div style="position:absolute;left:-8px;width:14px;height:14px;background:var(--acc2);border-radius:50%;margin-top:.2rem"></div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--acc2)">1960s–1970s: Tarjetas perforadas y terminales de texto</div>
+        <div style="font-size:.85rem;color:var(--txt2);margin-top:.3rem">Los primeros usuarios (científicos y militares) ingresaban datos en tarjetas perforadas o escribían en terminales de texto sin pantalla gráfica. La "interfaz" era el lenguaje mismo de la máquina.</div>
+      </div>
+      <div style="margin-bottom:1.5rem">
+        <div style="position:absolute;left:-8px;width:14px;height:14px;background:var(--acc2);border-radius:50%;margin-top:.2rem"></div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--acc2)">1981–1984: GUI y el modelo WIMP</div>
+        <div style="font-size:.85rem;color:var(--txt2);margin-top:.3rem">Xerox Star (1981) inventó el concepto de ventanas y ratón. Apple Macintosh (1984) lo popularizó. Microsoft Windows (1985) lo masificó. Por primera vez la computadora era accesible para no-técnicos.</div>
+      </div>
+      <div style="margin-bottom:1.5rem">
+        <div style="position:absolute;left:-8px;width:14px;height:14px;background:var(--acc2);border-radius:50%;margin-top:.2rem"></div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--acc2)">1991–2000: World Wide Web y las Web UI</div>
+        <div style="font-size:.85rem;color:var(--txt2);margin-top:.3rem">Tim Berners-Lee creó la WWW en 1991. Las interfaces web democratizaron el acceso: sin instalación, multiplataforma. El desafío: diseñar para el navegador con limitaciones de HTML.</div>
+      </div>
+      <div style="margin-bottom:1.5rem">
+        <div style="position:absolute;left:-8px;width:14px;height:14px;background:var(--acc2);border-radius:50%;margin-top:.2rem"></div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--acc2)">2007: iPhone y la revolución táctil</div>
+        <div style="font-size:.85rem;color:var(--txt2);margin-top:.3rem">Steve Jobs presentó el iPhone como "internet en tu bolsillo". Eliminó el teclado físico y redefinió la Mobile UI. Gesto de "pinch-to-zoom", tap, swipe: la NUI táctil se convirtió en estándar global.</div>
+      </div>
+      <div style="margin-bottom:1.5rem">
+        <div style="position:absolute;left:-8px;width:14px;height:14px;background:var(--acc2);border-radius:50%;margin-top:.2rem"></div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--acc2)">2011–2015: Asistentes de voz y VUI</div>
+        <div style="font-size:.85rem;color:var(--txt2);margin-top:.3rem">Siri (2011), Google Now (2012), Cortana (2014), Alexa (2014). La VUI entró en los hogares. Los smart speakers cambiaron el paradigma de interacción doméstica.</div>
+      </div>
+      <div style="margin-bottom:1.5rem">
+        <div style="position:absolute;left:-8px;width:14px;height:14px;background:var(--acc2);border-radius:50%;margin-top:.2rem"></div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:var(--acc2)">2016–hoy: AR/VR y UI espacial</div>
+        <div style="font-size:.85rem;color:var(--txt2);margin-top:.3rem">Oculus Rift, HoloLens, ARKit/ARCore. El diseño para 3 dimensiones requiere nuevas reglas: no hay "pantalla", el espacio es el canvas. Apple Vision Pro (2024) propone la "computación espacial".</div>
+      </div>
+      <div>
+        <div style="position:absolute;left:-8px;width:14px;height:14px;background:#69f0ae;border-radius:50%;margin-top:.2rem"></div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:#69f0ae">2022–hoy: CUI generativa con IA</div>
+        <div style="font-size:.85rem;color:var(--txt2);margin-top:.3rem">ChatGPT (2022) redefinió las expectativas de las CUI. Por primera vez la conversación con IA parece natural. Surge el diseño de "prompts" como nueva disciplina y la integración de IA en toda interfaz.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sfooter">
+    <button class="narr" onclick="go(0)"><i class="fa-solid fa-arrow-left me-1"></i>Inicio</button>
+    <span class="scnt">Diapositiva <span>1</span> / 6</span>
+    <button class="narr" onclick="go(2)">Nielsen <i class="fa-solid fa-arrow-right ms-1"></i></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ S2 — NIELSEN ═══════════════════════ -->
+<div class="slide" id="s2">
+  <div class="sh">
+    <div class="badge-tag">Tema 2</div>
+    <h2 class="stitle"><i class="fa-solid fa-list-check me-2"></i>Las 10 Heurísticas de Nielsen</h2>
+    <p class="ssub">Teoría, violaciones reales en productos conocidos y cómo auditarlas</p>
+  </div>
+
+  <div class="tab-bar" id="tb2">
+    <button class="tbb on" onclick="tab('tb2','tp2',0)"><i class="fa-solid fa-book me-1"></i>Las 10 Heurísticas</button>
+    <button class="tbb" onclick="tab('tb2','tp2',1)"><i class="fa-solid fa-bug me-1"></i>Violaciones Reales</button>
+    <button class="tbb" onclick="tab('tb2','tp2',2)"><i class="fa-solid fa-magnifying-glass me-1"></i>Cómo Evaluar</button>
+  </div>
+
+  <!-- TAB: HEURÍSTICAS -->
+  <div class="tab-pane on" id="tp2-0">
+    <div class="info-box">
+      <strong>Contexto:</strong> Jakob Nielsen publicó estas 10 heurísticas en 1994 junto con Rolph Molich. No son reglas absolutas, sino principios generales para identificar problemas de usabilidad. Se usan en la <em>Evaluación Heurística</em>, donde 3-5 expertos analizan una interfaz sin usuarios reales.
+    </div>
+    <ul class="hlist">
+      <li class="hi">
+        <span class="hn">01</span>
+        <div class="hname"><i class="fa-solid fa-eye me-1" style="color:var(--acc2)"></i>Visibilidad del estado del sistema</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> El sistema siempre debe mantener informados a los usuarios sobre lo que está ocurriendo, mediante retroalimentación oportuna y adecuada. El usuario nunca debe preguntarse "¿pasó algo?" o "¿está cargando?"<br><br>
+        <strong style="color:#fff">Por qué importa:</strong> La incertidumbre genera ansiedad. Si el usuario no sabe si su acción tuvo efecto, puede repetirla (duplicar pedidos, doble clic en botones) o abandonar el sistema.<br><br>
+        <span style="color:#69f0ae">✅ Ejemplos buenos:</span> Barra de progreso en subida de archivos, indicador de "Escribiendo..." en WhatsApp, confirmación "¡Guardado!" en Google Docs.<br>
+        <span style="color:#ff6b6b">❌ Ejemplos malos:</span> Botón que no cambia de estado al hacer clic, formulario que no indica si se envió, operación bancaria sin confirmación visual.</div>
+      </li>
+      <li class="hi">
+        <span class="hn">02</span>
+        <div class="hname"><i class="fa-solid fa-earth-americas me-1" style="color:var(--acc2)"></i>Coincidencia con el mundo real</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> El sistema debe hablar el lenguaje del usuario: palabras, frases y conceptos que ya conoce de su experiencia cotidiana. Evitar jerga técnica interna.<br><br>
+        <strong style="color:#fff">Metáforas de escritorio:</strong> "Carpeta" para agrupar archivos, "Papelera" para eliminar, "Escritorio" para el área de trabajo. Estas metáforas son tan efectivas que hoy nadie necesita explicación.<br><br>
+        <strong style="color:#fff">Riesgo:</strong> Las metáforas tienen límites. La "papelera" vacía y la "carpeta" no tienen peso real, pero la metáfora funciona porque el comportamiento es análogo al objeto físico.<br><br>
+        <span style="color:#69f0ae">✅ Bien:</span> "Archivar" email en lugar de "FLAG_ARCHIVE_001". <span style="color:#ff6b6b">❌ Mal:</span> "Error 0x800704CF" en lugar de "No hay conexión a internet".</div>
+      </li>
+      <li class="hi">
+        <span class="hn">03</span>
+        <div class="hname"><i class="fa-solid fa-door-open me-1" style="color:var(--acc2)"></i>Control y libertad del usuario</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> Los usuarios eligen funciones por error. Necesitan salidas de emergencia claras: deshacer y rehacer son fundamentales. El usuario debe sentir que tiene control y que los errores no son catastróficos.<br><br>
+        <strong style="color:#fff">Concepto de "tolerancia al error":</strong> Un sistema bien diseñado hace que los errores sean fáciles de corregir, no de cometer. Esto aumenta la confianza del usuario para explorar.<br><br>
+        <span style="color:#69f0ae">✅ Ejemplos:</span> Ctrl+Z universal, "Deshacer envío" de Gmail (30 segundos), botón "Cancelar" siempre visible en diálogos modales, navegación hacia atrás en apps móviles.<br>
+        <span style="color:#ff6b6b">❌ Error clásico:</span> Eliminar definitivamente sin confirmación y sin posibilidad de recuperar (violación combinada con heurística #5).</div>
+      </li>
+      <li class="hi">
+        <span class="hn">04</span>
+        <div class="hname"><i class="fa-solid fa-equals me-1" style="color:var(--acc2)"></i>Consistencia y estándares</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> Los usuarios no deberían preguntarse si distintas palabras, situaciones o acciones significan lo mismo. Seguir las convenciones de la plataforma reduce la carga cognitiva.<br><br>
+        <strong style="color:#fff">Dos tipos de consistencia:</strong><br>
+        • <em>Interna:</em> El mismo elemento se comporta igual en toda la aplicación.<br>
+        • <em>Externa:</em> La app sigue las convenciones de la plataforma (ej: el menú está arriba en desktop, abajo en mobile).<br><br>
+        <span style="color:#69f0ae">✅ Bien:</span> Los botones de acción primaria siempre azules, siempre a la derecha. <span style="color:#ff6b6b">❌ Mal:</span> "Guardar" en una pantalla, "Salvar" en otra, "Conservar cambios" en una tercera.</div>
+      </li>
+      <li class="hi">
+        <span class="hn">05</span>
+        <div class="hname"><i class="fa-solid fa-shield-halved me-1" style="color:var(--acc2)"></i>Prevención de errores</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> Mejor que un buen mensaje de error es un diseño que evite que el error ocurra. Hay dos niveles: (1) eliminar condiciones propensas a error, (2) confirmar antes de acciones destructivas.<br><br>
+        <strong style="color:#fff">Tipos de errores a prevenir:</strong><br>
+        • <em>Deslices (slips):</em> El usuario sabe qué quiere hacer pero se equivoca en la acción (clic en botón equivocado por proximidad).<br>
+        • <em>Equivocaciones (mistakes):</em> El usuario tiene un modelo mental incorrecto del sistema.<br><br>
+        <span style="color:#69f0ae">✅ Bien:</span> Deshabilitar botón "Enviar" si campos requeridos están vacíos, confirmación "¿Eliminar este archivo? Esta acción no se puede deshacer".<br>
+        <span style="color:#ff6b6b">❌ Mal:</span> Botón "Cancelar" y "Eliminar" adyacentes con el mismo estilo visual.</div>
+      </li>
+      <li class="hi">
+        <span class="hn">06</span>
+        <div class="hname"><i class="fa-solid fa-brain me-1" style="color:var(--acc2)"></i>Reconocimiento antes que recuerdo</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> Minimizar la carga de memoria del usuario haciendo visible la información, las acciones y las opciones necesarias. Es más fácil reconocer algo que recordarlo desde cero.<br><br>
+        <strong style="color:#fff">Fundamento cognitivo:</strong> La memoria de reconocimiento es mucho más potente que la memoria de recuerdo libre. Por eso las GUI (donde reconocés íconos) son más fáciles que las CLI (donde debés recordar comandos exactos).<br><br>
+        <span style="color:#69f0ae">✅ Bien:</span> Historial de búsquedas recientes, autocompletado en formularios, tooltips en íconos, menús contextuales con opciones visibles.<br>
+        <span style="color:#ff6b6b">❌ Mal:</span> Atajos de teclado sin forma de descubrirlos, formularios de múltiples pasos donde no podés volver a ver lo ingresado anteriormente.</div>
+      </li>
+      <li class="hi">
+        <span class="hn">07</span>
+        <div class="hname"><i class="fa-solid fa-gauge-high me-1" style="color:var(--acc2)"></i>Flexibilidad y eficiencia de uso</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> Los aceleradores (atajos de teclado, gestos, macros) permiten a usuarios expertos trabajar más rápido, sin interferir con los novatos que no los conocen.<br><br>
+        <strong style="color:#fff">El desnivel de experticia:</strong> Un novato y un experto tienen necesidades radicalmente distintas. Los novatos necesitan guía; los expertos necesitan velocidad. Un buen diseño sirve a ambos sin sacrificar a ninguno.<br><br>
+        <span style="color:#69f0ae">✅ Bien:</span> Photoshop con atajos (B = brush, V = selection) mientras el toolbar es visible. Gmail con j/k para navegar emails. Formularios con autocompletado y tabIndex.<br>
+        <span style="color:#ff6b6b">❌ Mal:</span> Obligar a todos los usuarios a completar un wizard de 5 pasos aunque el 80% haga siempre lo mismo.</div>
+      </li>
+      <li class="hi">
+        <span class="hn">08</span>
+        <div class="hname"><i class="fa-solid fa-palette me-1" style="color:var(--acc2)"></i>Diseño estético y minimalista</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> Los diálogos no deben contener información irrelevante o raramente usada. Cada unidad extra de información compite con la información relevante y reduce su visibilidad relativa.<br><br>
+        <strong style="color:#fff">No significa "simple":</strong> Esta heurística no dice que la UI deba ser simple, sino que debe ser <em>relevante</em>. Photoshop tiene cientos de herramientas y no viola esta heurística porque cada una tiene su razón de ser para los usuarios objetivo.<br><br>
+        <span style="color:#69f0ae">✅ Bien:</span> Google Search: solo la caja de búsqueda. Confirmar transacción: solo monto, destino y botones confirmar/cancelar.<br>
+        <span style="color:#ff6b6b">❌ Mal:</span> Dashboard con 30 métricas donde el usuario solo necesita 3. Pop-ups de bienvenida, banners de cookies, newsletter y descuento al mismo tiempo.</div>
+      </li>
+      <li class="hi">
+        <span class="hn">09</span>
+        <div class="hname"><i class="fa-solid fa-circle-exclamation me-1" style="color:var(--acc2)"></i>Ayuda a reconocer, diagnosticar y recuperarse de errores</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> Los mensajes de error deben: (1) expresarse en lenguaje llano (no código), (2) indicar con precisión el problema, (3) sugerir constructivamente una solución.<br><br>
+        <strong style="color:#fff">El trío del buen error:</strong> ¿QUÉ pasó? + ¿POR QUÉ pasó? + ¿QUÉ puede hacer el usuario?<br><br>
+        <div class="ba-wrap" style="margin-top:.5rem">
+          <div class="ba-box ba-bad"><div class="ba-label bad-lbl">❌ Mal</div>"Error: HTTP 422 Unprocessable Entity. Stack: ValidationException at line 47"</div>
+          <div class="ba-box ba-good"><div class="ba-label good-lbl">✅ Bien</div>"El email ingresado no es válido. Por favor usá el formato: nombre@dominio.com"</div>
+        </div></div>
+      </li>
+      <li class="hi">
+        <span class="hn">10</span>
+        <div class="hname"><i class="fa-solid fa-circle-info me-1" style="color:var(--acc2)"></i>Ayuda y documentación</div>
+        <div class="hdesc"><strong style="color:#fff">Principio:</strong> Aunque es mejor si el sistema puede usarse sin documentación, puede ser necesario brindar ayuda. Debe ser: fácil de buscar, orientada a la tarea del usuario, concreta y lo más breve posible.<br><br>
+        <strong style="color:#fff">Prioridad:</strong> Esta heurística está al final porque la mejor ayuda es no necesitarla. Si el diseño es lo suficientemente intuitivo (heurísticas 1-9), la documentación es el último recurso.<br><br>
+        <span style="color:#69f0ae">✅ Bien:</span> Tooltips en íconos complejos, ayuda contextual "¿Qué significa esto?" en formularios, guías de inicio rápido, FAQs organizadas por tarea.<br>
+        <span style="color:#ff6b6b">❌ Mal:</span> Manual PDF de 200 páginas como única documentación, soporte solo por ticket con 48h de respuesta.</div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- TAB: VIOLACIONES REALES -->
+  <div class="tab-pane" id="tp2-1">
+    <div class="case-box">
+      <div class="case-title"><i class="fa-brands fa-windows"></i>Windows Update — Múltiples violaciones</div>
+      <div class="case-body">
+        <strong>Heurística #1 violada:</strong> Windows (versiones antiguas) iniciaba actualizaciones sin aviso, reiniciaba el equipo, y el usuario perdía su trabajo.<br>
+        <strong>Heurística #3 violada:</strong> "Reiniciar ahora" sin opción de posponer indefinidamente. El usuario no tenía control.<br>
+        <strong>Heurística #5 violada:</strong> No se prevenía el error de "reinicio en medio de trabajo no guardado".<br><br>
+        <strong>Impacto real:</strong> Millones de usuarios perdieron trabajo. Microsoft fue objeto de burlas públicas. En Windows 10/11 mejoraron: "Active Hours" para no reiniciar cuando el usuario trabaja, notificaciones previas y tiempo de posponer.
+      </div>
+    </div>
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-hospital"></i>Healthcare.gov — El lanzamiento fallido de 2013</div>
+      <div class="case-body">
+        <strong>Contexto:</strong> El sitio de inscripción a Obamacare se cayó en su lanzamiento. Miles de personas no podían completar el registro.<br><br>
+        <strong>Heurística #1 violada:</strong> Sin feedback durante los largos tiempos de espera (la página simplemente "colgaba").<br>
+        <strong>Heurística #9 violada:</strong> Mensajes de error técnicos inútiles para usuarios no técnicos.<br>
+        <strong>Heurística #5 violada:</strong> El sistema no prevenía que el usuario ingresara información inválida hasta el final del formulario de 20+ pasos.<br><br>
+        <strong>Resultado:</strong> El gobierno de Obama tuvo que contratar un equipo de rescate en Silicon Valley (USDS) para reconstruir el sistema. Costo estimado: $677 millones solo en el lanzamiento fallido.
+      </div>
+    </div>
+    <div class="case-box">
+      <div class="case-title"><i class="fa-brands fa-snapchat"></i>Snapchat Redesign 2018 — Heurística #4</div>
+      <div class="case-body">
+        <strong>Situación:</strong> Snapchat rediseñó radicalmente su interfaz en 2018, mezclando contenido de amigos con contenido de marcas en la misma pantalla.<br><br>
+        <strong>Heurística #4 violada:</strong> El nuevo diseño rompió la consistencia que los usuarios habían aprendido. Los usuarios sabían que "izquierda = cámara, derecha = stories". El rediseño lo cambió sin lógica clara.<br><br>
+        <strong>Heurística #6 violada:</strong> Los usuarios ya no podían reconocer dónde estaba cada función; tenían que recordar la nueva ubicación.<br><br>
+        <strong>Resultado:</strong> Kylie Jenner twitteó "no abro más Snapchat ¿y ustedes?" → Snapchat perdió $1.3 billion en valor de mercado en un día. La empresa tuvo que hacer un rediseño parcial meses después.
+      </div>
+    </div>
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-plane"></i>Avianca Airlines — Heurística #2 y #9</div>
+      <div class="case-body">
+        <strong>Caso clásico de HCI:</strong> Un formulario de check-in online preguntaba "¿Tiene tarifas especiales? (Y/N)" usando la convención anglosajona Y/N (Yes/No), pero en un sitio en español para usuarios latinoamericanos.<br><br>
+        <strong>Heurística #2 violada:</strong> Y/N no es el lenguaje del usuario hispanohablante. Muchos usuarios ponían "N" queriendo decir "No" cuando necesitaban poner "Y" (sí tienen tarifas especiales).<br><br>
+        <strong>Lección:</strong> La localización no es solo traducir texto. Es adaptar convenciones, formatos de fecha (DD/MM/YYYY vs MM/DD/YYYY), separadores decimales (coma vs punto) y metáforas al contexto cultural del usuario.
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CÓMO EVALUAR -->
+  <div class="tab-pane" id="tp2-2">
+    <div class="info-box">
+      <strong>¿Qué es la Evaluación Heurística?</strong> Es un método de inspección de usabilidad donde 3-5 evaluadores expertos revisan una interfaz comparándola con las 10 heurísticas. Nielsen demostró que con 5 evaluadores se detecta el 75% de los problemas de usabilidad.
+    </div>
+    <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin:1rem 0 .7rem">Proceso paso a paso</h6>
+    <div class="grid-2">
+      <div class="card-d">
+        <div class="ct"><span style="background:var(--acc2);color:var(--p);border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;margin-right:.5rem;font-size:.8rem;font-family:'Rajdhani',sans-serif;font-weight:700">1</span>Preparación</div>
+        <div class="cd">Definir el scope de evaluación (¿toda la app o flujo específico?). Reclutar evaluadores (idealmente con expertise en UX). Preparar formulario de registro de hallazgos con: heurística violada, severidad (1-4), descripción, evidencia.</div>
+      </div>
+      <div class="card-d">
+        <div class="ct"><span style="background:var(--acc2);color:var(--p);border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;margin-right:.5rem;font-size:.8rem;font-family:'Rajdhani',sans-serif;font-weight:700">2</span>Evaluación individual</div>
+        <div class="cd">Cada evaluador revisa la interfaz de forma INDEPENDIENTE (sin influenciarse entre sí). Típicamente 1-2 horas. Se recorre el sistema 2 veces: primera pasada para entenderlo, segunda para identificar problemas heurísticos.</div>
+      </div>
+      <div class="card-d">
+        <div class="ct"><span style="background:var(--acc2);color:var(--p);border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;margin-right:.5rem;font-size:.8rem;font-family:'Rajdhani',sans-serif;font-weight:700">3</span>Consolidación</div>
+        <div class="cd">Reunión donde se agregan todos los hallazgos individuales. Se eliminan duplicados. Se discuten puntos de desacuerdo. El resultado es una lista consolidada con severidad ponderada (promedio de evaluadores).</div>
+      </div>
+      <div class="card-d">
+        <div class="ct"><span style="background:var(--acc2);color:var(--p);border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;margin-right:.5rem;font-size:.8rem;font-family:'Rajdhani',sans-serif;font-weight:700">4</span>Priorización y reporte</div>
+        <div class="cd">Se priorizan problemas por severidad: 4=Catastrófico (debe corregirse), 3=Mayor, 2=Menor, 1=Cosmético. Se genera reporte con recomendaciones de mejora para cada hallazgo.</div>
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:1rem">
+      <strong>Escala de severidad de Nielsen:</strong> 0=No es problema, 1=Solo cosmético (corregir si hay tiempo), 2=Menor (baja prioridad), 3=Mayor (alta prioridad), 4=Catástrofe de usabilidad (imperativo corregir antes de lanzar).
+    </div>
+  </div>
+
+  <div class="sfooter">
+    <button class="narr" onclick="go(1)"><i class="fa-solid fa-arrow-left me-1"></i>Tipos de UI</button>
+    <span class="scnt">Diapositiva <span>2</span> / 6</span>
+    <button class="narr" onclick="go(3)">Tognazini <i class="fa-solid fa-arrow-right ms-1"></i></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ S3 — TOGNAZINI ═══════════════════════ -->
+<div class="slide" id="s3">
+  <div class="sh">
+    <div class="badge-tag">Tema 3</div>
+    <h2 class="stitle"><i class="fa-solid fa-compass-drafting me-2"></i>Principios de Tognazini</h2>
+    <p class="ssub">Bruce "Tog" Tognazini — AskTog.com · Principios de diseño de interacción con análisis profundo</p>
+  </div>
+
+  <div class="tab-bar" id="tb3">
+    <button class="tbb on" onclick="tab('tb3','tp3',0)"><i class="fa-solid fa-book me-1"></i>Principios (1–8)</button>
+    <button class="tbb" onclick="tab('tb3','tp3',1)"><i class="fa-solid fa-book-open me-1"></i>Principios (9–16)</button>
+    <button class="tbb" onclick="tab('tb3','tp3',2)"><i class="fa-solid fa-flask me-1"></i>Casos Prácticos</button>
+    <button class="tbb" onclick="tab('tb3','tp3',3)"><i class="fa-solid fa-not-equal me-1"></i>Nielsen vs Tognazini</button>
+  </div>
+
+  <div class="tab-pane on" id="tp3-0">
+    <div class="grid-2">
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-forward"></i></span><span class="pcn">1. Anticipación</span>
+        <div class="pcd">Las aplicaciones deben prever las necesidades del usuario y presentar información y herramientas antes de que se soliciten explícitamente. El software proactivo reduce la fricción.</div>
+        <div class="pcex">Ej: Google Docs sugiere autocompletar frases. Netflix pre-carga el próximo episodio. El GPS calcula rutas alternas antes de que haya tráfico visible.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-person-running"></i></span><span class="pcn">2. Autonomía</span>
+        <div class="pcd">Los usuarios deben sentir que controlan el sistema. Ofrecer suficientes opciones sin abrumar. El software no debe ser paternalista ni forzar flujos innecesarios. Respetar las decisiones del usuario.</div>
+        <div class="pcex">Ej: Permitir guardar un archivo en cualquier formato aunque no sea el predeterminado. No forzar tutoriales de bienvenida que no se pueden cerrar.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-swatchbook"></i></span><span class="pcn">3. Ceguera al cambio / Percepción de color</span>
+        <div class="pcd">Nunca usar el color como único canal de información. Un 8% de los hombres tiene alguna forma de daltonismo. Combinar color con forma, ícono, texto o patrón.</div>
+        <div class="pcex">Ej: Los gráficos de barras con solo colores rojo/verde son inaccesibles. Solución: agregar etiquetas de texto o usar patrones de relleno distintos además del color.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-equals"></i></span><span class="pcn">4. Consistencia</span>
+        <div class="pcd">Los usuarios deben poder aplicar lo aprendido en una parte del sistema a las demás. Comportamientos, vocabulario y patrones visuales deben ser uniformes en toda la aplicación.</div>
+        <div class="pcex">Ej: Si en la pantalla de Clientes el botón "Nuevo" está arriba a la derecha, en la pantalla de Productos debe estar en el mismo lugar y tener el mismo estilo.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-bolt"></i></span><span class="pcn">5. Eficiencia del usuario</span>
+        <div class="pcd">Optimizar el tiempo del usuario, no el del sistema. El costo del tiempo humano es mayor que el costo del CPU. Evitar diálogos de espera innecesarios. Nunca hacer esperar al usuario por procesos que pueden hacerse en segundo plano.</div>
+        <div class="pcex">Ej: Al enviar un email, mostrar "Enviado" inmediatamente mientras el proceso ocurre en background. No mostrar spinner durante 3 segundos antes de confirmar.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-map"></i></span><span class="pcn">6. Interfaces explorables</span>
+        <div class="pcd">Los usuarios deben poder explorar sin miedo a consecuencias permanentes. Si toda acción es reversible, el usuario se atreve a descubrir funcionalidades. Las interfaces explorables generan más engagement y usuarios más expertos con el tiempo.</div>
+        <div class="pcex">Ej: Figma permite deshacer infinitas acciones. Los juegos bien diseñados tienen "checkpoints" frecuentes. Google Maps permite explorar sin "comprometerse" a una ruta.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-crosshairs"></i></span><span class="pcn">7. Ley de Fitts</span>
+        <div class="pcd">El tiempo para alcanzar un objetivo es función de su tamaño y distancia: T = a + b × log₂(D/W + 1). Las implicaciones: botones importantes deben ser grandes. Los bordes y esquinas de pantalla son "infinitamente grandes" porque el cursor choca con ellos.</div>
+        <div class="pcex">Ej: El menú de macOS en el borde superior es más rápido de alcanzar que en cualquier otra posición. En móvil, los controles principales van abajo (zona del pulgar).</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-graduation-cap"></i></span><span class="pcn">8. Aprendizaje</span>
+        <div class="pcd">Las interfaces deben ser fáciles de aprender inicialmente y no requerir re-aprendizaje constante. Favorecer reconocimiento sobre recuerdo. Las metáforas y patrones conocidos reducen la curva de aprendizaje.</div>
+        <div class="pcex">Ej: WhatsApp se aprendió en minutos porque usó metáforas del SMS y el chat existentes. No requirió manual de usuario.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="tp3-1">
+    <div class="grid-2">
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-cube"></i></span><span class="pcn">9. Metáforas de uso</span>
+        <div class="pcd">Usar objetos y metáforas del mundo físico para hacer la interfaz familiar. Pero no abusar al punto de limitar capacidades digitales. La "papelera" es una metáfora útil, pero en lo digital podés recuperar lo que tirás (ventaja sobre el mundo físico).</div>
+        <div class="pcex">Ej: El "carrito de compras" en e-commerce es una metáfora perfecta. El "ícono de diskette" para guardar ya no aplica como metáfora para generaciones jóvenes.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-floppy-disk"></i></span><span class="pcn">10. Protección del trabajo del usuario</span>
+        <div class="pcd">El sistema nunca debe permitir que el usuario pierda trabajo no guardado. Auto-guardar periódicamente, confirmar antes de cerrar con cambios pendientes, recuperar sesión al abrir de nuevo.</div>
+        <div class="pcex">Ej: Google Docs guarda automáticamente cada cambio. Notion tiene historial de versiones. VS Code pregunta "¿Guardar antes de cerrar?" y restaura pestañas al reabrir.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-font"></i></span><span class="pcn">11. Legibilidad</span>
+        <div class="pcd">El texto debe ser siempre legible: contraste adecuado (≥4.5:1 WCAG AA), tamaño mínimo 16px en pantalla, fuentes optimizadas para pantalla. No sacrificar legibilidad por estética. El contenido es más importante que el decorado.</div>
+        <div class="pcex">Ej: Texto gris claro sobre fondo blanco "moderno" puede ser WCAG Fail. Solución: ajustar la paleta sin sacrificar el diseño.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-arrows-spin"></i></span><span class="pcn">12. Seguimiento del estado</span>
+        <div class="pcd">El sistema debe recordar lo que el usuario ha hecho y el estado actual. Al regresar después de una interrupción, retomar desde donde se dejó: posición de scroll, sección activa, formulario parcialmente completado.</div>
+        <div class="pcex">Ej: Netflix recuerda hasta qué minuto ibas en cada serie. Duolingo guarda tu racha y posición en la lección. YouTube continúa el video desde el segundo donde lo dejaste.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-object-group"></i></span><span class="pcn">13. Objetos visibles</span>
+        <div class="pcd">Lo que el usuario puede hacer debe ser visible. Evitar funcionalidades ocultas que requieran comandos secretos, clics en lugares no obvios, o combinaciones de teclas que nadie descubre solo.</div>
+        <div class="pcex">Ej: El menú contextual (clic derecho) es una funcionalidad visible pero no totalmente obvia: hay que enseñar que existe. Los "Easter eggs" violan este principio intencionalmente.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-sliders"></i></span><span class="pcn">14. Configurabilidad</span>
+        <div class="pcd">Permitir que el usuario personalice la experiencia según sus necesidades y preferencias: atajos, orden de elementos, tamaño de fuente, tema, idioma. Los usuarios no son todos iguales.</div>
+        <div class="pcex">Ej: VS Code es altamente configurable (settings.json). Slack permite personalizar notificaciones por canal. La accesibilidad es una forma de configurabilidad obligatoria.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-arrows-left-right"></i></span><span class="pcn">15. Cambios visibles de estado</span>
+        <div class="pcd">Cuando la pantalla cambia de estado, el usuario debe percibirlo claramente. Usar animaciones o transiciones para comunicar cambios (carga, apertura, eliminación). El ojo humano detecta movimiento mejor que cambios estáticos.</div>
+        <div class="pcex">Ej: Al eliminar un item de lista, animarlo hacia afuera (no que desaparezca instantáneamente). Al abrir un modal, animarlo desde el botón que lo originó.</div>
+      </div>
+      <div class="pc">
+        <span class="pci"><i class="fa-solid fa-hourglass-half"></i></span><span class="pcn">16. Respuesta rápida percibida</span>
+        <div class="pcd">El sistema debe responder inmediatamente aunque la operación tarde. Un feedback visual instantáneo (cursor de carga, cambio de estado del botón) evita que el usuario piense que el sistema se colgó. Percepción ≠ realidad.</div>
+        <div class="pcex">Ej: Instagram muestra el "like" al instante en el cliente antes de confirmar con el servidor (optimistic UI). El botón se desactiva y cambia de color al hacer clic.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CASOS PRÁCTICOS -->
+  <div class="tab-pane" id="tp3-2">
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-crosshairs"></i>Caso Profundo — Ley de Fitts en el diseño de interfaces reales</div>
+      <div class="case-body">
+        <strong>Fórmula:</strong> T = a + b × log₂(2D/W) — donde T=tiempo, D=distancia al objetivo, W=ancho del objetivo.<br><br>
+        <strong>Aplicación en macOS:</strong> La barra de menú de macOS está pegada al borde superior de la pantalla. Esto la hace efectivamente "de ancho infinito" en dirección vertical (no podés pasarte de ella). Mover el cursor hacia arriba a máxima velocidad y soltar siempre llega al menú. Esto es mucho más rápido que en Windows donde el menú está dentro de cada ventana (más pequeño y más lejos).<br><br>
+        <strong>Aplicación en móvil:</strong> La zona inferior de la pantalla (zona del pulgar) es donde deben ir las acciones más frecuentes. Requiere menos tiempo de alcance y menos cambio de agarre. Por eso Material Design y HIG ubican la navegación principal en la parte inferior.<br><br>
+        <strong>Aplicación en botones:</strong> Un botón de 48×48px que está a 10px del cursor actual tarda ~200ms en alcanzar. El mismo botón a 200px tarda ~350ms. En una app donde ese botón se usa 50 veces por sesión, eso son 7.5 segundos adicionales de fricción por sesión.
+        <div class="ba-wrap">
+          <div class="ba-box ba-bad"><div class="ba-label bad-lbl">❌ Violación de Fitts</div>Botón "Confirmar pago" de 24×24px ubicado en la esquina superior derecha de una app móvil. Difícil de alcanzar con el pulgar, pequeño, propenso a error.</div>
+          <div class="ba-box ba-good"><div class="ba-label good-lbl">✅ Aplicación correcta</div>Botón "Pagar" de ancho completo (100% del ancho de pantalla, 56px de alto) ubicado en la parte inferior de la pantalla, en la zona del pulgar.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-floppy-disk"></i>Caso — Google Docs y la Protección del trabajo</div>
+      <div class="case-body">
+        <strong>Situación:</strong> Antes de Google Docs, el estándar era "Guardar" manualmente (Ctrl+S). Si el software crasheaba o la luz se iba, perdías el trabajo no guardado.<br><br>
+        <strong>Innovación de Tognazini aplicada:</strong> Google Docs implementó guardado automático continuo ("todos los cambios guardados en Drive"). El usuario nunca tiene que pensar en guardar. Adicionalmente, el historial de versiones permite ver y restaurar cualquier versión anterior.<br><br>
+        <strong>Impacto:</strong> Este cambio redujo el estrés cognitivo de los usuarios de oficina dramáticamente. El usuario puede cerrar el laptop en mitad de un documento sin ansiedad. La productividad aumentó porque el usuario invierte energía mental en el contenido, no en la gestión del archivo.<br><br>
+        <strong>Lección:</strong> Proteger el trabajo del usuario no es solo técnico, es una decisión de diseño que tiene impacto emocional y psicológico profundo.
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: NIELSEN VS TOGNAZINI -->
+  <div class="tab-pane" id="tp3-3">
+    <div class="info-box">
+      <strong>¿Son complementarios o redundantes?</strong> Nielsen y Tognazini son complementarios. Nielsen define qué problemas evitar (evaluación). Tognazini define cómo diseñar bien (construcción). Se usan en fases distintas del proceso de diseño.
+    </div>
+    <div style="overflow-x:auto;margin-top:1rem">
+      <table class="t-dark">
+        <thead><tr><th>Aspecto</th><th>Nielsen (1994)</th><th>Tognazini (AskTog)</th></tr></thead>
+        <tbody>
+          <tr><td>Enfoque principal</td><td>Evaluación heurística (auditoría)</td><td>Principios de diseño de interacción (construcción)</td></tr>
+          <tr><td>Cantidad de principios</td><td>10 heurísticas fijas</td><td>16+ principios (lista abierta)</td></tr>
+          <tr><td>¿Cuándo usarlos?</td><td>Para revisar un sistema existente</td><td>Para diseñar desde cero o mejorar</td></tr>
+          <tr><td>Base teórica</td><td>Evaluación empírica + psicología cognitiva</td><td>Años de experiencia práctica en Apple + investigación</td></tr>
+          <tr><td>Ley de Fitts</td><td>No la menciona explícitamente</td><td>Principio central con fórmula matemática</td></tr>
+          <tr><td>Feedback del sistema</td><td>Heurística #1</td><td>Principio #16 (respuesta inmediata)</td></tr>
+          <tr><td>Protección del usuario</td><td>Heurística #3 (Ctrl+Z)</td><td>Principio #10 (autoguardado, no perder trabajo)</td></tr>
+          <tr><td>Uso en industria</td><td>Estándar en evaluaciones de UX</td><td>Referencia en diseño de interacción avanzado</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="case-box" style="margin-top:1.2rem">
+      <div class="case-title"><i class="fa-solid fa-lightbulb"></i>Cómo usarlos en conjunto</div>
+      <div class="case-body">
+        <strong>Fase de Diseño:</strong> Usar los principios de Tognazini como guía de construcción. Anticipar necesidades (principio 1), aplicar Ley de Fitts en el layout (principio 7), garantizar que toda acción sea reversible (principio 6).<br><br>
+        <strong>Fase de Evaluación:</strong> Usar las heurísticas de Nielsen para auditar el resultado. ¿Tiene visibilidad del estado (#1)? ¿Es consistente (#4)? ¿Previene errores (#5)?<br><br>
+        <strong>Iteración:</strong> Los hallazgos de la evaluación heurística informan mejoras que se diseñan usando los principios de Tognazini. El ciclo continúa.
+      </div>
+    </div>
+  </div>
+
+  <div class="sfooter">
+    <button class="narr" onclick="go(2)"><i class="fa-solid fa-arrow-left me-1"></i>Nielsen</button>
+    <span class="scnt">Diapositiva <span>3</span> / 6</span>
+    <button class="narr" onclick="go(4)">Problemas <i class="fa-solid fa-arrow-right ms-1"></i></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ S4 — PROBLEMAS ═══════════════════════ -->
+<div class="slide" id="s4">
+  <div class="sh">
+    <div class="badge-tag">Tema 4</div>
+    <h2 class="stitle"><i class="fa-solid fa-triangle-exclamation me-2"></i>Problemas de Facilidad de Uso</h2>
+    <p class="ssub">Análisis profundo con casos reales, métricas de impacto y soluciones concretas</p>
+  </div>
+
+  <div class="tab-bar" id="tb4">
+    <button class="tbb on" onclick="tab('tb4','tp4',0)"><i class="fa-solid fa-bug me-1"></i>Problemas Principales</button>
+    <button class="tbb" onclick="tab('tb4','tp4',1)"><i class="fa-solid fa-building me-1"></i>Casos Empresariales</button>
+    <button class="tbb" onclick="tab('tb4','tp4',2)"><i class="fa-solid fa-stethoscope me-1"></i>Diagnóstico y Métricas</button>
+  </div>
+
+  <div class="tab-pane on" id="tp4-0">
+    <div class="prob">
+      <div class="prob-ico" style="color:#ff6b6b"><i class="fa-solid fa-map-signs"></i></div>
+      <div>
+        <div class="prob-t">1. Navegación confusa y desorientación</div>
+        <div class="prob-d"><strong style="color:#fff">Causa:</strong> Falta de jerarquía de información, menús sin estructura lógica, ausencia de breadcrumbs, terminología inconsistente en los ítems del menú.<br>
+        <strong style="color:#fff">Consecuencia medida:</strong> Nielsen Norman Group reporta que el 70% de los carritos de compra se abandonan, y la navegación confusa es la causa #1 en e-commerce.<br>
+        <strong style="color:#fff">Síntomas en el usuario:</strong> "No encuentro cómo volver", "¿Dónde está la configuración?", uso excesivo del botón de búsqueda cuando debería encontrarse por menú.</div>
+        <div class="prob-fix"><i class="fa-solid fa-wrench me-1"></i>Solución: Card sorting con usuarios reales para definir taxonomía. Breadcrumbs en todos los niveles. Barra de búsqueda prominente. Máximo 7 ítems en menú principal (Miller's Law).</div>
+        <div class="ba-wrap">
+          <div class="ba-box ba-bad"><div class="ba-label bad-lbl">❌ Antes</div>Menú con 15 ítems al mismo nivel, sin categorías. Usuario tarda 45 segundos en encontrar "Cambiar contraseña".</div>
+          <div class="ba-box ba-good"><div class="ba-label good-lbl">✅ Después</div>Menú agrupado: Cuenta > Seguridad > Cambiar contraseña. Con breadcrumb visible. Tiempo promedio: 8 segundos.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prob">
+      <div class="prob-ico" style="color:var(--warn)"><i class="fa-solid fa-brain"></i></div>
+      <div>
+        <div class="prob-t">2. Sobrecarga cognitiva</div>
+        <div class="prob-d"><strong style="color:#fff">Base teórica:</strong> La Ley de Miller (1956) establece que la memoria de trabajo humana puede procesar 7±2 ítems simultáneamente. Interfaces que superan ese límite generan errores y abandono.<br>
+        <strong style="color:#fff">Manifestaciones:</strong> Pantallas con 20+ opciones, formularios con todos los campos visibles a la vez, dashboards con 30 métricas, pop-ups simultáneos.<br>
+        <strong style="color:#fff">Concepto de "progressive disclosure":</strong> Mostrar primero lo esencial (acción principal), revelar opciones avanzadas solo cuando el usuario las solicita.</div>
+        <div class="prob-fix"><i class="fa-solid fa-wrench me-1"></i>Solución: Chunking (agrupar elementos relacionados), progressive disclosure, wizards para tareas complejas (dividir en pasos), eliminar opciones raramente usadas o moverlas a "Avanzado".</div>
+      </div>
+    </div>
+
+    <div class="prob">
+      <div class="prob-ico" style="color:var(--acc2)"><i class="fa-solid fa-bell-slash"></i></div>
+      <div>
+        <div class="prob-t">3. Falta de retroalimentación (Feedback)</div>
+        <div class="prob-d"><strong style="color:#fff">Umbral humano:</strong> Si la respuesta tarda más de 100ms, el usuario percibe un "lag". Más de 1 segundo pierde el "flujo mental". Más de 10 segundos: abandono probable.<br>
+        <strong style="color:#fff">Tipos de feedback necesario:</strong><br>
+        • Feedback inmediato (≤100ms): cambio visual al hacer clic.<br>
+        • Feedback de proceso (≤1s): spinner o barra de progreso.<br>
+        • Feedback de resultado: confirmación o mensaje de error claro.<br>
+        • Feedback de sistema: toasts, notificaciones de eventos relevantes.</div>
+        <div class="prob-fix"><i class="fa-solid fa-wrench me-1"></i>Solución: Optimistic UI (mostrar resultado antes de confirmar con servidor), skeleton screens durante carga, toasts de confirmación, estados de botones (default → loading → success/error).</div>
+      </div>
+    </div>
+
+    <div class="prob">
+      <div class="prob-ico" style="color:#ff6b6b"><i class="fa-solid fa-circle-xmark"></i></div>
+      <div>
+        <div class="prob-t">4. Mensajes de error inútiles</div>
+        <div class="prob-d"><strong style="color:#fff">Anatomía de un mal error:</strong> Solo indica qué pasó sin decir por qué ni qué hacer. Usa jerga técnica. Es genérico (aplica a múltiples situaciones diferentes). Asusta al usuario con tono culpabilizador.<br>
+        <strong style="color:#fff">Impacto:</strong> Forrester Research estima que el 55% de los usuarios abandona un proceso cuando encuentra un error que no entiende, aunque pudiera corregirlo fácilmente.</div>
+        <div class="prob-fix"><i class="fa-solid fa-wrench me-1"></i>Solución: Mensajes en lenguaje humano. Estructura: QUÉ pasó + POR QUÉ + QUÉ hacer. Tono colaborativo ("Ingresá un email válido, por ejemplo: tu@mail.com"). Validación inline en tiempo real.</div>
+        <div class="ba-wrap">
+          <div class="ba-box ba-bad"><div class="ba-label bad-lbl">❌ Error inútil</div>"Error 422: Validation failed. Field 'email' does not match regex pattern RFC5322."</div>
+          <div class="ba-box ba-good"><div class="ba-label good-lbl">✅ Error útil</div>"El email no tiene el formato correcto. Revisá que tenga @ y un dominio, por ejemplo: nombre@empresa.com"</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prob">
+      <div class="prob-ico" style="color:var(--acc3)"><i class="fa-solid fa-universal-access"></i></div>
+      <div>
+        <div class="prob-t">5. Accesibilidad deficiente</div>
+        <div class="prob-d"><strong style="color:#fff">Alcance del problema:</strong> Según la OMS, 1 de cada 6 personas en el mundo vive con alguna discapacidad. En Uruguay, aproximadamente 400.000 personas. No diseñar accesiblemente excluye activamente a este segmento.<br>
+        <strong style="color:#fff">Principales fallas:</strong> Contraste insuficiente (ratio <4.5:1), sin etiquetas aria para lectores de pantalla, sin navegación por teclado, videos sin subtítulos, formularios sin labels visibles.<br>
+        <strong style="color:#fff">Marco legal:</strong> WCAG 2.1, Ley 18.651 en Uruguay (accesibilidad en sitios del Estado).</div>
+        <div class="prob-fix"><i class="fa-solid fa-wrench me-1"></i>Solución: Contraste mínimo 4.5:1, etiquetas aria-label/aria-describedby, focus visible en navegación por teclado, alt text en imágenes, subtítulos en videos. Herramientas: axe DevTools, Lighthouse, NVDA.</div>
+      </div>
+    </div>
+
+    <div class="prob">
+      <div class="prob-ico" style="color:var(--warn)"><i class="fa-solid fa-file-pen"></i></div>
+      <div>
+        <div class="prob-t">6. Formularios mal diseñados</div>
+        <div class="prob-d"><strong style="color:#fff">Estadística:</strong> Baymard Institute encontró que el checkout promedio en e-commerce tiene 14.88 campos (muchos innecesarios). Reducirlo a 7-8 aumenta la conversión entre 20-60%.<br>
+        <strong style="color:#fff">Errores comunes:</strong> Label dentro del input que desaparece al escribir (sin placeholder de referencia), campos requeridos solo marcados con * sin leyenda, validación solo al enviar (no en tiempo real), orden de campos sin lógica (apellido antes que nombre).<br>
+        <strong style="color:#fff">Principio:</strong> Cada campo es una fricción. Solicitar solo lo mínimo necesario para el paso actual.</div>
+        <div class="prob-fix"><i class="fa-solid fa-wrench me-1"></i>Solución: Labels flotantes (visible siempre), validación inline, campos mínimos, autocompletado (autocomplete HTML), teclado numérico para DNI/teléfono en móvil, guardar progreso en formularios largos.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASOS EMPRESARIALES -->
+  <div class="tab-pane" id="tp4-1">
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-cart-shopping"></i>Caso Amazon 1-Click: Eliminando fricción en formularios</div>
+      <div class="case-body">
+        <strong>Problema original:</strong> El proceso de checkout en e-commerce requería ingresar dirección, método de pago, confirmar, etc. en cada compra. Alta fricción = abandono de carrito.<br><br>
+        <strong>Solución innovadora:</strong> Amazon patentó en 1999 el sistema "1-Click": con un solo clic se completaba la compra usando la dirección y método de pago guardados. Eliminó todos los pasos intermedios para compras repetidas.<br><br>
+        <strong>Impacto medido:</strong> La patente de Amazon 1-Click fue tan valiosa que Apple pagó licencia para implementarla en iTunes. Cuando la patente expiró en 2017, todos los e-commerce la adoptaron masivamente.<br><br>
+        <strong>Principios aplicados:</strong> Eficiencia del usuario (Tognazini #5), Flexibilidad y eficiencia de uso (Nielsen #7), Progressive disclosure (mostrar el formulario completo solo si el usuario quiere cambiar datos).
+      </div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title"><i class="fa-brands fa-twitter"></i>Twitter y el límite de 140 caracteres: restricción como diseño</div>
+      <div class="case-body">
+        <strong>Origen:</strong> El límite de 140 caracteres fue técnico (SMS = 160 caracteres, 20 reservados para el usuario). Pero se convirtió en una decisión de diseño que definió la identidad del producto.<br><br>
+        <strong>Efecto en usabilidad:</strong> La restricción <em>forzó</em> concisión. Eliminó la sobrecarga cognitiva (#8 Nielsen). Hizo los mensajes escaneables y rápidos de consumir. El "diseño minimalista por restricción" mejoró la experiencia del lector.<br><br>
+        <strong>Cuando rompieron el principio:</strong> En 2017 Twitter amplió a 280 caracteres. Los usuarios lo pidieron, pero el impacto fue negativo para la lectura: los tweets largos generan menos engagement que los cortos, según datos del propio Twitter.<br><br>
+        <strong>Lección:</strong> A veces las restricciones son buenos diseñadores. La facilidad de uso no siempre significa "más opciones". A veces significa "menos pero mejor".
+      </div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-plane-arrival"></i>Sistema de check-in de aerolíneas: usabilidad bajo presión</div>
+      <div class="case-body">
+        <strong>Contexto:</strong> El check-in de aerolíneas es un proceso crítico: el usuario tiene presión de tiempo, puede estar en un aeropuerto ruidoso y distraído, y un error (seleccionar asiento equivocado, perder vuelo por no completar el proceso) tiene consecuencias graves.<br><br>
+        <strong>Problemas documentados:</strong><br>
+        • Formularios que no guardan el progreso (viola Tognazini #10): si la sesión expira, empieza de cero.<br>
+        • Pantallas de pago que se abren en nueva pestaña, perdiendo el contexto.<br>
+        • Timeout de 10 minutos sin aviso visual claro (viola Nielsen #1).<br>
+        • Botón "Continuar" que lleva al upgrade de asiento cuando el usuario quiere ir directo a selección (bait de compra involuntario, viola Nielsen #3).<br><br>
+        <strong>Buena práctica observada (Emirates):</strong> Barra de progreso clara (Paso 2 de 5), guardado automático, re-envío de email si el proceso se interrumpe, confirmación por múltiples canales (email + SMS).
+      </div>
+    </div>
+  </div>
+
+  <!-- DIAGNÓSTICO -->
+  <div class="tab-pane" id="tp4-2">
+    <div class="info-box">
+      <strong>Métricas de usabilidad:</strong> La usabilidad se puede y debe medir. No es una opinión subjetiva, es una característica medible del sistema. Las métricas más usadas en industria son:
+    </div>
+    <div class="grid-3" style="margin:1rem 0">
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-stopwatch"></i></span>
+        <div class="ct">Tiempo en tarea</div>
+        <div class="cd">¿Cuánto tarda un usuario promedio en completar una tarea específica? Ej: "Encontrar y comprar un producto en menos de 3 minutos".</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-check-double"></i></span>
+        <div class="ct">Tasa de éxito</div>
+        <div class="cd">Porcentaje de usuarios que completan la tarea sin ayuda externa. Una tasa <70% indica problema grave de usabilidad.</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-person-falling"></i></span>
+        <div class="ct">Tasa de error</div>
+        <div class="cd">¿Cuántos errores comete el usuario intentando completar la tarea? ¿Son recuperables o catastróficos?</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-star-half-stroke"></i></span>
+        <div class="ct">SUS Score</div>
+        <div class="cd">System Usability Scale: 10 preguntas Likert, puntaje 0-100. Promedio industria: 68. Por encima de 80.3 = "A" (excelente).</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-right-from-bracket"></i></span>
+        <div class="ct">Tasa de abandono</div>
+        <div class="cd">Porcentaje de usuarios que inician un flujo pero no lo completan. En e-commerce: ~70% de carritos abandonados es el promedio global.</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-face-meh"></i></span>
+        <div class="ct">Satisfacción (NPS/CSAT)</div>
+        <div class="cd">Net Promoter Score o Customer Satisfaction. Mide la percepción subjetiva de usabilidad. Complementa las métricas objetivas.</div>
+      </div>
+    </div>
+
+    <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin-bottom:.7rem">Herramientas de diagnóstico</h6>
+    <div class="grid-2">
+      <div class="acc-item">
+        <div class="acc-hdr" onclick="toggleAcc(this)">
+          <span class="acc-hdr-t"><i class="fa-solid fa-user-check me-2" style="color:var(--acc2)"></i>Pruebas de usuario (User Testing)</span>
+          <i class="fa-solid fa-chevron-down arr"></i>
+        </div>
+        <div class="acc-body">
+          El usuario real realiza tareas específicas mientras el evaluador observa. Puede ser presencial (laboratorio de usabilidad con eye tracking) o remoto (Zoom + grabación de pantalla). Con 5 usuarios se detecta el 80% de los problemas (Nielsen). Se usa protocolo "think aloud" donde el usuario verbaliza lo que piensa mientras actúa.
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-hdr" onclick="toggleAcc(this)">
+          <span class="acc-hdr-t"><i class="fa-solid fa-eye me-2" style="color:var(--acc2)"></i>Eye Tracking</span>
+          <i class="fa-solid fa-chevron-down arr"></i>
+        </div>
+        <div class="acc-body">
+          Tecnología que registra el movimiento ocular del usuario. Genera "heatmaps" de atención visual (dónde mira la gente) y "gaze plots" (secuencia de miradas). Revela qué elementos atraen la atención, cuáles pasan desapercibidos y cómo el usuario escanea el contenido.
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-hdr" onclick="toggleAcc(this)">
+          <span class="acc-hdr-t"><i class="fa-solid fa-chart-simple me-2" style="color:var(--acc2)"></i>A/B Testing</span>
+          <i class="fa-solid fa-chevron-down arr"></i>
+        </div>
+        <div class="acc-body">
+          Se presentan dos versiones (A y B) de un elemento a grupos de usuarios diferentes. Se mide cuál tiene mejor rendimiento en métricas predefinidas (tasa de conversión, tiempo en tarea, clicks). Amazon, Google y Netflix hacen cientos de A/B tests simultáneos. Es el método más objetivo porque usa usuarios reales en condiciones reales.
+        </div>
+      </div>
+      <div class="acc-item">
+        <div class="acc-hdr" onclick="toggleAcc(this)">
+          <span class="acc-hdr-t"><i class="fa-solid fa-clipboard-list me-2" style="color:var(--acc2)"></i>Card Sorting</span>
+          <i class="fa-solid fa-chevron-down arr"></i>
+        </div>
+        <div class="acc-body">
+          Técnica para diseñar la arquitectura de información. Los participantes organizan tarjetas con temas/secciones en grupos según su lógica. Revela cómo los usuarios mentalmente categorizan la información, lo que informa el diseño del menú y la estructura de navegación.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sfooter">
+    <button class="narr" onclick="go(3)"><i class="fa-solid fa-arrow-left me-1"></i>Tognazini</button>
+    <span class="scnt">Diapositiva <span>4</span> / 6</span>
+    <button class="narr" onclick="go(5)">Móvil <i class="fa-solid fa-arrow-right ms-1"></i></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ S5 — MÓVIL ═══════════════════════ -->
+<div class="slide" id="s5">
+  <div class="sh">
+    <div class="badge-tag">Tema 5</div>
+    <h2 class="stitle"><i class="fa-solid fa-mobile-screen me-2"></i>Diseño para Móviles</h2>
+    <p class="ssub">Patrones, métricas, casos reales y guías de referencia para Mobile UI</p>
+  </div>
+
+  <div class="tab-bar" id="tb5">
+    <button class="tbb on" onclick="tab('tb5','tp5',0)"><i class="fa-solid fa-book me-1"></i>Fundamentos</button>
+    <button class="tbb" onclick="tab('tb5','tp5',1)"><i class="fa-solid fa-hand-pointer me-1"></i>Touch & Gestos</button>
+    <button class="tbb" onclick="tab('tb5','tp5',2)"><i class="fa-solid fa-sitemap me-1"></i>Patrones de Navegación</button>
+    <button class="tbb" onclick="tab('tb5','tp5',3)"><i class="fa-solid fa-flask me-1"></i>Casos Prácticos</button>
+  </div>
+
+  <!-- TAB FUNDAMENTOS -->
+  <div class="tab-pane on" id="tp5-0">
+    <div class="info-box">
+      <strong>Contexto:</strong> En 2024, el 60%+ del tráfico web global es desde dispositivos móviles. En Uruguay, según AGESIC, el 74% de los accesos a servicios digitales es desde smartphones. Diseñar sin considerar móvil es diseñar para una minoría.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><span class="stat-num">60%+</span><div class="stat-lbl">Tráfico web desde móvil</div></div>
+      <div class="stat"><span class="stat-num">74%</span><div class="stat-lbl">Accesos digitales móvil en UY</div></div>
+      <div class="stat"><span class="stat-num">3s</span><div class="stat-lbl">Límite de carga aceptable</div></div>
+      <div class="stat"><span class="stat-num">53%</span><div class="stat-lbl">Abandono si >3s de carga (Google)</div></div>
+    </div>
+
+    <div class="div"></div>
+
+    <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin-bottom:.8rem">Mobile-First vs Responsive Design</h6>
+    <div class="grid-2">
+      <div class="card-d">
+        <div class="ct"><i class="fa-solid fa-mobile-screen-button me-2" style="color:var(--acc2)"></i>Responsive Design (2010)</div>
+        <div class="cd"><strong style="color:#fff">Concepto de Ethan Marcotte:</strong> Diseñar una sola UI que se adapta a cualquier tamaño de pantalla usando media queries, fluid grids e imágenes flexibles.<br><br>
+        <strong style="color:#fff">Enfoque:</strong> Generalmente se diseña para desktop y luego se "encoge" para móvil. El resultado es que el móvil recibe una versión reducida del desktop.<br><br>
+        <strong style="color:#fff">Problema:</strong> La versión móvil suele ser inferior porque se diseñó como adaptación, no como experiencia propia.</div>
+      </div>
+      <div class="card-d">
+        <div class="ct"><i class="fa-solid fa-mobile-screen me-2" style="color:var(--acc3)"></i>Mobile-First Design (Luke W.)</div>
+        <div class="cd"><strong style="color:#fff">Concepto de Luke Wroblewski:</strong> Diseñar primero para las restricciones del móvil. Luego enriquecer para pantallas más grandes. La restricción del móvil fuerza priorización del contenido.<br><br>
+        <strong style="color:#fff">Ventaja:</strong> Si algo funciona bien en 375px de ancho, funcionará bien en 1440px. Al revés no siempre es cierto.<br><br>
+        <strong style="color:#fff">Principio CSS:</strong> Estilos base para móvil, <code style="color:var(--acc2)">@media (min-width: 768px)</code> para expandir.</div>
+      </div>
+    </div>
+
+    <div class="div"></div>
+
+    <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin-bottom:.8rem">Restricciones únicas del diseño móvil</h6>
+    <div class="grid-3">
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-expand"></i></span>
+        <div class="ct">Pantalla reducida</div>
+        <div class="cd">375-430px de ancho típico. El contenido debe priorizarse brutalmente. "Above the fold" es más crítico que en desktop. El espacio es un recurso escaso.</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-hand"></i></span>
+        <div class="ct">Interacción táctil</div>
+        <div class="cd">Sin hover, sin clic preciso de ratón. El dedo cubre ~44px de área. Los elementos pequeños generan "fat finger errors". Los menús de flyover no existen.</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-wifi"></i></span>
+        <div class="ct">Conectividad variable</div>
+        <div class="cd">El usuario puede pasar de 4G a 3G a sin señal en segundos. Las apps deben funcionar en modo offline o degradar graciosamente. Service Workers + Cache API.</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-battery-quarter"></i></span>
+        <div class="ct">Batería limitada</div>
+        <div class="cd">Animaciones complejas, GPS constante y videos en loop consumen batería. Diseñar con conciencia de consumo energético: modo oscuro, reducción de animaciones.</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-sun"></i></span>
+        <div class="ct">Contexto de uso externo</div>
+        <div class="cd">El móvil se usa al sol, en movimiento, con distracciones. Contraste mínimo 7:1 para uso exterior. Texto grande. Interacciones de un solo toque cuando sea posible.</div>
+      </div>
+      <div class="card-d">
+        <span class="ci" style="font-size:1.4rem"><i class="fa-solid fa-location-dot"></i></span>
+        <div class="ct">Sensores únicos</div>
+        <div class="cd">GPS, acelerómetro, cámara, NFC, huella digital. El diseño móvil puede aprovechar estos sensores para experiencias imposibles en desktop (check-in por GPS, pago por NFC).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB TOUCH Y GESTOS -->
+  <div class="tab-pane" id="tp5-1">
+    <div class="grid-2">
+      <div>
+        <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin-bottom:.8rem">Tamaños mínimos de área de toque</h6>
+        <div class="card-d" style="margin-bottom:.8rem">
+          <div class="ct"><i class="fa-brands fa-apple me-2" style="color:var(--acc2)"></i>Apple HIG</div>
+          <div class="cd"><strong style="color:#fff">Mínimo absoluto:</strong> 44×44 puntos (pt) de CSS.<br>Esto equivale a 44×44 px en pantallas 1x, 88×88 px en pantallas Retina 2x.<br><br>El componente visual puede ser más pequeño, pero el área interactiva (hitbox) debe ser 44×44 mínimo. Esto se logra con padding.</div>
+        </div>
+        <div class="card-d" style="margin-bottom:.8rem">
+          <div class="ct"><i class="fa-brands fa-android me-2" style="color:var(--acc2)"></i>Material Design 3</div>
+          <div class="cd"><strong style="color:#fff">Mínimo:</strong> 48×48 dp (density-independent pixels).<br><strong style="color:#fff">Espacio mínimo entre elementos:</strong> 8dp de separación entre áreas de toque adyacentes.<br><br>Los FABs (Floating Action Button) son 56dp de alto: el elemento más importante de la pantalla debe ser el más grande y más accesible.</div>
+        </div>
+        <div class="card-d">
+          <div class="ct"><i class="fa-solid fa-ruler me-2" style="color:var(--acc2)"></i>¿Por qué 44-48px?</div>
+          <div class="cd">El ancho del dedo índice adulto promedio es ~44mm a la altura de la yema. En una pantalla típica de 160 DPI (1 px ≈ 0.16mm), 44px ≈ 7mm, que es aproximadamente el tamaño de la yema que hace contacto efectivo.</div>
+        </div>
+      </div>
+
+      <div>
+        <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin-bottom:.8rem">Zona del pulgar (Thumb Zone)</h6>
+        <div class="thumb-zone">
+          <div class="phone-frame">
+            <div class="zone-top">Zona difícil<br>Evitar acciones frecuentes</div>
+            <div class="zone-mid">Zona media<br>Acciones secundarias</div>
+            <div class="zone-bot">Zona natural<br>✅ Acciones principales</div>
+          </div>
+          <div style="font-size:.75rem;color:var(--txt2);margin-top:.6rem;text-align:center;max-width:220px">Modelo de Steven Hoober (2013): el 49% de los usuarios usa el smartphone con una mano. El pulgar alcanza cómodamente solo el tercio inferior.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="div"></div>
+
+    <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin-bottom:.8rem">Gestos estándar y su semántica</h6>
+    <div style="overflow-x:auto">
+      <table class="t-dark">
+        <thead><tr><th>Gesto</th><th>Acción esperada</th><th>Ejemplo real</th><th>Riesgo de error</th></tr></thead>
+        <tbody>
+          <tr><td>Tap simple</td><td>Activar / seleccionar</td><td>Abrir app, marcar checkbox</td><td>Bajo</td></tr>
+          <tr><td>Doble tap</td><td>Zoom in / me gusta</td><td>Zoom en Maps, Like en Instagram</td><td>Medio (conflicto con tap simple)</td></tr>
+          <tr><td>Swipe horizontal</td><td>Navegar entre vistas</td><td>Galería de fotos, Stories</td><td>Bajo</td></tr>
+          <tr><td>Swipe vertical</td><td>Scroll del contenido</td><td>Feed, lista de emails</td><td>Muy bajo (universal)</td></tr>
+          <tr><td>Pull-to-refresh</td><td>Actualizar contenido</td><td>Twitter, Gmail</td><td>Bajo (estándar conocido)</td></tr>
+          <tr><td>Swipe para eliminar</td><td>Eliminar ítem de lista</td><td>iOS Mail, iOS Reminders</td><td>Alto sin confirmación</td></tr>
+          <tr><td>Pinch/Spread</td><td>Zoom in/out</td><td>Maps, Galería de fotos</td><td>Bajo</td></tr>
+          <tr><td>Long press</td><td>Menú contextual / selección múltiple</td><td>WhatsApp, archivos iOS</td><td>Medio (no siempre descubrible)</td></tr>
+          <tr><td>3D Touch / Haptic</td><td>Preview o acciones rápidas</td><td>Peek & Pop en iOS</td><td>Alto (no siempre descubrible)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="viol" style="margin-top:1rem"><strong>Regla crítica:</strong> Los gestos destructivos (swipe para eliminar, swipe para archivar) SIEMPRE deben tener confirmación o ser reversibles. Un swipe accidental sin deshacer viola Nielsen #3 y Tognazini #10.</div>
+  </div>
+
+  <!-- TAB NAVEGACIÓN -->
+  <div class="tab-pane" id="tp5-2">
+    <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin-bottom:.8rem">Patrones de navegación móvil</h6>
+    <div class="grid-2">
+      <div class="card-d">
+        <div class="ct"><i class="fa-solid fa-bars-staggered me-2" style="color:var(--acc2)"></i>Bottom Navigation Bar</div>
+        <div class="cd"><strong style="color:#fff">Cuándo usar:</strong> App con 3-5 secciones principales de igual importancia.<br><strong style="color:#fff">Ventaja:</strong> Siempre visible, en zona del pulgar, navegación de un toque.<br><strong style="color:#fff">Reglas:</strong> Máximo 5 ítems (más genera confusión), ícono + etiqueta, indicador de sección activa claro.<br><strong style="color:#fff">Ejemplos:</strong> Instagram, YouTube, Spotify.</div>
+        <div class="tags"><span class="tag">Material Design</span><span class="tag">iOS Tab Bar</span></div>
+      </div>
+      <div class="card-d">
+        <div class="ct"><i class="fa-solid fa-bars me-2" style="color:var(--acc2)"></i>Hamburger Menu</div>
+        <div class="cd"><strong style="color:#fff">Cuándo usar:</strong> Muchas secciones secundarias que no caben en bottom nav. NUNCA para las secciones más importantes.<br><strong style="color:#fff">Problema documentado:</strong> Oculta la navegación, reduce el uso de las secciones no visibles hasta en un 66% (NNGroup, 2016).<br><strong style="color:#fff">Alternativa:</strong> Combinar bottom nav (principales) + hamburger (secundarias).</div>
+        <div class="tags"><span class="tag">Drawer</span><span class="tag">Side Menu</span></div>
+      </div>
+      <div class="card-d">
+        <div class="ct"><i class="fa-solid fa-ellipsis me-2" style="color:var(--acc2)"></i>Tabs superiores</div>
+        <div class="cd"><strong style="color:#fff">Cuándo usar:</strong> Para navegar entre vistas del mismo contexto (ej: "Recientes / Favoritos / Todos" dentro de Contactos).<br><strong style="color:#fff">Diferencia con bottom nav:</strong> Las tabs superiores son para sub-navegación dentro de una sección, no para la navegación principal de la app.<br><strong style="color:#fff">Ejemplos:</strong> Gmail (Principal/Social/Promociones).</div>
+      </div>
+      <div class="card-d">
+        <div class="ct"><i class="fa-solid fa-circle-plus me-2" style="color:var(--acc2)"></i>FAB — Floating Action Button</div>
+        <div class="cd"><strong style="color:#fff">Cuándo usar:</strong> Para LA acción principal de la pantalla (solo una por pantalla).<br><strong style="color:#fff">Material Design:</strong> 56dp de alto, en esquina inferior derecha, con sombra elevada.<br><strong style="color:#fff">Regla:</strong> El FAB representa la acción que los usuarios harán con más frecuencia. No para acciones secundarias.<br><strong style="color:#fff">Ejemplos:</strong> Nuevo correo en Gmail, Nuevo tweet, Nueva nota.</div>
+      </div>
+    </div>
+
+    <div class="div"></div>
+    <h6 style="color:var(--acc2);font-family:'Rajdhani',sans-serif;font-size:1.1rem;margin-bottom:.7rem">Tipografía y legibilidad en móvil</h6>
+    <div class="grid-3">
+      <div class="card-d">
+        <div class="ct">Tamaños mínimos</div>
+        <div class="cd">
+          <div class="pill" style="width:100%;justify-content:space-between"><span>Cuerpo de texto</span><span style="color:var(--acc2)">min 16px</span></div>
+          <div class="pill" style="width:100%;justify-content:space-between"><span>Texto secundario</span><span style="color:var(--acc2)">min 14px</span></div>
+          <div class="pill" style="width:100%;justify-content:space-between"><span>Captions</span><span style="color:var(--acc2)">min 12px</span></div>
+          <div class="pill" style="width:100%;justify-content:space-between"><span>Headings</span><span style="color:var(--acc2)">20-28px</span></div>
+        </div>
+      </div>
+      <div class="card-d">
+        <div class="ct">Contraste (WCAG)</div>
+        <div class="cd">
+          <div class="pill" style="width:100%;justify-content:space-between"><span>Texto normal AA</span><span style="color:var(--acc2)">4.5:1</span></div>
+          <div class="pill" style="width:100%;justify-content:space-between"><span>Texto grande AA</span><span style="color:var(--acc2)">3:1</span></div>
+          <div class="pill" style="width:100%;justify-content:space-between"><span>Texto normal AAA</span><span style="color:var(--acc2)">7:1</span></div>
+          <div class="pill" style="width:100%;justify-content:space-between"><span>Uso exterior</span><span style="color:var(--acc2)">&gt;7:1</span></div>
+        </div>
+      </div>
+      <div class="card-d">
+        <div class="ct">Longitud de línea</div>
+        <div class="cd">Longitud óptima: <strong style="color:var(--acc2)">45-75 caracteres</strong> por línea. En móvil, ~35-50 chars.<br>Interlineado: <strong style="color:var(--acc2)">1.4–1.6</strong> del tamaño de fuente.<br>No centrar párrafos largos: el texto justificado a la izquierda es más legible que el centrado.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB CASOS PRÁCTICOS -->
+  <div class="tab-pane" id="tp5-3">
+    <div class="case-box">
+      <div class="case-title"><i class="fa-brands fa-uber"></i>Uber — Diseño para el contexto de uso extremo</div>
+      <div class="case-body">
+        <strong>Contexto de uso real:</strong> El usuario de Uber típicamente usa la app parado en la vereda, con la mano extendida para frenar el taxi, mirando el teléfono intermitentemente, posiblemente de noche o bajo la lluvia.<br><br>
+        <strong>Decisiones de diseño basadas en el contexto:</strong><br>
+        • <strong>Texto grande y contraste alto:</strong> Legible de un vistazo bajo sol directo o noche.<br>
+        • <strong>Botón de confirmación enorme:</strong> El botón "Confirmar" ocupa casi todo el ancho inferior de pantalla. Imposible perderse con el pulgar.<br>
+        • <strong>Mapa prominente:</strong> El usuario verifica visualmente que la dirección es correcta sin leer texto (más rápido).<br>
+        • <strong>Detección automática de ubicación:</strong> El campo "¿Dónde estás?" se llena automáticamente con GPS. El usuario solo ingresa el destino.<br>
+        • <strong>Interacciones mínimas:</strong> El flujo completo desde abrir la app hasta confirmar el viaje requiere 3-4 taps. Sin fricción innecesaria.<br><br>
+        <strong>Principio aplicado:</strong> El diseño del flujo principal fue optimizado para el caso de uso más difícil (exterior, movimiento, tiempo límite). Si funciona ahí, funciona en cualquier contexto.
+      </div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title"><i class="fa-brands fa-instagram"></i>Instagram — La evolución del bottom nav y el abandono del hamburger</div>
+      <div class="case-body">
+        <strong>Historia:</strong> En 2013, Instagram usaba hamburger menu para navegación. Las estadísticas mostraban que los usuarios de la primera versión usaban Features como Explorar el 47% menos que en versiones previas.<br><br>
+        <strong>Cambio en 2014:</strong> Migraron a bottom navigation bar con 5 íconos siempre visibles. El engagement en Explorar subió dramáticamente.<br><br>
+        <strong>Por qué funcionó:</strong> El bottom nav aplica la Ley de Fitts (accesible con el pulgar), aplica el principio de "Objetos visibles" de Tognazini (las secciones siempre están a la vista), y reduce la carga cognitiva (no hay que recordar qué funciones existen).<br><br>
+        <strong>Lección:</strong> La visibilidad de las opciones de navegación impacta directamente en cuánto se usan. Ocultar = reducir uso.
+      </div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title"><i class="fa-solid fa-rocket"></i>PWA — Progressive Web Apps: el mejor de ambos mundos</div>
+      <div class="case-body">
+        <strong>¿Qué es una PWA?</strong> Una aplicación web que aprovecha APIs modernas del navegador para ofrecer capacidades propias de apps nativas.<br><br>
+        <strong>Capacidades clave:</strong><br>
+        • <strong>Instalable:</strong> Se agrega al home screen sin pasar por App Store/Play Store.<br>
+        • <strong>Offline:</strong> Service Workers cachean recursos para funcionar sin conexión.<br>
+        • <strong>Push Notifications:</strong> Como una app nativa, puede enviar notificaciones.<br>
+        • <strong>Acceso a hardware:</strong> Cámara, GPS, acelerómetro (con permisos).<br><br>
+        <strong>Casos de éxito:</strong> Twitter Lite (PWA) redujo el tamaño de la app de 60MB a 600KB, redujo el uso de datos en 70%, y aumentó los tweets publicados en 75% en mercados emergentes con datos limitados.
+      </div>
+    </div>
+  </div>
+
+  <div class="sfooter">
+    <button class="narr" onclick="go(4)"><i class="fa-solid fa-arrow-left me-1"></i>Problemas</button>
+    <span class="scnt">Diapositiva <span>5</span> / 6</span>
+    <button class="narr" onclick="go(6)"><i class="fa-solid fa-circle-question me-1"></i>Quiz <i class="fa-solid fa-arrow-right ms-1"></i></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ S6 — QUIZ ═══════════════════════ -->
+<div class="slide" id="s6">
+  <div class="sh">
+    <div class="badge-tag">Evaluación</div>
+    <h2 class="stitle"><i class="fa-solid fa-circle-question me-2"></i>Cuestionario Final</h2>
+    <p class="ssub">30 preguntas · Selección múltiple · Feedback inmediato con explicación</p>
+  </div>
+
+  <div id="qwrap">
+    <div class="qpbar"><div class="qpfill" id="qpf" style="width:0%"></div></div>
+    <div id="qstat" style="text-align:center;color:#4a6a7a;font-size:.83rem;margin-bottom:1rem"></div>
+    <div id="qarea"></div>
+    <div class="qnav" id="qnav" style="display:none">
+      <button class="bq sec" id="bprev" onclick="qprev()"><i class="fa-solid fa-arrow-left me-1"></i>Anterior</button>
+      <button class="bq" id="bnext" onclick="qnext()">Siguiente <i class="fa-solid fa-arrow-right ms-1"></i></button>
+    </div>
+    <div id="rcard">
+      <div class="remoji" id="remoji"></div>
+      <div class="rscore" id="rscore"></div>
+      <div class="rlbl">de 30 preguntas correctas</div>
+      <div class="rmsg" id="rmsg"></div>
+      <button class="bq mb-3" onclick="qreset()"><i class="fa-solid fa-rotate-left me-2"></i>Reintentar</button>
+      <div id="revarea"></div>
+    </div>
+  </div>
+
+  <div class="sfooter">
+    <button class="narr" onclick="go(5)"><i class="fa-solid fa-arrow-left me-1"></i>Móvil</button>
+    <span class="scnt">Diapositiva <span>6</span> / 6</span>
+    <button class="narr" onclick="go(0)"><i class="fa-solid fa-house me-1"></i>Inicio</button>
+  </div>
+</div>
+
+</div><!-- #wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ─── NAV ──────────────────────────────────────────────
+let cur=0,qInit=false;
+function go(n){
+  document.querySelectorAll('.slide').forEach((s,i)=>s.classList.toggle('on',i===n));
+  document.querySelectorAll('.nb').forEach((b,i)=>b.classList.toggle('on',i===n));
+  cur=n; window.scrollTo({top:0,behavior:'smooth'});
+  if(n===6&&!qInit)initQ();
+}
+
+// ─── TABS ─────────────────────────────────────────────
+function tab(barId,panePfx,idx){
+  document.querySelectorAll(`#${barId} .tbb`).forEach((b,i)=>b.classList.toggle('on',i===idx));
+  document.querySelectorAll(`[id^="${panePfx}-"]`).forEach((p,i)=>p.classList.toggle('on',i===idx));
+}
+
+// ─── ACCORDION ────────────────────────────────────────
+function toggleAcc(hdr){
+  hdr.classList.toggle('open');
+  hdr.nextElementSibling.classList.toggle('open');
+}
+
+// ─── QUIZ DATA ────────────────────────────────────────
+const QS=[
+  // TIPOS (1-7)
+  {cat:'Tipos de UI',q:'¿Cuál de los siguientes es un ejemplo paradigmático de CLI?',opts:['Google Chrome','Bash Shell','Instagram','Microsoft Word'],a:1,exp:'Bash Shell es una interfaz de línea de comandos donde el usuario escribe comandos de texto. No usa elementos gráficos como ventanas o íconos.'},
+  {cat:'Tipos de UI',q:'El modelo WIMP define los componentes de las interfaces GUI. ¿Qué significa cada letra?',opts:['Windows, Integrated, Mobile, Platform','Widgets, Images, Menus, Pointer','Windows, Icons, Menus, Pointer','Web Interface Modern Protocol'],a:2,exp:'WIMP = Windows (Ventanas), Icons (Íconos), Menus (Menús), Pointer (Puntero). Es el modelo base de toda GUI desde el Xerox Star (1981) y Mac (1984).'},
+  {cat:'Tipos de UI',q:'Una NUI (Natural User Interface) se caracteriza principalmente por:',opts:['Usar únicamente comandos de texto','Eliminar dispositivos intermediarios usando gestos, voz o tacto','Requerir teclado y ratón físicos','Funcionar solo en navegadores web'],a:1,exp:'Las NUI buscan que la interacción sea instintiva, sin intermediarios artificiales como el ratón. Los gestos, el tacto y la voz son canales naturales del ser humano.'},
+  {cat:'Tipos de UI',q:'¿Cuál fue el principal obstáculo documentado en el uso de Alexa como VUI de propósito general?',opts:['Alto costo del dispositivo','Los usuarios no recordaban qué frases exactas funcionaban y el error de reconocimiento rompía la confianza','La VUI solo funciona en inglés','Requería conexión WiFi de alta velocidad'],a:1,exp:'El caso de Alexa demostró que las VUI son excelentes para comandos simples y frecuentes, pero los usuarios no recuerdan "wake words" precisas, lo que genera frustración y abandono.'},
+  {cat:'Tipos de UI',q:'¿Qué innovación principal introduce una PWA (Progressive Web App) respecto a una web tradicional?',opts:['Solo mejora la velocidad de carga','Agrega capacidades nativas: modo offline, instalación en home screen, push notifications','Reemplaza completamente a las apps nativas en todas las funciones','Es un nuevo lenguaje de programación para móvil'],a:1,exp:'Las PWA combinan lo mejor de web y apps nativas: instalables sin tienda, funcionan offline con Service Workers, pueden recibir push notifications y acceder a hardware con permisos.'},
+  {cat:'Tipos de UI',q:'¿Cuál es el principal desafío de diseño UX identificado en Apple Vision Pro (AR/VR)?',opts:['El precio del dispositivo','Fatiga ocular, incomodidad al escribir y aislamiento social del usuario','La resolución de pantalla insuficiente','La compatibilidad con apps de iOS'],a:1,exp:'Apple Vision Pro introdujo nuevos problemas de usabilidad no cubiertos por principios clásicos: fatiga ocular tras 30-45 min, escritura lenta en teclado virtual, y aislamiento social en uso público.'},
+  {cat:'Tipos de UI',q:'¿Cuál tipo de UI utiliza el reconocimiento de lenguaje natural (NLP) como base de interacción?',opts:['GUI','CLI avanzada','CUI (Interfaz Conversacional)','NUI gestual'],a:2,exp:'La CUI (Conversational User Interface) permite al usuario dialogar en lenguaje natural (texto o voz) con el sistema, usando NLP para interpretar la intención y generar respuestas contextuales.'},
+  // NIELSEN (8-16)
+  {cat:'Heurísticas de Nielsen',q:'La heurística #1 de Nielsen (Visibilidad del estado) implica que el sistema debe:',opts:['Ser visualmente atractivo','Informar al usuario sobre lo que está ocurriendo con retroalimentación oportuna','Usar solo colores visibles para personas daltónicas','Tener una interfaz transparente en diseño'],a:1,exp:'La heurística #1 requiere que el sistema nunca deje al usuario preguntándose "¿pasó algo?". Barras de progreso, spinners, confirmaciones y mensajes de estado son implementaciones de esta heurística.'},
+  {cat:'Heurísticas de Nielsen',q:'El rediseño de Snapchat en 2018 que costó $1.3 billion en valor de mercado violó principalmente:',opts:['Heurística #1 (Visibilidad)','Heurística #4 (Consistencia y estándares) y #6 (Reconocimiento antes que recuerdo)','Heurística #8 (Diseño minimalista)','Heurística #10 (Documentación)'],a:1,exp:'El rediseño rompió la consistencia (#4) que los usuarios habían aprendido (izquierda=cámara, derecha=stories), y los obligó a recordar nuevas ubicaciones en lugar de reconocerlas (#6). El tweet de Kylie Jenner lo viralizó.'},
+  {cat:'Heurísticas de Nielsen',q:'¿Cuántos evaluadores recomienda Nielsen para una evaluación heurística óptima?',opts:['1-2 evaluadores','3-5 evaluadores','10-15 evaluadores','Al menos 30 usuarios'],a:1,exp:'Nielsen demostró que con 3-5 evaluadores expertos se detecta el 75-80% de los problemas de usabilidad. Agregar más evaluadores da rendimientos decrecientes; no es costo-efectivo.'},
+  {cat:'Heurísticas de Nielsen',q:'La heurística "Prevención de errores" distingue entre dos tipos de error. ¿Cuáles son?',opts:['Errores de hardware y software','Slips (deslices por acción equivocada) y Mistakes (equivocaciones por modelo mental incorrecto)','Errores de usuario y errores del sistema','Errores críticos y errores menores'],a:1,exp:'Nielsen distingue: Slips (el usuario sabe qué quiere pero ejecuta mal, ej: clic en botón equivocado por proximidad) y Mistakes (el usuario tiene una concepción incorrecta del sistema). El diseño debe prevenir ambos tipos.'},
+  {cat:'Heurísticas de Nielsen',q:'Un sistema que muestra "Error 0x8007EA3" cuando el usuario pierde la conexión viola principalmente:',opts:['Heurística #8 (Diseño minimalista)','Heurística #9 (Ayuda a reconocer y recuperarse de errores) y #2 (Coincidencia con el mundo real)','Heurística #4 (Consistencia)','Heurística #7 (Flexibilidad y eficiencia)'],a:1,exp:'Los códigos de error técnicos violan #9 (deben expresarse en lenguaje simple con solución sugerida) y #2 (no usan el lenguaje del usuario). Debería decir "Sin conexión a internet. Revisá tu WiFi o datos móviles".'},
+  {cat:'Heurísticas de Nielsen',q:'¿Cuál es la escala de severidad estándar usada en evaluación heurística para priorizar problemas?',opts:['Alta, Media, Baja','0 a 4 donde 4 es catástrofe de usabilidad','A, B, C, D como notas','Crítico, Importante, Menor, Cosmético, Ignorar'],a:1,exp:'La escala de severidad de Nielsen va de 0 (no es problema) a 4 (catástrofe de usabilidad que debe corregirse antes del lanzamiento). Permite priorizar el esfuerzo de corrección según impacto en el usuario.'},
+  {cat:'Heurísticas de Nielsen',q:'La heurística "Reconocimiento antes que recuerdo" se basa en el principio cognitivo de que:',opts:['Los sistemas deben ser memorables','La memoria de reconocimiento es más potente que la memoria de recuerdo libre','Los usuarios tienen mala memoria','Los íconos son siempre mejor que el texto'],a:1,exp:'La psicología cognitiva establece que reconocer algo (ver una opción en menú) es mucho más fácil que recordarlo de memoria (escribir un comando CLI). Por eso las GUI son más accesibles que las CLI.'},
+  {cat:'Heurísticas de Nielsen',q:'El "botón Deshacer" (Ctrl+Z) aplica directamente la heurística:',opts:['#4 Consistencia y estándares','#5 Prevención de errores','#3 Control y libertad del usuario','#7 Flexibilidad y eficiencia'],a:2,exp:'La heurística #3 establece que los usuarios necesitan "salidas de emergencia": deshacer/rehacer son la implementación más universal. Permiten que el usuario explore sin miedo a consecuencias permanentes.'},
+  {cat:'Heurísticas de Nielsen',q:'¿Qué establece la heurística de Nielsen "Diseño estético y minimalista"?',opts:['La interfaz debe tener solo texto, sin imágenes ni íconos','Cada elemento visual compite por atención; eliminar lo que no agrega valor real','El sistema solo debe tener dos colores máximo','Las interfaces deben seguir la estética de Apple o Google'],a:1,exp:'Esta heurística no pide simplicidad per se, sino relevancia: todo elemento presente debe justificar su espacio. Fotoshop tiene cientos de elementos sin violar esta heurística porque cada uno sirve al usuario objetivo.'},
+  // TOGNAZINI (17-22)
+  {cat:'Principios de Tognazini',q:'La Ley de Fitts, principio central de Tognazini, establece que el tiempo para alcanzar un objetivo depende de:',opts:['Solo el tamaño del objeto','El tamaño del objeto y la distancia hasta él','La velocidad del procesador del dispositivo','El nivel de experiencia del usuario'],a:1,exp:'T = a + b × log₂(2D/W). El tiempo (T) aumenta con la distancia (D) y disminuye con el tamaño del objetivo (W). Implicación: botones importantes deben ser grandes y estar cerca del punto de interacción habitual.'},
+  {cat:'Principios de Tognazini',q:'¿Por qué el menú de macOS en el borde superior de la pantalla es más rápido de alcanzar que el menú dentro de cada ventana en Windows?',opts:['Por el color azul del menú de macOS','Porque el borde de pantalla actúa como objeto de ancho infinito según la Ley de Fitts','Porque los usuarios de Mac son más hábiles','Por el tamaño de fuente mayor en macOS'],a:1,exp:'La Ley de Fitts implica que los bordes de pantalla son "infinitamente grandes" en la dirección perpendicular: el cursor nunca se pasa de ellos. Esto hace que el menú en borde sea alcanzable con un movimiento rápido sin precisión, más rápido que un menú flotante dentro de una ventana.'},
+  {cat:'Principios de Tognazini',q:'El principio de "Protección del trabajo del usuario" de Tognazini se implementa mejor con:',opts:['Contraseñas fuertes y encriptación','Autoguardado continuo, historial de versiones y confirmación antes de cerrar con cambios','Backups manuales periódicos','Permisos de archivo en modo solo lectura'],a:1,exp:'Google Docs es el ejemplo paradigmático: guarda cada cambio automáticamente, mantiene historial de versiones, y el usuario nunca pierde trabajo. Este principio tiene impacto emocional directo: reduce la ansiedad del usuario.'},
+  {cat:'Principios de Tognazini',q:'El principio de "Eficiencia del usuario" de Tognazini prioriza:',opts:['Optimizar el código del servidor','El tiempo del usuario sobre el del sistema: mostrar resultados inmediatamente aunque el proceso tarde','Reducir el consumo de memoria RAM','La velocidad de compilación del frontend'],a:1,exp:'Tognazini argumenta que el tiempo humano es más caro que el tiempo de CPU. La "Optimistic UI" (mostrar resultado antes de confirmar con servidor) es la implementación moderna: Instagram muestra el "like" al instante.'},
+  {cat:'Principios de Tognazini',q:'¿Qué diferencia fundamental existe entre las heurísticas de Nielsen y los principios de Tognazini?',opts:['Nielsen tiene más principios que Tognazini','Nielsen es para evaluar sistemas existentes; Tognazini es para guiar el diseño desde el inicio','Tognazini se aplica solo a apps móviles','Nielsen se usa solo para web y Tognazini para desktop'],a:1,exp:'Son complementarios: Nielsen define heurísticas para AUDITAR sistemas existentes e identificar problemas. Tognazini define principios para CONSTRUIR interacciones bien desde el diseño. Se usan en fases distintas del proceso.'},
+  {cat:'Principios de Tognazini',q:'¿Qué implica diseñar una "interfaz explorable" según Tognazini?',opts:['Que el usuario puede ver el código fuente del sistema','Que el usuario puede probar funciones sin miedo porque toda acción es reversible','Que todos los archivos del sistema son visibles','Que se puede exportar la interfaz como imagen'],a:1,exp:'Las interfaces explorables fomentan el descubrimiento porque el usuario sabe que puede deshacer. Esto aumenta el engagement y genera usuarios más expertos. Figma (deshacer infinito) y juegos con checkpoints frecuentes son buenos ejemplos.'},
+  // PROBLEMAS (23-27)
+  {cat:'Problemas de Usabilidad',q:'La Ley de Miller (1956) establece que la memoria de trabajo humana puede procesar eficientemente:',opts:['3 ítems máximo','7±2 ítems simultáneamente','15-20 ítems con entrenamiento','Sin límite si son imágenes en lugar de texto'],a:1,exp:'Miller estableció que el "número mágico" es 7±2 (entre 5 y 9) ítems en memoria de trabajo. Interfaces que superan este límite generan sobrecarga cognitiva: errores, lentitud y abandono. Aplica a menús, opciones, pasos en un proceso.'},
+  {cat:'Problemas de Usabilidad',q:'Baymard Institute encontró que el checkout promedio en e-commerce tiene ~15 campos. ¿Qué recomienda para aumentar la conversión?',opts:['Agregar más campos para recopilar más datos del cliente','Reducirlo a 7-8 campos necesarios puede aumentar la conversión entre 20-60%','Dividir el formulario en 10 pasos más pequeños','Hacer todos los campos opcionales'],a:1,exp:'Cada campo en un formulario es una fricción que aumenta el abandono. El principio es solicitar solo el mínimo necesario para el paso actual. Formularios más cortos = más conversiones medidos en múltiples estudios.'},
+  {cat:'Problemas de Usabilidad',q:'El caso de Healthcare.gov (2013) ilustra cómo múltiples violaciones de usabilidad pueden tener consecuencias masivas. ¿Cuál fue el costo estimado?',opts:['$50 millones','$677 millones solo en el lanzamiento fallido','$10 millones','El costo fue mínimo, solo de reputación'],a:1,exp:'Healthcare.gov violó Nielsen #1 (sin feedback en esperas largas), #9 (errores técnicos inútiles) y #5 (validación solo al final del formulario de 20+ pasos). El costo de arreglarlo después del lanzamiento fue $677 millones.'},
+  {cat:'Problemas de Usabilidad',q:'Forrester Research estima que el 55% de los usuarios abandona un proceso cuando encuentra un error. ¿Cuál es la causa principal según este estudio?',opts:['La lentitud del sistema','Mensajes de error que no entienden y que no les indican cómo continuar','El exceso de publicidad','La falta de colores atractivos'],a:1,exp:'Los errores incomprensibles bloquean al usuario. El "trío del buen error": QUÉ pasó + POR QUÉ pasó + QUÉ puede hacer el usuario. Sin estas tres partes, el 55% simplemente abandona en lugar de intentar corregir.'},
+  {cat:'Problemas de Usabilidad',q:'¿Qué es el "Think-aloud protocol" en investigación de usabilidad?',opts:['Un protocolo para que el sistema verbalice sus procesos internos','Una técnica donde el usuario verbaliza lo que piensa mientras realiza una tarea, revelando su modelo mental','Un método para documentar bugs en voz alta','La técnica de leer en voz alta los mensajes de error'],a:1,exp:'El Think-aloud protocol es una técnica cualitativa donde el usuario dice en voz alta lo que piensa, espera y siente mientras usa el sistema. Revela los modelos mentales del usuario y dónde el diseño no coincide con sus expectativas.'},
+  // MÓVIL (28-30)
+  {cat:'Diseño Móvil',q:'Según el estudio de Steven Hoober (2013) sobre el uso del smartphone, ¿qué porcentaje de usuarios lo usa con una sola mano?',opts:['15%','30%','49%','75%'],a:2,exp:'Hoober observó que el 49% de los usuarios sostiene el teléfono con una mano y opera con el pulgar de esa misma mano. Esto define la "thumb zone": el área inferior de la pantalla es más accesible y debe contener las acciones principales.'},
+  {cat:'Diseño Móvil',q:'Twitter Lite (PWA) logró reducir el tamaño de la app de 60MB a 600KB. ¿Qué impacto tuvo esto en los mercados emergentes?',opts:['No tuvo impacto significativo en el engagement','Redujo el uso de datos en 70% y aumentó los tweets publicados en 75%','Solo mejoró la velocidad en WiFi','Los usuarios de mercados emergentes prefieren apps nativas'],a:1,exp:'Twitter Lite demostró que las PWA son estratégicas en mercados con conectividad limitada y smartphones de gama baja. 600KB vs 60MB hace que sea accesible para usuarios con planes de datos escasos, aumentando la base de usuarios activos.'},
+  {cat:'Diseño Móvil',q:'¿Cuál es el principal problema documentado del Hamburger Menu según NNGroup (2016)?',opts:['Ocupa demasiado espacio visual','Oculta la navegación y reduce el uso de las secciones no visibles hasta en un 66%','Es difícil de implementar técnicamente','Solo funciona en Android, no en iOS'],a:1,exp:'Nielsen Norman Group documentó que ocultar la navegación en un hamburger menu reduce dramáticamente el uso de las secciones ocultadas. "Visibilidad de opciones = uso de opciones". Por eso Instagram y YouTube migraron a bottom navigation bar.'}
+];
+
+let qcur=0,qans=new Array(30).fill(null),qAnswered=new Array(30).fill(false);
+
+function initQ(){
+  qInit=true;
+  const area=document.getElementById('qarea');
+  area.innerHTML='';
+  QS.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className='qcard'+(i===0?' on':'');
+    d.id='q'+i;
+    d.innerHTML=`
+      <div class="qnum">Pregunta ${i+1} de 30</div>
+      <div class="qcat">${q.cat}</div>
+      <div class="qtxt">${q.q}</div>
+      <div class="opts-area">
+        ${q.opts.map((o,j)=>`<button class="opt" id="o${i}_${j}" onclick="pickAns(${i},${j})">
+          <span style="color:var(--acc2);font-weight:700;margin-right:.5rem">${['A','B','C','D'][j]}.</span>${o}
+        </button>`).join('')}
+      </div>
+      <div class="fb" id="fb${i}"></div>`;
+    area.appendChild(d);
+  });
+  document.getElementById('qnav').style.display='flex';
+  updPrg();updNav();
+}
+
+function pickAns(qi,oi){
+  if(qAnswered[qi])return;
+  qAnswered[qi]=true;qans[qi]=oi;
+  const q=QS[qi];
+  q.opts.forEach((_,j)=>{
+    const b=document.getElementById(`o${qi}_${j}`);
+    b.disabled=true;
+    if(j===q.a)b.classList.add('cor');
+    if(j===oi&&oi!==q.a)b.classList.add('wrg');
+  });
+  const fb=document.getElementById(`fb${qi}`);
+  if(oi===q.a){
+    fb.className='fb cor';
+    fb.innerHTML=`<i class="fa-solid fa-circle-check me-2"></i><strong>¡Correcto!</strong> ${q.exp}`;
+  }else{
+    fb.className='fb wrg';
+    fb.innerHTML=`<i class="fa-solid fa-circle-xmark me-2"></i><strong>Incorrecto.</strong> ${q.exp}`;
+  }
+  updPrg();
+}
+
+function updPrg(){
+  const d=qAnswered.filter(Boolean).length;
+  document.getElementById('qpf').style.width=((d/30)*100)+'%';
+  document.getElementById('qstat').textContent=`Respondidas: ${d} / 30`;
+}
+
+function updNav(){
+  document.getElementById('bprev').disabled=qcur===0;
+  const bn=document.getElementById('bnext');
+  if(qcur===29){bn.innerHTML='<i class="fa-solid fa-flag-checkered me-1"></i>Finalizar';bn.onclick=qfinish;}
+  else{bn.innerHTML='Siguiente <i class="fa-solid fa-arrow-right ms-1"></i>';bn.onclick=qnext;}
+}
+
+function qnext(){if(qcur<29){document.getElementById('q'+qcur).classList.remove('on');qcur++;document.getElementById('q'+qcur).classList.add('on');updNav();document.getElementById('q'+qcur).scrollIntoView({behavior:'smooth',block:'nearest'});}}
+function qprev(){if(qcur>0){document.getElementById('q'+qcur).classList.remove('on');qcur--;document.getElementById('q'+qcur).classList.add('on');updNav();}}
+
+function qfinish(){
+  const unanswered=qAnswered.filter(x=>!x).length;
+  if(unanswered>0){
+    Swal.fire({
+      title:'¿Finalizar cuestionario?',
+      html:`Tenés <strong style="color:#ff6b6b">${unanswered} pregunta(s)</strong> sin responder.`,
+      icon:'warning',showCancelButton:true,
+      confirmButtonText:'Finalizar igual',cancelButtonText:'Seguir respondiendo',
+      background:'#0a1e33',color:'#daeaf8',iconColor:'#ffb74d',
+      confirmButtonColor:'#00c8d7',cancelButtonColor:'#546e7a'
+    }).then(r=>{if(r.isConfirmed)showResult();});
+  }else showResult();
+}
+
+function showResult(){
+  document.getElementById('qarea').style.display='none';
+  document.getElementById('qnav').style.display='none';
+  document.getElementById('qstat').style.display='none';
+  document.getElementById('qpf').parentElement.style.display='none';
+  const score=qans.reduce((acc,a,i)=>acc+(a===QS[i].a?1:0),0);
+  const pct=Math.round((score/30)*100);
+  let emoji,msg,color;
+  if(pct>=90){emoji='🏆';msg='¡Excelente! Dominás los conceptos de Interfaz de Usuario.';color='#69f0ae';}
+  else if(pct>=70){emoji='🎯';msg='¡Muy bien! Manejás la mayoría de los temas.';color='var(--acc2)';}
+  else if(pct>=50){emoji='📚';msg='Aprobaste, pero revisá los temas en los que fallaste.';color:'#ffb74d';color='#ffb74d';}
+  else{emoji='🔄';msg='Te recomendamos repasar la presentación antes de reintentar.';color='#ff6b6b';}
+  document.getElementById('remoji').textContent=emoji;
+  document.getElementById('rscore').textContent=`${score} / 30`;
+  document.getElementById('rscore').style.color=color;
+  document.getElementById('rmsg').textContent=msg;
+  const ra=document.getElementById('revarea');
+  ra.innerHTML='<h6 style="color:var(--acc2);font-family:Rajdhani,sans-serif;margin-bottom:1rem;text-align:left"><i class="fa-solid fa-clipboard-list me-2"></i>Revisión detallada por pregunta</h6>';
+  QS.forEach((q,i)=>{
+    const ua=qans[i];const ok=ua===q.a;
+    const item=document.createElement('div');
+    item.className='rev '+(ok?'rc':'rw');
+    item.innerHTML=`<strong>${i+1}. [${q.cat}] ${q.q}</strong>
+      ${ua!==null?`<span>${ok?'✅':'❌'} Tu respuesta: <em>${q.opts[ua]}</em></span>`:'<span>⚠️ Sin responder</span>'}
+      ${!ok?`<br><span>✅ Correcta: <em>${q.opts[q.a]}</em></span>`:''}
+      <br><span style="opacity:.75;font-size:.78rem">${q.exp}</span>`;
+    ra.appendChild(item);
+  });
+  document.getElementById('rcard').style.display='block';
+  Swal.fire({
+    title:`${emoji} Resultado Final`,
+    html:`Obtuviste <span style="font-size:2rem;font-weight:700;color:${color}">${score}/30</span><br>
+         <span style="color:#b0cde0">${pct}% de respuestas correctas</span><br><br>
+         <em style="color:#daeaf8">${msg}</em>`,
+    background:'#0a1e33',color:'#daeaf8',confirmButtonColor:'#00c8d7',confirmButtonText:'Ver revisión completa',
+    iconHtml:emoji,customClass:{popup:'animate__animated animate__zoomIn'}
+  });
+}
+
+function qreset(){
+  qcur=0;qans=new Array(30).fill(null);qAnswered=new Array(30).fill(false);qInit=false;
+  document.getElementById('rcard').style.display='none';
+  document.getElementById('qarea').style.display='block';
+  document.getElementById('qnav').style.display='flex';
+  document.getElementById('qstat').style.display='block';
+  document.getElementById('qpf').parentElement.style.display='block';
+  initQ();
+}
+
+go(0);
+</script>
+</body>
+</html>
