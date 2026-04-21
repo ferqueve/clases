@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>UT2 – TA9 | Sistema de Agendamiento de Taller</title>
+
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<!-- FontAwesome 6 -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<!-- Animate.css -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"/>
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<style>
+:root {
+  --primary: #e8500a;
+  --primary-dark: #c23d00;
+  --secondary: #1a2744;
+  --accent: #3b7dd8;
+  --accent2: #f0a500;
+  --dark: #0d1526;
+  --darker: #070e1a;
+  --surface: #141e35;
+  --surface2: #1e2d4a;
+  --text: #e8edf5;
+  --text-muted: #8899bb;
+  --border: rgba(255,255,255,0.08);
+  --success: #28c76f;
+  --warning: #f0a500;
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--darker);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── GRID PATTERN BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(59,125,216,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,125,216,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── SLIDES CONTAINER ── */
+#slides-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+/* ── SLIDE HEADER BAR ── */
+.slide-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.slide-header .badge-ut {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  color: var(--primary);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.slide-header .slide-num {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+}
+
+/* ── SLIDE BODY ── */
+.slide-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 40px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface2) transparent;
+}
+.slide-body::-webkit-scrollbar { width: 4px; }
+.slide-body::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+
+/* ── SLIDE TITLE ── */
+.slide-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.slide-title span { color: var(--primary); }
+.slide-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+  letter-spacing: 0.5px;
+}
+
+/* ── COVER SLIDE ── */
+.slide-cover {
+  background: var(--darker);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.cover-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(ellipse at center, rgba(232,80,10,0.18) 0%, transparent 70%);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+.cover-icon {
+  font-size: 5rem;
+  color: var(--primary);
+  margin-bottom: 20px;
+  display: block;
+  filter: drop-shadow(0 0 30px rgba(232,80,10,0.5));
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.cover-title span { color: var(--primary); }
+.cover-subtitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+  letter-spacing: 1px;
+}
+.cover-tags {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.cover-tag {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 5px 16px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(232,80,10,0.15);
+  border: 1px solid rgba(232,80,10,0.4);
+  border-radius: 4px;
+  padding: 3px 12px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+.section-label.accent {
+  background: rgba(59,125,216,0.15);
+  border-color: rgba(59,125,216,0.4);
+  color: var(--accent);
+}
+.section-label.success {
+  background: rgba(40,199,111,0.15);
+  border-color: rgba(40,199,111,0.4);
+  color: var(--success);
+}
+.section-label.warning {
+  background: rgba(240,165,0,0.15);
+  border-color: rgba(240,165,0,0.4);
+  color: var(--warning);
+}
+
+/* ── CARDS ── */
+.card-dark {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  height: 100%;
+  transition: border-color .2s, transform .2s;
+}
+.card-dark:hover { border-color: rgba(232,80,10,0.4); transform: translateY(-2px); }
+.card-dark.accent:hover { border-color: rgba(59,125,216,0.4); }
+.card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.bg-primary-soft { background: rgba(232,80,10,0.15); color: var(--primary); }
+.bg-accent-soft { background: rgba(59,125,216,0.15); color: var(--accent); }
+.bg-success-soft { background: rgba(40,199,111,0.15); color: var(--success); }
+.bg-warning-soft { background: rgba(240,165,0,0.15); color: var(--warning); }
+.bg-purple-soft { background: rgba(130,90,220,0.15); color: #a78bfa; }
+
+.card-dark .card-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.card-dark .card-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.card-dark .card-attrs {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.attr-badge {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+}
+
+/* ── BUC ARROWS ── */
+.buc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  transition: border-color .2s;
+}
+.buc-row:hover { border-color: rgba(59,125,216,0.4); }
+.buc-actor {
+  background: rgba(59,125,216,0.15);
+  border: 1px solid rgba(59,125,216,0.3);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  color: var(--accent);
+  white-space: nowrap;
+  min-width: 110px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+.buc-arrow { color: var(--text-muted); font-size: 0.9rem; flex-shrink: 0; }
+.buc-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.buc-desc {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+}
+.buc-id {
+  background: rgba(232,80,10,0.12);
+  border: 1px solid rgba(232,80,10,0.3);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+/* ── SCENARIO TABLE ── */
+.scenario-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.scenario-table th {
+  background: var(--surface2);
+  padding: 8px 12px;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+.scenario-table td {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.55;
+  color: var(--text);
+}
+.scenario-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.scenario-table .label-cell {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--primary);
+  white-space: nowrap;
+  width: 160px;
+  font-size: 0.82rem;
+}
+.scenario-table .label-cell.accent { color: var(--accent); }
+.flow-step {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+  align-items: flex-start;
+}
+.flow-num {
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.flow-num.accent { background: var(--accent); }
+.flow-text { font-size: 0.78rem; color: var(--text); line-height: 1.5; }
+
+/* ── REQUIREMENTS ── */
+.req-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  transition: border-color .2s;
+}
+.req-card:hover { border-color: rgba(232,80,10,0.35); cursor: pointer; }
+.req-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface2);
+}
+.req-id {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 1px;
+  min-width: 52px;
+}
+.req-id.nf { color: var(--accent); }
+.req-name {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.req-body { padding: 10px 14px; display: none; }
+.req-body.open { display: block; }
+.req-row { margin-bottom: 7px; }
+.req-row-label {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.req-row-val { font-size: 0.78rem; color: var(--text); line-height: 1.55; }
+.acceptance-list { padding-left: 0; list-style: none; }
+.acceptance-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 0.77rem;
+  color: var(--text-muted);
+}
+.acceptance-list li i { color: var(--success); margin-top: 2px; flex-shrink: 0; }
+
+/* ── NAVIGATION ── */
+.nav-bar {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 8px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.nav-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  padding: 6px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-btn:hover { background: var(--primary); border-color: var(--primary); color: white; }
+.nav-btn:disabled { opacity: 0.3; pointer-events: none; }
+.progress-dots { display: flex; gap: 6px; }
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all .2s;
+}
+.dot.active { background: var(--primary); border-color: var(--primary); width: 22px; border-radius: 4px; }
+.slide-counter {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  min-width: 70px;
+  text-align: center;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+/* ── INFO BOX ── */
+.info-box {
+  background: rgba(59,125,216,0.08);
+  border: 1px solid rgba(59,125,216,0.25);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.info-box.orange {
+  background: rgba(232,80,10,0.08);
+  border-color: rgba(232,80,10,0.25);
+  border-left-color: var(--primary);
+}
+.info-box.green {
+  background: rgba(40,199,111,0.08);
+  border-color: rgba(40,199,111,0.25);
+  border-left-color: var(--success);
+}
+
+/* ── FLOW ALT ── */
+.alt-step {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+.alt-label {
+  background: rgba(240,165,0,0.15);
+  border: 1px solid rgba(240,165,0,0.3);
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  color: var(--warning);
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+/* ── HIGHLIGHT ── */
+.hl { color: var(--primary); font-weight: 600; }
+.hl-b { color: var(--accent); font-weight: 600; }
+
+/* SweetAlert custom */
+.swal2-popup.custom-swal {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  font-family: var(--font-body) !important;
+}
+.swal2-title.custom-swal-title {
+  color: var(--text) !important;
+  font-family: var(--font-display) !important;
+  font-size: 1.4rem !important;
+}
+.swal2-html-container { color: var(--text-muted) !important; font-size: 0.85rem !important; }
+.swal2-confirm { background: var(--primary) !important; border-radius: 6px !important; font-family: var(--font-display) !important; letter-spacing: 1px !important; }
+.swal2-cancel { background: var(--surface2) !important; color: var(--text-muted) !important; border-radius: 6px !important; font-family: var(--font-display) !important; }
+
+/* ── TWO COL LAYOUT ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+@media (max-width: 900px) {
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .slide-body { padding: 16px 20px; }
+}
+</style>
+</head>
+<body>
+
+<div id="slides-wrapper">
+
+  <!-- ════════════════════════ SLIDE 0 – PORTADA ════════════════════════ -->
+  <div class="slide slide-cover active" id="slide-0">
+    <div class="cover-glow"></div>
+    <div style="position:relative;z-index:2;text-align:center;padding:20px;">
+      <i class="fas fa-wrench cover-icon animate__animated animate__bounceIn"></i>
+      <div class="cover-title animate__animated animate__fadeInUp">
+        Sistema de<br><span>Agendamiento</span> de Taller
+      </div>
+      <div class="cover-subtitle animate__animated animate__fadeInUp" style="animation-delay:.15s">
+        Unidad Temática 2 – Análisis y Especificación &nbsp;|&nbsp; Trabajo de Aplicación 9
+      </div>
+      <div class="cover-tags animate__animated animate__fadeInUp" style="animation-delay:.3s">
+        <span class="cover-tag"><i class="fas fa-building me-1"></i>Parte 1: BE & BUC</span>
+        <span class="cover-tag"><i class="fas fa-diagram-project me-1"></i>Parte 2: Escenarios PUC</span>
+        <span class="cover-tag"><i class="fas fa-list-check me-1"></i>Parte 3: Requisitos</span>
+      </div>
+      <div style="margin-top:30px;">
+        <button class="nav-btn" onclick="goTo(1)" style="margin:auto;background:var(--primary);border-color:var(--primary);color:white;font-size:0.9rem;padding:10px 28px;">
+          <i class="fas fa-play-circle"></i> COMENZAR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 1 – CONTEXTO ════════════════════════ -->
+  <div class="slide" id="slide-1">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-car me-2"></i>UT2 – TA9</span>
+      <span class="slide-num">CONTEXTO DEL SISTEMA</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label"><i class="fas fa-circle-info me-1"></i>INTRODUCCIÓN</div>
+        <h2 class="slide-title">¿De qué trata el <span>sistema</span>?</h2>
+        <p class="slide-subtitle">Plataforma para agendar reparaciones en talleres automotrices de forma eficiente</p>
+
+        <div class="two-col" style="margin-bottom:14px;">
+          <div class="info-box orange">
+            <strong style="color:var(--primary);font-family:var(--font-display);">Problema</strong><br/>
+            Los talleres gestionan citas de forma manual o fragmentada, generando pérdida de información, doble reserva de turnos e imposibilidad de seguimiento del historial del vehículo.
+          </div>
+          <div class="info-box">
+            <strong style="color:var(--accent);font-family:var(--font-display);">Solución propuesta</strong><br/>
+            Sistema web de agendamiento que permite al cliente reservar citas, al mecánico documentar tareas, y al taller gestionar recursos y notificaciones de manera centralizada.
+          </div>
+        </div>
+
+        <div class="three-col">
+          <div class="card-dark">
+            <div class="card-icon bg-primary-soft"><i class="fas fa-user"></i></div>
+            <div class="card-title">Cliente</div>
+            <div class="card-text">Busca taller, agenda la cita, especifica su vehículo y tipo de reparación. Recibe notificaciones de service.</div>
+          </div>
+          <div class="card-dark">
+            <div class="card-icon bg-accent-soft"><i class="fas fa-screwdriver-wrench"></i></div>
+            <div class="card-title">Mecánico</div>
+            <div class="card-text">Accede a los datos del vehículo, historial previo, y documenta cada tarea realizada durante la reparación.</div>
+          </div>
+          <div class="card-dark">
+            <div class="card-icon bg-warning-soft"><i class="fas fa-store"></i></div>
+            <div class="card-title">Taller</div>
+            <div class="card-text">Gestiona la agenda, asigna mecánicos y recursos, ofrece distintos tipos de servicio según su especialidad.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="info-box green" style="font-size:0.78rem;">
+          <i class="fas fa-lightbulb me-2" style="color:var(--success)"></i>
+          <strong>Servicios cubiertos:</strong> Chapa y pintura · Mecánica general · Service general · Alineación y balanceo · Reemplazo de filtros · Inspección de componentes · Ajustes y calibraciones
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 2 – BE DEFINICION ════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-database me-2"></i>PARTE 1</span>
+      <span class="slide-num">ENTIDADES DEL NEGOCIO</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label"><i class="fas fa-cube me-1"></i>BE – BUSINESS ENTITIES</div>
+        <h2 class="slide-title">Entidades del <span>Negocio</span></h2>
+        <p class="slide-subtitle">Conceptos clave que el sistema debe conocer, almacenar y gestionar</p>
+
+        <div class="info-box" style="margin-bottom:16px;">
+          <i class="fas fa-info-circle me-2" style="color:var(--accent)"></i>
+          <strong>¿Qué es una BE?</strong> Una <em>Business Entity</em> (Entidad del Negocio) es un <strong style="color:var(--text)">objeto o concepto relevante del dominio</strong> que el sistema debe conocer, almacenar información y sobre el que se realizan operaciones. No son actores ni acciones: son "sustantivos" del negocio.
+        </div>
+
+        <div class="three-col">
+          <div class="card-dark" onclick="showBE('usuario')">
+            <div class="card-icon bg-primary-soft"><i class="fas fa-user-circle"></i></div>
+            <div class="card-title">BE-01 · Usuario/Cliente</div>
+            <div class="card-text">Persona que agenda la reparación. Tiene datos personales y de contacto.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">nombre</span>
+              <span class="attr-badge">email</span>
+              <span class="attr-badge">teléfono</span>
+              <span class="attr-badge">contraseña</span>
+            </div>
+          </div>
+          <div class="card-dark" onclick="showBE('vehiculo')">
+            <div class="card-icon bg-accent-soft"><i class="fas fa-car"></i></div>
+            <div class="card-title">BE-02 · Vehículo</div>
+            <div class="card-text">Auto asociado al cliente. Identificado por su VIN y especificaciones técnicas.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">marca</span>
+              <span class="attr-badge">modelo</span>
+              <span class="attr-badge">año</span>
+              <span class="attr-badge">VIN</span>
+              <span class="attr-badge">km</span>
+            </div>
+          </div>
+          <div class="card-dark" onclick="showBE('taller')">
+            <div class="card-icon bg-warning-soft"><i class="fas fa-industry"></i></div>
+            <div class="card-title">BE-03 · Taller</div>
+            <div class="card-text">Establecimiento que brinda servicios de reparación. Tiene ubicación y especialidades.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">nombre</span>
+              <span class="attr-badge">dirección</span>
+              <span class="attr-badge">servicios</span>
+              <span class="attr-badge">horario</span>
+            </div>
+          </div>
+          <div class="card-dark" onclick="showBE('mecanico')">
+            <div class="card-icon bg-success-soft"><i class="fas fa-hard-hat"></i></div>
+            <div class="card-title">BE-04 · Mecánico</div>
+            <div class="card-text">Empleado del taller que realiza las reparaciones y documenta las tareas.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">nombre</span>
+              <span class="attr-badge">especialidad</span>
+              <span class="attr-badge">taller_id</span>
+            </div>
+          </div>
+          <div class="card-dark" onclick="showBE('cita')">
+            <div class="card-icon bg-purple-soft"><i class="fas fa-calendar-check"></i></div>
+            <div class="card-title">BE-05 · Cita</div>
+            <div class="card-text">Reserva de turno para una reparación. Vincula al cliente con el taller en una fecha concreta.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">fecha</span>
+              <span class="attr-badge">hora</span>
+              <span class="attr-badge">estado</span>
+              <span class="attr-badge">observaciones</span>
+            </div>
+          </div>
+          <div class="card-dark" onclick="showBE('reparacion')">
+            <div class="card-icon bg-primary-soft"><i class="fas fa-toolbox"></i></div>
+            <div class="card-title">BE-06 · Reparación</div>
+            <div class="card-text">Trabajo realizado en el vehículo. Puede incluir múltiples tareas específicas.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">tipo</span>
+              <span class="attr-badge">descripción</span>
+              <span class="attr-badge">fecha</span>
+              <span class="attr-badge">costo</span>
+            </div>
+          </div>
+          <div class="card-dark" onclick="showBE('historial')">
+            <div class="card-icon bg-accent-soft"><i class="fas fa-clock-rotate-left"></i></div>
+            <div class="card-title">BE-07 · Historial Mant.</div>
+            <div class="card-text">Registro acumulado de todas las reparaciones y servicios realizados al vehículo.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">vehículo_id</span>
+              <span class="attr-badge">reparaciones[]</span>
+              <span class="attr-badge">servicios[]</span>
+            </div>
+          </div>
+          <div class="card-dark" onclick="showBE('tarea')">
+            <div class="card-icon bg-warning-soft"><i class="fas fa-list-check"></i></div>
+            <div class="card-title">BE-08 · Tarea</div>
+            <div class="card-text">Actividad específica documentada por el mecánico: cambio de aceite, filtros, frenos, etc.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">tipo</span>
+              <span class="attr-badge">marca_componente</span>
+              <span class="attr-badge">fecha</span>
+            </div>
+          </div>
+          <div class="card-dark" onclick="showBE('notificacion')">
+            <div class="card-icon bg-success-soft"><i class="fas fa-bell"></i></div>
+            <div class="card-title">BE-09 · Notificación</div>
+            <div class="card-text">Aviso automático enviado al cliente cuando se aproxima la fecha del próximo service.</div>
+            <div class="card-attrs">
+              <span class="attr-badge">tipo</span>
+              <span class="attr-badge">fecha_envío</span>
+              <span class="attr-badge">estado</span>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:0.73rem;color:var(--text-muted);text-align:center;">
+          <i class="fas fa-hand-pointer me-1"></i>Hacé clic en cualquier tarjeta para ver más detalles
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 3 – BUC ════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-diagram-project me-2"></i>PARTE 1</span>
+      <span class="slide-num">CASOS DE USO DEL NEGOCIO</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label accent"><i class="fas fa-arrows-left-right me-1"></i>BUC – BUSINESS USE CASES</div>
+        <h2 class="slide-title">Casos de Uso del <span>Negocio</span></h2>
+        <p class="slide-subtitle">Procesos y funciones que el negocio realiza, independientemente del sistema informático</p>
+
+        <div class="info-box" style="margin-bottom:14px;">
+          <i class="fas fa-info-circle me-2" style="color:var(--accent)"></i>
+          <strong>¿Qué es un BUC?</strong> Un <em>Business Use Case</em> describe un proceso de negocio que aporta valor a un actor del negocio. Son actividades del <strong style="color:var(--text)">dominio del problema</strong>, no funciones del software. Responden a la pregunta: <em>"¿qué hace el negocio?"</em>
+        </div>
+
+        <div class="buc-row">
+          <span class="buc-actor"><i class="fas fa-user me-1"></i>Cliente</span>
+          <span class="buc-arrow"><i class="fas fa-arrow-right"></i></span>
+          <div style="flex:1">
+            <div class="buc-name">Registrarse en el sistema</div>
+            <div class="buc-desc">El usuario crea su cuenta para poder acceder al sistema de agendamiento.</div>
+          </div>
+          <span class="buc-id">BUC-01</span>
+        </div>
+        <div class="buc-row">
+          <span class="buc-actor"><i class="fas fa-user me-1"></i>Cliente</span>
+          <span class="buc-arrow"><i class="fas fa-arrow-right"></i></span>
+          <div style="flex:1">
+            <div class="buc-name">Buscar taller por ubicación y servicio</div>
+            <div class="buc-desc">El cliente busca talleres cercanos que ofrezcan el servicio que necesita para su vehículo.</div>
+          </div>
+          <span class="buc-id">BUC-02</span>
+        </div>
+        <div class="buc-row">
+          <span class="buc-actor"><i class="fas fa-user me-1"></i>Cliente</span>
+          <span class="buc-arrow"><i class="fas fa-arrow-right"></i></span>
+          <div style="flex:1">
+            <div class="buc-name">Agendar reparación</div>
+            <div class="buc-desc">El cliente solicita una cita especificando vehículo, km, tipo de reparación y observaciones.</div>
+          </div>
+          <span class="buc-id">BUC-03</span>
+        </div>
+        <div class="buc-row">
+          <span class="buc-actor" style="background:rgba(40,199,111,0.12);border-color:rgba(40,199,111,0.3);color:var(--success)"><i class="fas fa-bell me-1"></i>Sistema</span>
+          <span class="buc-arrow"><i class="fas fa-arrow-right"></i></span>
+          <div style="flex:1">
+            <div class="buc-name">Enviar notificación de próximo service</div>
+            <div class="buc-desc">El sistema alerta automáticamente al cliente cuando se aproxima la fecha de mantenimiento.</div>
+          </div>
+          <span class="buc-id">BUC-04</span>
+        </div>
+        <div class="buc-row">
+          <span class="buc-actor" style="background:rgba(240,165,0,0.12);border-color:rgba(240,165,0,0.3);color:var(--warning)"><i class="fas fa-hard-hat me-1"></i>Mecánico</span>
+          <span class="buc-arrow"><i class="fas fa-arrow-right"></i></span>
+          <div style="flex:1">
+            <div class="buc-name">Consultar información de la cita y vehículo</div>
+            <div class="buc-desc">El mecánico accede a los datos del auto (VIN, km, historial) y la cita asignada.</div>
+          </div>
+          <span class="buc-id">BUC-05</span>
+        </div>
+        <div class="buc-row">
+          <span class="buc-actor" style="background:rgba(240,165,0,0.12);border-color:rgba(240,165,0,0.3);color:var(--warning)"><i class="fas fa-hard-hat me-1"></i>Mecánico</span>
+          <span class="buc-arrow"><i class="fas fa-arrow-right"></i></span>
+          <div style="flex:1">
+            <div class="buc-name">Documentar tareas de reparación</div>
+            <div class="buc-desc">El mecánico registra cada tarea: aceite, filtros, componentes, ajustes, comentarios y recomendaciones.</div>
+          </div>
+          <span class="buc-id">BUC-06</span>
+        </div>
+        <div class="buc-row">
+          <span class="buc-actor"><i class="fas fa-user me-1"></i>Cliente</span>
+          <span class="buc-arrow"><i class="fas fa-arrow-right"></i></span>
+          <div style="flex:1">
+            <div class="buc-name">Consultar historial de mantenimiento</div>
+            <div class="buc-desc">El cliente o mecánico puede ver el historial completo de reparaciones de un vehículo.</div>
+          </div>
+          <span class="buc-id">BUC-07</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 4 – PUC JUSTIFICACION ════════════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-star me-2"></i>PARTE 2</span>
+      <span class="slide-num">SELECCIÓN DE PUCs</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label warning"><i class="fas fa-star me-1"></i>PUC – CASOS DE USO DEL SISTEMA</div>
+        <h2 class="slide-title">¿Por qué estos dos <span>PUCs</span>?</h2>
+        <p class="slide-subtitle">Justificación de la selección para el desarrollo de escenarios</p>
+
+        <div class="info-box" style="margin-bottom:16px;">
+          <i class="fas fa-info-circle me-2" style="color:var(--accent)"></i>
+          <strong>¿Qué es un PUC?</strong> Un <em>Primario Use Case</em> (Caso de Uso del Sistema) describe la interacción concreta entre un <strong style="color:var(--text)">actor y el sistema de software</strong> para lograr un objetivo específico. Es la unidad funcional del análisis de requerimientos.
+        </div>
+
+        <div class="two-col" style="margin-bottom:16px;">
+          <div style="background:var(--surface);border:2px solid var(--primary);border-radius:12px;padding:18px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <div class="card-icon bg-primary-soft" style="margin:0"><i class="fas fa-calendar-plus"></i></div>
+              <div>
+                <div style="font-family:var(--font-display);font-size:0.7rem;letter-spacing:2px;color:var(--primary);text-transform:uppercase;">PUC Seleccionado #1</div>
+                <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;">Agendar Reparación</div>
+              </div>
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.7;margin-bottom:12px;">
+              Es el <strong style="color:var(--text)">flujo central del sistema</strong>. Sin este caso de uso el sistema no tiene razón de existir. Involucra la mayor cantidad de entidades (cliente, vehículo, taller, cita) y concentra la lógica principal de negocio. Es el caso de uso de mayor frecuencia de uso y mayor criticidad funcional.
+            </div>
+            <div class="info-box green" style="font-size:0.75rem;">
+              <i class="fas fa-check me-1"></i>
+              <strong>Impacto:</strong> Alto · <strong>Frecuencia:</strong> Muy alta · <strong>Riesgo si falla:</strong> Crítico
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:18px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <div class="card-icon bg-accent-soft" style="margin:0"><i class="fas fa-clipboard-list"></i></div>
+              <div>
+                <div style="font-family:var(--font-display);font-size:0.7rem;letter-spacing:2px;color:var(--accent);text-transform:uppercase;">PUC Seleccionado #2</div>
+                <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;">Documentar Tareas de Reparación</div>
+              </div>
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.7;margin-bottom:12px;">
+              Es el caso de uso que <strong style="color:var(--text)">genera valor diferencial</strong> respecto a un sistema básico de agendamiento. Permite construir el historial del vehículo, habilita mejores diagnósticos futuros y es el proceso más complejo desde el punto de vista de datos a registrar (tareas, marcas, fechas, recomendaciones).
+            </div>
+            <div class="info-box" style="font-size:0.75rem;">
+              <i class="fas fa-check me-1" style="color:var(--accent)"></i>
+              <strong>Impacto:</strong> Alto · <strong>Complejidad:</strong> Alta · <strong>Valor diferencial:</strong> Máximo
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box orange" style="font-size:0.78rem;">
+          <i class="fas fa-triangle-exclamation me-2" style="color:var(--primary)"></i>
+          <strong>Nota metodológica:</strong> Se descartaron BUC-01 (Registrar usuario) por ser un patrón genérico de baja complejidad, y BUC-07 (Consultar historial) por ser subordinado a BUC-06. Los PUC seleccionados representan los extremos del flujo: el inicio (agendamiento) y el fin (documentación), cubriendo los dos actores principales.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 5 – ESCENARIO PUC1 FLUJO PRINCIPAL ════════════════════════ -->
+  <div class="slide" id="slide-5">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-calendar-plus me-2"></i>PARTE 2 – PUC #1</span>
+      <span class="slide-num">ESCENARIO: AGENDAR REPARACIÓN</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label"><i class="fas fa-diagram-project me-1"></i>CASO DE USO DEL SISTEMA</div>
+        <h2 class="slide-title">PUC-01: <span>Agendar</span> Reparación</h2>
+        <p class="slide-subtitle">Escenario completo — Flujo principal y flujos alternativos</p>
+
+        <table class="scenario-table" style="margin-bottom:14px;">
+          <tr>
+            <td class="label-cell"><i class="fas fa-id-badge me-1"></i>Nombre</td>
+            <td>Agendar Reparación</td>
+            <td class="label-cell"><i class="fas fa-hashtag me-1"></i>ID</td>
+            <td><strong>PUC-01</strong></td>
+          </tr>
+          <tr>
+            <td class="label-cell"><i class="fas fa-user me-1"></i>Actor principal</td>
+            <td>Cliente / Usuario registrado</td>
+            <td class="label-cell"><i class="fas fa-users me-1"></i>Actores sec.</td>
+            <td>Sistema (notificaciones)</td>
+          </tr>
+          <tr>
+            <td class="label-cell"><i class="fas fa-bullseye me-1"></i>Objetivo</td>
+            <td colspan="3">Reservar una cita en un taller para realizar una reparación en su vehículo en una fecha y hora convenientes.</td>
+          </tr>
+          <tr>
+            <td class="label-cell"><i class="fas fa-circle-check me-1"></i>Precondiciones</td>
+            <td colspan="3">El usuario está registrado e inició sesión. El sistema tiene al menos un taller disponible.</td>
+          </tr>
+        </table>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;">
+          <div style="font-family:var(--font-display);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--primary);margin-bottom:10px;"><i class="fas fa-route me-2"></i>FLUJO PRINCIPAL</div>
+          <div class="flow-step"><div class="flow-num">1</div><div class="flow-text">El <hl>cliente</hl> ingresa su <strong>ubicación</strong> y el <strong>tipo de servicio</strong> que necesita.</div></div>
+          <div class="flow-step"><div class="flow-num">2</div><div class="flow-text">El sistema muestra la lista de <strong>talleres disponibles</strong> con sus servicios y distancia.</div></div>
+          <div class="flow-step"><div class="flow-num">3</div><div class="flow-text">El cliente <strong>selecciona un taller</strong> de la lista.</div></div>
+          <div class="flow-step"><div class="flow-num">4</div><div class="flow-text">El sistema solicita datos del vehículo: <strong>marca, modelo, año</strong> y <strong>kilómetros recorridos</strong>.</div></div>
+          <div class="flow-step"><div class="flow-num">5</div><div class="flow-text">El cliente especifica el <strong>tipo de reparación</strong> y añade <strong>observaciones</strong> adicionales.</div></div>
+          <div class="flow-step"><div class="flow-num">6</div><div class="flow-text">El sistema muestra el <strong>calendario con fechas y horarios disponibles</strong> del taller.</div></div>
+          <div class="flow-step"><div class="flow-num">7</div><div class="flow-text">El cliente <strong>selecciona fecha y hora</strong> para la cita.</div></div>
+          <div class="flow-step"><div class="flow-num">8</div><div class="flow-text">El sistema muestra el <strong>resumen de la cita</strong> para confirmación.</div></div>
+          <div class="flow-step"><div class="flow-num">9</div><div class="flow-text">El cliente <strong>confirma</strong>. El sistema registra la cita y <strong>envía confirmación por email/notificación</strong>.</div></div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid rgba(240,165,0,0.3);border-radius:8px;padding:14px;">
+          <div style="font-family:var(--font-display);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--warning);margin-bottom:10px;"><i class="fas fa-code-branch me-2"></i>FLUJOS ALTERNATIVOS</div>
+          <div class="alt-step">
+            <span class="alt-label">ALT 3a</span>
+            <div class="flow-text">No hay talleres disponibles en la zona → El sistema sugiere ampliar el radio de búsqueda o muestra talleres en localidades cercanas.</div>
+          </div>
+          <div class="alt-step">
+            <span class="alt-label">ALT 6a</span>
+            <div class="flow-text">No hay horarios disponibles en la fecha deseada → El sistema ofrece las próximas fechas con disponibilidad.</div>
+          </div>
+          <div class="alt-step">
+            <span class="alt-label">ALT 8a</span>
+            <div class="flow-text">El cliente cancela la confirmación → El sistema descarta los datos temporales y vuelve al inicio sin registrar cita.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 6 – ESCENARIO PUC1 POSTCOND ════════════════════════ -->
+  <div class="slide" id="slide-6">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-calendar-plus me-2"></i>PARTE 2 – PUC #1</span>
+      <span class="slide-num">POSTCONDICIONES Y NOTAS</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label"><i class="fas fa-flag-checkered me-1"></i>CONTINUACIÓN PUC-01</div>
+        <h2 class="slide-title">PUC-01: <span>Postcondiciones</span> y detalles</h2>
+        <p class="slide-subtitle">Estado del sistema tras la ejecución exitosa del caso de uso</p>
+
+        <table class="scenario-table" style="margin-bottom:16px;">
+          <tr>
+            <td class="label-cell"><i class="fas fa-flag-checkered me-1"></i>Postcondiciones</td>
+            <td>
+              <div class="flow-step"><div class="flow-num" style="background:var(--success)">✓</div><div class="flow-text">La <strong>cita queda registrada</strong> en el sistema con estado "Pendiente".</div></div>
+              <div class="flow-step"><div class="flow-num" style="background:var(--success)">✓</div><div class="flow-text">El <strong>taller recibe la solicitud</strong> de cita en su panel de gestión.</div></div>
+              <div class="flow-step"><div class="flow-num" style="background:var(--success)">✓</div><div class="flow-text">El cliente recibe <strong>confirmación de cita</strong> (email o notificación push).</div></div>
+              <div class="flow-step"><div class="flow-num" style="background:var(--success)">✓</div><div class="flow-text">El horario seleccionado <strong>queda bloqueado</strong> en la agenda del taller.</div></div>
+            </td>
+          </tr>
+          <tr>
+            <td class="label-cell"><i class="fas fa-exclamation-circle me-1"></i>Excepciones</td>
+            <td>
+              <div class="flow-text" style="margin-bottom:4px;"><strong>EX-01:</strong> El sistema falla al procesar el agendamiento → Se muestra mensaje de error y la cita NO queda registrada. Se notifica al usuario para reintentar.</div>
+              <div class="flow-text"><strong>EX-02:</strong> El taller cancela la cita → El sistema notifica al cliente automáticamente y ofrece reagendar.</div>
+            </td>
+          </tr>
+        </table>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;">
+          <div style="font-family:var(--font-display);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;"><i class="fas fa-question-circle me-2"></i>PREGUNTAS AL USUARIO (en paso 4-5)</div>
+          <div class="two-col" style="gap:8px;">
+            <div class="info-box" style="font-size:0.76rem;">
+              <strong style="color:var(--accent);">1.</strong> ¿Cuántos kilómetros tiene su vehículo actualmente?
+            </div>
+            <div class="info-box" style="font-size:0.76rem;">
+              <strong style="color:var(--accent);">2.</strong> ¿Qué tipo de reparación necesita? (chapa, mecánica, service, etc.)
+            </div>
+            <div class="info-box" style="font-size:0.76rem;">
+              <strong style="color:var(--accent);">3.</strong> ¿Tiene alguna observación o descripción del problema a destacar?
+            </div>
+            <div class="info-box" style="font-size:0.76rem;">
+              <strong style="color:var(--accent);">4.</strong> ¿Tiene preferencia de horario (mañana / tarde)?
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box orange" style="font-size:0.78rem;">
+          <i class="fas fa-lightbulb me-2"></i>
+          <strong>Relación con BE:</strong> Este PUC opera sobre <strong>BE-01 (Cliente)</strong>, <strong>BE-02 (Vehículo)</strong>, <strong>BE-03 (Taller)</strong> y crea una nueva instancia de <strong>BE-05 (Cita)</strong>. También puede disparar la creación de <strong>BE-09 (Notificación)</strong>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 7 – ESCENARIO PUC2 ════════════════════════ -->
+  <div class="slide" id="slide-7">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-clipboard-list me-2"></i>PARTE 2 – PUC #2</span>
+      <span class="slide-num">ESCENARIO: DOCUMENTAR TAREAS</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label accent"><i class="fas fa-diagram-project me-1"></i>CASO DE USO DEL SISTEMA</div>
+        <h2 class="slide-title">PUC-02: <span>Documentar</span> Tareas de Reparación</h2>
+        <p class="slide-subtitle">Escenario completo — Flujo principal y flujos alternativos</p>
+
+        <table class="scenario-table" style="margin-bottom:14px;">
+          <tr>
+            <td class="label-cell accent"><i class="fas fa-id-badge me-1"></i>Nombre</td>
+            <td>Documentar Tareas de Reparación</td>
+            <td class="label-cell accent"><i class="fas fa-hashtag me-1"></i>ID</td>
+            <td><strong>PUC-02</strong></td>
+          </tr>
+          <tr>
+            <td class="label-cell accent"><i class="fas fa-user me-1"></i>Actor principal</td>
+            <td>Mecánico</td>
+            <td class="label-cell accent"><i class="fas fa-users me-1"></i>Actores sec.</td>
+            <td>Sistema</td>
+          </tr>
+          <tr>
+            <td class="label-cell accent"><i class="fas fa-bullseye me-1"></i>Objetivo</td>
+            <td colspan="3">Registrar de forma completa y detallada todas las tareas realizadas durante la reparación del vehículo, generando un informe que pasa a formar parte del historial de mantenimiento.</td>
+          </tr>
+          <tr>
+            <td class="label-cell accent"><i class="fas fa-circle-check me-1"></i>Precondiciones</td>
+            <td colspan="3">Existe una cita en estado "En progreso". El mecánico está autenticado en el sistema y tiene asignada la cita.</td>
+          </tr>
+        </table>
+
+        <div style="background:var(--surface);border:1px solid rgba(59,125,216,0.3);border-radius:8px;padding:14px;margin-bottom:12px;">
+          <div style="font-family:var(--font-display);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;"><i class="fas fa-route me-2"></i>FLUJO PRINCIPAL</div>
+          <div class="flow-step"><div class="flow-num accent">1</div><div class="flow-text">El <hl class="hl-b">mecánico</hl> accede a la cita asignada en el sistema.</div></div>
+          <div class="flow-step"><div class="flow-num accent">2</div><div class="flow-text">El sistema muestra los <strong>datos del vehículo</strong>: marca, modelo, año, VIN y km actuales.</div></div>
+          <div class="flow-step"><div class="flow-num accent">3</div><div class="flow-text">El sistema muestra los <strong>detalles de la reparación solicitada</strong> y las observaciones del cliente.</div></div>
+          <div class="flow-step"><div class="flow-num accent">4</div><div class="flow-text">El sistema muestra el <strong>historial de mantenimiento previo</strong> del vehículo (si existe).</div></div>
+          <div class="flow-step"><div class="flow-num accent">5</div><div class="flow-text">El mecánico registra las <strong>tareas realizadas</strong>: cambio de aceite, filtros, componentes, ajustes.</div></div>
+          <div class="flow-step"><div class="flow-num accent">6</div><div class="flow-text">Por cada tarea, el mecánico indica <strong>marca, modelo del componente y fecha</strong> del servicio.</div></div>
+          <div class="flow-step"><div class="flow-num accent">7</div><div class="flow-text">El mecánico agrega <strong>comentarios finales y recomendaciones</strong> para futuros mantenimientos.</div></div>
+          <div class="flow-step"><div class="flow-num accent">8</div><div class="flow-text">El mecánico <strong>finaliza y envía el informe</strong>. El sistema actualiza el historial del vehículo y cambia el estado de la cita a "Completada".</div></div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid rgba(240,165,0,0.3);border-radius:8px;padding:14px;">
+          <div style="font-family:var(--font-display);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--warning);margin-bottom:10px;"><i class="fas fa-code-branch me-2"></i>FLUJOS ALTERNATIVOS</div>
+          <div class="alt-step">
+            <span class="alt-label">ALT 4a</span>
+            <div class="flow-text">El vehículo no tiene historial previo en el sistema → Se informa "Sin historial registrado" y el mecánico continúa documentando desde cero.</div>
+          </div>
+          <div class="alt-step">
+            <span class="alt-label">ALT 5a</span>
+            <div class="flow-text">El mecánico detecta problemas adicionales no solicitados → Puede registrarlos como "Observación adicional" con recomendación al cliente.</div>
+          </div>
+          <div class="alt-step">
+            <span class="alt-label">ALT 8a</span>
+            <div class="flow-text">El mecánico guarda el informe como borrador (cita en estado "En progreso") para completarlo luego.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 8 – PUC2 DETALLE TAREAS ════════════════════════ -->
+  <div class="slide" id="slide-8">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-clipboard-list me-2"></i>PARTE 2 – PUC #2</span>
+      <span class="slide-num">DETALLE DE TAREAS Y POSTCONDICIONES</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label accent"><i class="fas fa-list me-1"></i>TIPOS DE TAREAS – PUC-02</div>
+        <h2 class="slide-title">Tareas que <span>documenta</span> el mecánico</h2>
+        <p class="slide-subtitle">Cada tarea tiene un conjunto de datos obligatorios a registrar</p>
+
+        <div class="three-col" style="margin-bottom:14px;">
+          <div class="card-dark">
+            <div class="card-icon bg-primary-soft"><i class="fas fa-oil-can"></i></div>
+            <div class="card-title">Cambio de aceite</div>
+            <div class="card-text">Tipo de aceite (sintético / semisintético / mineral), marca, cantidad en litros, fecha del cambio.</div>
+          </div>
+          <div class="card-dark">
+            <div class="card-icon bg-accent-soft"><i class="fas fa-filter"></i></div>
+            <div class="card-title">Reemplazo de filtros</div>
+            <div class="card-text">Tipo de filtro (aceite / aire / combustible / habitáculo), marca y modelo del filtro nuevo, fecha del cambio.</div>
+          </div>
+          <div class="card-dark">
+            <div class="card-icon bg-warning-soft"><i class="fas fa-gears"></i></div>
+            <div class="card-title">Inspección de componentes</div>
+            <div class="card-text">Partes inspeccionadas/reemplazadas (frenos, neumáticos, correas), marcas y modelos usados, fecha.</div>
+          </div>
+          <div class="card-dark">
+            <div class="card-icon bg-success-soft"><i class="fas fa-sliders"></i></div>
+            <div class="card-title">Ajustes y calibraciones</div>
+            <div class="card-text">Descripción del ajuste realizado (alineación, balanceo, sincronización del motor), fecha del servicio.</div>
+          </div>
+          <div class="card-dark">
+            <div class="card-icon bg-purple-soft"><i class="fas fa-comment-dots"></i></div>
+            <div class="card-title">Comentarios y rec.</div>
+            <div class="card-text">Estado general del vehículo, problemas adicionales identificados, sugerencias de mantenimiento futuro.</div>
+          </div>
+          <div class="card-dark" style="border-color:rgba(40,199,111,0.3);">
+            <div class="card-icon bg-success-soft"><i class="fas fa-flag-checkered"></i></div>
+            <div class="card-title">Postcondiciones</div>
+            <div class="card-text">Historial actualizado · Cita = "Completada" · Cliente notificado · Informe disponible para consulta.</div>
+          </div>
+        </div>
+
+        <div class="info-box" style="margin-bottom:10px;font-size:0.78rem;">
+          <i class="fas fa-link me-2" style="color:var(--accent)"></i>
+          <strong>Relación con BE:</strong> PUC-02 opera sobre <strong>BE-04 (Mecánico)</strong>, lee <strong>BE-02 (Vehículo)</strong> y <strong>BE-07 (Historial)</strong>, y genera instancias de <strong>BE-08 (Tarea)</strong> que se vinculan a una <strong>BE-06 (Reparación)</strong>, actualizando el <strong>BE-07 (Historial)</strong>.
+        </div>
+
+        <table class="scenario-table">
+          <tr>
+            <td class="label-cell accent"><i class="fas fa-exclamation-circle me-1"></i>Excepciones</td>
+            <td>
+              <div class="flow-text" style="margin-bottom:4px;"><strong>EX-01:</strong> El mecánico intenta finalizar sin completar campos obligatorios → El sistema valida e indica los campos faltantes.</div>
+              <div class="flow-text"><strong>EX-02:</strong> Error de conexión al guardar → Se almacena localmente y se reintenta la sincronización. No se pierde información.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 9 – REQUISITOS FUNCIONALES 1 ════════════════════════ -->
+  <div class="slide" id="slide-9">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-list-check me-2"></i>PARTE 3</span>
+      <span class="slide-num">REQUISITOS FUNCIONALES</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label success"><i class="fas fa-check-square me-1"></i>RF – REQUISITOS FUNCIONALES</div>
+        <h2 class="slide-title">Requisitos <span>Funcionales</span></h2>
+        <p class="slide-subtitle">¿Qué debe hacer el sistema? Clic en cada requisito para ver razón fundamental y criterios de aceptación</p>
+
+        <div id="req-container">
+
+          <div class="req-card" onclick="toggleReq(this)">
+            <div class="req-header">
+              <span class="req-id">RF-01</span>
+              <span class="req-name"><i class="fas fa-user-plus me-2" style="color:var(--primary);"></i>Registro e inicio de sesión de usuarios</span>
+              <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+            </div>
+            <div class="req-body">
+              <div class="req-row">
+                <div class="req-row-label">Descripción</div>
+                <div class="req-row-val">El sistema debe permitir que un usuario se registre con nombre, email, contraseña y datos de contacto. Debe poder iniciar y cerrar sesión de forma segura.</div>
+              </div>
+              <div class="req-row">
+                <div class="req-row-label">Razón fundamental</div>
+                <div class="req-row-val">Sin registro, el sistema no puede asociar vehículos, citas ni historial a un cliente específico. Es la base de personalización y seguridad del sistema.</div>
+              </div>
+              <div class="req-row">
+                <div class="req-row-label">Criterios de aceptación</div>
+                <ul class="acceptance-list">
+                  <li><i class="fas fa-check-circle"></i>El sistema valida que el email no esté duplicado al registrarse.</li>
+                  <li><i class="fas fa-check-circle"></i>La contraseña debe tener mínimo 8 caracteres con al menos un número.</li>
+                  <li><i class="fas fa-check-circle"></i>El inicio de sesión con credenciales correctas redirige al panel del usuario.</li>
+                  <li><i class="fas fa-check-circle"></i>Tras 5 intentos fallidos, la cuenta queda bloqueada temporalmente.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="req-card" onclick="toggleReq(this)">
+            <div class="req-header">
+              <span class="req-id">RF-02</span>
+              <span class="req-name"><i class="fas fa-map-location-dot me-2" style="color:var(--primary);"></i>Búsqueda de talleres por ubicación y servicio</span>
+              <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+            </div>
+            <div class="req-body">
+              <div class="req-row">
+                <div class="req-row-label">Descripción</div>
+                <div class="req-row-val">El sistema debe permitir buscar talleres filtrando por ubicación geográfica del usuario y por tipo de servicio requerido (mecánica, chapa, service general, etc.).</div>
+              </div>
+              <div class="req-row">
+                <div class="req-row-label">Razón fundamental</div>
+                <div class="req-row-val">Un usuario no puede agendar en cualquier taller: debe encontrar uno que esté en una distancia razonable y que ofrezca exactamente el servicio que su vehículo necesita.</div>
+              </div>
+              <div class="req-row">
+                <div class="req-row-label">Criterios de aceptación</div>
+                <ul class="acceptance-list">
+                  <li><i class="fas fa-check-circle"></i>El sistema devuelve resultados ordenados por proximidad al usuario.</li>
+                  <li><i class="fas fa-check-circle"></i>Solo aparecen talleres que ofrecen el servicio seleccionado.</li>
+                  <li><i class="fas fa-check-circle"></i>Si no hay resultados en 10 km, el sistema lo indica y sugiere ampliar el radio.</li>
+                  <li><i class="fas fa-check-circle"></i>Cada taller muestra nombre, dirección, servicios ofrecidos y horario de atención.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="req-card" onclick="toggleReq(this)">
+            <div class="req-header">
+              <span class="req-id">RF-03</span>
+              <span class="req-name"><i class="fas fa-calendar-plus me-2" style="color:var(--primary);"></i>Agendamiento de cita de reparación</span>
+              <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+            </div>
+            <div class="req-body">
+              <div class="req-row">
+                <div class="req-row-label">Descripción</div>
+                <div class="req-row-val">El sistema debe permitir al cliente reservar una cita indicando: vehículo (marca, modelo, año, km), tipo de reparación, observaciones y fecha/hora de preferencia.</div>
+              </div>
+              <div class="req-row">
+                <div class="req-row-label">Razón fundamental</div>
+                <div class="req-row-val">Es la funcionalidad central del sistema. Sin ella, el taller no puede planificar sus recursos ni el mecánico sabe qué vehículo recibirá y qué problema resolver.</div>
+              </div>
+              <div class="req-row">
+                <div class="req-row-label">Criterios de aceptación</div>
+                <ul class="acceptance-list">
+                  <li><i class="fas fa-check-circle"></i>El sistema muestra únicamente horarios con disponibilidad real en el taller.</li>
+                  <li><i class="fas fa-check-circle"></i>Al confirmar, el cliente recibe notificación de confirmación (email o push).</li>
+                  <li><i class="fas fa-check-circle"></i>El horario queda bloqueado y no puede ser tomado por otro usuario simultáneamente.</li>
+                  <li><i class="fas fa-check-circle"></i>El sistema solicita obligatoriamente: km del vehículo, tipo de reparación y observaciones.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="req-card" onclick="toggleReq(this)">
+            <div class="req-header">
+              <span class="req-id">RF-04</span>
+              <span class="req-name"><i class="fas fa-bell me-2" style="color:var(--primary);"></i>Notificaciones automáticas de service</span>
+              <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+            </div>
+            <div class="req-body">
+              <div class="req-row">
+                <div class="req-row-label">Descripción</div>
+                <div class="req-row-val">El sistema debe enviar notificaciones automáticas (email o push) al cliente cuando se aproxime la fecha del próximo service de su vehículo, según el historial registrado.</div>
+              </div>
+              <div class="req-row">
+                <div class="req-row-label">Razón fundamental</div>
+                <div class="req-row-val">Muchos usuarios olvidan las fechas de mantenimiento preventivo. El sistema proactivo agrega valor diferencial y fideliza al cliente al reducir el deterioro del vehículo por mantenimiento tardío.</div>
+              </div>
+              <div class="req-row">
+                <div class="req-row-label">Criterios de aceptación</div>
+                <ul class="acceptance-list">
+                  <li><i class="fas fa-check-circle"></i>La notificación se envía con al menos 7 días de anticipación a la fecha sugerida.</li>
+                  <li><i class="fas fa-check-circle"></i>El mensaje incluye el tipo de service sugerido y un enlace directo para agendar.</li>
+                  <li><i class="fas fa-check-circle"></i>Si el cliente agenda el service, la notificación cesa automáticamente.</li>
+                  <li><i class="fas fa-check-circle"></i>El cliente puede configurar sus preferencias de notificación (activar/desactivar).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 10 – REQUISITOS FUNCIONALES 2 ════════════════════════ -->
+  <div class="slide" id="slide-10">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-list-check me-2"></i>PARTE 3</span>
+      <span class="slide-num">REQUISITOS FUNCIONALES (CONT.)</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label success"><i class="fas fa-check-square me-1"></i>RF – CONTINUACIÓN</div>
+        <h2 class="slide-title">Requisitos <span>Funcionales</span> (cont.)</h2>
+        <p class="slide-subtitle">Clic en cada requisito para expandir los detalles</p>
+
+        <div class="req-card" onclick="toggleReq(this)">
+          <div class="req-header">
+            <span class="req-id">RF-05</span>
+            <span class="req-name"><i class="fas fa-clipboard-list me-2" style="color:var(--primary);"></i>Documentación de tareas de reparación</span>
+            <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+          </div>
+          <div class="req-body">
+            <div class="req-row">
+              <div class="req-row-label">Descripción</div>
+              <div class="req-row-val">El sistema debe permitir al mecánico registrar todas las tareas realizadas durante la reparación: cambio de aceite, filtros, componentes, ajustes, y comentarios/recomendaciones con sus respectivas marcas, modelos y fechas.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Razón fundamental</div>
+              <div class="req-row-val">Sin documentación de tareas no existe historial. El historial permite diagnósticos más precisos en futuras visitas, respalda garantías de repuestos y facilita la planificación del mantenimiento preventivo.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Criterios de aceptación</div>
+              <ul class="acceptance-list">
+                <li><i class="fas fa-check-circle"></i>El mecánico puede registrar múltiples tareas por cita sin límite de cantidad.</li>
+                <li><i class="fas fa-check-circle"></i>Cada tarea tiene campos obligatorios: tipo, fecha y descripción.</li>
+                <li><i class="fas fa-check-circle"></i>El sistema valida que no se pueda finalizar la cita sin al menos una tarea registrada.</li>
+                <li><i class="fas fa-check-circle"></i>El informe generado queda asociado al vehículo y es visible para el cliente desde su perfil.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="req-card" onclick="toggleReq(this)">
+          <div class="req-header">
+            <span class="req-id">RF-06</span>
+            <span class="req-name"><i class="fas fa-clock-rotate-left me-2" style="color:var(--primary);"></i>Consulta del historial de mantenimiento</span>
+            <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+          </div>
+          <div class="req-body">
+            <div class="req-row">
+              <div class="req-row-label">Descripción</div>
+              <div class="req-row-val">El sistema debe permitir al cliente consultar el historial completo de mantenimiento de sus vehículos. El mecánico también debe poder consultarlo al recibir una cita.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Razón fundamental</div>
+              <div class="req-row-val">El historial es la memoria del vehículo. Permite al mecánico tomar mejores decisiones y al cliente conocer el estado real de su auto. Sin historial, cada visita comienza "desde cero".</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Criterios de aceptación</div>
+              <ul class="acceptance-list">
+                <li><i class="fas fa-check-circle"></i>El historial muestra todas las reparaciones en orden cronológico descendente.</li>
+                <li><i class="fas fa-check-circle"></i>El cliente solo puede ver el historial de sus propios vehículos.</li>
+                <li><i class="fas fa-check-circle"></i>El mecánico puede ver el historial del vehículo de la cita asignada.</li>
+                <li><i class="fas fa-check-circle"></i>Si no existe historial, el sistema muestra el mensaje "Sin registros previos".</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="req-card" onclick="toggleReq(this)">
+          <div class="req-header">
+            <span class="req-id">RF-07</span>
+            <span class="req-name"><i class="fas fa-car me-2" style="color:var(--primary);"></i>Gestión de vehículos del usuario</span>
+            <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+          </div>
+          <div class="req-body">
+            <div class="req-row">
+              <div class="req-row-label">Descripción</div>
+              <div class="req-row-val">El sistema debe permitir al usuario registrar, editar y eliminar los vehículos asociados a su cuenta, incluyendo: marca, modelo, año, VIN y kilómetros actuales.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Razón fundamental</div>
+              <div class="req-row-val">Un usuario puede tener más de un vehículo. El sistema debe soportar esta realidad para que el historial, las notificaciones y las citas estén correctamente asociadas a cada auto.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Criterios de aceptación</div>
+              <ul class="acceptance-list">
+                <li><i class="fas fa-check-circle"></i>El usuario puede registrar múltiples vehículos bajo su cuenta.</li>
+                <li><i class="fas fa-check-circle"></i>El VIN es único en el sistema; no puede registrarse dos veces.</li>
+                <li><i class="fas fa-check-circle"></i>No se puede eliminar un vehículo con citas pendientes o en progreso.</li>
+                <li><i class="fas fa-check-circle"></i>Al agendar, el sistema muestra la lista de vehículos del usuario para seleccionar.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 11 – REQUISITOS NO FUNCIONALES ════════════════════════ -->
+  <div class="slide" id="slide-11">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-shield-halved me-2"></i>PARTE 3</span>
+      <span class="slide-num">REQUISITOS NO FUNCIONALES</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label accent"><i class="fas fa-shield-halved me-1"></i>RNF – REQUISITOS NO FUNCIONALES</div>
+        <h2 class="slide-title">Requisitos No <span>Funcionales</span></h2>
+        <p class="slide-subtitle">¿Cómo debe comportarse el sistema? Restricciones de calidad y rendimiento</p>
+
+        <div class="req-card" onclick="toggleReq(this)">
+          <div class="req-header">
+            <span class="req-id nf">RNF-01</span>
+            <span class="req-name"><i class="fas fa-mobile-alt me-2" style="color:var(--accent);"></i>Usabilidad</span>
+            <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+          </div>
+          <div class="req-body">
+            <div class="req-row">
+              <div class="req-row-label">Descripción</div>
+              <div class="req-row-val">La interfaz debe ser intuitiva, accesible desde dispositivos móviles y de escritorio, y no requerir capacitación previa para el cliente.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Razón fundamental</div>
+              <div class="req-row-val">El sistema será usado por personas de distinta edad y habilidad tecnológica. Si la interfaz es compleja, los usuarios abandonarán el proceso de agendamiento.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Criterios de aceptación</div>
+              <ul class="acceptance-list">
+                <li><i class="fas fa-check-circle"></i>Un usuario nuevo puede completar el agendamiento en menos de 5 minutos.</li>
+                <li><i class="fas fa-check-circle"></i>La interfaz es completamente funcional en pantallas desde 375px de ancho (móvil).</li>
+                <li><i class="fas fa-check-circle"></i>Todos los mensajes de error son claros y en lenguaje no técnico.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="req-card" onclick="toggleReq(this)">
+          <div class="req-header">
+            <span class="req-id nf">RNF-02</span>
+            <span class="req-name"><i class="fas fa-server me-2" style="color:var(--accent);"></i>Disponibilidad</span>
+            <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+          </div>
+          <div class="req-body">
+            <div class="req-row">
+              <div class="req-row-label">Descripción</div>
+              <div class="req-row-val">El sistema debe estar disponible al menos el 99.5% del tiempo mensual, incluyendo fines de semana y horarios nocturnos.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Razón fundamental</div>
+              <div class="req-row-val">Los usuarios pueden intentar agendar en cualquier momento. Una caída del sistema implica pérdida de citas y daño a la reputación del taller.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Criterios de aceptación</div>
+              <ul class="acceptance-list">
+                <li><i class="fas fa-check-circle"></i>Las tareas de mantenimiento se realizan en ventanas programadas de baja demanda.</li>
+                <li><i class="fas fa-check-circle"></i>Ante caídas, se muestra una página de mantenimiento informativa.</li>
+                <li><i class="fas fa-check-circle"></i>El tiempo máximo de caída no planificada no supera las 3.6 horas mensuales.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="req-card" onclick="toggleReq(this)">
+          <div class="req-header">
+            <span class="req-id nf">RNF-03</span>
+            <span class="req-name"><i class="fas fa-lock me-2" style="color:var(--accent);"></i>Seguridad</span>
+            <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+          </div>
+          <div class="req-body">
+            <div class="req-row">
+              <div class="req-row-label">Descripción</div>
+              <div class="req-row-val">Los datos personales del usuario, datos del vehículo e historial deben estar protegidos. La comunicación debe ser cifrada y el acceso controlado por roles.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Razón fundamental</div>
+              <div class="req-row-val">El sistema maneja datos personales y patrimoniales sensibles (VIN del vehículo, historial de mantenimiento). Una brecha de seguridad generaría responsabilidad legal y pérdida de confianza.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Criterios de aceptación</div>
+              <ul class="acceptance-list">
+                <li><i class="fas fa-check-circle"></i>Toda la comunicación usa HTTPS/TLS. Las contraseñas se almacenan con hash (bcrypt).</li>
+                <li><i class="fas fa-check-circle"></i>Un cliente no puede acceder a datos de otros clientes ni a paneles de mecánicos.</li>
+                <li><i class="fas fa-check-circle"></i>Las sesiones expiran tras 30 minutos de inactividad.</li>
+                <li><i class="fas fa-check-circle"></i>El sistema registra logs de acceso y operaciones sensibles (auditoría).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="req-card" onclick="toggleReq(this)">
+          <div class="req-header">
+            <span class="req-id nf">RNF-04</span>
+            <span class="req-name"><i class="fas fa-bolt me-2" style="color:var(--accent);"></i>Rendimiento</span>
+            <i class="fas fa-chevron-down" style="color:var(--text-muted);margin-left:auto;"></i>
+          </div>
+          <div class="req-body">
+            <div class="req-row">
+              <div class="req-row-label">Descripción</div>
+              <div class="req-row-val">El sistema debe responder a las acciones del usuario en tiempos razonables, sin tiempos de espera inaceptables.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Razón fundamental</div>
+              <div class="req-row-val">Un sistema lento produce frustración y abandono del proceso de agendamiento, especialmente en usuarios móviles con conexiones variables.</div>
+            </div>
+            <div class="req-row">
+              <div class="req-row-label">Criterios de aceptación</div>
+              <ul class="acceptance-list">
+                <li><i class="fas fa-check-circle"></i>La búsqueda de talleres retorna resultados en menos de 2 segundos.</li>
+                <li><i class="fas fa-check-circle"></i>La confirmación de cita se procesa en menos de 3 segundos.</li>
+                <li><i class="fas fa-check-circle"></i>El sistema soporta al menos 100 usuarios concurrentes sin degradación notable.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ SLIDE 12 – RESUMEN FINAL ════════════════════════ -->
+  <div class="slide" id="slide-12">
+    <div class="slide-header">
+      <span class="badge-ut"><i class="fas fa-check-double me-2"></i>RESUMEN</span>
+      <span class="slide-num">CONCLUSIONES</span>
+    </div>
+    <div class="slide-body">
+      <div class="animate__animated animate__fadeIn">
+        <div class="section-label success"><i class="fas fa-flag-checkered me-1"></i>CONCLUSIONES</div>
+        <h2 class="slide-title">Resumen del <span>Análisis</span></h2>
+        <p class="slide-subtitle">Lo que identificamos y especificamos en las tres partes de la tarea</p>
+
+        <div class="three-col" style="margin-bottom:16px;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-family:var(--font-display);font-size:0.7rem;letter-spacing:2.5px;color:var(--primary);text-transform:uppercase;margin-bottom:10px;"><i class="fas fa-cube me-2"></i>Parte 1 – BE & BUC</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="background:var(--primary);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:0.8rem;flex-shrink:0;">9</div>
+                <span style="font-size:0.8rem;color:var(--text);">Entidades del Negocio (BE)</span>
+              </div>
+              <div style="font-size:0.72rem;color:var(--text-muted);padding-left:32px;">Usuario · Vehículo · Taller · Mecánico · Cita · Reparación · Historial · Tarea · Notificación</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                <div style="background:var(--accent);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:0.8rem;flex-shrink:0;">7</div>
+                <span style="font-size:0.8rem;color:var(--text);">Casos de Uso del Negocio (BUC)</span>
+              </div>
+              <div style="font-size:0.72rem;color:var(--text-muted);padding-left:32px;">Desde el registro hasta la documentación de tareas</div>
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-family:var(--font-display);font-size:0.7rem;letter-spacing:2.5px;color:var(--warning);text-transform:uppercase;margin-bottom:10px;"><i class="fas fa-star me-2"></i>Parte 2 – Escenarios</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.25);border-radius:6px;padding:8px;font-size:0.78rem;">
+                <strong style="color:var(--primary);font-family:var(--font-display);">PUC-01</strong> Agendar Reparación<br/>
+                <span style="color:var(--text-muted);font-size:0.72rem;">9 pasos · 3 flujos alternativos · 2 excepciones</span>
+              </div>
+              <div style="background:rgba(59,125,216,0.1);border:1px solid rgba(59,125,216,0.25);border-radius:6px;padding:8px;font-size:0.78rem;">
+                <strong style="color:var(--accent);font-family:var(--font-display);">PUC-02</strong> Documentar Tareas<br/>
+                <span style="color:var(--text-muted);font-size:0.72rem;">8 pasos · 3 flujos alternativos · 2 excepciones · 5 tipos de tarea</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-family:var(--font-display);font-size:0.7rem;letter-spacing:2.5px;color:var(--success);text-transform:uppercase;margin-bottom:10px;"><i class="fas fa-list-check me-2"></i>Parte 3 – Requisitos</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="font-size:0.78rem;color:var(--text);"><strong style="color:var(--primary);">RF-01</strong> Registro de usuarios</div>
+              <div style="font-size:0.78rem;color:var(--text);"><strong style="color:var(--primary);">RF-02</strong> Búsqueda de talleres</div>
+              <div style="font-size:0.78rem;color:var(--text);"><strong style="color:var(--primary);">RF-03</strong> Agendamiento de cita</div>
+              <div style="font-size:0.78rem;color:var(--text);"><strong style="color:var(--primary);">RF-04</strong> Notificaciones de service</div>
+              <div style="font-size:0.78rem;color:var(--text);"><strong style="color:var(--primary);">RF-05</strong> Documentación de tareas</div>
+              <div style="font-size:0.78rem;color:var(--text);"><strong style="color:var(--primary);">RF-06</strong> Historial de mantenimiento</div>
+              <div style="font-size:0.78rem;color:var(--text);"><strong style="color:var(--primary);">RF-07</strong> Gestión de vehículos</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);">+ RNF-01..04 (Usabilidad, Disponibilidad, Seguridad, Rendimiento)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box green" style="margin-bottom:12px;">
+          <i class="fas fa-lightbulb me-2" style="color:var(--success)"></i>
+          <strong>Conclusión metodológica:</strong> El análisis parte de los BUC (procesos de negocio) para identificar qué hace el negocio. Luego los PUC descomponen esos procesos en interacciones concretas con el software. Los requisitos formalizan esas interacciones con criterios de aceptación verificables. Las BE son el "modelo de datos" que subyace a todo el análisis.
+        </div>
+
+        <div style="text-align:center;padding:10px 0;">
+          <button class="nav-btn" onclick="showFinalSwal()" style="background:var(--primary);border-color:var(--primary);color:white;font-size:0.9rem;padding:10px 28px;margin:auto;">
+            <i class="fas fa-graduation-cap me-2"></i>VER RESUMEN COMPLETO
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides-wrapper -->
+
+<!-- ════════ NAV BAR ════════ -->
+<div class="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="prevSlide()" disabled>
+    <i class="fas fa-arrow-left"></i> ANTERIOR
+  </button>
+
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="slide-counter" id="counter">01 / 13</span>
+    <div class="progress-dots" id="dots"></div>
+  </div>
+
+  <button class="nav-btn" id="btn-next" onclick="nextSlide()">
+    SIGUIENTE <i class="fas fa-arrow-right"></i>
+  </button>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+const TOTAL = 13;
+let current = 0;
+
+// Build dots
+const dotsEl = document.getElementById('dots');
+for (let i = 0; i < TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function updateNav() {
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === TOTAL - 1;
+  document.getElementById('counter').textContent = String(current+1).padStart(2,'0') + ' / ' + String(TOTAL).padStart(2,'0');
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i===current));
+}
+
+function goTo(n) {
+  document.getElementById('slide-'+current).classList.remove('active');
+  current = n;
+  const sl = document.getElementById('slide-'+current);
+  sl.classList.add('active');
+  // Re-trigger animation
+  const body = sl.querySelector('.slide-body .animate__animated, .slide-cover');
+  if (body) {
+    body.classList.remove('animate__fadeIn','animate__bounceIn','animate__fadeInUp');
+    void body.offsetWidth;
+    body.classList.add(current===0?'animate__fadeIn':'animate__fadeIn');
+  }
+  updateNav();
+}
+
+function nextSlide() { if (current < TOTAL-1) goTo(current+1); }
+function prevSlide() { if (current > 0) goTo(current-1); }
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
+});
+
+// Toggle req cards
+function toggleReq(card) {
+  const body = card.querySelector('.req-body');
+  const icon = card.querySelector('.fa-chevron-down, .fa-chevron-up');
+  body.classList.toggle('open');
+  if (body.classList.contains('open')) {
+    icon.classList.replace('fa-chevron-down','fa-chevron-up');
+    card.style.borderColor = 'rgba(232,80,10,0.4)';
+  } else {
+    icon.classList.replace('fa-chevron-up','fa-chevron-down');
+    card.style.borderColor = '';
+  }
+}
+
+// BE detail popup
+const beData = {
+  usuario: { icon:'fa-user-circle', title:'BE-01 · Usuario/Cliente', desc:'Persona que interactúa con el sistema para agendar citas de reparación. Tiene cuenta propia y puede asociar múltiples vehículos.', attrs: ['id_usuario','nombre','apellido','email','contraseña_hash','teléfono','fecha_registro'], rel:'Tiene → BE-02 (Vehículo), BE-05 (Cita), BE-09 (Notificación)' },
+  vehiculo: { icon:'fa-car', title:'BE-02 · Vehículo', desc:'Automóvil registrado por el usuario. Es la entidad central del servicio de reparación. Acumula un historial de mantenimiento a lo largo del tiempo.', attrs: ['id_vehiculo','usuario_id','marca','modelo','año','VIN','km_actuales','km_ultimo_service'], rel:'Pertenece a → BE-01. Tiene → BE-07 (Historial)' },
+  taller: { icon:'fa-industry', title:'BE-03 · Taller', desc:'Establecimiento que brinda servicios de reparación automotriz. Puede tener múltiples mecánicos y ofrecer diferentes tipos de servicios.', attrs: ['id_taller','nombre','dirección','lat','lng','servicios[]','horario_apertura','horario_cierre'], rel:'Tiene → BE-04 (Mecánicos), BE-05 (Citas)' },
+  mecanico: { icon:'fa-hard-hat', title:'BE-04 · Mecánico', desc:'Empleado del taller responsable de realizar y documentar las reparaciones. Tiene acceso al sistema para ver sus citas asignadas y registrar tareas.', attrs: ['id_mecanico','nombre','especialidad','taller_id','usuario_sistema'], rel:'Pertenece a → BE-03 (Taller). Documenta → BE-08 (Tareas)' },
+  cita: { icon:'fa-calendar-check', title:'BE-05 · Cita', desc:'Reserva de turno que vincula al cliente con un taller en una fecha y hora específicas. Registra el estado de la reparación desde su creación hasta su finalización.', attrs: ['id_cita','usuario_id','taller_id','vehiculo_id','mecánico_id','fecha','hora','estado','observaciones'], rel:'Vincula → BE-01, BE-03, BE-02. Genera → BE-06' },
+  reparacion: { icon:'fa-toolbox', title:'BE-06 · Reparación', desc:'Trabajo realizado sobre un vehículo durante una cita. Agrupa las tareas específicas realizadas por el mecánico.', attrs: ['id_reparacion','cita_id','tipo','descripción_problema','km_al_ingreso','fecha'], rel:'Pertenece a → BE-05 (Cita). Contiene → BE-08 (Tareas). Actualiza → BE-07' },
+  historial: { icon:'fa-clock-rotate-left', title:'BE-07 · Historial de Mantenimiento', desc:'Registro acumulativo de todas las reparaciones y servicios realizados a un vehículo específico. Es la "memoria" del auto dentro del sistema.', attrs: ['vehiculo_id','reparaciones[]','fecha_proximo_service','km_proximo_service'], rel:'Pertenece a → BE-02 (Vehículo). Contiene → BE-06 (Reparaciones)' },
+  tarea: { icon:'fa-list-check', title:'BE-08 · Tarea', desc:'Actividad específica documentada por el mecánico durante la reparación. Puede ser cambio de aceite, filtros, componentes, ajustes, etc.', attrs: ['id_tarea','reparacion_id','tipo','descripción','marca_componente','modelo_componente','fecha'], rel:'Pertenece a → BE-06 (Reparación)' },
+  notificacion: { icon:'fa-bell', title:'BE-09 · Notificación', desc:'Aviso automático generado por el sistema y enviado al usuario para recordarle el próximo service de su vehículo.', attrs: ['id_notif','usuario_id','vehiculo_id','tipo','mensaje','fecha_envío','estado','canal'], rel:'Dirigida a → BE-01 (Usuario). Referencia → BE-02 (Vehículo)' }
+};
+
+function showBE(key) {
+  const d = beData[key];
+  Swal.fire({
+    customClass: { popup:'custom-swal', title:'custom-swal-title' },
+    html: `
+      <div style="text-align:left;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div style="width:48px;height:48px;background:rgba(232,80,10,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#e8500a;flex-shrink:0;">
+            <i class="fas ${d.icon}"></i>
+          </div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:1.15rem;font-weight:700;color:#e8edf5;">${d.title}</div>
+        </div>
+        <p style="font-size:0.82rem;color:#8899bb;margin-bottom:12px;line-height:1.65;">${d.desc}</p>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:#8899bb;margin-bottom:6px;">ATRIBUTOS PRINCIPALES</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
+          ${d.attrs.map(a=>`<span style="background:#1e2d4a;border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:3px 8px;font-size:0.72rem;color:#e8edf5;font-family:'Rajdhani',sans-serif;">${a}</span>`).join('')}
+        </div>
+        <div style="background:rgba(59,125,216,0.08);border-left:3px solid #3b7dd8;border-radius:4px;padding:8px 12px;font-size:0.76rem;color:#8899bb;">
+          <i class="fas fa-link" style="color:#3b7dd8;margin-right:6px;"></i><strong style="color:#e8edf5;">Relaciones:</strong> ${d.rel}
+        </div>
+      </div>
+    `,
+    showCancelButton: false,
+    confirmButtonText: '<i class="fas fa-times me-1"></i>CERRAR',
+    width: '520px',
+    background: '#141e35',
+    color: '#e8edf5',
+  });
+}
+
+function showFinalSwal() {
+  Swal.fire({
+    customClass: { popup:'custom-swal', title:'custom-swal-title' },
+    icon: 'success',
+    iconColor: '#28c76f',
+    title: '¡Análisis completado!',
+    html: `
+      <div style="text-align:left;font-size:0.82rem;line-height:1.7;color:#8899bb;">
+        <div style="margin-bottom:8px;"><i class="fas fa-check-circle" style="color:#28c76f;margin-right:6px;"></i><strong style="color:#e8edf5;">9 Entidades del Negocio (BE)</strong> identificadas con atributos y relaciones</div>
+        <div style="margin-bottom:8px;"><i class="fas fa-check-circle" style="color:#28c76f;margin-right:6px;"></i><strong style="color:#e8edf5;">7 Casos de Uso del Negocio (BUC)</strong> cubriendo todos los actores</div>
+        <div style="margin-bottom:8px;"><i class="fas fa-check-circle" style="color:#28c76f;margin-right:6px;"></i><strong style="color:#e8edf5;">2 Escenarios PUC</strong> con flujo principal, alternativas y excepciones</div>
+        <div style="margin-bottom:8px;"><i class="fas fa-check-circle" style="color:#28c76f;margin-right:6px;"></i><strong style="color:#e8edf5;">7 Requisitos Funcionales</strong> con razón fundamental y criterios de aceptación</div>
+        <div><i class="fas fa-check-circle" style="color:#28c76f;margin-right:6px;"></i><strong style="color:#e8edf5;">4 Requisitos No Funcionales</strong>: Usabilidad, Disponibilidad, Seguridad, Rendimiento</div>
+      </div>
+    `,
+    confirmButtonText: '<i class="fas fa-graduation-cap me-1"></i>EXCELENTE',
+    background: '#141e35',
+    color: '#e8edf5',
+  });
+}
+
+updateNav();
+</script>
+</body>
+</html>
