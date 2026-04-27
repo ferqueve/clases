@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANDIS I — UT3: Diseño y UML</title>
+
+<!-- Bootstrap 5 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.css">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #0f2244;
+    --blue: #1a3a6b;
+    --accent: #2d6cdf;
+    --accent-light: #4d8ef0;
+    --gold: #e8b94f;
+    --gold-light: #f5d07a;
+    --cream: #f8f5ef;
+    --white: #ffffff;
+    --gray-light: #edf2f7;
+    --text-dark: #0a1628;
+    --text-mid: #2c3e6b;
+    --text-muted: #6b7a99;
+    --success: #27ae60;
+    --danger: #e74c3c;
+    --slide-radius: 16px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+    margin: 0;
+  }
+
+  /* ─── BACKGROUND ─── */
+  .bg-scene {
+    position: fixed; inset: 0; z-index: 0; overflow: hidden;
+    background: linear-gradient(135deg, #060d1a 0%, #0a1628 50%, #0d1f40 100%);
+  }
+  .bg-orb {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: .18;
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .bg-orb:nth-child(1) { width:600px; height:600px; background:#1a3a6b; top:-200px; left:-100px; }
+  .bg-orb:nth-child(2) { width:400px; height:400px; background:#2d6cdf; bottom:-100px; right:-50px; animation-delay:-6s; }
+  .bg-orb:nth-child(3) { width:300px; height:300px; background:#e8b94f; top:40%; left:60%; animation-delay:-12s; }
+  @keyframes drift { from{transform:translate(0,0) scale(1)} to{transform:translate(40px,-40px) scale(1.08)} }
+
+  /* ─── DECK CONTAINER ─── */
+  #deck {
+    position: relative; z-index: 10;
+    max-width: 960px; margin: 0 auto;
+    padding: 20px 16px 100px;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER BAR ─── */
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0 18px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 28px;
+  }
+  .course-label {
+    font-family: 'DM Mono', monospace;
+    font-size: .7rem; letter-spacing:.12em; text-transform:uppercase;
+    color: var(--gold); opacity: .85;
+  }
+  .slide-counter {
+    font-family: 'DM Mono', monospace;
+    font-size: .75rem; color: rgba(255,255,255,.4);
+  }
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-track {
+    height: 3px; background: rgba(255,255,255,.08);
+    border-radius: 99px; margin-bottom: 32px;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ─── SLIDE CARD ─── */
+  .slide {
+    display: none;
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: var(--slide-radius);
+    padding: 48px 52px;
+    min-height: 480px;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide.active { display: block; }
+  .slide::before {
+    content: ''; position: absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: var(--slide-radius) var(--slide-radius) 0 0;
+  }
+
+  /* Cover slide */
+  .slide-cover {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; min-height: 520px;
+  }
+  .cover-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--gold); background: rgba(232,185,79,.1);
+    border: 1px solid rgba(232,185,79,.25);
+    border-radius: 99px; padding: 6px 18px; margin-bottom: 28px;
+  }
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.6rem); font-weight: 900;
+    line-height: 1.12; margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 30%, var(--gold-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .cover-sub {
+    font-size: 1.05rem; color: rgba(255,255,255,.55); font-weight: 300;
+    max-width: 520px; line-height: 1.7; margin-bottom: 32px;
+  }
+  .cover-pills { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .cover-pill {
+    font-size: .75rem; padding: 6px 16px; border-radius: 99px;
+    background: rgba(45,108,223,.2); border: 1px solid rgba(45,108,223,.35);
+    color: var(--accent-light);
+  }
+
+  /* Slide heading */
+  .slide-section {
+    font-family: 'DM Mono', monospace;
+    font-size: .66rem; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px; opacity: .8;
+  }
+  .slide-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem); font-weight: 700;
+    line-height: 1.2; margin-bottom: 28px; color: #fff;
+  }
+  .slide-title span { color: var(--gold-light); }
+
+  /* ─── CONTENT BLOCKS ─── */
+  .concept-card {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px; padding: 18px 22px; margin-bottom: 14px;
+  }
+  .concept-card.gold-border { border-left-color: var(--gold); }
+  .concept-card.green-border { border-left-color: #27ae60; }
+  .concept-card.red-border   { border-left-color: #e74c3c; }
+  .concept-card h5 {
+    font-family: 'DM Sans', sans-serif; font-weight: 600;
+    font-size: .9rem; margin-bottom: 6px;
+    color: var(--gold-light);
+  }
+  .concept-card p, .concept-card ul {
+    font-size: .88rem; color: rgba(255,255,255,.75);
+    line-height: 1.65; margin: 0;
+  }
+  .concept-card ul { padding-left: 18px; }
+  .concept-card li { margin-bottom: 4px; }
+
+  /* Quote block */
+  .quote-block {
+    border-left: 4px solid var(--gold);
+    padding: 16px 22px; margin: 20px 0;
+    background: rgba(232,185,79,.07); border-radius: 0 10px 10px 0;
+    font-size: .92rem; font-style: italic; color: rgba(255,255,255,.8);
+    line-height: 1.7;
+  }
+  .quote-block cite {
+    display:block; margin-top:8px; font-style:normal;
+    font-size:.75rem; color: var(--gold); opacity:.7;
+  }
+
+  /* Icon list */
+  .icon-list { list-style: none; padding: 0; margin: 0; }
+  .icon-list li {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06);
+    font-size: .88rem; color: rgba(255,255,255,.8); line-height: 1.6;
+  }
+  .icon-list li:last-child { border-bottom: none; }
+  .icon-list .ico {
+    flex-shrink: 0; width: 28px; height: 28px;
+    background: rgba(45,108,223,.2); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; color: var(--accent-light); margin-top: 1px;
+  }
+  .icon-list .ico.gold { background: rgba(232,185,79,.15); color: var(--gold); }
+  .icon-list .ico.green { background: rgba(39,174,96,.15); color: #4ade80; }
+
+  /* Phase timeline */
+  .phase-flow {
+    display: flex; gap: 0; margin: 20px 0; overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .phase-item {
+    flex: 1; min-width: 110px; text-align: center; position: relative;
+  }
+  .phase-item::after {
+    content: ''; position: absolute;
+    top: 22px; right: -1px; width: 2px; height: 2px;
+    border-top: 2px dashed rgba(255,255,255,.2);
+    width: 50%; left: 75%;
+  }
+  .phase-item:last-child::after { display: none; }
+  .phase-dot {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 600; margin: 0 auto 8px;
+    border: 2px solid;
+  }
+  .phase-dot.p1 { background: rgba(45,108,223,.2); border-color: var(--accent); color: var(--accent-light); }
+  .phase-dot.p2 { background: rgba(39,174,96,.2); border-color: #27ae60; color: #4ade80; }
+  .phase-dot.p3 { background: rgba(232,185,79,.2); border-color: var(--gold); color: var(--gold-light); }
+  .phase-dot.p4 { background: rgba(231,76,60,.2); border-color: #e74c3c; color: #fc8181; }
+  .phase-dot.p5 { background: rgba(155,89,182,.2); border-color: #9b59b6; color: #c084fc; }
+  .phase-name { font-size: .7rem; font-weight: 600; color: rgba(255,255,255,.8); }
+  .phase-eng  { font-size: .62rem; color: rgba(255,255,255,.35); font-family: 'DM Mono', monospace; }
+
+  /* Two-col grid */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:620px){ .two-col{ grid-template-columns:1fr; } }
+
+  /* Coupling/cohesion compare */
+  .compare-box {
+    border-radius: 12px; padding: 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .compare-box.bad  { background: rgba(231,76,60,.08); border:1px solid rgba(231,76,60,.2); }
+  .compare-box.good { background: rgba(39,174,96,.08); border:1px solid rgba(39,174,96,.2); }
+  .compare-label { font-size: .75rem; font-weight: 700; letter-spacing: .08em; }
+  .compare-box.bad  .compare-label { color: #fc8181; }
+  .compare-box.good .compare-label { color: #4ade80; }
+  .compare-visual { font-size: 2rem; }
+
+  /* UML diagram type pills */
+  .diag-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 12px; margin-top: 8px;
+  }
+  .diag-card {
+    background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+    border-radius: 10px; padding: 14px 16px;
+    transition: background .2s, transform .2s;
+    cursor: default;
+  }
+  .diag-card:hover {
+    background: rgba(45,108,223,.12); border-color: rgba(45,108,223,.35);
+    transform: translateY(-2px);
+  }
+  .diag-card .diag-ico { font-size: 1.3rem; margin-bottom: 8px; }
+  .diag-card .diag-name { font-size: .78rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .diag-card .diag-desc { font-size: .69rem; color: rgba(255,255,255,.45); line-height:1.5; }
+
+  /* ─── PROCESS STEPS ─── */
+  .step-list { counter-reset: steps; }
+  .step-item {
+    display: flex; gap: 16px; margin-bottom: 16px;
+    counter-increment: steps;
+  }
+  .step-num {
+    flex-shrink: 0; width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), #1a5fc8);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 700; color: #fff;
+    box-shadow: 0 4px 16px rgba(45,108,223,.35);
+  }
+  .step-num::before { content: counter(steps); }
+  .step-body h6 {
+    font-size: .85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 4px;
+  }
+  .step-body p { font-size: .82rem; color: rgba(255,255,255,.65); margin: 0; line-height: 1.6; }
+
+  /* ─── NAV CONTROLS ─── */
+  .nav-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(6,13,26,.85); backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255,255,255,.07);
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+    color: rgba(255,255,255,.7); border-radius: 10px;
+    padding: 10px 22px; font-family: 'DM Sans', sans-serif;
+    font-size: .82rem; font-weight: 500; cursor: pointer;
+    transition: all .2s; display: flex; align-items: center; gap: 8px;
+  }
+  .nav-btn:hover {
+    background: rgba(45,108,223,.2); border-color: rgba(45,108,223,.4);
+    color: #fff; transform: translateY(-1px);
+  }
+  .nav-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; }
+  .nav-btn.primary {
+    background: linear-gradient(135deg, var(--accent), #1a5fc8);
+    border-color: transparent; color: #fff;
+    box-shadow: 0 4px 20px rgba(45,108,223,.4);
+  }
+  .nav-btn.primary:hover { box-shadow: 0 6px 28px rgba(45,108,223,.6); transform: translateY(-1px); }
+  .nav-dots { display: flex; gap: 6px; align-items: center; }
+  .nav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,.2); cursor: pointer;
+    transition: all .2s;
+  }
+  .nav-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+
+  /* ─── QUIZ ─── */
+  .quiz-slide { min-height: 560px; }
+  .quiz-q-num {
+    font-family: 'DM Mono', monospace; font-size: .65rem;
+    letter-spacing: .15em; color: var(--gold); margin-bottom: 8px;
+  }
+  .quiz-question {
+    font-family: 'Playfair Display', serif; font-size: 1.35rem;
+    font-weight: 700; color: #fff; line-height: 1.4; margin-bottom: 28px;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+  .quiz-opt {
+    background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.1);
+    border-radius: 10px; padding: 14px 18px;
+    font-size: .88rem; color: rgba(255,255,255,.8);
+    cursor: pointer; transition: all .2s; text-align: left;
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .quiz-opt:hover:not(.disabled) {
+    background: rgba(45,108,223,.15); border-color: rgba(45,108,223,.4);
+    color: #fff; transform: translateX(4px);
+  }
+  .quiz-opt.correct {
+    background: rgba(39,174,96,.15) !important;
+    border-color: rgba(39,174,96,.5) !important; color: #4ade80 !important;
+  }
+  .quiz-opt.wrong {
+    background: rgba(231,76,60,.12) !important;
+    border-color: rgba(231,76,60,.4) !important; color: #fc8181 !important;
+  }
+  .quiz-opt.disabled { cursor: not-allowed; }
+  .opt-letter {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 6px;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: .72rem; font-weight: 600;
+    color: rgba(255,255,255,.5);
+  }
+  .quiz-opt.correct .opt-letter { background: rgba(39,174,96,.25); border-color: #27ae60; color: #4ade80; }
+  .quiz-opt.wrong   .opt-letter { background: rgba(231,76,60,.25); border-color: #e74c3c; color: #fc8181; }
+
+  .quiz-nav { margin-top: 28px; display: flex; justify-content: space-between; align-items: center; }
+  .quiz-score-bar { display: flex; gap: 6px; }
+  .qs-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.15); }
+  .qs-dot.ok   { background: #27ae60; }
+  .qs-dot.fail { background: #e74c3c; }
+
+  .score-box {
+    text-align: center; padding: 40px 20px;
+  }
+  .score-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem; font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .score-label { font-size: 1.1rem; color: rgba(255,255,255,.65); margin-bottom: 8px; }
+  .score-msg { font-size: .9rem; color: rgba(255,255,255,.45); max-width:380px; margin:0 auto; }
+
+  /* ─── HIGHLIGHT / BADGE ─── */
+  .hi-blue  { color: var(--accent-light); font-weight: 600; }
+  .hi-gold  { color: var(--gold-light); font-weight: 600; }
+  .hi-green { color: #4ade80; font-weight: 600; }
+  .hi-red   { color: #fc8181; font-weight: 600; }
+
+  .chip {
+    display: inline-block; font-size: .7rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 99px; margin: 2px;
+  }
+  .chip-blue  { background: rgba(45,108,223,.2); color: var(--accent-light); border:1px solid rgba(45,108,223,.3); }
+  .chip-gold  { background: rgba(232,185,79,.15); color: var(--gold-light); border:1px solid rgba(232,185,79,.3); }
+  .chip-green { background: rgba(39,174,96,.15); color: #4ade80; border:1px solid rgba(39,174,96,.3); }
+  .chip-red   { background: rgba(231,76,60,.15); color: #fc8181; border:1px solid rgba(231,76,60,.3); }
+
+  .info-box {
+    background: rgba(45,108,223,.08); border:1px solid rgba(45,108,223,.2);
+    border-radius:10px; padding:14px 18px; font-size:.83rem;
+    color:rgba(255,255,255,.7); line-height:1.6; display:flex; gap:12px;
+    align-items:flex-start;
+  }
+  .info-box i { color: var(--accent-light); margin-top:2px; }
+
+  /* Animations */
+  .slide.active .animate-in {
+    animation: fadeInUp .5s ease both;
+  }
+  .slide.active .animate-in:nth-child(1) { animation-delay: .05s; }
+  .slide.active .animate-in:nth-child(2) { animation-delay: .15s; }
+  .slide.active .animate-in:nth-child(3) { animation-delay: .25s; }
+  .slide.active .animate-in:nth-child(4) { animation-delay: .35s; }
+  .slide.active .animate-in:nth-child(5) { animation-delay: .45s; }
+  @keyframes fadeInUp {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* Scrollable slide content */
+  .slide-content { max-height: calc(100vh - 280px); overflow-y: auto; }
+  .slide-content::-webkit-scrollbar { width: 4px; }
+  .slide-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius:2px; }
+
+  @media(max-width:600px){
+    .slide { padding: 28px 22px; }
+    .slide-title { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-scene">
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+</div>
+
+<!-- Main Deck -->
+<div id="deck">
+  <div class="top-bar">
+    <span class="course-label"><i class="fa-solid fa-diagram-project me-2"></i>ANDIS I · UT3</span>
+    <span class="slide-counter" id="slideCounter">1 / 15</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:6.67%"></div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 1 — COVER             ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide active animate__animated animate__fadeIn">
+    <div class="slide-cover">
+      <div class="cover-badge animate__animated animate__fadeInDown"><i class="fa-solid fa-university me-2"></i>UCU · Análisis y Diseño de Aplicaciones I</div>
+      <h1 class="cover-title animate__animated animate__fadeInUp">Diseño y UML</h1>
+      <p class="cover-sub animate__animated animate__fadeInUp" style="animation-delay:.15s">
+        Principios de diseño de software, clasificación de sistemas, cohesión, acoplamiento y fundamentos de modelado con UML.
+      </p>
+      <div class="cover-pills animate__animated animate__fadeInUp" style="animation-delay:.25s">
+        <span class="cover-pill"><i class="fa-solid fa-map-location-dot me-1"></i>Customer Journey Map</span>
+        <span class="cover-pill"><i class="fa-solid fa-layer-group me-1"></i>Diseño de Software</span>
+        <span class="cover-pill"><i class="fa-solid fa-link-slash me-1"></i>Cohesión &amp; Acoplamiento</span>
+        <span class="cover-pill"><i class="fa-solid fa-diagram-project me-1"></i>UML</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 2 — CUSTOMER JOURNEY MAP ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Herramientas de Análisis</div>
+    <h2 class="slide-title">Customer Journey <span>Map</span></h2>
+    <div class="slide-content">
+      <div class="quote-block animate-in">
+        "El Customer Journey Map es la herramienta perfecta para <strong>trackear las emociones del usuario</strong> y mejorar así sus experiencias."
+        <cite>— fromdoppler.com</cite>
+      </div>
+      <div class="info-box animate-in mt-3">
+        <i class="fa-solid fa-circle-info fa-fw"></i>
+        <span>Es un gráfico donde el <strong>Eje X</strong> muestra las fases del cliente en el tiempo y el <strong>Eje Y</strong> muestra cómo vive cada experiencia (positiva, neutral o negativa).</span>
+      </div>
+      <div class="phase-flow mt-4 animate-in">
+        <div class="phase-item">
+          <div class="phase-dot p1"><i class="fa-solid fa-eye fa-xs"></i></div>
+          <div class="phase-name">Descubrimiento</div>
+          <div class="phase-eng">Awareness</div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-dot p2"><i class="fa-solid fa-magnifying-glass fa-xs"></i></div>
+          <div class="phase-name">Consideración</div>
+          <div class="phase-eng">Consideration</div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-dot p3"><i class="fa-solid fa-cart-shopping fa-xs"></i></div>
+          <div class="phase-name">Compra</div>
+          <div class="phase-eng">Purchase</div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-dot p4"><i class="fa-solid fa-heart fa-xs"></i></div>
+          <div class="phase-name">Retención</div>
+          <div class="phase-eng">Retention</div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-dot p5"><i class="fa-solid fa-star fa-xs"></i></div>
+          <div class="phase-name">Recomendación</div>
+          <div class="phase-eng">Advocacy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 3 — FASES CJM         ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Customer Journey Map</div>
+    <h2 class="slide-title">Las <span>5 Fases</span> del viaje</h2>
+    <div class="slide-content">
+      <ul class="icon-list">
+        <li class="animate-in">
+          <div class="ico"><i class="fa-solid fa-eye"></i></div>
+          <div><strong class="hi-blue">Descubrimiento:</strong> El consumidor conoce el producto. No se busca vender; solo se informa que existe una solución a su necesidad.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico gold"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div><strong class="hi-gold">Consideración:</strong> El usuario evalúa opciones. Debe conocer la marca y sus puntos fuertes. Se lanza un mensaje más directo e incentivador.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico"><i class="fa-solid fa-credit-card"></i></div>
+          <div><strong class="hi-blue">Compra:</strong> El usuario decide y ejecuta. Un proceso digital fluido y personal de tienda capacitado son clave.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico green"><i class="fa-solid fa-rotate"></i></div>
+          <div><strong class="hi-green">Retención:</strong> Post-venta. Se busca mantener la satisfacción y propiciar compras repetidas (fidelización).</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico gold"><i class="fa-solid fa-bullhorn"></i></div>
+          <div><strong class="hi-gold">Recomendación:</strong> Clientes satisfechos mejoran la imagen de marca. Redes sociales, valoraciones y boca-a-boca son los motores.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 4 — DISEÑO            ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Diseño de Software</div>
+    <h2 class="slide-title">¿Qué es el <span>Diseño</span>?</h2>
+    <div class="slide-content">
+      <div class="info-box animate-in">
+        <i class="fa-solid fa-pen-ruler fa-fw"></i>
+        <span>El <strong>diseño</strong> es tanto el <em>proceso</em> de definir la arquitectura de un sistema como el <em>resultado</em> de ese proceso.</span>
+      </div>
+      <div class="two-col mt-4">
+        <div class="concept-card animate-in">
+          <h5><i class="fa-solid fa-building-columns me-2"></i>Sistema</h5>
+          <p>Entidad lógica con un conjunto de responsabilidades. Puede consistir de hardware, software o ambos.</p>
+        </div>
+        <div class="concept-card gold-border animate-in">
+          <h5><i class="fa-solid fa-sitemap me-2"></i>Subsistema</h5>
+          <p>Sistema que es parte de uno mayor. Tiene una interfaz bien definida y objetos altamente acoplados internamente.</p>
+        </div>
+        <div class="concept-card green-border animate-in">
+          <h5><i class="fa-solid fa-puzzle-piece me-2"></i>Componente</h5>
+          <p>Pieza de software con un rol claro. Puede ser aislada y reemplazada. Muchos están diseñados para ser reutilizables.</p>
+        </div>
+        <div class="concept-card red-border animate-in">
+          <h5><i class="fa-solid fa-box me-2"></i>Módulo</h5>
+          <p>Componente definido a nivel de lenguaje de programación. Equivale a un <em>Package</em> o <em>Namespace</em>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 5 — PROCESO DISEÑO    ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Diseño de Software</div>
+    <h2 class="slide-title">Proceso de <span>Diseño</span></h2>
+    <div class="slide-content">
+      <div class="step-list">
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6>Diseño arquitectónico</h6>
+            <p>Se define la arquitectura global del sistema. Se elige un patrón: <span class="chip chip-blue">Capas</span> <span class="chip chip-blue">MVC</span> <span class="chip chip-gold">Microservicios</span> <span class="chip chip-green">SOA</span></p>
+          </div>
+        </div>
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6>Especificación abstracta</h6>
+            <p>Se especifican los subsistemas. Cada subsistema realiza un servicio importante, es relativamente independiente y contiene objetos altamente acoplados.</p>
+          </div>
+        </div>
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6>Diseño de la interfaz</h6>
+            <p>Se describen las interfaces de los subsistemas. Permite usarlos como <em>caja negra</em> desde el exterior.</p>
+          </div>
+        </div>
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6>Diseño de componentes</h6>
+            <p>Cada subsistema se descompone en componentes y se diseñan sus interfaces internas.</p>
+          </div>
+        </div>
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6>Diseño de estructura de datos y algoritmos</h6>
+            <p>Especificación detallada de las estructuras de datos y algoritmos que implementan cada componente.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 6 — PRINCIPIOS        ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Diseño de Software</div>
+    <h2 class="slide-title">Principios del <span>Diseño</span></h2>
+    <div class="slide-content">
+      <ul class="icon-list">
+        <li class="animate-in">
+          <div class="ico"><i class="fa-solid fa-scissors"></i></div>
+          <div><strong class="hi-blue">Dividir y Conquistar:</strong> Partir un problema grande en partes más pequeñas y manejables reduce la complejidad general.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico gold"><i class="fa-solid fa-layer-group"></i></div>
+          <div><strong class="hi-gold">Incrementar la Cohesión:</strong> Un módulo cohesivo agrupa cosas relacionadas y excluye las que no lo son.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico"><i class="fa-solid fa-link-slash"></i></div>
+          <div><strong class="hi-blue">Reducir el Acoplamiento:</strong> Eliminar o reducir la interdependencia innecesaria entre módulos.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico green"><i class="fa-solid fa-cloud"></i></div>
+          <div><strong class="hi-green">Nivel de Abstracción Alto:</strong> Ocultar detalles de implementación para reducir la complejidad visible.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico gold"><i class="fa-solid fa-recycle"></i></div>
+          <div><strong class="hi-gold">Incrementar Reusabilidad:</strong> Diseñar componentes para que puedan usarse en distintos contextos.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          <div><strong class="hi-blue">Flexibilidad y Anticipación:</strong> Prever cambios futuros en tecnología o requisitos. Por ej., pantallas <em>responsive</em>.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 7 — COHESIÓN          ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Principios del Diseño</div>
+    <h2 class="slide-title"><span>Cohesión</span></h2>
+    <div class="slide-content">
+      <div class="quote-block animate-in">
+        Un módulo o subsistema tiene <strong>alta cohesión</strong> si mantiene juntas las cosas relacionadas y deja fuera las que no lo son.
+      </div>
+      <div class="two-col mt-3">
+        <div class="compare-box bad animate-in">
+          <div class="compare-visual">🟥🔷🟦</div>
+          <div class="compare-visual">🔺🟠🔵</div>
+          <div class="compare-label"><i class="fa-solid fa-xmark me-1"></i>Baja Cohesión</div>
+          <p style="font-size:.75rem;color:rgba(255,255,255,.5);text-align:center;">Elementos mezclados sin relación clara entre sí.</p>
+        </div>
+        <div class="compare-box good animate-in">
+          <div class="compare-visual">🔷🔷</div>
+          <div class="compare-visual">🔵🔵🔵</div>
+          <div class="compare-label"><i class="fa-solid fa-check me-1"></i>Alta Cohesión</div>
+          <p style="font-size:.75rem;color:rgba(255,255,255,.5);text-align:center;">Cada módulo agrupa solo elementos del mismo tipo.</p>
+        </div>
+      </div>
+      <div class="concept-card green-border mt-3 animate-in">
+        <h5><i class="fa-solid fa-bullseye me-2"></i>Objetivo</h5>
+        <p>Diseñar servicios robustos cuyos elementos estén <strong>fuerte y genuinamente relacionados entre sí</strong>. Alta cohesión favorece la comprensión y facilita los cambios. El objetivo es <strong>maximizar</strong> la cohesión.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 8 — ACOPLAMIENTO      ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Principios del Diseño</div>
+    <h2 class="slide-title"><span>Acoplamiento</span></h2>
+    <div class="slide-content">
+      <div class="info-box animate-in">
+        <i class="fa-solid fa-circle-info fa-fw"></i>
+        <span>El acoplamiento mide la <strong>fortaleza de la asociación</strong> entre módulos. Un bajo acoplamiento indica un sistema bien dividido, donde cada componente es tan independiente como sea posible.</span>
+      </div>
+      <div class="two-col mt-3">
+        <div class="compare-box bad animate-in">
+          <div style="font-size:1.6rem">🟥↔🔺<br>↕&nbsp;&nbsp;&nbsp;↕<br>🔵↔🟣</div>
+          <div class="compare-label"><i class="fa-solid fa-xmark me-1"></i>Alto Acoplamiento</div>
+          <p style="font-size:.75rem;color:rgba(255,255,255,.5);text-align:center;">Módulos interconectados en todas direcciones. Cambiar uno afecta a todos.</p>
+        </div>
+        <div class="compare-box good animate-in">
+          <div style="font-size:1.6rem">🟥—🔺<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>🔵—🟣</div>
+          <div class="compare-label"><i class="fa-solid fa-check me-1"></i>Bajo Acoplamiento</div>
+          <p style="font-size:.75rem;color:rgba(255,255,255,.5);text-align:center;">Relaciones mínimas y bien definidas. Módulos independientes.</p>
+        </div>
+      </div>
+      <div class="two-col mt-3">
+        <div class="concept-card red-border animate-in">
+          <h5><i class="fa-solid fa-link me-2"></i>Fuertemente Acoplados</h5>
+          <p>Usan variables compartidas o intercambian información de control. Dificulta el mantenimiento.</p>
+        </div>
+        <div class="concept-card green-border animate-in">
+          <h5><i class="fa-solid fa-link-slash me-2"></i>Débilmente Acoplados</h5>
+          <p>Se comunican solo por parámetros bien definidos. Evitan variables globales compartidas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 9 — CONNASCENCE       ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Diseño de Software</div>
+    <h2 class="slide-title">Co-nascencia — <span>Connascence</span></h2>
+    <div class="slide-content">
+      <div class="quote-block animate-in">
+        Dos partes son <strong>co-nascentes</strong> si un cambio en una de ellas requiere modificar la otra para mantener la corrección general del sistema.
+      </div>
+      <div class="two-col mt-3">
+        <div class="concept-card animate-in">
+          <h5><i class="fa-solid fa-code me-2"></i>Connascence Estática</h5>
+          <ul>
+            <li>Nombres de variables y clases</li>
+            <li>Tipos de datos</li>
+            <li>Significados o convenciones</li>
+            <li>Posición de parámetros</li>
+            <li>Algoritmos compartidos</li>
+          </ul>
+        </div>
+        <div class="concept-card gold-border animate-in">
+          <h5><i class="fa-solid fa-clock-rotate-left me-2"></i>Connascence Dinámica</h5>
+          <ul>
+            <li>Orden de ejecución</li>
+            <li>Tiempo de respuesta</li>
+            <li>Valores en tiempo de ejecución</li>
+            <li>Identidad de objetos</li>
+          </ul>
+        </div>
+      </div>
+      <div class="info-box mt-3 animate-in">
+        <i class="fa-solid fa-lightbulb fa-fw"></i>
+        <span>La connascence refina los conceptos de <strong>acoplamiento eferente</strong> (lo que usa un módulo) y <strong>aferente</strong> (quien usa un módulo).</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 10 — QUÉ ES UML       ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Modelado con UML</div>
+    <h2 class="slide-title">¿Qué es <span>UML</span>?</h2>
+    <div class="slide-content">
+      <div class="concept-card animate-in">
+        <h5><i class="fa-solid fa-book-open me-2"></i>Definición</h5>
+        <p>El <strong>Lenguaje Unificado de Modelado</strong> es una familia de notaciones gráficas respaldadas por un único metamodelo que ayuda a <strong>describir y diseñar sistemas de software</strong>, especialmente los construidos con el paradigma orientado a objetos (OO).</p>
+      </div>
+      <ul class="icon-list mt-2">
+        <li class="animate-in">
+          <div class="ico gold"><i class="fa-solid fa-calendar"></i></div>
+          <div>Apareció en <strong class="hi-gold">1997</strong>. Es un estándar abierto controlado por el <strong>Object Management Group (OMG)</strong>.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico"><i class="fa-solid fa-users"></i></div>
+          <div>Unificó muchos lenguajes gráficos preexistentes y se convirtió en la herramienta estándar para los desarrolladores de software.</div>
+        </li>
+        <li class="animate-in">
+          <div class="ico green"><i class="fa-solid fa-layer-group"></i></div>
+          <div>Los diagramas se dividen en dos grandes familias: <strong class="hi-green">Estructurales</strong> (qué es el sistema) y <strong class="hi-blue">de Comportamiento</strong> (cómo actúa el sistema).</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 11 — DIAGRAMAS UML    ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">UML</div>
+    <h2 class="slide-title">Diagramas <span>Estructurales</span></h2>
+    <div class="slide-content">
+      <p class="animate-in" style="font-size:.85rem;color:rgba(255,255,255,.6);margin-bottom:16px;">Muestran la <strong>estructura estática</strong> del sistema y sus partes en diferentes niveles de abstracción.</p>
+      <div class="diag-grid">
+        <div class="diag-card animate-in">
+          <div class="diag-ico">📐</div>
+          <div class="diag-name">Clases</div>
+          <div class="diag-desc">Tipos de objetos, atributos, operaciones y relaciones estáticas.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">🧩</div>
+          <div class="diag-name">Componentes</div>
+          <div class="diag-desc">Relación estructural de componentes que se comunican por interfaces.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">📦</div>
+          <div class="diag-name">Paquetes</div>
+          <div class="diag-desc">Sistema dividido en agrupaciones lógicas y sus dependencias.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">🖥️</div>
+          <div class="diag-name">Despliegue</div>
+          <div class="diag-desc">Hardware, software y su configuración física de despliegue.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">🔷</div>
+          <div class="diag-name">Objetos</div>
+          <div class="diag-desc">Relación entre objetos en un momento dado del sistema.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">🏗️</div>
+          <div class="diag-name">Estructura Compuesta</div>
+          <div class="diag-desc">Estructura interna de una clase compleja.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 12 — COMPORTAMIENTO   ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">UML</div>
+    <h2 class="slide-title">Diagramas de <span>Comportamiento</span></h2>
+    <div class="slide-content">
+      <p class="animate-in" style="font-size:.85rem;color:rgba(255,255,255,.6);margin-bottom:16px;">Muestran el <strong>comportamiento dinámico</strong> de los objetos en el sistema.</p>
+      <div class="diag-grid">
+        <div class="diag-card animate-in">
+          <div class="diag-ico">👤</div>
+          <div class="diag-name">Casos de Uso</div>
+          <div class="diag-desc">Actores, funciones del sistema y sus interacciones. Representa requisitos funcionales.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">▶️</div>
+          <div class="diag-name">Actividad</div>
+          <div class="diag-desc">Flujo de trabajo desde un punto inicial a uno final. Documenta requisitos de negocio.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">💬</div>
+          <div class="diag-name">Secuencia</div>
+          <div class="diag-desc">Intercambio de mensajes entre instancias en orden temporal.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">🔄</div>
+          <div class="diag-name">Comunicación</div>
+          <div class="diag-desc">Como secuencia, pero con foco en los mensajes pasados entre objetos.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">🔀</div>
+          <div class="diag-name">Máquina de Estado</div>
+          <div class="diag-desc">Comportamiento de objetos según el estado en que se encuentran.</div>
+        </div>
+        <div class="diag-card animate-in">
+          <div class="diag-ico">⏱️</div>
+          <div class="diag-name">Tiempo</div>
+          <div class="diag-desc">Comportamiento de los objetos en un marco de tiempo dado.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 13 — DIAG ESPECÍFICOS ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">UML — Diagramas Clave</div>
+    <h2 class="slide-title">Diagramas más <span>utilizados</span></h2>
+    <div class="slide-content">
+      <div class="step-list">
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6><i class="fa-solid fa-user me-1"></i>Casos de Uso</h6>
+            <p>Narrativa de cómo los actores (usuarios y sistemas externos) usan el sistema. Los actores se entienden como "perfiles".</p>
+          </div>
+        </div>
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6><i class="fa-solid fa-table-cells me-1"></i>Diagrama de Clase</h6>
+            <p>Describe tipos de objetos, sus propiedades, operaciones y relaciones. Para sistemas grandes, dividirlos en diagramas más pequeños vinculados.</p>
+          </div>
+        </div>
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6><i class="fa-solid fa-arrow-right-arrow-left me-1"></i>Diagrama de Secuencia</h6>
+            <p>Representa el intercambio de mensajes entre instancias para cumplir una funcionalidad. Define el comportamiento dinámico.</p>
+          </div>
+        </div>
+        <div class="step-item animate-in">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h6><i class="fa-solid fa-server me-1"></i>Despliegue + Componentes</h6>
+            <p>Usados juntos: los componentes muestran qué existe y cómo se relacionan; el despliegue muestra en qué nodos físicos residen.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 14 — RESUMEN          ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide">
+    <div class="slide-section">Resumen</div>
+    <h2 class="slide-title">Lo que vimos en <span>UT3</span></h2>
+    <div class="slide-content">
+      <div class="two-col">
+        <div class="concept-card animate-in">
+          <h5><i class="fa-solid fa-map-location-dot me-2"></i>Customer Journey Map</h5>
+          <p>Herramienta para mapear emociones del usuario en 5 fases: Awareness, Consideration, Purchase, Retention, Advocacy.</p>
+        </div>
+        <div class="concept-card gold-border animate-in">
+          <h5><i class="fa-solid fa-gears me-2"></i>Proceso de Diseño</h5>
+          <p>Arquitectónico → Abstracto → Interfaz → Componentes → Algoritmos. Cada nivel más detallado que el anterior.</p>
+        </div>
+        <div class="concept-card green-border animate-in">
+          <h5><i class="fa-solid fa-layer-group me-2"></i>Cohesión</h5>
+          <p>Maximizar la cohesión: cada módulo hace una sola cosa bien. Favorece comprensión y mantenimiento.</p>
+        </div>
+        <div class="concept-card red-border animate-in">
+          <h5><i class="fa-solid fa-link-slash me-2"></i>Acoplamiento</h5>
+          <p>Minimizar el acoplamiento: módulos independientes, interfaz por parámetros, sin variables globales compartidas.</p>
+        </div>
+        <div class="concept-card animate-in">
+          <h5><i class="fa-solid fa-diagram-project me-2"></i>UML</h5>
+          <p>Estándar OMG desde 1997. Diagramas estructurales (clases, componentes, paquetes) y de comportamiento (casos de uso, secuencia, actividad).</p>
+        </div>
+        <div class="concept-card gold-border animate-in">
+          <h5><i class="fa-solid fa-code-branch me-2"></i>Connascence</h5>
+          <p>Refinamiento del acoplamiento. Estática (nombres, tipos) vs Dinámica (orden, tiempo, identidad).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════╗ -->
+  <!-- ║  SLIDE 15 — QUIZ             ║ -->
+  <!-- ╚══════════════════════════════╝ -->
+  <div class="slide quiz-slide" id="quizSlide">
+    <div class="slide-section">Evaluación</div>
+    <h2 class="slide-title">Cuestionario <span>UT3</span></h2>
+    <div id="quizContainer"></div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- Navigation Bar -->
+<div class="nav-bar">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>
+    <i class="fa-solid fa-arrow-left"></i> Anterior
+  </button>
+  <div class="nav-dots" id="navDots"></div>
+  <button class="nav-btn primary" id="nextBtn" onclick="changeSlide(1)">
+    Siguiente <i class="fa-solid fa-arrow-right"></i>
+  </button>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+
+<script>
+/* ─── SLIDE ENGINE ─── */
+const slides = document.querySelectorAll('.slide');
+const total  = slides.length;
+let current  = 0;
+
+const prevBtn   = document.getElementById('prevBtn');
+const nextBtn   = document.getElementById('nextBtn');
+const counter   = document.getElementById('slideCounter');
+const fill      = document.getElementById('progressFill');
+const dotsWrap  = document.getElementById('navDots');
+
+// Build dots
+slides.forEach((_,i) => {
+  const d = document.createElement('div');
+  d.className = 'nav-dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+});
+
+function goTo(n) {
+  slides[current].classList.remove('active');
+  slides[current].classList.add('animate__animated','animate__fadeOut');
+  setTimeout(()=>{ slides[current].classList.remove('animate__animated','animate__fadeOut'); }, 300);
+
+  current = Math.max(0, Math.min(n, total-1));
+
+  slides[current].classList.add('active','animate__animated','animate__fadeIn');
+  setTimeout(()=>{ slides[current].classList.remove('animate__animated','animate__fadeIn'); }, 600);
+
+  // Update controls
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === total - 1;
+  if (current === total - 1) {
+    nextBtn.innerHTML = '<i class="fa-solid fa-check-circle me-1"></i> Finalizar';
+    nextBtn.onclick = () => {};
+  } else {
+    nextBtn.innerHTML = 'Siguiente <i class="fa-solid fa-arrow-right"></i>';
+    nextBtn.onclick = () => changeSlide(1);
+  }
+
+  counter.textContent = `${current+1} / ${total}`;
+  fill.style.width = `${((current+1)/total)*100}%`;
+
+  document.querySelectorAll('.nav-dot').forEach((d,i) => d.classList.toggle('active', i===current));
+
+  // Init quiz when reaching last slide
+  if (current === total - 1 && !quizReady) initQuiz();
+}
+
+function changeSlide(dir) { goTo(current + dir); }
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+});
+
+/* ─── QUIZ ENGINE ─── */
+let quizReady = false;
+let qIndex = 0;
+let score  = 0;
+const answered = [];
+
+const questions = [
+  {
+    q: "¿Cuál es la principal función del Customer Journey Map?",
+    opts: [
+      "Diseñar la arquitectura de software del sistema",
+      "Trackear las emociones del usuario y mejorar su experiencia",
+      "Definir los módulos y componentes de una aplicación",
+      "Gestionar el flujo de datos entre subsistemas"
+    ],
+    correct: 1,
+    exp: "El CJM es una herramienta de análisis que mapea las emociones y experiencias del usuario en cada fase del proceso."
+  },
+  {
+    q: "En el Customer Journey Map, ¿en cuál fase el consumidor ya tomó la decisión de compra?",
+    opts: ["Consideration (Consideración)", "Awareness (Descubrimiento)", "Retention (Retención)", "Purchase (Compra)"],
+    correct: 3,
+    exp: "En la fase de Compra (Purchase) el usuario ya decidió y ejecuta la transacción."
+  },
+  {
+    q: "Un componente de software que puede ser aislado y reemplazado por otro de funcionalidad equivalente cumple la propiedad de:",
+    opts: ["Alta cohesión", "Intercambiabilidad", "Connascence estática", "Acoplamiento aferente"],
+    correct: 1,
+    exp: "Los componentes están diseñados para ser intercambiables: se pueden reemplazar por otros de funcionalidad equivalente."
+  },
+  {
+    q: "¿Cuál es el PRIMER paso en el proceso de diseño del software según Somerville?",
+    opts: ["Diseño de componentes", "Especificación abstracta", "Diseño arquitectónico", "Diseño de la interfaz"],
+    correct: 2,
+    exp: "El Diseño arquitectónico es el primer paso: se define la estructura global del sistema (capas, MVC, microservicios, etc.)."
+  },
+  {
+    q: "Un módulo que realiza una sola tarea bien definida y agrupa solo elementos relacionados entre sí posee:",
+    opts: ["Bajo acoplamiento", "Alta connascence", "Alta cohesión", "Bajo acoplamiento eferente"],
+    correct: 2,
+    exp: "La alta cohesión implica que el módulo agrupa elementos relacionados y excluye los que no lo son, realizando una sola responsabilidad."
+  },
+  {
+    q: "Módulos que comparten variables globales o intercambian información de control presentan:",
+    opts: ["Bajo acoplamiento", "Alta cohesión", "Connascence dinámica", "Fuerte acoplamiento"],
+    correct: 3,
+    exp: "El fuerte acoplamiento ocurre cuando módulos comparten estado global o información de control, generando interdependencia."
+  },
+  {
+    q: "UML es un estándar controlado por:",
+    opts: ["ISO", "IEEE", "Object Management Group (OMG)", "W3C"],
+    correct: 2,
+    exp: "El UML es administrado por el Object Management Group (OMG), un consorcio de empresas formado para estándares de interoperabilidad OO."
+  },
+  {
+    q: "¿Cuál de estos es un diagrama de COMPORTAMIENTO en UML?",
+    opts: ["Diagrama de Clases", "Diagrama de Paquetes", "Diagrama de Despliegue", "Diagrama de Casos de Uso"],
+    correct: 3,
+    exp: "El Diagrama de Casos de Uso es un diagrama de comportamiento: muestra actores, funciones y cómo interactúan."
+  },
+  {
+    q: "¿Qué diagrama UML muestra cómo los componentes lógicos se sitúan en nodos físicos?",
+    opts: ["Diagrama de Clases", "Diagrama de Despliegue", "Diagrama de Secuencia", "Diagrama de Paquetes"],
+    correct: 1,
+    exp: "El Diagrama de Despliegue muestra el hardware, el software instalado y la configuración física de cada nodo."
+  },
+  {
+    q: "Dos partes del sistema que deben cambiar juntas cuando se modifica una de ellas presentan:",
+    opts: ["Alta cohesión", "Co-nascencia (Connascence)", "Bajo acoplamiento", "Encapsulamiento perfecto"],
+    correct: 1,
+    exp: "La Co-nascencia (Connascence) describe exactamente este patrón: si cambiar A obliga a cambiar B, A y B son co-nascentes."
+  }
+];
+
+function initQuiz() {
+  quizReady = true;
+  qIndex = 0; score = 0;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const container = document.getElementById('quizContainer');
+
+  if (qIndex >= questions.length) {
+    showFinalScore(container);
+    return;
+  }
+
+  const q = questions[qIndex];
+  const letters = ['A','B','C','D'];
+
+  container.innerHTML = `
+    <div class="quiz-q-num animate__animated animate__fadeIn">Pregunta ${qIndex+1} de ${questions.length}</div>
+    <div class="quiz-question animate__animated animate__fadeIn">${q.q}</div>
+    <div class="quiz-options animate__animated animate__fadeInUp" id="quizOpts">
+      ${q.opts.map((o,i)=>`
+        <button class="quiz-opt" onclick="selectAnswer(${i})">
+          <span class="opt-letter">${letters[i]}</span>
+          ${o}
+        </button>`).join('')}
+    </div>
+    <div class="quiz-nav">
+      <div class="quiz-score-bar" id="scoreDots">
+        ${answered.map(a=>`<div class="qs-dot ${a?'ok':'fail'}"></div>`).join('')}
+        ${Array(questions.length - answered.length).fill('<div class="qs-dot"></div>').join('')}
+      </div>
+      <span style="font-family:'DM Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.3);">${score} correctas</span>
+    </div>
+  `;
+}
+
+function selectAnswer(idx) {
+  const opts = document.querySelectorAll('.quiz-opt');
+  const q = questions[qIndex];
+  const isCorrect = idx === q.correct;
+
+  opts.forEach(o => o.classList.add('disabled'));
+  opts.forEach(o => o.onclick = null);
+
+  opts[idx].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) opts[q.correct].classList.add('correct');
+
+  answered.push(isCorrect);
+  if (isCorrect) score++;
+
+  // SweetAlert feedback
+  Swal.fire({
+    icon: isCorrect ? 'success' : 'error',
+    title: isCorrect ? '¡Correcto! 🎉' : 'Incorrecto 😕',
+    html: `<span style="font-size:.9rem;color:#ccc;line-height:1.6;">${q.exp}</span>`,
+    confirmButtonText: qIndex < questions.length - 1 ? 'Siguiente pregunta →' : 'Ver resultado',
+    confirmButtonColor: isCorrect ? '#27ae60' : '#2d6cdf',
+    background: '#0f2244',
+    color: '#fff',
+    backdrop: 'rgba(0,0,0,.75)',
+    customClass: {
+      popup: 'swal-custom-popup',
+      title: 'swal-custom-title',
+      confirmButton: 'swal-custom-btn'
+    }
+  }).then(() => {
+    qIndex++;
+    renderQuestion();
+  });
+}
+
+function showFinalScore(container) {
+  const pct = Math.round((score / questions.length) * 100);
+  let emoji, msg, color;
+
+  if (pct >= 80) {
+    emoji = '🏆'; msg = '¡Excelente dominio del contenido de UT3!'; color = '#27ae60';
+  } else if (pct >= 60) {
+    emoji = '👍'; msg = 'Buen trabajo. Repasa los temas donde fallaste.'; color = '#e8b94f';
+  } else {
+    emoji = '📚'; msg = 'Te recomendamos revisar la presentación nuevamente.'; color = '#e74c3c';
+  }
+
+  container.innerHTML = `
+    <div class="score-box animate__animated animate__bounceIn">
+      <div style="font-size:3.5rem;margin-bottom:8px;">${emoji}</div>
+      <div class="score-big">${pct}%</div>
+      <div class="score-label">${score} de ${questions.length} respuestas correctas</div>
+      <div class="score-msg">${msg}</div>
+      <div class="quiz-score-bar mt-4 justify-content-center" style="display:flex;gap:8px;">
+        ${answered.map(a=>`<div class="qs-dot ${a?'ok':'fail'}" style="width:14px;height:14px;"></div>`).join('')}
+      </div>
+      <div style="margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="nav-btn primary" onclick="restartQuiz()">
+          <i class="fa-solid fa-rotate-right me-1"></i> Reintentar
+        </button>
+        <button class="nav-btn" onclick="goTo(0)">
+          <i class="fa-solid fa-house me-1"></i> Volver al inicio
+        </button>
+      </div>
+    </div>
+  `;
+
+  Swal.fire({
+    title: `${emoji} ${pct >= 80 ? '¡Aprobado!' : pct >= 60 ? 'Casi...' : 'A repasar'}`,
+    html: `<b style="font-size:2rem;color:${color};">${pct}%</b><br><span style="color:#ccc;">${msg}</span>`,
+    confirmButtonText: '¡Entendido!',
+    confirmButtonColor: '#2d6cdf',
+    background: '#0f2244',
+    color: '#fff',
+    backdrop: 'rgba(0,0,0,.75)',
+  });
+}
+
+function restartQuiz() {
+  qIndex = 0; score = 0; answered.length = 0;
+  renderQuestion();
+}
+</script>
+
+<style>
+/* SweetAlert2 custom */
+.swal2-popup { border: 1px solid rgba(255,255,255,.1) !important; }
+.swal2-title { font-family: 'Playfair Display', serif !important; }
+</style>
+</body>
+</html>
