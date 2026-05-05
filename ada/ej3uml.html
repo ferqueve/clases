@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solución simple - Diseño y UML TA2</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root{ --bg:#0f172a; --card:#111827; --accent:#38bdf8; --soft:#e0f2fe; }
+    body{ background:linear-gradient(135deg,#0f172a,#1e293b); color:#f8fafc; font-family:system-ui,Segoe UI,Arial,sans-serif; }
+    .slide{ min-height:100vh; display:none; padding:3rem 1rem; }
+    .slide.active{ display:flex; align-items:center; }
+    .card-glass{ background:rgba(15,23,42,.86); border:1px solid rgba(148,163,184,.35); border-radius:1.5rem; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+    .badge-soft{ background:rgba(56,189,248,.15); color:#bae6fd; border:1px solid rgba(56,189,248,.35); }
+    .module{ border:2px solid #38bdf8; border-radius:1rem; padding:1rem; min-height:120px; background:rgba(2,6,23,.55); }
+    .arrow{ color:#facc15; font-size:2rem; }
+    .journey-step{ border-left:4px solid #38bdf8; padding-left:1rem; margin-bottom:1rem; }
+    .principle-ok{ border-left:5px solid #22c55e; }
+    .principle-warn{ border-left:5px solid #f97316; }
+    .nav-btn{ min-width:120px; }
+    code{ color:#fde68a; }
+    .small-note{ color:#cbd5e1; }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <section class="slide active" id="slide0">
+    <div class="container">
+      <div class="card card-glass p-5 animate__animated animate__fadeIn">
+        <span class="badge badge-soft rounded-pill px-3 py-2 mb-3">Unidad Temática 1 · Diseño y UML</span>
+        <h1 class="display-5 fw-bold">Solución simple del ejercicio</h1>
+        <p class="lead mt-3">Aplicación de comercio electrónico con módulos de catálogo, carrito/pago e historial/perfil.</p>
+        <button class="btn btn-info btn-lg mt-3" onclick="intro()"><i class="fa-solid fa-circle-play me-2"></i>Ver idea principal</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide1">
+    <div class="container">
+      <div class="card card-glass p-4 animate__animated animate__fadeInUp">
+        <h2><i class="fa-solid fa-cubes me-2 text-info"></i>Parte 1A: responsabilidades</h2>
+        <div class="row g-3 mt-3">
+          <div class="col-md-4"><div class="module"><h4>Catálogo</h4><p>Busca productos, muestra detalles, precios, stock e imágenes.</p><button class="btn btn-sm btn-outline-info" onclick="infoModulo('Catálogo','Debe concentrarse en productos. No debería encargarse del pago ni del historial.')">Detalle</button></div></div>
+          <div class="col-md-4"><div class="module"><h4>Carrito y pago</h4><p>Agrega productos, calcula totales, valida stock y procesa el pago.</p><button class="btn btn-sm btn-outline-info" onclick="infoModulo('Carrito y pago','Gestiona la compra activa. Al finalizar, genera un pedido.')">Detalle</button></div></div>
+          <div class="col-md-4"><div class="module"><h4>Historial y perfil</h4><p>Muestra datos del usuario, direcciones y pedidos realizados.</p><button class="btn btn-sm btn-outline-info" onclick="infoModulo('Historial y perfil','Conviene separarlo después, porque perfil e historial no son exactamente lo mismo.')">Detalle</button></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide2">
+    <div class="container">
+      <div class="card card-glass p-4 animate__animated animate__fadeInUp">
+        <h2><i class="fa-solid fa-map-location-dot me-2 text-info"></i>Parte 1B: Journey Map de compra</h2>
+        <div class="mt-4">
+          <div class="journey-step"><strong>1. Buscar:</strong> el usuario entra al catálogo y filtra productos.</div>
+          <div class="journey-step"><strong>2. Elegir:</strong> revisa detalle, precio y disponibilidad.</div>
+          <div class="journey-step"><strong>3. Agregar:</strong> envía el producto al carrito.</div>
+          <div class="journey-step"><strong>4. Pagar:</strong> confirma datos, dirección y medio de pago.</div>
+          <div class="journey-step"><strong>5. Registrar pedido:</strong> el sistema guarda la compra.</div>
+          <div class="journey-step"><strong>6. Consultar:</strong> el usuario ve el pedido en su historial.</div>
+        </div>
+        <button class="btn btn-warning mt-3" onclick="journeyAlert()"><i class="fa-solid fa-lightbulb me-2"></i>Idea para explicarlo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide3">
+    <div class="container">
+      <div class="card card-glass p-4 animate__animated animate__fadeInUp">
+        <h2><i class="fa-solid fa-link me-2 text-info"></i>Parte 2: co-nascencia estática</h2>
+        <p class="small-note">Ocurre cuando dos partes del sistema deben cambiar juntas por una relación fija en el código o estructura.</p>
+        <div class="row g-3 mt-3">
+          <div class="col-md-6"><div class="p-3 card-glass"><h4>1. Nombre de campos</h4><p>Carrito espera que Catálogo devuelva <code>idProducto</code>, <code>precio</code> y <code>stock</code>. Si Catálogo cambia esos nombres, Carrito se rompe.</p></div></div>
+          <div class="col-md-6"><div class="p-3 card-glass"><h4>2. Formato de pedido</h4><p>Historial espera que Carrito genere pedidos con <code>fecha</code>, <code>total</code> y <code>items</code>. Si cambia la estructura, Historial debe cambiar también.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide4">
+    <div class="container">
+      <div class="card card-glass p-4 animate__animated animate__fadeInUp">
+        <h2><i class="fa-solid fa-arrows-rotate me-2 text-info"></i>Parte 2: co-nascencia dinámica</h2>
+        <p class="small-note">Ocurre cuando el problema depende del orden o momento en que pasan las acciones.</p>
+        <div class="row g-3 mt-3">
+          <div class="col-md-6"><div class="p-3 card-glass"><h4>1. Validar antes de pagar</h4><p>El carrito debe validar stock y calcular total antes de procesar el pago. Si se altera el orden, puede cobrarse mal.</p></div></div>
+          <div class="col-md-6"><div class="p-3 card-glass"><h4>2. Registrar después del pago</h4><p>El pedido debe guardarse en historial solo si el pago fue aprobado. Si se registra antes, aparecerían compras no pagadas.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide5">
+    <div class="container">
+      <div class="card card-glass p-4 animate__animated animate__fadeInUp">
+        <h2><i class="fa-solid fa-scale-balanced me-2 text-info"></i>Parte 3: acoplamiento y cohesión</h2>
+        <div class="p-3 mb-3 bg-dark rounded principle-warn"><strong>Problema:</strong> el diseño inicial mezcla historial con perfil y permite dependencias directas entre módulos.</div>
+        <div class="p-3 mb-3 bg-dark rounded principle-warn"><strong>Riesgo:</strong> cambiar catálogo, pago o pedido puede obligar a modificar otros módulos.</div>
+        <div class="p-3 bg-dark rounded principle-ok"><strong>Mejora:</strong> separar responsabilidades y comunicar módulos mediante servicios o interfaces claras.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide6">
+    <div class="container">
+      <div class="card card-glass p-4 animate__animated animate__fadeInUp">
+        <h2><i class="fa-solid fa-sitemap me-2 text-info"></i>Propuesta mejorada</h2>
+        <div class="row align-items-center text-center g-3 mt-3">
+          <div class="col-md-2"><div class="module">Catálogo</div></div>
+          <div class="col-md-1 arrow">→</div>
+          <div class="col-md-2"><div class="module">Carrito</div></div>
+          <div class="col-md-1 arrow">→</div>
+          <div class="col-md-2"><div class="module">Pago</div></div>
+          <div class="col-md-1 arrow">→</div>
+          <div class="col-md-2"><div class="module">Pedidos</div></div>
+        </div>
+        <div class="row g-3 mt-4">
+          <div class="col-md-6"><div class="p-3 card-glass">Perfil de usuario queda separado: datos personales, direcciones y preferencias.</div></div>
+          <div class="col-md-6"><div class="p-3 card-glass">Historial consulta pedidos ya creados; no debería procesar pagos ni modificar productos.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide7">
+    <div class="container">
+      <div class="card card-glass p-5 animate__animated animate__fadeInUp">
+        <h2><i class="fa-solid fa-check-circle me-2 text-success"></i>Respuesta final simple</h2>
+        <p>El diseño inicial es entendible para comenzar, pero puede mejorarse.</p>
+        <p>La solución recomendada es separar mejor los módulos:</p>
+        <ul>
+          <li><strong>Catálogo:</strong> productos y búsqueda.</li>
+          <li><strong>Carrito:</strong> compra en curso.</li>
+          <li><strong>Pago:</strong> cobro y confirmación.</li>
+          <li><strong>Pedidos/Historial:</strong> registro y consulta de compras.</li>
+          <li><strong>Perfil:</strong> datos del usuario.</li>
+        </ul>
+        <button class="btn btn-success btn-lg" onclick="finalAlert()"><i class="fa-solid fa-graduation-cap me-2"></i>Conclusión</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="position-fixed bottom-0 start-0 end-0 p-3 bg-dark bg-opacity-75">
+  <div class="container d-flex justify-content-between align-items-center">
+    <button class="btn btn-outline-light nav-btn" onclick="prevSlide()"><i class="fa-solid fa-arrow-left me-2"></i>Anterior</button>
+    <span id="counter" class="small-note">1 / 8</span>
+    <button class="btn btn-info nav-btn" onclick="nextSlide()">Siguiente<i class="fa-solid fa-arrow-right ms-2"></i></button>
+  </div>
+</div>
+
+<script>
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+
+  function showSlide(index){
+    slides[current].classList.remove('active');
+    current = (index + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    counter.textContent = `${current + 1} / ${slides.length}`;
+  }
+  function nextSlide(){ showSlide(current + 1); }
+  function prevSlide(){ showSlide(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowRight') nextSlide();
+    if(e.key === 'ArrowLeft') prevSlide();
+  });
+
+  function intro(){
+    Swal.fire({
+      title:'Idea central',
+      text:'Primero entendemos qué hace cada módulo. Luego vemos el viaje de compra, los acoplamientos y finalmente proponemos una separación más limpia.',
+      icon:'info',
+      confirmButtonText:'Entendido',
+      background:'#0f172a',
+      color:'#f8fafc',
+      confirmButtonColor:'#38bdf8'
+    });
+  }
+
+  function infoModulo(titulo, texto){
+    Swal.fire({ title:titulo, text:texto, icon:'question', confirmButtonText:'OK', background:'#111827', color:'#f8fafc', confirmButtonColor:'#38bdf8' });
+  }
+
+  function journeyAlert(){
+    Swal.fire({ title:'Explicación sencilla', html:'Pensalo como una compra real:<br><strong>miro productos → elijo → pongo en carrito → pago → veo mi pedido.</strong>', icon:'success', background:'#111827', color:'#f8fafc', confirmButtonColor:'#facc15' });
+  }
+
+  function finalAlert(){
+    Swal.fire({ title:'Conclusión', html:'La mejora apunta a <strong>bajo acoplamiento</strong> y <strong>alta cohesión</strong>: cada módulo hace una cosa clara y se comunica con los demás mediante datos bien definidos.', icon:'success', background:'#111827', color:'#f8fafc', confirmButtonColor:'#22c55e' });
+  }
+</script>
+</body>
+</html>
