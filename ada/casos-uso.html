@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UT3 – TA4 | Diagramas de Casos de Uso</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <!-- Animate.css -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"/>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text-dark: #1a1f36;
+      --text-mid: #3d4466;
+      --text-soft: #6b7280;
+      --accent-1: #e63946;   /* Uber */
+      --accent-2: #2a9d8f;   /* Supermercado */
+      --accent-3: #e76f51;   /* Motocross */
+      --accent-4: #457b9d;   /* Logística */
+      --accent-5: #6a4c93;   /* Cursos */
+      --border-r: 18px;
+      --shadow: 0 8px 32px rgba(26,31,54,0.10);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Nunito', sans-serif;
+      color: var(--text-dark);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── TOPBAR ────────────────────────────────── */
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #fff;
+      border-bottom: 3px solid #e5e7ef;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    }
+    #topbar .title-left {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.5px;
+    }
+    #topbar .title-left span { color: var(--accent-1); }
+
+    /* ─── EXERCISE PILLS ───────────────────────── */
+    .ex-pills { display: flex; gap: .5rem; }
+    .ex-pill {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: 2.5px solid #e5e7ef;
+      background: #fff;
+      font-weight: 800;
+      font-size: .95rem;
+      color: var(--text-soft);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .25s;
+    }
+    .ex-pill:hover { transform: scale(1.1); }
+    .ex-pill.active {
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+    }
+
+    /* ─── MAIN STAGE ───────────────────────────── */
+    #stage {
+      position: fixed;
+      top: 64px; left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      padding: 2rem 2.5rem 2rem;
+    }
+
+    /* ─── SLIDE ─────────────────────────────────── */
+    .slide { display: none; }
+    .slide.active { display: block; }
+
+    .slide-header {
+      display: flex; align-items: center; gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    .slide-icon {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    }
+    .slide-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--text-dark);
+    }
+    .slide-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-soft);
+      font-weight: 600;
+      margin-top: .25rem;
+    }
+
+    /* ─── GRID ──────────────────────────────────── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.2rem;
+    }
+
+    /* ─── CARD ──────────────────────────────────── */
+    .card-box {
+      background: var(--card);
+      border-radius: var(--border-r);
+      padding: 1.4rem 1.6rem;
+      box-shadow: var(--shadow);
+      border-top: 5px solid transparent;
+    }
+    .card-box.accent-1 { border-top-color: var(--accent-1); }
+    .card-box.accent-2 { border-top-color: var(--accent-2); }
+    .card-box.accent-3 { border-top-color: var(--accent-3); }
+    .card-box.accent-4 { border-top-color: var(--accent-4); }
+    .card-box.accent-5 { border-top-color: var(--accent-5); }
+
+    .card-box h5 {
+      font-size: 1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .9rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+
+    /* ─── ACTOR BADGE ───────────────────────────── */
+    .actor-badge {
+      display: flex; align-items: center; gap: .7rem;
+      background: #f4f6fb;
+      border-radius: 10px;
+      padding: .5rem .9rem;
+      margin-bottom: .5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+    .actor-badge i { font-size: 1.1rem; }
+
+    /* ─── FLOW STEP ─────────────────────────────── */
+    .flow-wrap { display: flex; flex-direction: column; gap: .45rem; }
+    .flow-step {
+      display: flex; align-items: flex-start; gap: .8rem;
+      background: #f8f9fc;
+      border-radius: 10px;
+      padding: .55rem .9rem;
+      font-size: .97rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      transition: background .18s;
+    }
+    .flow-step:hover { background: #edf0f8; }
+    .step-num {
+      min-width: 26px; height: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .flow-step.alt {
+      background: #fff8f0;
+      border-left: 3px solid #f4a261;
+      padding-left: .7rem;
+    }
+    .flow-step.alt .step-num { background: #f4a261; }
+    .flow-step.inc {
+      background: #eef7f5;
+      border-left: 3px solid #2a9d8f;
+    }
+    .flow-step.inc .step-num { background: #2a9d8f; }
+    .flow-step.ext {
+      background: #fdf0f5;
+      border-left: 3px solid #e63946;
+    }
+    .flow-step.ext .step-num { background: #e63946; }
+
+    /* ─── RELATION BADGE ─────────────────────────── */
+    .rel-badge {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .78rem;
+      font-weight: 800;
+      border-radius: 6px;
+      padding: .15rem .5rem;
+      margin-right: .3rem;
+      vertical-align: middle;
+      letter-spacing: .04em;
+    }
+    .rel-inc  { background: #d4ede9; color: #1a6b61; }
+    .rel-ext  { background: #fce4e6; color: #a31620; }
+    .rel-alt  { background: #fdebd6; color: #9b4900; }
+
+    /* ─── INHERITANCE ─────────────────────────────── */
+    .inherit-tree {
+      display: flex; flex-direction: column; gap: .4rem;
+    }
+    .inherit-parent {
+      background: var(--accent-5);
+      color: #fff;
+      border-radius: 10px;
+      padding: .5rem 1rem;
+      font-weight: 800;
+      font-size: 1rem;
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .inherit-children {
+      display: flex; flex-wrap: wrap; gap: .5rem;
+      padding-left: 1.5rem;
+    }
+    .inherit-child {
+      background: #f0e9fc;
+      color: #4a2d7c;
+      border-radius: 8px;
+      padding: .4rem .85rem;
+      font-weight: 700;
+      font-size: .95rem;
+      display: flex; align-items: center; gap: .5rem;
+      border-left: 3px solid var(--accent-5);
+    }
+    .inherit-arrow {
+      font-size: .9rem;
+      color: #c9b8e8;
+      padding: 0 .2rem;
+    }
+
+    /* ─── NAV ARROWS ─────────────────────────────── */
+    #nav-prev, #nav-next {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 200;
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2.5px solid #e5e7ef;
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    #nav-prev { left: .8rem; }
+    #nav-next { right: .8rem; }
+    #nav-prev:hover, #nav-next:hover {
+      background: var(--text-dark);
+      color: #fff;
+      border-color: transparent;
+      transform: translateY(-50%) scale(1.08);
+    }
+    #nav-prev:disabled, #nav-next:disabled {
+      opacity: .3; pointer-events: none;
+    }
+
+    /* ─── PROGRESS BAR ───────────────────────────── */
+    #progress-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 6px;
+      background: #e5e7ef; z-index: 100;
+    }
+    #progress-fill {
+      height: 100%;
+      transition: width .4s ease;
+    }
+
+    /* ─── COUNTER ─────────────────────────────────── */
+    #slide-counter {
+      font-size: .9rem;
+      font-weight: 800;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    /* ─── UML DIAGRAM AREA ───────────────────────── */
+    .uml-hint {
+      margin-top: 1rem;
+      background: #f4f6fb;
+      border-radius: 12px;
+      padding: .9rem 1.2rem;
+      font-size: .92rem;
+      color: var(--text-soft);
+      font-weight: 600;
+      display: flex; align-items: center; gap: .6rem;
+      border: 2px dashed #d1d5e0;
+    }
+
+    @media (max-width: 900px) {
+      .info-grid { grid-template-columns: 1fr; }
+      #stage { padding: 1rem; }
+      .slide-title { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── TOP BAR ─────────────────────────────────────── -->
+<div id="topbar">
+  <div class="title-left">UT3 – TA4 &nbsp;|&nbsp; <span>Diagramas de Casos de Uso</span></div>
+  <div class="ex-pills" id="pills"></div>
+  <div id="slide-counter">Ejercicio 1 / 5</div>
+</div>
+
+<!-- ─── NAV ──────────────────────────────────────────── -->
+<button id="nav-prev" onclick="navigate(-1)" disabled><i class="fa-solid fa-chevron-left"></i></button>
+<button id="nav-next" onclick="navigate(1)"><i class="fa-solid fa-chevron-right"></i></button>
+
+<!-- ─── STAGE ─────────────────────────────────────────── -->
+<div id="stage">
+
+  <!-- ═══════════════════════════════════════════════
+       EJERCICIO 1 – TOMAR UN UBER
+  ═══════════════════════════════════════════════════ -->
+  <div class="slide active" id="slide-1">
+    <div class="slide-header animate__animated animate__fadeInDown">
+      <div class="slide-icon" style="background:var(--accent-1)"><i class="fa-solid fa-car"></i></div>
+      <div>
+        <div class="slide-title">Tomar un Uber</div>
+        <div class="slide-subtitle">Caso de uso: Solicitar un viaje en Uber</div>
+      </div>
+    </div>
+
+    <div class="info-grid animate__animated animate__fadeInUp">
+
+      <!-- LEFT: actores -->
+      <div class="card-box accent-1">
+        <h5 style="color:var(--accent-1)"><i class="fa-solid fa-users"></i> Actores</h5>
+        <div class="actor-badge"><i class="fa-solid fa-user" style="color:var(--accent-1)"></i> Usuario</div>
+        <div class="actor-badge"><i class="fa-solid fa-id-card" style="color:var(--accent-1)"></i> Conductor</div>
+
+        <h5 class="mt-3" style="color:var(--accent-1)"><i class="fa-solid fa-diagram-project"></i> Relaciones</h5>
+        <div class="mb-2" style="font-size:.92rem; font-weight:700; color:var(--text-mid)">
+          <span class="rel-inc"><i class="fa-solid fa-link"></i> &lt;&lt;include&gt;&gt;</span>
+        </div>
+        <div style="font-size:.9rem; font-weight:600; color:var(--text-mid); line-height:1.7">
+          ✔ Calcular tarifa estimada (×2)<br>
+          ✔ Compartir ubicación en tiempo real
+        </div>
+        <div class="mt-2" style="font-size:.92rem; font-weight:700; color:var(--text-mid)">
+          <span class="rel-ext"><i class="fa-solid fa-arrow-up-right-from-square"></i> &lt;&lt;extend&gt;&gt;</span>
+        </div>
+        <div style="font-size:.9rem; font-weight:600; color:var(--text-mid); line-height:1.7; margin-top:.3rem">
+          ✔ Seleccionar tipo de Uber
+        </div>
+      </div>
+
+      <!-- RIGHT: flujo -->
+      <div class="card-box accent-1">
+        <h5 style="color:var(--accent-1)"><i class="fa-solid fa-list-ol"></i> Flujo del caso de uso</h5>
+        <div class="flow-wrap">
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">1</span>El usuario abre la app de Uber en su dispositivo móvil.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">2</span>La app muestra la ubicación actual y permite seleccionar destino.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">3</span>El usuario ingresa la dirección o selecciona un punto de interés.</div>
+          <div class="flow-step ext"><span class="step-num">4</span><span><span class="rel-ext">EXT</span> Seleccionar tipo de Uber</span></div>
+          <div class="flow-step inc"><span class="step-num">5</span><span><span class="rel-inc">INC</span> Calcular tarifa estimada</span></div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">6</span>El usuario confirma la solicitud de viaje.</div>
+          <div class="flow-step alt"><span class="step-num">A6</span>Alt: usuario cancela → vuelve al inicio.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">7</span>La app busca un conductor disponible cerca del usuario.</div>
+          <div class="flow-step alt"><span class="step-num">A7</span>Alt: sin conductores → informa al usuario.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">8</span>El conductor acepta la solicitud.</div>
+          <div class="flow-step alt"><span class="step-num">A8</span>Alt: conductor cancela → notifica al usuario.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">9</span>La app muestra info del conductor y ubicación en tiempo real.</div>
+          <div class="flow-step inc"><span class="step-num">10</span><span><span class="rel-inc">INC</span> Calcular tarifa estimada</span></div>
+          <div class="flow-step inc"><span class="step-num">11</span><span><span class="rel-inc">INC</span> Compartir ubicación en tiempo real con contactos</span></div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">12</span>El conductor llega y comienza el viaje.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">13</span>El usuario llega al destino y finaliza el viaje.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">14</span>La app cobra automáticamente con el método de pago registrado.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-1)">15</span>El usuario califica al conductor y cierra la app.</div>
+        </div>
+        <div class="uml-hint"><i class="fa-solid fa-circle-info"></i> El sistema Uber actúa como actor secundario implícito en toda la interacción.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       EJERCICIO 2 – PEDIDO EN LÍNEA
+  ═══════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-header animate__animated animate__fadeInDown">
+      <div class="slide-icon" style="background:var(--accent-2)"><i class="fa-solid fa-cart-shopping"></i></div>
+      <div>
+        <div class="slide-title">Pedido en Línea – Supermercado</div>
+        <div class="slide-subtitle">Caso de uso: Realizar un pedido en línea en un supermercado</div>
+      </div>
+    </div>
+
+    <div class="info-grid animate__animated animate__fadeInUp">
+
+      <div class="card-box accent-2">
+        <h5 style="color:var(--accent-2)"><i class="fa-solid fa-users"></i> Actores</h5>
+        <div class="actor-badge"><i class="fa-solid fa-user" style="color:var(--accent-2)"></i> Cliente</div>
+        <div class="actor-badge"><i class="fa-solid fa-store" style="color:var(--accent-2)"></i> Aplicación del supermercado</div>
+        <div class="actor-badge"><i class="fa-solid fa-truck" style="color:var(--accent-2)"></i> Repartidor</div>
+
+        <h5 class="mt-3" style="color:var(--accent-2)"><i class="fa-solid fa-diagram-project"></i> Relaciones</h5>
+        <div style="font-size:.9rem; font-weight:600; color:var(--text-mid); line-height:1.9">
+          <span class="rel-inc">INC</span> Ver historial de compras<br>
+          <span class="rel-inc">INC</span> Actualizar información de perfil<br>
+          <span class="rel-inc">INC</span> Calificar al repartidor<br>
+          <span class="rel-ext">EXT</span> Pago con tarjeta<br>
+          <span class="rel-ext">EXT</span> Pago en efectivo<br>
+          <span class="rel-alt">ALT</span> Registrarse / Configurar pago
+        </div>
+      </div>
+
+      <div class="card-box accent-2">
+        <h5 style="color:var(--accent-2)"><i class="fa-solid fa-list-ol"></i> Flujo del caso de uso</h5>
+        <div class="flow-wrap">
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">1</span>El cliente abre la app e inicia sesión.</div>
+          <div class="flow-step alt"><span class="step-num">A1</span>Alt: sin cuenta → registrarse y configurar método de pago.</div>
+          <div class="flow-step inc"><span class="step-num">2</span><span><span class="rel-inc">INC</span> Ver historial de compras del usuario</span></div>
+          <div class="flow-step inc"><span class="step-num">3</span><span><span class="rel-inc">INC</span> Actualizar información de perfil</span></div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">4</span>El cliente navega el catálogo y agrega productos al carrito.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">5</span>El cliente procede al pago.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">6</span>Ingresa dirección de entrega y selecciona método de pago.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">7</span>La app muestra resumen del pedido (productos, costo, dirección).</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">8</span>El cliente confirma el pedido.</div>
+          <div class="flow-step ext"><span class="step-num">8a</span><span><span class="rel-ext">EXT</span> Pago con tarjeta</span></div>
+          <div class="flow-step ext"><span class="step-num">8b</span><span><span class="rel-ext">EXT</span> Pago en efectivo</span></div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">9</span>La app notifica al supermercado para preparar el pedido.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">10</span>El personal prepara el pedido y lo entrega al repartidor.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">11</span>El repartidor lleva el pedido a la dirección de entrega.</div>
+          <div class="flow-step inc"><span class="step-num">12</span><span><span class="rel-inc">INC</span> Calificar al repartidor</span></div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">13</span>El cliente recibe el pedido y confirma la entrega en la app.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-2)">14</span>La app cobra automáticamente con el método de pago registrado.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       EJERCICIO 3 – TELEMETRÍA MOTOCROSS
+  ═══════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-header animate__animated animate__fadeInDown">
+      <div class="slide-icon" style="background:var(--accent-3)"><i class="fa-solid fa-gauge-high"></i></div>
+      <div>
+        <div class="slide-title">Telemetría en Motocross</div>
+        <div class="slide-subtitle">Caso de uso: Monitorear y analizar datos telemétricos en carrera</div>
+      </div>
+    </div>
+
+    <div class="info-grid animate__animated animate__fadeInUp">
+
+      <div class="card-box accent-3">
+        <h5 style="color:var(--accent-3)"><i class="fa-solid fa-users"></i> Actores</h5>
+        <div class="actor-badge"><i class="fa-solid fa-helmet-safety" style="color:var(--accent-3)"></i> Piloto</div>
+        <div class="actor-badge"><i class="fa-solid fa-screwdriver-wrench" style="color:var(--accent-3)"></i> Equipo técnico</div>
+        <div class="actor-badge"><i class="fa-solid fa-mobile-screen" style="color:var(--accent-3)"></i> Aplicación de telemetría</div>
+
+        <h5 class="mt-3" style="color:var(--accent-3)"><i class="fa-solid fa-diagram-project"></i> Relaciones (include)</h5>
+        <div style="font-size:.9rem; font-weight:600; color:var(--text-mid); line-height:2">
+          <span class="rel-inc">INC</span> Procesar datos telemétricos<br>
+          <span class="rel-inc">INC</span> Visualizar datos en tiempo real<br>
+          <span class="rel-inc">INC</span> Analizar datos históricos
+        </div>
+
+        <h5 class="mt-3" style="color:var(--accent-3)"><i class="fa-solid fa-microchip"></i> Datos recopilados</h5>
+        <div style="font-size:.9rem; font-weight:600; color:var(--text-mid); line-height:2">
+          📡 Velocidad & aceleración<br>
+          📐 Ángulo de inclinación<br>
+          🌍 Posición GPS
+        </div>
+      </div>
+
+      <div class="card-box accent-3">
+        <h5 style="color:var(--accent-3)"><i class="fa-solid fa-list-ol"></i> Flujo del caso de uso</h5>
+        <div class="flow-wrap">
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-3)">1</span>Piloto y equipo verifican sensores y dispositivos telemétricos.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-3)">2</span>El equipo técnico inicia la sesión de telemetría en la app.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-3)">3</span>El piloto comienza la carrera.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-3)">4</span>La app recopila en tiempo real: velocidad, aceleración, inclinación y GPS.</div>
+          <div class="flow-step inc"><span class="step-num">5</span><span><span class="rel-inc">INC</span> Procesar datos telemétricos</span></div>
+          <div class="flow-step inc"><span class="step-num">6</span><span><span class="rel-inc">INC</span> Visualizar datos telemétricos en tiempo real</span></div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-3)">7</span>La carrera termina.</div>
+          <div class="flow-step inc"><span class="step-num">8</span><span><span class="rel-inc">INC</span> Analizar datos telemétricos históricos</span></div>
+        </div>
+        <div class="uml-hint mt-2"><i class="fa-solid fa-circle-info"></i>
+          Los tres sub-casos de uso son <strong>servicios reutilizables</strong> incluidos en el flujo principal.
+        </div>
+
+        <!-- sub-cases detail -->
+        <div class="row g-2 mt-2">
+          <div class="col-md-4">
+            <div style="background:#fff4f0;border-radius:10px;padding:.7rem .9rem;border-left:3px solid var(--accent-3)">
+              <div style="font-weight:800;font-size:.88rem;color:var(--accent-3);margin-bottom:.3rem"><i class="fa-solid fa-gears"></i> Procesar</div>
+              <div style="font-size:.82rem;color:var(--text-mid);font-weight:600;line-height:1.5">Vel. promedio, máxima, tiempos por vuelta, distancia total.</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="background:#fff4f0;border-radius:10px;padding:.7rem .9rem;border-left:3px solid var(--accent-3)">
+              <div style="font-weight:800;font-size:.88rem;color:var(--accent-3);margin-bottom:.3rem"><i class="fa-solid fa-chart-line"></i> Visualizar</div>
+              <div style="font-size:.82rem;color:var(--text-mid);font-weight:600;line-height:1.5">Gráficos y tablas en tiempo real para el equipo técnico.</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="background:#fff4f0;border-radius:10px;padding:.7rem .9rem;border-left:3px solid var(--accent-3)">
+              <div style="font-weight:800;font-size:.88rem;color:var(--accent-3);margin-bottom:.3rem"><i class="fa-solid fa-clock-rotate-left"></i> Analizar histórico</div>
+              <div style="font-size:.82rem;color:var(--text-mid);font-weight:600;line-height:1.5">Comparar carreras anteriores, identificar patrones y planificar ajustes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       EJERCICIO 4 – LOGÍSTICA / RUTA
+  ═══════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="slide-header animate__animated animate__fadeInDown">
+      <div class="slide-icon" style="background:var(--accent-4)"><i class="fa-solid fa-route"></i></div>
+      <div>
+        <div class="slide-title">Ruta Eficiente – Logística</div>
+        <div class="slide-subtitle">Caso de uso: Planificar y ejecutar una ruta eficiente para entrega de paquetes</div>
+      </div>
+    </div>
+
+    <div class="info-grid animate__animated animate__fadeInUp">
+
+      <div class="card-box accent-4">
+        <h5 style="color:var(--accent-4)"><i class="fa-solid fa-users"></i> Actores</h5>
+        <div class="actor-badge"><i class="fa-solid fa-user-tie" style="color:var(--accent-4)"></i> Operador logístico</div>
+        <div class="actor-badge"><i class="fa-solid fa-laptop" style="color:var(--accent-4)"></i> Aplicación de logística</div>
+        <div class="actor-badge"><i class="fa-solid fa-person-biking" style="color:var(--accent-4)"></i> Repartidor</div>
+
+        <h5 class="mt-3" style="color:var(--accent-4)"><i class="fa-solid fa-diagram-project"></i> Relaciones (include)</h5>
+        <div style="font-size:.9rem; font-weight:600; color:var(--text-mid); line-height:2">
+          <span class="rel-inc">INC</span> Calcular ruta eficiente<br>
+          <span class="rel-inc">INC</span> Navegación en tiempo real
+        </div>
+
+        <h5 class="mt-3" style="color:var(--accent-4)"><i class="fa-solid fa-box-open"></i> Factores considerados</h5>
+        <div style="font-size:.88rem;font-weight:600;color:var(--text-mid);line-height:1.9">
+          🛣️ Distancia total<br>
+          🚦 Tiempo de tráfico estimado<br>
+          ⛔ Restricciones de ruta<br>
+          ⭐ Prioridades de entrega
+        </div>
+      </div>
+
+      <div class="card-box accent-4">
+        <h5 style="color:var(--accent-4)"><i class="fa-solid fa-list-ol"></i> Flujo del caso de uso</h5>
+        <div class="flow-wrap">
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-4)">1</span>El operador recopila info de paquetes: direcciones y prioridades.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-4)">2</span>El operador ingresa los datos de paquetes en la app de logística.</div>
+          <div class="flow-step inc"><span class="step-num">3</span><span><span class="rel-inc">INC</span> Calcular ruta eficiente</span></div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-4)">4</span>El repartidor carga los paquetes y comienza la entrega.</div>
+          <div class="flow-step inc"><span class="step-num">5</span><span><span class="rel-inc">INC</span> Navegación en tiempo real</span></div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-4)">6</span>El repartidor entrega paquetes en las direcciones asignadas.</div>
+          <div class="flow-step"><span class="step-num" style="background:var(--accent-4)">7</span>Repartidor regresa al centro y confirma finalización en la app.</div>
+        </div>
+
+        <div class="row g-2 mt-3">
+          <div class="col-md-6">
+            <div style="background:#eaf2f8;border-radius:10px;padding:.8rem 1rem;border-left:3px solid var(--accent-4)">
+              <div style="font-weight:800;font-size:.9rem;color:var(--accent-4);margin-bottom:.3rem"><i class="fa-solid fa-calculator"></i> Calcular ruta eficiente</div>
+              <div style="font-size:.83rem;color:var(--text-mid);font-weight:600;line-height:1.5">Algoritmos + datos de mapas. Considera distancia, tráfico, restricciones y prioridades.</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div style="background:#eaf2f8;border-radius:10px;padding:.8rem 1rem;border-left:3px solid var(--accent-4)">
+              <div style="font-weight:800;font-size:.9rem;color:var(--accent-4);margin-bottom:.3rem"><i class="fa-solid fa-map-location-dot"></i> Navegación en tiempo real</div>
+              <div style="font-size:.83rem;color:var(--text-mid);font-weight:600;line-height:1.5">Instrucciones paso a paso. Se adapta a condiciones de tráfico cambiantes.</div>
+            </div>
+          </div>
+        </div>
+        <div class="uml-hint mt-2"><i class="fa-solid fa-circle-info"></i>
+          La app de logística actúa como <strong>actor sistema</strong> que ejecuta ambos sub-casos de uso.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       EJERCICIO 5 – PLATAFORMA CURSOS ONLINE
+  ═══════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-5">
+    <div class="slide-header animate__animated animate__fadeInDown">
+      <div class="slide-icon" style="background:var(--accent-5)"><i class="fa-solid fa-graduation-cap"></i></div>
+      <div>
+        <div class="slide-title">Plataforma de Cursos Online</div>
+        <div class="slide-subtitle">Caso de uso: Interacción con la plataforma según rol del usuario</div>
+      </div>
+    </div>
+
+    <div class="animate__animated animate__fadeInUp">
+
+      <!-- HERENCIA -->
+      <div class="card-box accent-5 mb-3">
+        <h5 style="color:var(--accent-5)"><i class="fa-solid fa-sitemap"></i> Jerarquía de actores (herencia)</h5>
+        <div class="inherit-tree">
+          <div class="inherit-parent"><i class="fa-solid fa-user-large"></i> Usuario <span style="font-weight:400;font-size:.85rem;opacity:.8">(actor base)</span></div>
+          <div class="inherit-children">
+            <div class="inherit-child"><i class="fa-solid fa-user-graduate" style="color:var(--accent-5)"></i> Estudiante</div>
+            <span class="inherit-arrow">▸</span>
+            <div class="inherit-child"><i class="fa-solid fa-chalkboard-user" style="color:var(--accent-5)"></i> Profesor</div>
+            <span class="inherit-arrow">▸</span>
+            <div class="inherit-child"><i class="fa-solid fa-user-shield" style="color:var(--accent-5)"></i> Administrador</div>
+            <span class="inherit-arrow">▸</span>
+            <div class="inherit-child"><i class="fa-solid fa-headset" style="color:var(--accent-5)"></i> Asistente Técnico</div>
+            <span class="inherit-arrow">▸</span>
+            <div class="inherit-child"><i class="fa-solid fa-person-chalkboard" style="color:var(--accent-5)"></i> Tutor</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROLES GRID -->
+      <div class="row g-3">
+        <!-- ESTUDIANTE -->
+        <div class="col-md-4">
+          <div class="card-box h-100" style="border-top-color:var(--accent-5)">
+            <h5 style="color:var(--accent-5)"><i class="fa-solid fa-user-graduate"></i> Estudiante</h5>
+            <div class="flow-wrap">
+              <div class="flow-step"><span class="step-num" style="background:var(--accent-5)">1</span>Navega cursos disponibles y se inscribe.</div>
+              <div class="flow-step"><span class="step-num" style="background:var(--accent-5)">2</span>Accede a material: videos, lecturas, cuestionarios.</div>
+              <div class="flow-step"><span class="step-num" style="background:var(--accent-5)">3</span>Realiza actividades y exámenes.</div>
+              <div class="flow-step"><span class="step-num" style="background:var(--accent-5)">4</span>Participa en foros de discusión.</div>
+            </div>
+          </div>
+        </div>
+        <!-- PROFESOR -->
+        <div class="col-md-4">
+          <div class="card-box h-100" style="border-top-color:#3a7bd5">
+            <h5 style="color:#3a7bd5"><i class="fa-solid fa-chalkboard-user"></i> Profesor</h5>
+            <div class="flow-wrap">
+              <div class="flow-step"><span class="step-num" style="background:#3a7bd5">1</span>Diseña y crea cursos con material y exámenes.</div>
+              <div class="flow-step"><span class="step-num" style="background:#3a7bd5">2</span>Evalúa actividades y exámenes.</div>
+              <div class="flow-step"><span class="step-num" style="background:#3a7bd5">3</span>Monitorea progreso y da retroalimentación.</div>
+              <div class="flow-step"><span class="step-num" style="background:#3a7bd5">4</span>Responde preguntas y participa en foros.</div>
+            </div>
+          </div>
+        </div>
+        <!-- ADMIN -->
+        <div class="col-md-4">
+          <div class="card-box h-100" style="border-top-color:#d62828">
+            <h5 style="color:#d62828"><i class="fa-solid fa-user-shield"></i> Administrador</h5>
+            <div class="flow-wrap">
+              <div class="flow-step"><span class="step-num" style="background:#d62828">1</span>Gestiona catálogo de cursos e info de usuarios.</div>
+              <div class="flow-step"><span class="step-num" style="background:#d62828">2</span>Asigna roles y permisos a usuarios.</div>
+              <div class="flow-step"><span class="step-num" style="background:#d62828">3</span>Monitorea uso de la plataforma y genera informes.</div>
+              <div class="flow-step"><span class="step-num" style="background:#d62828">4</span>Gestiona aspectos técnicos y administrativos.</div>
+            </div>
+          </div>
+        </div>
+        <!-- ASISTENTE -->
+        <div class="col-md-6">
+          <div class="card-box h-100" style="border-top-color:#f77f00">
+            <h5 style="color:#f77f00"><i class="fa-solid fa-headset"></i> Asistente Técnico</h5>
+            <div class="flow-wrap">
+              <div class="flow-step"><span class="step-num" style="background:#f77f00">1</span>Brinda soporte técnico a usuarios con problemas.</div>
+              <div class="flow-step"><span class="step-num" style="background:#f77f00">2</span>Reporta y ayuda a solucionar problemas técnicos.</div>
+              <div class="flow-step"><span class="step-num" style="background:#f77f00">3</span>Colabora con profesores y tutores en material del curso.</div>
+            </div>
+          </div>
+        </div>
+        <!-- TUTOR -->
+        <div class="col-md-6">
+          <div class="card-box h-100" style="border-top-color:#2dc653">
+            <h5 style="color:#2dc653"><i class="fa-solid fa-person-chalkboard"></i> Tutor</h5>
+            <div class="flow-wrap">
+              <div class="flow-step"><span class="step-num" style="background:#2dc653">1</span>Asiste a estudiantes en su proceso de aprendizaje.</div>
+              <div class="flow-step"><span class="step-num" style="background:#2dc653">2</span>Resuelve dudas específicas de los estudiantes.</div>
+              <div class="flow-step"><span class="step-num" style="background:#2dc653">3</span>Participa en foros y apoya en evaluaciones.</div>
+              <div class="flow-step"><span class="step-num" style="background:#2dc653">4</span>El usuario cierra sesión en la plataforma.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="uml-hint mt-3"><i class="fa-solid fa-circle-info"></i>
+        En el diagrama UML, los actores hijos <strong>heredan</strong> del actor base <em>Usuario</em> mediante flechas de generalización (triángulo hueco). Cada rol puede participar en distintos casos de uso.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /stage -->
+
+<!-- ─── PROGRESS BAR ─────────────────────────────────── -->
+<div id="progress-bar"><div id="progress-fill"></div></div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const TOTAL = 5;
+  let current = 1;
+
+  const accentColors = {
+    1: '#e63946', 2: '#2a9d8f', 3: '#e76f51', 4: '#457b9d', 5: '#6a4c93'
+  };
+  const titles = {
+    1: 'Tomar un Uber', 2: 'Pedido en Línea', 3: 'Telemetría Motocross',
+    4: 'Logística / Ruta', 5: 'Cursos Online'
+  };
+  const icons = {
+    1: 'fa-car', 2: 'fa-cart-shopping', 3: 'fa-gauge-high',
+    4: 'fa-route', 5: 'fa-graduation-cap'
+  };
+
+  // Build pills
+  const pillsContainer = document.getElementById('pills');
+  for (let i = 1; i <= TOTAL; i++) {
+    const p = document.createElement('button');
+    p.className = 'ex-pill' + (i === 1 ? ' active' : '');
+    p.textContent = i;
+    p.style.cssText = i === 1
+      ? `background:${accentColors[1]};color:#fff;border-color:${accentColors[1]}`
+      : '';
+    p.onclick = () => goTo(i);
+    p.id = `pill-${i}`;
+    pillsContainer.appendChild(p);
+  }
+
+  function goTo(n) {
+    const prev = document.getElementById(`slide-${current}`);
+    prev.classList.remove('active');
+    document.getElementById(`pill-${current}`).className = 'ex-pill';
+    document.getElementById(`pill-${current}`).style.cssText = '';
+
+    current = n;
+    const next = document.getElementById(`slide-${current}`);
+    next.classList.add('active');
+
+    // Re-trigger animation
+    const header = next.querySelector('.animate__animated');
+    if (header) {
+      header.style.animation = 'none';
+      header.offsetHeight; // reflow
+      header.style.animation = '';
+    }
+
+    // Update pill
+    const pill = document.getElementById(`pill-${current}`);
+    pill.classList.add('active');
+    pill.style.background = accentColors[current];
+    pill.style.borderColor = accentColors[current];
+
+    // Counter
+    document.getElementById('slide-counter').textContent = `Ejercicio ${current} / ${TOTAL}`;
+
+    // Progress
+    const pct = (current / TOTAL) * 100;
+    const fill = document.getElementById('progress-fill');
+    fill.style.width = pct + '%';
+    fill.style.background = accentColors[current];
+
+    // Nav buttons
+    document.getElementById('nav-prev').disabled = current === 1;
+    document.getElementById('nav-next').disabled = current === TOTAL;
+
+    // Scroll to top
+    document.getElementById('stage').scrollTop = 0;
+  }
+
+  function navigate(dir) {
+    const next = current + dir;
+    if (next >= 1 && next <= TOTAL) goTo(next);
+  }
+
+  // Init progress
+  document.getElementById('progress-fill').style.width = (1 / TOTAL * 100) + '%';
+  document.getElementById('progress-fill').style.background = accentColors[1];
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
+    if (e.key >= '1' && e.key <= '5') goTo(parseInt(e.key));
+  });
+
+  // Help button via SweetAlert2
+  document.getElementById('topbar').querySelector('.title-left').addEventListener('dblclick', () => {
+    Swal.fire({
+      title: '<strong>Atajos de teclado</strong>',
+      html: `
+        <div style="font-family:Nunito,sans-serif;font-size:1.1rem;text-align:left;line-height:2.2">
+          <b>→ / ↓</b> &nbsp; Siguiente ejercicio<br>
+          <b>← / ↑</b> &nbsp; Ejercicio anterior<br>
+          <b>1 – 5</b> &nbsp;&nbsp; Ir al ejercicio N°
+        </div>`,
+      icon: 'info',
+      confirmButtonText: '¡Entendido!',
+      confirmButtonColor: '#1a1f36',
+      background: '#fff',
+      customClass: { popup: 'rounded-4' }
+    });
+  });
+</script>
+
+</body>
+</html>
