@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UT3 – TA5 | Diagramas de Clases UML</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+<style>
+:root {
+  --bg-main: #0b0e1a;
+  --bg-card: #111827;
+  --bg-card2: #161d2e;
+  --accent1: #6366f1;
+  --accent2: #22d3ee;
+  --accent3: #f59e0b;
+  --accent4: #10b981;
+  --accent-danger: #ef4444;
+  --text-primary: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: rgba(99,102,241,0.25);
+  --glow: 0 0 30px rgba(99,102,241,0.3);
+  --font-main: 'Exo 2', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:var(--font-main);background:var(--bg-main);color:var(--text-primary);overflow:hidden;}
+
+/* ── PROGRESS BAR ── */
+#progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent1),var(--accent2));transition:width 0.4s ease;z-index:9999;}
+
+/* ── TOP NAV ── */
+#topbar{position:fixed;top:3px;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:rgba(11,14,26,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:999;}
+#topbar .brand{display:flex;align-items:center;gap:10px;font-size:.8rem;font-weight:600;color:var(--text-muted);}
+#topbar .brand i{color:var(--accent1);font-size:1rem;}
+#slide-counter{font-size:.78rem;font-weight:700;color:var(--accent2);font-family:var(--font-mono);letter-spacing:.05em;}
+#nav-btns{display:flex;gap:8px;}
+#nav-btns button{background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .2s;}
+#nav-btns button:hover{background:var(--accent1);border-color:var(--accent1);box-shadow:var(--glow);}
+#nav-btns button:disabled{opacity:.3;cursor:not-allowed;}
+
+/* ── SLIDES CONTAINER ── */
+#slides{position:fixed;top:48px;left:0;right:0;bottom:0;overflow-y:auto;}
+.slide{display:none;min-height:calc(100vh - 48px);padding:32px 40px;}
+.slide.active{display:flex;flex-direction:column;}
+
+/* ── COVER ── */
+.slide-cover{justify-content:center;align-items:center;text-align:center;background:radial-gradient(ellipse at 30% 40%,rgba(99,102,241,0.18) 0%,transparent 60%),radial-gradient(ellipse at 70% 60%,rgba(34,211,238,0.12) 0%,transparent 55%),var(--bg-main);}
+.cover-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,0.15);border:1px solid var(--accent1);color:var(--accent1);padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:600;margin-bottom:20px;}
+.cover-title{font-size:clamp(2rem,5vw,3.8rem);font-weight:800;line-height:1.1;background:linear-gradient(135deg,#fff 30%,var(--accent1) 70%,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;}
+.cover-subtitle{font-size:1.15rem;color:var(--text-muted);max-width:600px;margin:0 auto 32px;}
+.cover-chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:36px;}
+.cover-chip{background:var(--bg-card2);border:1px solid var(--border);padding:6px 16px;border-radius:8px;font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
+.cover-chip i{color:var(--accent2);}
+.btn-start{background:linear-gradient(135deg,var(--accent1),var(--accent2));border:none;padding:14px 36px;border-radius:10px;font-size:1rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.05em;transition:transform .2s,box-shadow .2s;}
+.btn-start:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(99,102,241,0.4);}
+
+/* ── SLIDE HEADERS ── */
+.slide-header{margin-bottom:28px;}
+.slide-tag{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;}
+.slide-title{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;color:#fff;line-height:1.2;}
+.slide-title span{color:var(--accent1);}
+.slide-desc{font-size:.95rem;color:var(--text-muted);margin-top:6px;}
+
+/* ── CARDS ── */
+.card-glass{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .2s,box-shadow .2s;}
+.card-glass:hover{border-color:rgba(99,102,241,0.5);box-shadow:0 4px 20px rgba(99,102,241,0.15);}
+.card-accent{border-left:3px solid var(--accent1);}
+.card-accent2{border-left:3px solid var(--accent2);}
+.card-accent3{border-left:3px solid var(--accent3);}
+.card-accent4{border-left:3px solid var(--accent4);}
+.card-title-sm{font-size:.85rem;font-weight:700;color:var(--accent1);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.card-title-sm i{font-size:.9rem;}
+
+/* ── UML SYNTAX ── */
+.uml-box{background:#0d1117;border:1px solid rgba(99,102,241,0.3);border-radius:10px;overflow:hidden;font-family:var(--font-mono);font-size:.78rem;}
+.uml-box-header{background:rgba(99,102,241,0.15);padding:8px 14px;font-weight:700;font-size:.8rem;color:var(--accent1);display:flex;align-items:center;justify-content:space-between;}
+.uml-box-header .uml-stereotype{color:var(--accent2);}
+.uml-box-body{padding:12px 14px;}
+.uml-attr{color:#86efac;} /* green - public */
+.uml-priv{color:#f87171;} /* red - private */
+.uml-prot{color:#fbbf24;} /* yellow - protected */
+.uml-method{color:#93c5fd;} /* blue - methods */
+.uml-divider{border-top:1px solid rgba(99,102,241,0.25);margin:6px 0;}
+.uml-line{padding:2px 0;display:flex;align-items:center;gap:6px;}
+
+/* ── RELATION PILLS ── */
+.rel-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);padding:4px 12px;border-radius:20px;font-size:.78rem;margin:3px;}
+.rel-pill.assoc{border-color:rgba(34,211,238,0.4);background:rgba(34,211,238,0.08);color:var(--accent2);}
+.rel-pill.comp{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.08);color:#f87171;}
+.rel-pill.agg{border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08);color:var(--accent3);}
+.rel-pill.inh{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08);color:var(--accent4);}
+.rel-pill.real{border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.08);color:#c084fc;}
+
+/* ── MERMAID CONTAINER ── */
+.mermaid-wrap{background:#0d1117;border:1px solid var(--border);border-radius:12px;padding:16px;overflow:auto;display:flex;justify-content:center;min-height:200px;}
+.mermaid-wrap svg{max-width:100%;height:auto;}
+
+/* ── TABS ── */
+.ex-tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:4px;}
+.ex-tab{background:none;border:none;color:var(--text-muted);padding:7px 16px;font-size:.85rem;font-weight:600;border-radius:6px 6px 0 0;cursor:pointer;transition:all .2s;font-family:var(--font-main);}
+.ex-tab.active{background:rgba(99,102,241,0.15);color:var(--accent1);border-bottom:2px solid var(--accent1);}
+.ex-tab:hover{color:var(--text-primary);}
+.ex-pane{display:none;}
+.ex-pane.active{display:block;animation:fadeIn .3s ease;}
+
+/* ── BADGE LIST ── */
+.badge-req{background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.25);color:var(--accent2);padding:3px 10px;border-radius:4px;font-size:.78rem;display:inline-flex;align-items:center;gap:5px;margin:2px;}
+.req-list{display:flex;flex-direction:column;gap:6px;}
+.req-item{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:var(--bg-card2);border-radius:8px;font-size:.85rem;border-left:2px solid var(--accent1);}
+.req-item i{color:var(--accent1);margin-top:2px;flex-shrink:0;}
+
+/* ── CONCEPT CHIPS ── */
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px;}
+.concept-card{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:14px;transition:all .2s;}
+.concept-card:hover{border-color:var(--accent1);transform:translateY(-2px);}
+.concept-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:.9rem;}
+.concept-name{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:4px;}
+.concept-desc{font-size:.76rem;color:var(--text-muted);line-height:1.4;}
+
+/* ── QUIZ ── */
+.quiz-q{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.quiz-q .q-text{font-size:.95rem;font-weight:600;margin-bottom:14px;color:#fff;}
+.quiz-opt{background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.85rem;cursor:pointer;margin-bottom:6px;transition:all .2s;display:block;text-align:left;color:var(--text-primary);width:100%;}
+.quiz-opt:hover{border-color:var(--accent1);background:rgba(99,102,241,0.1);}
+.quiz-opt.correct{border-color:var(--accent4);background:rgba(16,185,129,0.12);color:#6ee7b7;}
+.quiz-opt.wrong{border-color:var(--accent-danger);background:rgba(239,68,68,0.1);color:#fca5a5;}
+.quiz-score{background:linear-gradient(135deg,var(--bg-card),var(--bg-card2));border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;}
+
+/* ── RELATIONS DIAGRAM ── */
+.rel-diagram{display:flex;flex-direction:column;gap:12px;}
+.rel-row{display:flex;align-items:center;gap:12px;background:var(--bg-card2);border-radius:8px;padding:12px 16px;}
+.rel-symbol{font-size:1.2rem;min-width:40px;text-align:center;}
+.rel-name{font-weight:700;font-size:.9rem;min-width:120px;}
+.rel-desc{font-size:.82rem;color:var(--text-muted);}
+
+/* ── CLOSING ── */
+.slide-close{justify-content:center;align-items:center;text-align:center;background:radial-gradient(ellipse at center,rgba(99,102,241,0.15) 0%,transparent 70%),var(--bg-main);}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(99,102,241,0.4);border-radius:3px;}
+
+/* ── KEYBOARD HINT ── */
+#kbd-hint{position:fixed;bottom:16px;right:20px;font-size:.72rem;color:rgba(148,163,184,.4);display:flex;align-items:center;gap:6px;}
+kbd{background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.2);padding:2px 6px;border-radius:4px;font-size:.72rem;}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="topbar">
+  <div class="brand"><i class="fas fa-diagram-project"></i> UT3 – TA5 | Diagramas de Clases UML</div>
+  <span id="slide-counter">01 / 12</span>
+  <div id="nav-btns">
+    <button id="btn-prev" onclick="changeSlide(-1)" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+    <button id="btn-next" onclick="changeSlide(1)">Siguiente <i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<div id="slides">
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 0 – COVER
+═══════════════════════════════════════════════════════════ -->
+<div class="slide slide-cover active" id="slide-0">
+  <div class="animate__animated animate__fadeInDown">
+    <div class="cover-badge"><i class="fas fa-code-branch"></i> Unidad Temática 3 – UML</div>
+    <h1 class="cover-title">Diagramas de<br>Clases UML</h1>
+    <p class="cover-subtitle">Trabajo de Aplicación 5 · Modelado orientado a objetos con diagramas de clases, relaciones y principios de diseño.</p>
+    <div class="cover-chips">
+      <div class="cover-chip"><i class="fas fa-layer-group"></i> 6 ejercicios</div>
+      <div class="cover-chip"><i class="fas fa-sitemap"></i> Herencia · Composición · Agregación</div>
+      <div class="cover-chip"><i class="fas fa-circle-nodes"></i> Diagramas UML interactivos</div>
+      <div class="cover-chip"><i class="fas fa-brain"></i> Quiz de evaluación</div>
+    </div>
+    <button class="btn-start" onclick="changeSlide(1)"><i class="fas fa-play me-2"></i>Comenzar presentación</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 1 – ¿Qué es un Diagrama de Clases?
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-1">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-book-open"></i> Fundamentos</div>
+    <h2 class="slide-title">¿Qué es un <span>Diagrama de Clases</span>?</h2>
+    <p class="slide-desc">El diagrama más utilizado en UML para modelar la estructura estática de un sistema.</p>
+  </div>
+  <div class="row g-3 animate__animated animate__fadeInUp">
+    <div class="col-md-6">
+      <div class="card-glass card-accent h-100">
+        <div class="card-title-sm"><i class="fas fa-info-circle"></i> Definición</div>
+        <p style="font-size:.9rem;color:var(--text-muted);line-height:1.7">Un <strong style="color:#fff">diagrama de clases</strong> es un tipo de diagrama estructural en UML que describe la estructura de un sistema mostrando sus <strong style="color:var(--accent2)">clases</strong>, <strong style="color:var(--accent2)">atributos</strong>, <strong style="color:var(--accent2)">operaciones</strong> y las <strong style="color:var(--accent2)">relaciones</strong> entre los objetos.</p>
+        <div style="margin-top:14px;padding:12px;background:rgba(99,102,241,0.1);border-radius:8px;font-size:.82rem;color:var(--accent2)">
+          <i class="fas fa-lightbulb me-2"></i><strong>¿Para qué sirve?</strong> Representar el "plano" del software: qué entidades existen y cómo se relacionan entre sí.
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card-glass card-accent2 h-100">
+        <div class="card-title-sm" style="color:var(--accent2)"><i class="fas fa-cubes"></i> Usos principales</div>
+        <div class="req-list">
+          <div class="req-item"><i class="fas fa-check"></i><span>Modelar el dominio del problema (análisis)</span></div>
+          <div class="req-item"><i class="fas fa-check"></i><span>Diseñar la arquitectura de clases (diseño)</span></div>
+          <div class="req-item"><i class="fas fa-check"></i><span>Generar código esqueleto (forward engineering)</span></div>
+          <div class="req-item"><i class="fas fa-check"></i><span>Documentar código existente (reverse engineering)</span></div>
+          <div class="req-item"><i class="fas fa-check"></i><span>Comunicar diseño entre equipo de desarrollo</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="card-glass">
+        <div class="card-title-sm"><i class="fas fa-table-cells"></i> Estructura de una Clase en UML</div>
+        <div class="row g-3 align-items-center">
+          <div class="col-md-4">
+            <div class="uml-box">
+              <div class="uml-box-header"><span class="uml-stereotype">&lt;&lt;clase&gt;&gt;</span><span>NombreClase</span></div>
+              <div class="uml-box-body">
+                <div class="uml-line"><span class="uml-priv">– atribPrivado : Tipo</span></div>
+                <div class="uml-line"><span class="uml-prot">&#35; atribProtegido : Tipo</span></div>
+                <div class="uml-line"><span class="uml-attr">+ atribPublico : Tipo</span></div>
+                <div class="uml-divider"></div>
+                <div class="uml-line"><span class="uml-method">+ metodoPublico() : void</span></div>
+                <div class="uml-line"><span class="uml-priv">– metodoPriv() : bool</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="row g-2">
+              <div class="col-6"><div class="card-glass" style="padding:12px"><span class="rel-pill inh"><i class="fas fa-hashtag"></i> Nombre de clase</span><p style="font-size:.78rem;color:var(--text-muted);margin-top:6px">Identificador único. Por convención: <strong style="color:#fff">PascalCase</strong>. Aparece en el compartimento superior.</p></div></div>
+              <div class="col-6"><div class="card-glass" style="padding:12px"><span class="rel-pill assoc"><i class="fas fa-list"></i> Atributos</span><p style="font-size:.78rem;color:var(--text-muted);margin-top:6px">Compartimento medio. Formato: <code style="color:var(--accent2)">visibilidad nombre : Tipo</code></p></div></div>
+              <div class="col-6"><div class="card-glass" style="padding:12px"><span class="rel-pill comp"><i class="fas fa-gears"></i> Operaciones</span><p style="font-size:.78rem;color:var(--text-muted);margin-top:6px">Compartimento inferior. Métodos y comportamientos de la clase.</p></div></div>
+              <div class="col-6"><div class="card-glass" style="padding:12px"><span class="rel-pill agg"><i class="fas fa-eye"></i> Visibilidad</span><p style="font-size:.78rem;color:var(--text-muted);margin-top:6px"><code style="color:#86efac">+</code> público &nbsp; <code style="color:#f87171">–</code> privado &nbsp; <code style="color:#fbbf24">#</code> protegido</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 2 – TIPOS DE RELACIONES
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-2">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-arrows-left-right"></i> Relaciones</div>
+    <h2 class="slide-title">Tipos de <span>Relaciones</span> entre Clases</h2>
+    <p class="slide-desc">Las relaciones definen cómo las clases se conectan y dependen entre sí.</p>
+  </div>
+  <div class="row g-3 animate__animated animate__fadeInUp">
+    <div class="col-12">
+      <div class="rel-diagram">
+        <div class="rel-row">
+          <div class="rel-symbol" style="color:var(--accent4)"><i class="fas fa-arrow-up-long"></i></div>
+          <div><div class="rel-name" style="color:var(--accent4)">Herencia (Generalización)</div><div class="rel-desc">Una clase hija <strong style="color:#fff">hereda</strong> atributos y métodos de una clase padre. Notación: flecha con triángulo hueco <code style="color:var(--accent4)">──▷</code>. Ej: <em>Administrador hereda de Empleado</em></div></div>
+        </div>
+        <div class="rel-row">
+          <div class="rel-symbol" style="color:#c084fc"><i class="fas fa-plug"></i></div>
+          <div><div class="rel-name" style="color:#c084fc">Realización (Interfaz)</div><div class="rel-desc">Una clase <strong style="color:#fff">implementa</strong> los métodos definidos en una interfaz. Notación: flecha de línea punteada con triángulo hueco <code style="color:#c084fc">- - ▷</code>. Ej: <em>TarjetaCredito implementa MedioPago</em></div></div>
+        </div>
+        <div class="rel-row">
+          <div class="rel-symbol" style="color:var(--accent2)"><i class="fas fa-link"></i></div>
+          <div><div class="rel-name" style="color:var(--accent2)">Asociación</div><div class="rel-desc">Relación <strong style="color:#fff">estructural</strong> entre dos clases. Ambas pueden existir de forma independiente. Notación: línea sólida <code style="color:var(--accent2)">──</code>. Se incluye multiplicidad. Ej: <em>Estudiante se inscribe en Curso</em></div></div>
+        </div>
+        <div class="rel-row">
+          <div class="rel-symbol" style="color:var(--accent3)"><i class="fas fa-diamond"></i></div>
+          <div><div class="rel-name" style="color:var(--accent3)">Agregación</div><div class="rel-desc">Relación <strong style="color:#fff">"tiene un"</strong> débil. La parte <strong>puede existir</strong> sin el todo. Notación: rombo hueco en el todo <code style="color:var(--accent3)">◇──</code>. Ej: <em>Universidad agrega Profesores (el profesor puede existir sin la universidad)</em></div></div>
+        </div>
+        <div class="rel-row">
+          <div class="rel-symbol" style="color:var(--accent-danger)"><i class="fas fa-diamond" style="color:var(--accent-danger)"></i></div>
+          <div><div class="rel-name" style="color:var(--accent-danger)">Composición</div><div class="rel-desc">Relación <strong style="color:#fff">"parte de"</strong> fuerte. La parte <strong>NO puede existir</strong> sin el todo. Notación: rombo sólido <code style="color:var(--accent-danger)">◆──</code>. Ej: <em>Cuenta contiene Transacciones (la transacción no existe sin la cuenta)</em></div></div>
+        </div>
+        <div class="rel-row">
+          <div class="rel-symbol" style="color:#94a3b8"><i class="fas fa-arrow-right-arrow-left"></i></div>
+          <div><div class="rel-name" style="color:#94a3b8">Dependencia</div><div class="rel-desc">Relación <strong style="color:#fff">débil y temporal</strong>. Una clase usa a otra pero no la contiene. Notación: flecha punteada <code style="color:#94a3b8">- - →</code>. Ej: <em>EmpleadoAdmin usa temporalmente un Informe</em></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="card-glass" style="padding:14px">
+        <div class="card-title-sm"><i class="fas fa-sort-numeric-up"></i> Multiplicidad – Cardinalidad</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+          <span class="rel-pill assoc"><code>1</code> exactamente uno</span>
+          <span class="rel-pill assoc"><code>0..1</code> cero o uno</span>
+          <span class="rel-pill assoc"><code>1..*</code> uno o muchos</span>
+          <span class="rel-pill assoc"><code>0..*</code> cero o muchos</span>
+          <span class="rel-pill assoc"><code>*</code> muchos (sin límite)</span>
+          <span class="rel-pill assoc"><code>3..5</code> entre 3 y 5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 3 – EJ 1: BIBLIOTECA
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-3">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-book"></i> Ejercicio 1</div>
+    <h2 class="slide-title">Sistema de Gestión de <span>Biblioteca</span></h2>
+    <p class="slide-desc">Modelado de una biblioteca con libros, autores, miembros, préstamos y empleados.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="switchTab(this,'ej1-req')"><i class="fas fa-list-check me-1"></i>Requisitos</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej1-diag')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej1-conc')"><i class="fas fa-brain me-1"></i>Conceptos Clave</button>
+    </div>
+    <div id="ej1-req" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-glass card-accent h-100">
+            <div class="card-title-sm"><i class="fas fa-file-lines"></i> Análisis de Requisitos</div>
+            <div class="req-list">
+              <div class="req-item"><i class="fas fa-book"></i><span>La biblioteca tiene varios <strong>Libros</strong>, cada uno con múltiples <strong>Autores</strong></span></div>
+              <div class="req-item"><i class="fas fa-tags"></i><span>Los libros se clasifican en distintos <strong>Géneros</strong> (Ficción, No Ficción, etc.)</span></div>
+              <div class="req-item"><i class="fas fa-user"></i><span>Los libros pueden ser prestados a <strong>Miembros</strong>. Un miembro tiene un límite máximo de préstamos</span></div>
+              <div class="req-item"><i class="fas fa-calendar"></i><span>El <strong>Préstamo</strong> registra la relación entre miembro y libro con fechas</span></div>
+              <div class="req-item"><i class="fas fa-briefcase"></i><span>Los <strong>Empleados</strong> gestionan préstamos y devoluciones</span></div>
+              <div class="req-item"><i class="fas fa-shield"></i><span>Los <strong>Administradores</strong> son empleados con privilegios adicionales para agregar/eliminar libros</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-glass card-accent2">
+            <div class="card-title-sm" style="color:var(--accent2)"><i class="fas fa-cubes"></i> Clases Identificadas</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Libro</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Autor</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Género</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Miembro</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Préstamo</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Empleado</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Administrador</span>
+            </div>
+            <div class="card-title-sm" style="color:var(--accent3);margin-top:12px"><i class="fas fa-arrows-left-right"></i> Relaciones Clave</div>
+            <div>
+              <span class="rel-pill inh"><i class="fas fa-arrow-up-long"></i> Administrador → Empleado</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Libro ↔ Autor (muchos a muchos)</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Libro → Género</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Miembro → Préstamo</span>
+              <span class="rel-pill comp"><i class="fas fa-diamond"></i> Préstamo → Libro</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Empleado → Préstamo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ej1-diag" class="ex-pane">
+      <div class="mermaid-wrap" id="diag1-wrap"><div style="color:var(--text-muted);font-size:.85rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="diag1-code" style="display:none">classDiagram
+    direction LR
+    class Libro {
+        +String isbn
+        +String titulo
+        +int anio
+        +String editorial
+        +obtenerInfo() String
+    }
+    class Autor {
+        +String nombre
+        +String nacionalidad
+        +String biografia
+    }
+    class Genero {
+        +String nombre
+        +String descripcion
+    }
+    class Miembro {
+        +String nombre
+        +String email
+        +int maxPrestamos
+        +prestarLibro()
+        +devolverLibro()
+    }
+    class Prestamo {
+        +Date fechaInicio
+        +Date fechaVencimiento
+        +String estado
+        +registrar()
+        +renovar()
+    }
+    class Empleado {
+        +String nombre
+        +String legajo
+        +gestionarPrestamo()
+        +registrarDevolucion()
+    }
+    class Administrador {
+        +agregarLibro()
+        +eliminarLibro()
+        +modificarInfo()
+    }
+    Libro "1..*" -- "1..*" Autor : escrito por
+    Libro "1..*" -- "1" Genero : pertenece a
+    Miembro "1" -- "0..*" Prestamo : realiza
+    Prestamo "1" -- "1..*" Libro : incluye
+    Empleado "1" -- "0..*" Prestamo : gestiona
+    Administrador --|> Empleado</div>
+    </div>
+    <div id="ej1-conc" class="ex-pane">
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(16,185,129,0.15);color:var(--accent4)"><i class="fas fa-arrow-up-long"></i></div>
+          <div class="concept-name">Herencia</div>
+          <div class="concept-desc"><strong>Administrador</strong> extiende <strong>Empleado</strong>. Hereda todos sus atributos y métodos, y agrega capacidades adicionales de gestión del sistema.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(34,211,238,0.15);color:var(--accent2)"><i class="fas fa-link"></i></div>
+          <div class="concept-name">Asociación M:M</div>
+          <div class="concept-desc">Un <strong>Libro</strong> puede tener múltiples <strong>Autores</strong> y un autor puede haber escrito múltiples libros → relación muchos a muchos.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(245,158,11,0.15);color:var(--accent3)"><i class="fas fa-calendar-check"></i></div>
+          <div class="concept-name">Clase Asociativa</div>
+          <div class="concept-desc"><strong>Préstamo</strong> actúa como clase asociativa: materializa la relación entre Miembro y Libro, agregando atributos propios (fechas, estado).</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(99,102,241,0.15);color:var(--accent1)"><i class="fas fa-tag"></i></div>
+          <div class="concept-name">Multiplicidad</div>
+          <div class="concept-desc">Un <strong>Miembro</strong> puede tener entre 0 y maxPrestamos libros prestados. Esta restricción se modela en la relación Miembro → Préstamo.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 4 – EJ 2: UNIVERSIDAD
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-4">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-university"></i> Ejercicio 2</div>
+    <h2 class="slide-title">Sistema de Gestión de <span>Universidad</span></h2>
+    <p class="slide-desc">Departamentos, cursos, módulos, docentes y estudiantes bajo una jerarquía de herencia.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="switchTab(this,'ej2-req')"><i class="fas fa-list-check me-1"></i>Requisitos</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej2-diag')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej2-conc')"><i class="fas fa-brain me-1"></i>Conceptos Clave</button>
+    </div>
+    <div id="ej2-req" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-glass card-accent h-100">
+            <div class="card-title-sm"><i class="fas fa-file-lines"></i> Análisis de Requisitos</div>
+            <div class="req-list">
+              <div class="req-item"><i class="fas fa-building-columns"></i><span>La universidad tiene varios <strong>Departamentos</strong> (CS, Matemáticas, etc.)</span></div>
+              <div class="req-item"><i class="fas fa-book-open"></i><span>Cada departamento ofrece múltiples <strong>Cursos</strong></span></div>
+              <div class="req-item"><i class="fas fa-chalkboard-teacher"></i><span>Un <strong>Profesor</strong> imparte el curso; múltiples <strong>Estudiantes</strong> se inscriben</span></div>
+              <div class="req-item"><i class="fas fa-people-group"></i><span><strong>Profesores</strong> y <strong>Estudiantes</strong> son subtipos de <strong>Persona</strong></span></div>
+              <div class="req-item"><i class="fas fa-puzzle-piece"></i><span>Los cursos se componen de <strong>Módulos</strong> con temas y recursos (slides, lecturas)</span></div>
+              <div class="req-item"><i class="fas fa-id-badge"></i><span>Los <strong>Empleados administrativos</strong> gestionan inscripciones</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-glass card-accent2">
+            <div class="card-title-sm" style="color:var(--accent2)"><i class="fas fa-cubes"></i> Clases Identificadas</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Persona</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Profesor</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Estudiante</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Departamento</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Curso</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Módulo</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> EmplAdmin</span>
+            </div>
+            <div class="card-title-sm" style="color:var(--accent3);margin-top:12px"><i class="fas fa-arrows-left-right"></i> Relaciones Clave</div>
+            <div>
+              <span class="rel-pill inh"><i class="fas fa-arrow-up-long"></i> Profesor → Persona</span>
+              <span class="rel-pill inh"><i class="fas fa-arrow-up-long"></i> Estudiante → Persona</span>
+              <span class="rel-pill comp"><i class="fas fa-diamond"></i> Depto ◆→ Cursos</span>
+              <span class="rel-pill comp"><i class="fas fa-diamond"></i> Curso ◆→ Módulos</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Estudiante ↔ Curso (M:M)</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Profesor → Curso (1:N)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ej2-diag" class="ex-pane">
+      <div class="mermaid-wrap" id="diag2-wrap"><div style="color:var(--text-muted);font-size:.85rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="diag2-code" style="display:none">classDiagram
+    direction TB
+    class Persona {
+        +String nombre
+        +String email
+        +String dni
+    }
+    class Profesor {
+        +String especialidad
+        +String titulo
+        +impartirCurso()
+    }
+    class Estudiante {
+        +String matricula
+        +float promedio
+        +inscribirse()
+        +darBaja()
+    }
+    class Departamento {
+        +String nombre
+        +String area
+        +String director
+    }
+    class Curso {
+        +String codigo
+        +String nombre
+        +int creditos
+        +String horario
+    }
+    class Modulo {
+        +int numero
+        +String tema
+        +String recursos
+        +String tipo
+    }
+    class EmpleadoAdministrativo {
+        +String nombre
+        +String cargo
+        +gestionarInscripcion()
+        +actualizarDatos()
+    }
+    Profesor --|> Persona
+    Estudiante --|> Persona
+    Departamento "1" *-- "1..*" Curso
+    Curso "1" *-- "1..*" Modulo
+    Profesor "1" -- "1..*" Curso : imparte
+    Estudiante "1..*" -- "1..*" Curso : inscripto en
+    EmpleadoAdministrativo -- Curso : gestiona inscripcion</div>
+    </div>
+    <div id="ej2-conc" class="ex-pane">
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(16,185,129,0.15);color:var(--accent4)"><i class="fas fa-sitemap"></i></div>
+          <div class="concept-name">Jerarquía de Herencia</div>
+          <div class="concept-desc"><strong>Persona</strong> es la clase base (abstracta). <strong>Profesor</strong> y <strong>Estudiante</strong> heredan sus atributos comunes y agregan los propios de su rol.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(239,68,68,0.15);color:#f87171"><i class="fas fa-diamond"></i></div>
+          <div class="concept-name">Composición</div>
+          <div class="concept-desc"><strong>Departamento ◆→ Curso</strong> y <strong>Curso ◆→ Módulo</strong>: composición. Si se elimina el curso, los módulos dejan de existir.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(34,211,238,0.15);color:var(--accent2)"><i class="fas fa-table-cells"></i></div>
+          <div class="concept-name">Relación M:M</div>
+          <div class="concept-desc">Un <strong>Estudiante</strong> puede inscribirse en muchos cursos y un <strong>Curso</strong> tiene muchos estudiantes. En implementación se usa tabla intermedia (Inscripción).</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(245,158,11,0.15);color:var(--accent3)"><i class="fas fa-file-powerpoint"></i></div>
+          <div class="concept-name">Atributo Multivalorado</div>
+          <div class="concept-desc"><strong>Módulo.recursos</strong> puede representarse como multivalorado o con una clase separada <em>Recurso</em> si necesitamos tipificar (presentación, lectura, video).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 5 – EJ 3: BARBERÍA
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-5">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-scissors"></i> Ejercicio 3</div>
+    <h2 class="slide-title">Sistema de Gestión de <span>Barberías</span></h2>
+    <p class="slide-desc">Cadena de sucursales con barberos, servicios por pasos, citas y gerentes.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="switchTab(this,'ej3-req')"><i class="fas fa-list-check me-1"></i>Requisitos</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej3-diag')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej3-conc')"><i class="fas fa-brain me-1"></i>Conceptos Clave</button>
+    </div>
+    <div id="ej3-req" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-glass card-accent h-100">
+            <div class="card-title-sm"><i class="fas fa-file-lines"></i> Análisis de Requisitos</div>
+            <div class="req-list">
+              <div class="req-item"><i class="fas fa-store"></i><span>La cadena tiene varias <strong>Sucursales</strong></span></div>
+              <div class="req-item"><i class="fas fa-scissors"></i><span>Cada sucursal tiene múltiples <strong>Barberos</strong></span></div>
+              <div class="req-item"><i class="fas fa-spa"></i><span>Los barberos ofrecen <strong>Servicios</strong> (corte, afeitado, barba)</span></div>
+              <div class="req-item"><i class="fas fa-list-ol"></i><span>Los servicios se componen de <strong>Pasos</strong> (proceso + productos)</span></div>
+              <div class="req-item"><i class="fas fa-calendar-plus"></i><span>Los <strong>Clientes</strong> reservan <strong>Citas</strong> con un barbero, en una sucursal, para un servicio</span></div>
+              <div class="req-item"><i class="fas fa-user-tie"></i><span>Cada sucursal tiene un <strong>Gerente</strong> (que es un barbero con rol especial)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-glass card-accent2">
+            <div class="card-title-sm" style="color:var(--accent2)"><i class="fas fa-cubes"></i> Clases Identificadas</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Sucursal</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Barbero</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Gerente</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Servicio</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Paso</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Cliente</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Cita</span>
+            </div>
+            <div class="card-title-sm" style="color:var(--accent3);margin-top:12px"><i class="fas fa-arrows-left-right"></i> Relaciones Clave</div>
+            <div>
+              <span class="rel-pill inh"><i class="fas fa-arrow-up-long"></i> Gerente → Barbero</span>
+              <span class="rel-pill agg"><i class="fas fa-diamond"></i> Sucursal ◇→ Barberos</span>
+              <span class="rel-pill comp"><i class="fas fa-diamond"></i> Servicio ◆→ Pasos</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Cliente → Cita (1:N)</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Cita → Barbero, Servicio, Sucursal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ej3-diag" class="ex-pane">
+      <div class="mermaid-wrap" id="diag3-wrap"><div style="color:var(--text-muted);font-size:.85rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="diag3-code" style="display:none">classDiagram
+    direction LR
+    class Sucursal {
+        +String direccion
+        +String telefono
+        +String ciudad
+    }
+    class Barbero {
+        +String nombre
+        +String especialidad
+        +atenderCliente()
+    }
+    class Gerente {
+        +supervisar()
+        +gestionarPersonal()
+    }
+    class Servicio {
+        +String nombre
+        +float precio
+        +int duracionMin
+    }
+    class Paso {
+        +int orden
+        +String descripcion
+        +String productos
+    }
+    class Cliente {
+        +String nombre
+        +String telefono
+        +String email
+        +reservarCita()
+    }
+    class Cita {
+        +Date fecha
+        +String hora
+        +String estado
+        +confirmar()
+        +cancelar()
+    }
+    Gerente --|> Barbero
+    Sucursal "1" o-- "1..*" Barbero : emplea
+    Sucursal "1" -- "1" Gerente : dirigida por
+    Barbero "1..*" -- "1..*" Servicio : ofrece
+    Servicio "1" *-- "1..*" Paso
+    Cliente "1" -- "0..*" Cita : reserva
+    Cita -- Barbero
+    Cita -- Servicio
+    Cita -- Sucursal</div>
+    </div>
+    <div id="ej3-conc" class="ex-pane">
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(239,68,68,0.15);color:#f87171"><i class="fas fa-diamond"></i></div>
+          <div class="concept-name">Composición vs Agregación</div>
+          <div class="concept-desc"><strong>Servicio ◆→ Paso</strong>: composición (un paso no existe sin su servicio). <strong>Sucursal ◇→ Barbero</strong>: agregación (el barbero puede trabajar en otra sucursal).</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(16,185,129,0.15);color:var(--accent4)"><i class="fas fa-arrow-up-long"></i></div>
+          <div class="concept-name">Herencia de Rol</div>
+          <div class="concept-desc"><strong>Gerente</strong> hereda de <strong>Barbero</strong>: es un barbero con responsabilidades adicionales. Aplica el principio <em>"is-a"</em> de la OOP.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(245,158,11,0.15);color:var(--accent3)"><i class="fas fa-calendar-check"></i></div>
+          <div class="concept-name">Clase Mediadora</div>
+          <div class="concept-desc"><strong>Cita</strong> conecta Cliente, Barbero, Servicio y Sucursal. Es un ejemplo de clase que centraliza una interacción compleja entre múltiples entidades.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(99,102,241,0.15);color:var(--accent1)"><i class="fas fa-clock"></i></div>
+          <div class="concept-name">Restricción de Negocio</div>
+          <div class="concept-desc">Un cliente solo puede tener <strong>una cita simultánea</strong> con el mismo barbero. Esta regla de negocio puede modelarse como restricción OCL o en el método <em>reservarCita()</em>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 6 – EJ 4: BANCO
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-6">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-landmark"></i> Ejercicio 4</div>
+    <h2 class="slide-title">Sistema de Gestión <span>Bancario</span></h2>
+    <p class="slide-desc">Banco con departamentos, cuentas, transacciones, clientes y empleados administrativos.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="switchTab(this,'ej4-req')"><i class="fas fa-list-check me-1"></i>Requisitos</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej4-diag')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej4-conc')"><i class="fas fa-brain me-1"></i>Conceptos Clave</button>
+    </div>
+    <div id="ej4-req" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-glass card-accent h-100">
+            <div class="card-title-sm"><i class="fas fa-file-lines"></i> Análisis de Requisitos</div>
+            <div class="req-list">
+              <div class="req-item"><i class="fas fa-landmark"></i><span><strong>Banco</strong>: nombre, dirección, teléfono. Contiene departamentos.</span></div>
+              <div class="req-item"><i class="fas fa-building"></i><span><strong>Departamento</strong>: Banca Personal, Corporativa, Inversión. Ofrece cuentas.</span></div>
+              <div class="req-item"><i class="fas fa-credit-card"></i><span><strong>Cuenta</strong>: número, saldo, tipo. Tiene <em>composición</em> con Transacciones.</span></div>
+              <div class="req-item"><i class="fas fa-user-circle"></i><span><strong>Cliente</strong>: nombre, número ID, dirección. Tiene <em>agregación</em> con Cuentas.</span></div>
+              <div class="req-item"><i class="fas fa-exchange-alt"></i><span><strong>Transacción</strong>: fecha, monto, tipo (depósito, retiro, transferencia).</span></div>
+              <div class="req-item"><i class="fas fa-id-badge"></i><span><strong>EmpleadoAdministrativo</strong>: gestiona clientes y realiza transacciones.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-glass card-accent2">
+            <div class="card-title-sm" style="color:var(--accent2)"><i class="fas fa-diagram-project"></i> Relaciones Especificadas</div>
+            <div class="req-list" style="font-size:.82rem">
+              <div class="req-item"><i class="fas fa-diamond" style="color:#f87171"></i><span><strong>Cuenta ◆→ Transacción</strong>: composición. La transacción no existe sin la cuenta.</span></div>
+              <div class="req-item"><i class="fas fa-diamond" style="color:var(--accent3)"></i><span><strong>Cliente ◇→ Cuenta</strong>: agregación. El cliente existe aunque no tenga cuentas.</span></div>
+              <div class="req-item"><i class="fas fa-diamond" style="color:var(--accent3)"></i><span><strong>EmplAdmin ◇→ Cliente</strong>: agregación. Gestiona clientes pero no los posee.</span></div>
+              <div class="req-item"><i class="fas fa-diamond" style="color:var(--accent3)"></i><span><strong>EmplAdmin ◇→ Transacción</strong>: agregación. Realiza transacciones.</span></div>
+              <div class="req-item"><i class="fas fa-link" style="color:var(--accent2)"></i><span><strong>Banco ◇→ Departamento</strong>: agregación (los depto. podrían ser independientes).</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ej4-diag" class="ex-pane">
+      <div class="mermaid-wrap" id="diag4-wrap"><div style="color:var(--text-muted);font-size:.85rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="diag4-code" style="display:none">classDiagram
+    direction TB
+    class Banco {
+        +String nombre
+        +String direccion
+        +String telefono
+    }
+    class Departamento {
+        +String nombre
+        +String tipo
+    }
+    class Cuenta {
+        +String numeroCuenta
+        +float saldo
+        +String tipoCuenta
+        +depositar()
+        +retirar()
+    }
+    class Cliente {
+        +String nombre
+        +String numeroId
+        +String direccion
+        +String email
+    }
+    class Transaccion {
+        +Date fecha
+        +float monto
+        +String tipoTransaccion
+        +String referencia
+    }
+    class EmpleadoAdministrativo {
+        +String nombre
+        +String cargo
+        +abrirCuenta()
+        +realizarTransaccion()
+        +actualizarCliente()
+    }
+    Banco "1" o-- "1..*" Departamento
+    Departamento "1" -- "1..*" Cuenta : ofrece
+    Cliente "1" o-- "1..*" Cuenta : posee
+    Cuenta "1" *-- "1..*" Transaccion
+    EmpleadoAdministrativo "1" o-- "0..*" Cliente : gestiona
+    EmpleadoAdministrativo "1" o-- "0..*" Transaccion : realiza</div>
+    </div>
+    <div id="ej4-conc" class="ex-pane">
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(239,68,68,0.15);color:#f87171"><i class="fas fa-diamond"></i></div>
+          <div class="concept-name">Composición Cuenta–Transacción</div>
+          <div class="concept-desc">Una <strong>Transacción</strong> solo tiene sentido dentro de una <strong>Cuenta</strong>. Si la cuenta se elimina, las transacciones también. Ciclo de vida compartido.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(245,158,11,0.15);color:var(--accent3)"><i class="fas fa-cubes"></i></div>
+          <div class="concept-name">Agregación Cliente–Cuenta</div>
+          <div class="concept-desc">Un <strong>Cliente</strong> puede existir aunque cierre todas sus cuentas. Una cuenta también puede existir transitoriamente sin cliente activo. Ciclo de vida independiente.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(99,102,241,0.15);color:var(--accent1)"><i class="fas fa-tags"></i></div>
+          <div class="concept-name">Atributo Discriminador</div>
+          <div class="concept-desc"><strong>Cuenta.tipoCuenta</strong> y <strong>Transaccion.tipoTransaccion</strong> son discriminadores. Podrían modelarse con herencia (CuentaAhorro, CuentaCorriente) si los comportamientos difieren.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(34,211,238,0.15);color:var(--accent2)"><i class="fas fa-user-gear"></i></div>
+          <div class="concept-name">Empleado como Agente</div>
+          <div class="concept-desc"><strong>EmpleadoAdministrativo</strong> actúa como agente intermediario: gestiona entidades del sistema pero no las posee (agregación débil en ambas relaciones).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 7 – EJ 5: TIENDA ONLINE
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-7">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-cart-shopping"></i> Ejercicio 5</div>
+    <h2 class="slide-title">Sistema de <span>Tienda Online</span></h2>
+    <p class="slide-desc">E-commerce con productos, categorías, pedidos, medios de pago y promociones.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="switchTab(this,'ej5-req')"><i class="fas fa-list-check me-1"></i>Requisitos</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej5-diag')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej5-conc')"><i class="fas fa-brain me-1"></i>Conceptos Clave</button>
+    </div>
+    <div id="ej5-req" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-glass card-accent h-100">
+            <div class="card-title-sm"><i class="fas fa-file-lines"></i> Análisis de Requisitos</div>
+            <div class="req-list">
+              <div class="req-item"><i class="fas fa-box"></i><span><strong>Producto</strong>: nombre, descripción, precio, stock. Pertenece a una categoría.</span></div>
+              <div class="req-item"><i class="fas fa-tag"></i><span><strong>Categoría</strong>: electrónica, hogar, moda, etc.</span></div>
+              <div class="req-item"><i class="fas fa-receipt"></i><span>Los <strong>Clientes</strong> realizan <strong>Pedidos</strong> con número de seguimiento para rastreo.</span></div>
+              <div class="req-item"><i class="fas fa-credit-card"></i><span>Se puede pagar con <strong>Tarjeta de Crédito</strong> o <strong>PayPal</strong> (polimorfismo).</span></div>
+              <div class="req-item"><i class="fas fa-percent"></i><span>Las <strong>Promociones</strong> aplican descuentos a productos en fechas especiales.</span></div>
+              <div class="req-item"><i class="fas fa-truck"></i><span>El pedido tiene un estado de envío rastreable.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-glass card-accent2">
+            <div class="card-title-sm" style="color:var(--accent2)"><i class="fas fa-cubes"></i> Clases Identificadas</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Producto</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Categoria</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Cliente</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Pedido</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> MedioPago</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> TarjetaCredito</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> PayPal</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Promocion</span>
+            </div>
+            <div class="card-title-sm" style="color:var(--accent3);margin-top:12px"><i class="fas fa-plug"></i> Patrón Clave</div>
+            <div class="card-glass" style="padding:12px;background:rgba(192,132,252,0.08);border-color:rgba(192,132,252,0.3)">
+              <span class="rel-pill real"><i class="fas fa-plug"></i> MedioPago (abstracta/interfaz)</span>
+              <p style="font-size:.8rem;color:var(--text-muted);margin-top:8px">TarjetaCredito y PayPal <strong style="color:#c084fc">realizan</strong> la interfaz MedioPago. Esto permite polimorfismo: el Pedido no necesita saber qué medio de pago se usa.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ej5-diag" class="ex-pane">
+      <div class="mermaid-wrap" id="diag5-wrap"><div style="color:var(--text-muted);font-size:.85rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="diag5-code" style="display:none">classDiagram
+    direction TB
+    class Producto {
+        +String nombre
+        +String descripcion
+        +float precio
+        +int stock
+        +verificarStock() bool
+    }
+    class Categoria {
+        +String nombre
+        +String descripcion
+    }
+    class Cliente {
+        +String nombre
+        +String email
+        +String direccion
+        +realizarPedido()
+    }
+    class Pedido {
+        +String nroSeguimiento
+        +Date fecha
+        +String estado
+        +float total
+        +rastrear()
+        +calcularTotal()
+    }
+    class MedioPago {
+        <<interface>>
+        +procesar() bool
+        +validar() bool
+    }
+    class TarjetaCredito {
+        +String numero
+        +String titular
+        +Date vencimiento
+        +procesar() bool
+        +validar() bool
+    }
+    class PayPal {
+        +String cuentaEmail
+        +String token
+        +procesar() bool
+        +validar() bool
+    }
+    class Promocion {
+        +String nombre
+        +float descuento
+        +Date fechaInicio
+        +Date fechaFin
+        +aplicar()
+        +estaVigente() bool
+    }
+    Categoria "1" o-- "1..*" Producto
+    Cliente "1" -- "0..*" Pedido : realiza
+    Pedido "1..*" -- "1..*" Producto : contiene
+    Pedido "1" -- "1" MedioPago : pagado con
+    TarjetaCredito ..|> MedioPago
+    PayPal ..|> MedioPago
+    Promocion "0..*" -- "1..*" Producto : aplica a</div>
+    </div>
+    <div id="ej5-conc" class="ex-pane">
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(192,132,252,0.15);color:#c084fc"><i class="fas fa-plug"></i></div>
+          <div class="concept-name">Interfaz + Realización</div>
+          <div class="concept-desc"><strong>MedioPago</strong> es una interfaz. <strong>TarjetaCredito</strong> y <strong>PayPal</strong> la realizan (→ línea punteada). Permite agregar nuevos medios de pago sin modificar <em>Pedido</em> (OCP).</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(34,211,238,0.15);color:var(--accent2)"><i class="fas fa-layer-group"></i></div>
+          <div class="concept-name">Polimorfismo</div>
+          <div class="concept-desc"><em>pedido.pagar(medioPago)</em> funciona sin conocer si es tarjeta o PayPal. El tipo concreto se resuelve en tiempo de ejecución. Esto es <strong>polimorfismo de subtipo</strong>.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(245,158,11,0.15);color:var(--accent3)"><i class="fas fa-percent"></i></div>
+          <div class="concept-name">Asociación Temporal</div>
+          <div class="concept-desc"><strong>Promoción</strong> se asocia a <strong>Producto</strong> con vigencia temporal. En código esto requiere verificar <em>estaVigente()</em> antes de aplicar el descuento.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(16,185,129,0.15);color:var(--accent4)"><i class="fas fa-table-cells"></i></div>
+          <div class="concept-name">Línea de Pedido (Refinamiento)</div>
+          <div class="concept-desc">La relación M:M entre <strong>Pedido</strong> y <strong>Producto</strong> puede refinarse con clase <em>LineaPedido</em> (cantidad, precioUnitario) para no perder contexto del momento de compra.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 8 – EJ 6: SOFTWARE FACTORY
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-8">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-code"></i> Ejercicio 6</div>
+    <h2 class="slide-title">Sistema de <span>Software Factory</span></h2>
+    <p class="slide-desc">Empresa de desarrollo con equipos, programadores, proyectos por fases y clientes.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="switchTab(this,'ej6-req')"><i class="fas fa-list-check me-1"></i>Requisitos</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej6-diag')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="switchTab(this,'ej6-conc')"><i class="fas fa-brain me-1"></i>Conceptos Clave</button>
+    </div>
+    <div id="ej6-req" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-glass card-accent h-100">
+            <div class="card-title-sm"><i class="fas fa-file-lines"></i> Análisis de Requisitos</div>
+            <div class="req-list">
+              <div class="req-item"><i class="fas fa-building"></i><span>La <strong>Empresa</strong> tiene varios <strong>Equipos</strong> de desarrollo</span></div>
+              <div class="req-item"><i class="fas fa-users"></i><span>Cada equipo tiene varios <strong>Programadores</strong> con habilidades específicas</span></div>
+              <div class="req-item"><i class="fas fa-diagram-project"></i><span>Los <strong>Proyectos</strong> se dividen en <strong>Fases</strong> (análisis, diseño, desarrollo, pruebas)</span></div>
+              <div class="req-item"><i class="fas fa-handshake"></i><span>Los <strong>Clientes</strong> solicitan proyectos. Cada proyecto está asignado a un cliente.</span></div>
+              <div class="req-item"><i class="fas fa-calendar-alt"></i><span>El proyecto tiene nombre, descripción y fecha de inicio</span></div>
+              <div class="req-item"><i class="fas fa-id-badge"></i><span>El <strong>Personal Administrativo</strong> asigna proyectos, coordina recursos y hace seguimiento</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-glass card-accent2">
+            <div class="card-title-sm" style="color:var(--accent2)"><i class="fas fa-cubes"></i> Clases Identificadas</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Empresa</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Equipo</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Programador</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Proyecto</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Fase</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> Cliente</span>
+              <span class="badge-req"><i class="fas fa-circle-dot"></i> EmplAdmin</span>
+            </div>
+            <div class="card-title-sm" style="color:var(--accent3);margin-top:12px"><i class="fas fa-arrows-left-right"></i> Relaciones Clave</div>
+            <div>
+              <span class="rel-pill comp"><i class="fas fa-diamond"></i> Empresa ◆→ Equipos</span>
+              <span class="rel-pill agg"><i class="fas fa-diamond"></i> Equipo ◇→ Programadores</span>
+              <span class="rel-pill comp"><i class="fas fa-diamond"></i> Proyecto ◆→ Fases</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Cliente → Proyecto (1:N)</span>
+              <span class="rel-pill assoc"><i class="fas fa-link"></i> Equipo ↔ Proyecto (M:M)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ej6-diag" class="ex-pane">
+      <div class="mermaid-wrap" id="diag6-wrap"><div style="color:var(--text-muted);font-size:.85rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="diag6-code" style="display:none">classDiagram
+    direction LR
+    class Empresa {
+        +String nombre
+        +String rut
+        +String pais
+    }
+    class Equipo {
+        +String nombre
+        +int capacidadMax
+        +String tecnologias
+    }
+    class Programador {
+        +String nombre
+        +String habilidades
+        +int aniosExp
+        +desarrollar()
+        +reportarAvance()
+    }
+    class Proyecto {
+        +String nombre
+        +String descripcion
+        +Date fechaInicio
+        +Date fechaFin
+        +String estado
+    }
+    class Fase {
+        +String nombre
+        +String descripcion
+        +String estado
+        +Date inicio
+        +Date fin
+    }
+    class Cliente {
+        +String nombre
+        +String empresa
+        +String contacto
+        +solicitarProyecto()
+    }
+    class EmpleadoAdministrativo {
+        +String nombre
+        +String cargo
+        +asignarProyecto()
+        +coordinarRecursos()
+        +realizarSeguimiento()
+    }
+    Empresa "1" *-- "1..*" Equipo
+    Equipo "1" o-- "1..*" Programador
+    Proyecto "1" *-- "1..*" Fase
+    Cliente "1" -- "1..*" Proyecto : solicita
+    Equipo "1..*" -- "1..*" Proyecto : desarrolla
+    EmpleadoAdministrativo -- Proyecto : gestiona
+    EmpleadoAdministrativo -- Equipo : coordina</div>
+    </div>
+    <div id="ej6-conc" class="ex-pane">
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(239,68,68,0.15);color:#f87171"><i class="fas fa-diamond"></i></div>
+          <div class="concept-name">Doble Composición</div>
+          <div class="concept-desc"><strong>Empresa ◆→ Equipo</strong>: un equipo no existe fuera de la empresa. <strong>Proyecto ◆→ Fase</strong>: una fase no tiene sentido sin su proyecto.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(245,158,11,0.15);color:var(--accent3)"><i class="fas fa-cubes"></i></div>
+          <div class="concept-name">Agregación Equipo–Programador</div>
+          <div class="concept-desc">Un <strong>Programador</strong> puede reasignarse a otro equipo. El programador existe independientemente del equipo al que pertenece actualmente.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(34,211,238,0.15);color:var(--accent2)"><i class="fas fa-shuffle"></i></div>
+          <div class="concept-name">Asociación M:M Equipo–Proyecto</div>
+          <div class="concept-desc">Un equipo puede trabajar en múltiples proyectos y un proyecto puede necesitar múltiples equipos. En implementación: tabla de asignación con atributos (rol, porcentaje de dedicación).</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-icon" style="background:rgba(99,102,241,0.15);color:var(--accent1)"><i class="fas fa-tags"></i></div>
+          <div class="concept-name">Enum para Fase.estado</div>
+          <div class="concept-desc"><strong>Fase.estado</strong> y <strong>Proyecto.estado</strong> son candidatos a <em>enumeraciones</em> UML: {pendiente, en progreso, completada, cancelada} garantizando valores válidos.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 9 – QUIZ
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-9">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-brain"></i> Evaluación</div>
+    <h2 class="slide-title">Quiz de <span>Evaluación</span></h2>
+    <p class="slide-desc">Poneme a prueba con estas preguntas sobre diagramas de clases UML.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1;overflow-y:auto" id="quiz-container">
+    <!-- Quiz will be rendered by JS -->
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 10 – RESUMEN COMPARATIVO
+═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-10">
+  <div class="slide-header animate__animated animate__fadeInDown">
+    <div class="slide-tag"><i class="fas fa-table"></i> Resumen</div>
+    <h2 class="slide-title">Tabla <span>Comparativa</span> de Relaciones</h2>
+    <p class="slide-desc">Cuándo usar cada tipo de relación y cómo identificarla en el dominio.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1;overflow:auto">
+    <div class="card-glass" style="padding:0;overflow:hidden">
+      <table class="table table-dark mb-0" style="font-size:.85rem">
+        <thead style="background:rgba(99,102,241,0.2)">
+          <tr>
+            <th style="padding:14px 16px;color:var(--accent2)">Relación</th>
+            <th style="color:var(--accent2)">Notación</th>
+            <th style="color:var(--accent2)">Pregunta clave</th>
+            <th style="color:var(--accent2)">Ejemplo en TA5</th>
+            <th style="color:var(--accent2)">Ciclo de vida</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td><span class="rel-pill inh">Herencia</span></td>
+            <td><code style="color:var(--accent4)">──▷</code></td>
+            <td>¿"Es un" tipo de?</td>
+            <td>Administrador es un Empleado</td>
+            <td>—</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td><span class="rel-pill real">Realización</span></td>
+            <td><code style="color:#c084fc">- -▷</code></td>
+            <td>¿Implementa el contrato de?</td>
+            <td>TarjetaCredito impl. MedioPago</td>
+            <td>—</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td><span class="rel-pill comp">Composición</span></td>
+            <td><code style="color:#f87171">◆──</code></td>
+            <td>¿La parte muere con el todo?</td>
+            <td>Cuenta ◆→ Transacción</td>
+            <td>Compartido (fuerte)</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td><span class="rel-pill agg">Agregación</span></td>
+            <td><code style="color:var(--accent3)">◇──</code></td>
+            <td>¿La parte puede existir sola?</td>
+            <td>Cliente ◇→ Cuenta</td>
+            <td>Independiente (débil)</td>
+          </tr>
+          <tr>
+            <td><span class="rel-pill assoc">Asociación</span></td>
+            <td><code style="color:var(--accent2)">────</code></td>
+            <td>¿Se conocen / colaboran?</td>
+            <td>Estudiante — Curso</td>
+            <td>Independiente</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="row g-3 mt-2">
+      <div class="col-md-6">
+        <div class="card-glass card-accent3">
+          <div class="card-title-sm" style="color:var(--accent3)"><i class="fas fa-lightbulb"></i> Tips para el examen</div>
+          <div class="req-list" style="font-size:.82rem">
+            <div class="req-item"><i class="fas fa-check-circle" style="color:var(--accent4)"></i><span>Si decís "es un" → Herencia. Si decís "tiene un" → Agregación o Composición.</span></div>
+            <div class="req-item"><i class="fas fa-check-circle" style="color:var(--accent4)"></i><span>Si al borrar el todo, la parte ya no tiene sentido → Composición (◆).</span></div>
+            <div class="req-item"><i class="fas fa-check-circle" style="color:var(--accent4)"></i><span>Las interfaces siempre usan realización (línea punteada + triángulo hueco).</span></div>
+            <div class="req-item"><i class="fas fa-check-circle" style="color:var(--accent4)"></i><span>Siempre anotar multiplicidad en los extremos de las asociaciones.</span></div>
+            <div class="req-item"><i class="fas fa-check-circle" style="color:var(--accent4)"></i><span>Una clase con solo atributos puede necesitar métodos constructores y getters.</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-glass card-accent4">
+          <div class="card-title-sm" style="color:var(--accent4)"><i class="fas fa-star"></i> Patrones identificados en TA5</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:.82rem">
+            <div style="padding:8px 12px;background:var(--bg-card2);border-radius:6px"><strong style="color:var(--accent1)">Strategy:</strong> <span style="color:var(--text-muted)">MedioPago → TarjetaCredito / PayPal (Ej. 5)</span></div>
+            <div style="padding:8px 12px;background:var(--bg-card2);border-radius:6px"><strong style="color:var(--accent1)">Template Method:</strong> <span style="color:var(--text-muted)">Fase con pasos definidos (Ej. 3 y 6)</span></div>
+            <div style="padding:8px 12px;background:var(--bg-card2);border-radius:6px"><strong style="color:var(--accent1)">Association Class:</strong> <span style="color:var(--text-muted)">Préstamo como clase asociativa (Ej. 1)</span></div>
+            <div style="padding:8px 12px;background:var(--bg-card2);border-radius:6px"><strong style="color:var(--accent1)">Generalization:</strong> <span style="color:var(--text-muted)">Persona → Profesor / Estudiante (Ej. 2)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 11 – CIERRE
+═══════════════════════════════════════════════════════════ -->
+<div class="slide slide-close" id="slide-11">
+  <div class="animate__animated animate__fadeInUp" style="text-align:center">
+    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:2rem;box-shadow:0 0 40px rgba(99,102,241,0.4)"><i class="fas fa-check"></i></div>
+    <h2 style="font-size:2.2rem;font-weight:800;margin-bottom:10px">¡Presentación <span style="color:var(--accent1)">completada</span>!</h2>
+    <p style="color:var(--text-muted);max-width:540px;margin:0 auto 28px;font-size:.95rem">Hemos modelado 6 sistemas reales utilizando diagramas de clases UML, aplicando herencia, composición, agregación, asociación, realización y multiplicidad.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:32px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--accent1)">6</div>
+        <div style="font-size:.78rem;color:var(--text-muted)">Ejercicios</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--accent2)">5</div>
+        <div style="font-size:.78rem;color:var(--text-muted)">Tipos de relación</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--accent3)">40+</div>
+        <div style="font-size:.78rem;color:var(--text-muted)">Clases modeladas</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--accent4)">4</div>
+        <div style="font-size:.78rem;color:var(--text-muted)">Patrones OOP</div>
+      </div>
+    </div>
+    <button class="btn-start" onclick="changeSlide(-11)" style="margin-right:12px"><i class="fas fa-rotate-left me-2"></i>Volver al inicio</button>
+    <button class="btn-start" style="background:linear-gradient(135deg,var(--accent3),var(--accent4))" onclick="showCredits()"><i class="fas fa-star me-2"></i>Ver créditos</button>
+  </div>
+</div>
+
+</div><!-- /slides -->
+
+<div id="kbd-hint"><kbd>←</kbd><kbd>→</kbd> navegar · <kbd>F</kbd> fullscreen</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── MERMAID INIT ──────────────────────────────────────────
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1e1b4b',
+    primaryTextColor: '#e2e8f0',
+    primaryBorderColor: '#6366f1',
+    lineColor: '#6366f1',
+    secondaryColor: '#111827',
+    tertiaryColor: '#161d2e',
+    background: '#0d1117',
+    mainBkg: '#111827',
+    nodeBorder: '#6366f1',
+    clusterBkg: '#161d2e',
+    titleColor: '#e2e8f0',
+    edgeLabelBackground: '#111827',
+    attributeBackgroundColorEven: '#111827',
+    attributeBackgroundColorOdd: '#161d2e',
+  },
+  classDiagram: { diagramPadding: 20, htmlLabels: true }
+});
+
+// ── SLIDE SYSTEM ──────────────────────────────────────────
+let current = 0;
+const TOTAL = 12;
+const renderedDiags = new Set();
+
+const diagrams = {
+  3: { wrap: 'diag1-wrap', code: 'diag1-code' },
+  4: { wrap: 'diag2-wrap', code: 'diag2-code' },
+  5: { wrap: 'diag3-wrap', code: 'diag3-code' },
+  6: { wrap: 'diag4-wrap', code: 'diag4-code' },
+  7: { wrap: 'diag5-wrap', code: 'diag5-code' },
+  8: { wrap: 'diag6-wrap', code: 'diag6-code' },
+};
+
+function changeSlide(dir) {
+  const next = current + dir;
+  if (next < 0 || next >= TOTAL) return;
+  document.getElementById('slide-' + current).classList.remove('active');
+  current = next;
+  const sl = document.getElementById('slide-' + current);
+  sl.classList.add('active');
+  // re-animate
+  sl.querySelectorAll('.animate__animated').forEach(el => {
+    el.style.animationDuration = '0.4s';
+    const cls = el.className;
+    el.className = cls.replace('animate__fadeInDown','').replace('animate__fadeInUp','');
+    void el.offsetWidth;
+    el.className = cls;
+  });
+  updateUI();
+  // render diagram if on tab
+  renderActiveDiagram();
+}
+
+function updateUI() {
+  document.getElementById('slide-counter').textContent =
+    String(current + 1).padStart(2,'0') + ' / ' + String(TOTAL).padStart(2,'0');
+  document.getElementById('progress-bar').style.width = ((current + 1) / TOTAL * 100) + '%';
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === TOTAL - 1;
+  // init quiz on slide 9
+  if (current === 9 && !quizInitialized) initQuiz();
+}
+
+async function renderActiveDiagram() {
+  const d = diagrams[current];
+  if (!d) return;
+  const activeTab = document.querySelector('#slide-' + current + ' .ex-tab.active');
+  if (!activeTab || !activeTab.textContent.includes('Diagrama')) return;
+  await renderDiagram(current);
+}
+
+async function renderDiagram(slideIdx) {
+  const d = diagrams[slideIdx];
+  if (!d || renderedDiags.has(slideIdx)) return;
+  const codeEl = document.getElementById(d.code);
+  const wrapEl = document.getElementById(d.wrap);
+  if (!codeEl || !wrapEl) return;
+  const code = codeEl.textContent.trim();
+  try {
+    const uid = 'mmd-' + slideIdx + '-' + Date.now();
+    const { svg } = await mermaid.render(uid, code);
+    wrapEl.innerHTML = svg;
+    renderedDiags.add(slideIdx);
+  } catch (e) {
+    wrapEl.innerHTML = '<div style="color:#f87171;padding:20px;font-size:.82rem"><i class="fas fa-exclamation-triangle me-2"></i>Error al renderizar: ' + e.message + '</div>';
+  }
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function switchTab(btn, paneId) {
+  const container = btn.closest('.animate__animated');
+  container.querySelectorAll('.ex-tab').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.ex-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId).classList.add('active');
+  // render diagram if switching to diagram tab
+  if (paneId.includes('diag')) renderDiagram(current);
+}
+
+// ── QUIZ ──────────────────────────────────────────────────
+let quizInitialized = false;
+let score = 0;
+let answered = 0;
+
+const questions = [
+  {
+    q: '¿Qué tipo de relación se usa cuando la parte NO puede existir sin el todo?',
+    opts: ['Asociación', 'Agregación', 'Composición', 'Herencia'],
+    ans: 2,
+    exp: 'La <strong>Composición (◆)</strong> implica que la parte tiene el mismo ciclo de vida que el todo. Ej: Transacción no existe sin Cuenta.'
+  },
+  {
+    q: 'En el sistema de Universidad, ¿qué relación existe entre Profesor y Persona?',
+    opts: ['Composición', 'Herencia (Generalización)', 'Asociación', 'Realización'],
+    ans: 1,
+    exp: '<strong>Herencia</strong>: Profesor "es un" tipo de Persona. Hereda nombre, email y agrega especialidad y métodos propios.'
+  },
+  {
+    q: '¿Qué notación representa que TarjetaCredito implementa la interfaz MedioPago?',
+    opts: ['Línea sólida con triángulo', 'Rombo hueco', 'Línea punteada con triángulo hueco', 'Línea sólida con flecha'],
+    ans: 2,
+    exp: '<strong>Realización</strong> usa línea punteada con triángulo hueco (- - ▷). Se usa cuando una clase concreta implementa los contratos de una interfaz.'
+  },
+  {
+    q: 'En el sistema de Barberías, ¿por qué la relación Sucursal → Barbero es Agregación y no Composición?',
+    opts: [
+      'Porque una sucursal tiene solo un barbero',
+      'Porque el barbero puede existir (trabajar) aunque la sucursal cierre',
+      'Porque la sucursal hereda de Barbero',
+      'Porque es una relación muchos a muchos'
+    ],
+    ans: 1,
+    exp: '<strong>Agregación (◇)</strong>: el barbero tiene existencia independiente de la sucursal. Puede reasignarse a otra sucursal. Ciclo de vida separado.'
+  },
+  {
+    q: '¿Cuál es la multiplicidad correcta para "Un Miembro puede prestar varios libros pero hay un límite máximo"?',
+    opts: ['1 .. 1', '0 .. *', '0 .. maxPrestamos', '1 .. *'],
+    ans: 2,
+    exp: '<strong>0..maxPrestamos</strong> (o se escribe como restricción OCL). Un miembro puede no tener ningún préstamo activo (0) hasta el máximo permitido.'
+  },
+  {
+    q: 'En el Ejercicio 5 (Tienda Online), ¿qué principio SOLID se aplica al usar la interfaz MedioPago?',
+    opts: ['SRP – Responsabilidad Única', 'OCP – Abierto/Cerrado', 'LSP – Sustitución de Liskov', 'DIP – Inversión de Dependencia'],
+    ans: 3,
+    exp: '<strong>DIP (Dependency Inversion Principle)</strong>: el módulo de alto nivel (Pedido) depende de una abstracción (MedioPago), no de clases concretas. También aplica OCP al poder agregar nuevos medios sin modificar Pedido.'
+  }
+];
+
+function initQuiz() {
+  quizInitialized = true;
+  const container = document.getElementById('quiz-container');
+  let html = '';
+  questions.forEach((q, i) => {
+    html += `<div class="quiz-q" id="qq${i}">
+      <div class="q-text"><span style="color:var(--accent1);font-family:var(--font-mono)">${i+1}.</span> ${q.q}</div>
+      <div>
+        ${q.opts.map((o,j) => `<button class="quiz-opt" onclick="answer(${i},${j})" id="opt-${i}-${j}">${o}</button>`).join('')}
+      </div>
+      <div id="exp-${i}" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(99,102,241,0.1);border-radius:8px;font-size:.82rem;color:var(--text-muted)"></div>
+    </div>`;
+  });
+  html += `<div id="quiz-result" style="display:none" class="quiz-score"><i class="fas fa-trophy" style="font-size:2rem;color:var(--accent3);margin-bottom:10px;display:block"></i><div id="quiz-score-text"></div><button class="btn-start" style="margin-top:16px;font-size:.88rem;padding:10px 24px" onclick="resetQuiz()"><i class="fas fa-rotate-left me-2"></i>Reintentar</button></div>`;
+  container.innerHTML = html;
+}
+
+function answer(qIdx, optIdx) {
+  const q = questions[qIdx];
+  const opts = document.querySelectorAll(`[id^="opt-${qIdx}-"]`);
+  opts.forEach(o => o.disabled = true);
+  const chosen = document.getElementById(`opt-${qIdx}-${optIdx}`);
+  const correct = document.getElementById(`opt-${qIdx}-${q.ans}`);
+  if (optIdx === q.ans) {
+    chosen.classList.add('correct');
+    score++;
+  } else {
+    chosen.classList.add('wrong');
+    correct.classList.add('correct');
+  }
+  const expEl = document.getElementById(`exp-${qIdx}`);
+  expEl.innerHTML = '<i class="fas fa-circle-info me-2" style="color:var(--accent2)"></i>' + q.exp;
+  expEl.style.display = 'block';
+  answered++;
+  if (answered === questions.length) showResult();
+}
+
+function showResult() {
+  const pct = Math.round(score / questions.length * 100);
+  let msg = pct === 100 ? '🎉 ¡Perfecto! Dominás los diagramas de clases UML.' :
+            pct >= 66 ? '👍 Buen trabajo. Repasá los conceptos de relaciones.' :
+            '📚 Seguí estudiando. Prestá atención a las diferencias entre relaciones.';
+  const res = document.getElementById('quiz-result');
+  document.getElementById('quiz-score-text').innerHTML = `<div style="font-size:2rem;font-weight:800;color:${pct===100?'var(--accent4)':pct>=66?'var(--accent3)':'var(--accent-danger)'}">${score}/${questions.length}</div><div style="font-size:1.1rem;color:#fff;margin:8px 0">${pct}% correcto</div><div style="font-size:.88rem;color:var(--text-muted)">${msg}</div>`;
+  res.style.display = 'block';
+  Swal.fire({
+    title: pct >= 66 ? '¡Bien hecho!' : 'Seguí practicando',
+    html: `<div style="font-size:1.1rem">Obtuviste <strong style="color:${pct>=66?'#22d3ee':'#ef4444'}">${score} de ${questions.length}</strong> respuestas correctas<br><small style="color:#94a3b8">${msg}</small></div>`,
+    icon: pct >= 66 ? 'success' : 'info',
+    background: '#111827',
+    color: '#f1f5f9',
+    confirmButtonColor: '#6366f1',
+    confirmButtonText: 'Ver resultado'
+  });
+}
+
+function resetQuiz() {
+  score = 0; answered = 0; quizInitialized = false;
+  initQuiz();
+}
+
+// ── KEYBOARD NAVIGATION ───────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
+  if (e.key === 'f' || e.key === 'F') {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+});
+
+// ── CREDITS ───────────────────────────────────────────────
+function showCredits() {
+  Swal.fire({
+    title: 'UT3 – TA5 | Diagramas de Clases',
+    html: `<div style="text-align:left;font-size:.88rem;line-height:1.8">
+      <div style="color:#94a3b8"><i class="fas fa-book me-2" style="color:#6366f1"></i><strong style="color:#fff">Unidad Temática 3 – UML</strong></div>
+      <div style="color:#94a3b8"><i class="fas fa-file me-2" style="color:#22d3ee"></i><strong style="color:#fff">Trabajo de Aplicación 5</strong></div>
+      <hr style="border-color:rgba(99,102,241,0.3);margin:12px 0">
+      <div style="color:#94a3b8"><i class="fas fa-layer-group me-2" style="color:#f59e0b"></i>Bootstrap 5 · FontAwesome 6 · Animate.css 4</div>
+      <div style="color:#94a3b8"><i class="fas fa-diagram-project me-2" style="color:#10b981"></i>Mermaid.js 10 · SweetAlert2 11</div>
+      <div style="color:#94a3b8"><i class="fas fa-font me-2" style="color:#c084fc"></i>Exo 2 · JetBrains Mono</div>
+    </div>`,
+    background: '#111827',
+    color: '#f1f5f9',
+    confirmButtonColor: '#6366f1',
+    confirmButtonText: 'Cerrar'
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────
+updateUI();
+</script>
+</body>
+</html>
