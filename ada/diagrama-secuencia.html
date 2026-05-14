@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UT3 – TA6 | Diagramas de Secuencia UML</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+<style>
+:root {
+  --bg-main:   #060d18;
+  --bg-card:   #0d1826;
+  --bg-card2:  #111f30;
+  --bg-card3:  #0a1520;
+  --sky:       #0ea5e9;
+  --teal:      #14b8a6;
+  --amber:     #f59e0b;
+  --violet:    #a78bfa;
+  --rose:      #f43f5e;
+  --text-main: #e2eaf4;
+  --text-muted:#7a9bb5;
+  --border:    rgba(14,165,233,0.2);
+  --border2:   rgba(20,184,166,0.2);
+  --glow-sky:  0 0 28px rgba(14,165,233,0.25);
+  --glow-teal: 0 0 28px rgba(20,184,166,0.25);
+  --font:      'Sora', sans-serif;
+  --mono:      'Fira Code', monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:var(--font);background:var(--bg-main);color:var(--text-main);overflow:hidden;}
+
+/* ── PROGRESS ── */
+#pbar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--sky),var(--teal));z-index:9999;transition:width .4s ease;}
+
+/* ── TOPBAR ── */
+#topbar{position:fixed;top:3px;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:9px 24px;background:rgba(6,13,24,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);z-index:999;}
+.tb-brand{display:flex;align-items:center;gap:9px;font-size:.78rem;font-weight:600;color:var(--text-muted);}
+.tb-brand i{color:var(--sky);font-size:1rem;}
+#sctr{font-size:.76rem;font-weight:700;color:var(--teal);font-family:var(--mono);letter-spacing:.06em;}
+.nav-btns{display:flex;gap:6px;}
+.nav-btns button{background:var(--bg-card2);border:1px solid var(--border);color:var(--text-main);padding:5px 14px;border-radius:6px;font-size:.79rem;cursor:pointer;transition:all .2s;font-family:var(--font);}
+.nav-btns button:hover{background:var(--sky);border-color:var(--sky);box-shadow:var(--glow-sky);}
+.nav-btns button:disabled{opacity:.28;cursor:not-allowed;}
+
+/* ── SLIDES ── */
+#slides{position:fixed;top:47px;left:0;right:0;bottom:0;overflow-y:auto;}
+.slide{display:none;min-height:calc(100vh - 47px);padding:28px 40px;flex-direction:column;}
+.slide.active{display:flex;}
+
+/* ── COVER ── */
+.cover{justify-content:center;align-items:center;text-align:center;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(14,165,233,.14) 0%,transparent 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(20,184,166,.12) 0%,transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(167,139,250,.08) 0%,transparent 45%),
+    var(--bg-main);}
+.cv-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--sky);color:var(--sky);background:rgba(14,165,233,.1);padding:5px 16px;border-radius:20px;font-size:.78rem;font-weight:700;margin-bottom:18px;letter-spacing:.04em;}
+.cv-title{font-size:clamp(2rem,5.5vw,4rem);font-weight:800;line-height:1.08;
+  background:linear-gradient(130deg,#fff 25%,var(--sky) 60%,var(--teal) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;}
+.cv-sub{font-size:1.05rem;color:var(--text-muted);max-width:580px;margin:0 auto 28px;line-height:1.6;}
+.cv-chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:34px;}
+.cv-chip{background:var(--bg-card2);border:1px solid var(--border);padding:6px 15px;border-radius:8px;font-size:.79rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
+.cv-chip i{color:var(--teal);}
+.btn-go{background:linear-gradient(135deg,var(--sky),var(--teal));border:none;padding:13px 34px;border-radius:10px;font-size:.95rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.04em;transition:transform .2s,box-shadow .2s;font-family:var(--font);}
+.btn-go:hover{transform:translateY(-3px);box-shadow:0 14px 32px rgba(14,165,233,.38);}
+
+/* ── SLIDE HEADER ── */
+.sh{margin-bottom:22px;}
+.sh-tag{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:7px;}
+.sh-title{font-size:clamp(1.4rem,3vw,2.1rem);font-weight:800;line-height:1.18;color:#fff;}
+.sh-title span{color:var(--sky);}
+.sh-desc{font-size:.9rem;color:var(--text-muted);margin-top:5px;}
+
+/* ── GLASS CARD ── */
+.gc{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.gc:hover{border-color:rgba(14,165,233,.4);transition:border-color .2s;}
+.gc.tl{border-left:3px solid var(--sky);}
+.gc.tl2{border-left:3px solid var(--teal);}
+.gc.tl3{border-left:3px solid var(--amber);}
+.gc.tl4{border-left:3px solid var(--violet);}
+.gc-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--sky);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.gc-label.teal{color:var(--teal);}
+.gc-label.amber{color:var(--amber);}
+.gc-label.violet{color:var(--violet);}
+
+/* ── STEPS LIST ── */
+.steps{display:flex;flex-direction:column;gap:7px;}
+.step{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--bg-card2);border-radius:8px;font-size:.83rem;border-left:2px solid var(--sky);}
+.step-num{background:linear-gradient(135deg,var(--sky),var(--teal));color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0;margin-top:1px;}
+.step-text{color:var(--text-muted);line-height:1.5;}
+.step-text strong{color:var(--text-main);}
+
+/* ── ACTOR BADGES ── */
+.actor-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.actor-b{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;font-size:.8rem;font-weight:600;}
+.actor-user{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.35);color:var(--sky);}
+.actor-sys{background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.3);color:var(--teal);}
+.actor-ext{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--amber);}
+
+/* ── MERMAID ── */
+.mwrap{background:#07111e;border:1px solid var(--border);border-radius:12px;padding:14px;overflow:auto;display:flex;justify-content:center;min-height:220px;max-height:420px;}
+.mwrap svg{max-width:100%;height:auto;}
+
+/* ── TABS ── */
+.ex-tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:4px;}
+.ex-tab{background:none;border:none;color:var(--text-muted);padding:7px 15px;font-size:.82rem;font-weight:600;border-radius:6px 6px 0 0;cursor:pointer;transition:all .2s;font-family:var(--font);}
+.ex-tab.active{background:rgba(14,165,233,.12);color:var(--sky);border-bottom:2px solid var(--sky);}
+.ex-tab:hover{color:var(--text-main);}
+.ex-pane{display:none;}
+.ex-pane.active{display:block;animation:fadeIn .3s ease;}
+
+/* ── MSG TYPE LEGEND ── */
+.msg-legend{display:flex;flex-direction:column;gap:9px;}
+.msg-row{display:flex;align-items:center;gap:14px;background:var(--bg-card2);border-radius:8px;padding:10px 14px;}
+.msg-sym{font-family:var(--mono);font-size:.9rem;min-width:80px;color:var(--sky);}
+.msg-name{font-weight:700;font-size:.85rem;min-width:130px;}
+.msg-desc{font-size:.8rem;color:var(--text-muted);}
+
+/* ── CONCEPT CARDS ── */
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:10px;}
+.cc{background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:14px;transition:all .2s;}
+.cc:hover{border-color:var(--sky);transform:translateY(-2px);}
+.cc-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:9px;font-size:.85rem;}
+.cc-name{font-size:.83rem;font-weight:700;color:#fff;margin-bottom:4px;}
+.cc-desc{font-size:.75rem;color:var(--text-muted);line-height:1.45;}
+
+/* ── FRAGMENT BOX ── */
+.frag-box{border:1px dashed;border-radius:8px;padding:12px 14px;margin:4px 0;position:relative;}
+.frag-label{position:absolute;top:-10px;left:10px;font-family:var(--mono);font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:4px;}
+.frag-alt{border-color:rgba(167,139,250,.5);background:rgba(167,139,250,.05);}
+.frag-alt .frag-label{background:rgba(167,139,250,.2);color:var(--violet);}
+.frag-loop{border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.05);}
+.frag-loop .frag-label{background:rgba(245,158,11,.2);color:var(--amber);}
+.frag-opt{border-color:rgba(20,184,166,.5);background:rgba(20,184,166,.05);}
+.frag-opt .frag-label{background:rgba(20,184,166,.2);color:var(--teal);}
+.frag-text{font-size:.8rem;color:var(--text-muted);line-height:1.5;}
+
+/* ── QUIZ ── */
+.qcard{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+.q-text{font-size:.92rem;font-weight:600;color:#fff;margin-bottom:12px;}
+.q-opt{background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.83rem;cursor:pointer;margin-bottom:5px;transition:all .2s;display:block;text-align:left;color:var(--text-main);width:100%;font-family:var(--font);}
+.q-opt:hover{border-color:var(--sky);background:rgba(14,165,233,.1);}
+.q-opt.ok{border-color:var(--teal);background:rgba(20,184,166,.12);color:#5eead4;}
+.q-opt.no{border-color:var(--rose);background:rgba(244,63,94,.1);color:#fda4af;}
+.q-exp{display:none;margin-top:9px;padding:9px 13px;background:rgba(14,165,233,.08);border-radius:8px;font-size:.8rem;color:var(--text-muted);}
+
+/* ── TABLE ── */
+.comp-table{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.comp-table table{width:100%;font-size:.83rem;}
+.comp-table th{background:rgba(14,165,233,.15);padding:12px 14px;color:var(--sky);font-weight:700;border-bottom:1px solid var(--border);}
+.comp-table td{padding:11px 14px;border-bottom:1px solid rgba(14,165,233,.08);vertical-align:top;color:var(--text-muted);}
+.comp-table tr:last-child td{border-bottom:none;}
+
+/* ── LIFELINE VISUAL ── */
+.lifeline-demo{display:flex;gap:0;overflow-x:auto;padding:16px 0;}
+.lf-col{display:flex;flex-direction:column;align-items:center;gap:0;min-width:100px;}
+.lf-box{background:var(--bg-card2);border:1px solid var(--sky);border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;color:var(--sky);white-space:nowrap;}
+.lf-line{width:2px;flex:1;background:rgba(14,165,233,.3);min-height:120px;position:relative;}
+.lf-act{width:12px;height:60px;background:rgba(14,165,233,.5);border:1px solid var(--sky);border-radius:2px;position:absolute;left:-5px;top:20px;}
+.lf-arrow{display:flex;align-items:center;gap:0;position:relative;margin:-10px 0;}
+.arrow-line{height:1px;background:var(--sky);flex:1;}
+.arrow-head{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid var(--sky);}
+.arrow-label{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:.65rem;white-space:nowrap;color:var(--teal);font-family:var(--mono);background:var(--bg-main);padding:0 4px;}
+.arrow-ret{border-left-color:transparent;border-right:8px solid var(--teal);}
+.arrow-ret-line{background:var(--teal);border-style:dashed;}
+
+/* ── CLOSING ── */
+.close-slide{justify-content:center;align-items:center;text-align:center;
+  background:radial-gradient(ellipse at center,rgba(14,165,233,.12) 0%,transparent 65%),var(--bg-main);}
+
+/* ── MISC ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(14,165,233,.35);border-radius:3px;}
+#kbd{position:fixed;bottom:14px;right:18px;font-size:.7rem;color:rgba(122,155,181,.4);display:flex;align-items:center;gap:5px;}
+kbd{background:rgba(122,155,181,.1);border:1px solid rgba(122,155,181,.2);padding:2px 6px;border-radius:4px;font-size:.7rem;}
+code{font-family:var(--mono);font-size:.82em;}
+
+/* Mermaid sequence overrides */
+.mwrap .actor line{stroke:var(--sky) !important;}
+</style>
+</head>
+<body>
+
+<div id="pbar"></div>
+
+<div id="topbar">
+  <div class="tb-brand"><i class="fas fa-timeline"></i> UT3 – TA6 | Diagramas de Secuencia UML</div>
+  <span id="sctr">01 / 11</span>
+  <div class="nav-btns">
+    <button id="btn-prev" onclick="go(-1)" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+    <button id="btn-next" onclick="go(1)">Siguiente <i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<div id="slides">
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 0 – COVER
+══════════════════════════════════════════════════ -->
+<div class="slide cover active" id="s0">
+  <div class="animate__animated animate__fadeInDown" style="text-align:center">
+    <div class="cv-badge"><i class="fas fa-timeline"></i> Unidad Temática 3 – Diseño y UML</div>
+    <h1 class="cv-title">Diagramas de<br>Secuencia UML</h1>
+    <p class="cv-sub">Trabajo de Aplicación 6 · Modelado de interacciones entre actores y sistemas a lo largo del tiempo.</p>
+    <div class="cv-chips">
+      <div class="cv-chip"><i class="fas fa-layer-group"></i> 4 ejercicios</div>
+      <div class="cv-chip"><i class="fas fa-arrows-left-right"></i> Mensajes · Fragmentos · Lifelines</div>
+      <div class="cv-chip"><i class="fas fa-diagram-project"></i> Diagramas interactivos Mermaid</div>
+      <div class="cv-chip"><i class="fas fa-brain"></i> Quiz de evaluación</div>
+    </div>
+    <button class="btn-go" onclick="go(1)"><i class="fas fa-play me-2"></i>Comenzar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 1 – ¿QUÉ ES UN DIAGRAMA DE SECUENCIA?
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s1">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-book-open"></i> Fundamentos</div>
+    <h2 class="sh-title">¿Qué es un <span>Diagrama de Secuencia</span>?</h2>
+    <p class="sh-desc">El diagrama de comportamiento más utilizado en UML para modelar interacciones.</p>
+  </div>
+  <div class="row g-3 animate__animated animate__fadeInUp">
+    <div class="col-md-5">
+      <div class="gc tl h-100">
+        <div class="gc-label"><i class="fas fa-info-circle"></i> Definición</div>
+        <p style="font-size:.87rem;color:var(--text-muted);line-height:1.7;margin-bottom:12px">Un <strong style="color:#fff">diagrama de secuencia</strong> muestra cómo los objetos o actores <strong style="color:var(--sky)">interactúan entre sí</strong> a lo largo del <strong style="color:var(--teal)">tiempo</strong>, a través del intercambio de <strong style="color:var(--sky)">mensajes</strong>.</p>
+        <div style="padding:11px 13px;background:rgba(14,165,233,.08);border-radius:8px;font-size:.8rem;color:var(--teal)"><i class="fas fa-lightbulb me-2"></i><strong>Eje vertical = tiempo.</strong> Los mensajes bajan de arriba a abajo. Lo que ocurre primero está arriba.</div>
+        <div style="padding:11px 13px;background:rgba(20,184,166,.08);border-radius:8px;font-size:.8rem;color:var(--sky);margin-top:10px"><i class="fas fa-arrows-left-right me-2"></i><strong>Eje horizontal = participantes.</strong> Cada columna representa un actor o sistema.</div>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="gc tl2 h-100">
+        <div class="gc-label teal"><i class="fas fa-cubes"></i> Elementos principales</div>
+        <div class="row g-2">
+          <div class="col-6">
+            <div style="background:var(--bg-card2);border-radius:8px;padding:12px;border-left:2px solid var(--sky)">
+              <div style="font-size:.8rem;font-weight:700;color:var(--sky);margin-bottom:5px"><i class="fas fa-user me-1"></i> Actor / Participante</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">Entidad que interviene en la interacción. Se representa con un rectángulo en la parte superior y una <strong style="color:#fff">línea de vida</strong> (lifeline) vertical.</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:var(--bg-card2);border-radius:8px;padding:12px;border-left:2px solid var(--teal)">
+              <div style="font-size:.8rem;font-weight:700;color:var(--teal);margin-bottom:5px"><i class="fas fa-minus me-1"></i> Línea de vida</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">Línea vertical punteada que representa la <strong style="color:#fff">existencia del objeto en el tiempo</strong>. Empieza con el objeto activo y termina cuando muere.</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:var(--bg-card2);border-radius:8px;padding:12px;border-left:2px solid var(--amber)">
+              <div style="font-size:.8rem;font-weight:700;color:var(--amber);margin-bottom:5px"><i class="fas fa-arrow-right me-1"></i> Mensaje</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">Comunicación entre participantes. Puede ser <strong style="color:#fff">síncrono</strong> (flecha sólida ─▶) o <strong style="color:#fff">asíncrono</strong>. Los retornos usan línea punteada (─ ─▷).</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:var(--bg-card2);border-radius:8px;padding:12px;border-left:2px solid var(--violet)">
+              <div style="font-size:.8rem;font-weight:700;color:var(--violet);margin-bottom:5px"><i class="fas fa-rectangle-list me-1"></i> Activación</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">Rectángulo estrecho sobre la lifeline. Indica el <strong style="color:#fff">período en que el objeto está procesando</strong> (tiene control de ejecución).</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:var(--bg-card2);border-radius:8px;padding:12px;border-left:2px solid var(--rose)">
+              <div style="font-size:.8rem;font-weight:700;color:var(--rose);margin-bottom:5px"><i class="fas fa-code-branch me-1"></i> Fragmento combinado</div>
+              <div style="font-size:.75rem;color:var(--text-muted)"><strong style="color:#fff">alt</strong> (alternativas), <strong style="color:#fff">loop</strong> (repetición), <strong style="color:#fff">opt</strong> (opcional), <strong style="color:#fff">ref</strong> (referencia). Modelan control de flujo.</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:var(--bg-card2);border-radius:8px;padding:12px;border-left:2px solid var(--sky)">
+              <div style="font-size:.8rem;font-weight:700;color:var(--sky);margin-bottom:5px"><i class="fas fa-clock me-1"></i> Orden temporal</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">A diferencia de otros diagramas, <strong style="color:#fff">el tiempo importa</strong>: el mensaje más alto ocurre antes. Los diagramas se leen de arriba a abajo.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 2 – TIPOS DE MENSAJES Y FRAGMENTOS
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-arrows-left-right"></i> Mensajes y Fragmentos</div>
+    <h2 class="sh-title">Tipos de <span>Mensajes</span> y <span>Fragmentos</span> Combinados</h2>
+    <p class="sh-desc">Los bloques fundamentales para construir diagramas de secuencia expresivos.</p>
+  </div>
+  <div class="row g-3 animate__animated animate__fadeInUp">
+    <div class="col-md-6">
+      <div class="gc tl h-100">
+        <div class="gc-label"><i class="fas fa-arrow-right"></i> Tipos de Mensajes</div>
+        <div class="msg-legend">
+          <div class="msg-row">
+            <div class="msg-sym" style="color:var(--sky)">──▶</div>
+            <div><div class="msg-name" style="color:#fff">Llamada síncrona</div><div class="msg-desc">El emisor espera la respuesta antes de continuar. Es el más común. Ej: <code>Cliente->>Sistema: seleccionarVuelo()</code></div></div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-sym" style="color:var(--teal)">- -▷</div>
+            <div><div class="msg-name" style="color:var(--teal)">Retorno / Respuesta</div><div class="msg-desc">Devuelve el control al llamador. Línea punteada con flecha abierta. Ej: <code>Sistema-->>Cliente: resultado</code></div></div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-sym" style="color:var(--amber)">─ ─▶</div>
+            <div><div class="msg-name" style="color:var(--amber)">Mensaje asíncrono</div><div class="msg-desc">El emisor no espera respuesta. Típico en sistemas de eventos y notificaciones. Ej: Sistema de notificaciones.</div></div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-sym" style="color:var(--violet)">──▶ (self)</div>
+            <div><div class="msg-name" style="color:var(--violet)">Auto-mensaje</div><div class="msg-desc">Un participante se envía un mensaje a sí mismo. Modela procesamiento interno. Ej: <code>SRV->>SRV: verificarDisp()</code></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="gc tl2 h-100">
+        <div class="gc-label teal"><i class="fas fa-code-branch"></i> Fragmentos Combinados</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="frag-box frag-alt">
+            <span class="frag-label">alt</span>
+            <p class="frag-text"><strong style="color:var(--violet)">Alternativa</strong> — equivale a <code>if / else</code>. Separa flujos mutuamente excluyentes con <code>[condición]</code>. Usado en el Ej.1 para transacción aprobada vs rechazada.</p>
+          </div>
+          <div class="frag-box frag-loop">
+            <span class="frag-label">loop</span>
+            <p class="frag-text"><strong style="color:var(--amber)">Bucle</strong> — equivale a <code>while / for</code>. Se repite mientras se cumpla la condición. Ej: <code>loop [mientras quede stock]</code>.</p>
+          </div>
+          <div class="frag-box frag-opt">
+            <span class="frag-label">opt</span>
+            <p class="frag-text"><strong style="color:var(--teal)">Opcional</strong> — bloque que sólo ocurre si se cumple una condición (sin rama else). Equivale a <code>if</code> sin <code>else</code>.</p>
+          </div>
+          <div style="border:1px dashed rgba(14,165,233,.4);border-radius:8px;padding:12px 14px;position:relative">
+            <span style="position:absolute;top:-10px;left:10px;font-family:var(--mono);font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:4px;background:rgba(14,165,233,.18);color:var(--sky)">ref</span>
+            <p class="frag-text"><strong style="color:var(--sky)">Referencia</strong> — delega a otro diagrama de secuencia. Permite modularizar diagramas complejos.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="gc" style="padding:13px">
+        <div class="gc-label amber"><i class="fas fa-table"></i> Diferencia con Diagrama de Clases</div>
+        <div class="row g-2">
+          <div class="col-md-6" style="font-size:.81rem;color:var(--text-muted);padding:10px 16px;background:var(--bg-card2);border-radius:8px;border-left:2px solid var(--sky)"><strong style="color:var(--sky)">Diagrama de Clases</strong> → estructura estática. Modela <em>qué existe</em> en el sistema: clases, atributos, métodos y relaciones. No muestra tiempo.</div>
+          <div class="col-md-6" style="font-size:.81rem;color:var(--text-muted);padding:10px 16px;background:var(--bg-card2);border-radius:8px;border-left:2px solid var(--teal)"><strong style="color:var(--teal)">Diagrama de Secuencia</strong> → comportamiento dinámico. Modela <em>cómo interactúan</em> los objetos en un escenario específico a lo largo del tiempo.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 3 – EJ 1: RESERVAS DE VUELOS
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-plane"></i> Ejercicio 1</div>
+    <h2 class="sh-title">Sistema de <span>Reservas de Vuelos</span></h2>
+    <p class="sh-desc">Interacción entre Cliente, Sistema de Reservas, Sistema de Pago y Sistema de Notificaciones.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="tab(this,'e1r')"><i class="fas fa-list-check me-1"></i>Actores y Pasos</button>
+      <button class="ex-tab" onclick="tab(this,'e1d')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="tab(this,'e1c')"><i class="fas fa-brain me-1"></i>Conceptos</button>
+    </div>
+    <div id="e1r" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="gc tl">
+            <div class="gc-label"><i class="fas fa-users"></i> Actores</div>
+            <div class="actor-row" style="flex-direction:column">
+              <div class="actor-b actor-user"><i class="fas fa-user"></i> Cliente</div>
+              <div class="actor-b actor-sys"><i class="fas fa-server"></i> Sistema de Reservas de Vuelos</div>
+              <div class="actor-b actor-ext"><i class="fas fa-credit-card"></i> Sistema de Pago</div>
+              <div class="actor-b actor-ext" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--violet)"><i class="fas fa-bell"></i> Sistema de Notificaciones</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="gc tl2">
+            <div class="gc-label teal"><i class="fas fa-list-ol"></i> Flujo de Pasos</div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-text">El <strong>Cliente</strong> selecciona un vuelo y proporciona info personal y de pago al <strong>SRV</strong></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-text">El <strong>SRV</strong> verifica disponibilidad y envía solicitud de reserva al cliente</div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-text">El <strong>Cliente</strong> confirma la reserva</div></div>
+              <div class="step"><div class="step-num">4</div><div class="step-text">El <strong>SRV</strong> solicita inicio del proceso de pago al <strong>SP</strong>, indicando la URL de callback</div></div>
+              <div class="step"><div class="step-num">5</div><div class="step-text">El <strong>SP</strong> devuelve una WebApi donde el usuario completa la tarjeta</div></div>
+              <div class="step"><div class="step-num">6</div><div class="step-text">El <strong>SP</strong> procesa el pago y devuelve resultado (aprobado o rechazado) al <strong>SRV</strong></div></div>
+              <div class="step"><div class="step-num">7</div><div class="step-text">El <strong>SP</strong> devuelve control al <strong>SRV</strong> via redirect al callback</div></div>
+              <div class="step" style="border-left-color:var(--teal)"><div class="step-num" style="background:linear-gradient(135deg,var(--teal),var(--violet))">8</div><div class="step-text"><strong>[Aprobado]</strong> El <strong>SRV</strong> confirma reserva y solicita notificación al <strong>SN</strong></div></div>
+              <div class="step" style="border-left-color:var(--teal)"><div class="step-num" style="background:linear-gradient(135deg,var(--teal),var(--violet))">9</div><div class="step-text">El <strong>SN</strong> envía notificación al cliente sobre estado de reserva y pago</div></div>
+              <div class="step" style="border-left-color:var(--rose)"><div class="step-num" style="background:linear-gradient(135deg,var(--rose),var(--amber))">10</div><div class="step-text"><strong>[Rechazado]</strong> El <strong>SRV</strong> informa al cliente y solicita otra forma de pago o cancelación</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="e1d" class="ex-pane">
+      <div class="mwrap" id="d1w"><div style="color:var(--text-muted);font-size:.83rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando...</div></div>
+      <div id="d1c" style="display:none">sequenceDiagram
+    actor C as Cliente
+    participant SRV as Sistema de Reservas
+    participant SP as Sistema de Pago
+    participant SN as Sistema Notificaciones
+
+    C->>SRV: Selecciona vuelo + info personal/pago
+    SRV->>SRV: Verifica disponibilidad del vuelo
+    SRV-->>C: Solicitud de reserva (vuelo disponible)
+    C->>SRV: Confirma la reserva
+    SRV->>SP: Inicia proceso de pago (callback URL)
+    SP-->>SRV: WebApi para completar tarjeta
+    C->>SP: Completa datos de tarjeta
+    SP->>SP: Procesa información de pago
+    SP-->>SRV: Resultado de transacción
+    SP-->>SRV: Redirect al callback URL
+
+    alt Transacción APROBADA
+        SRV->>SRV: Confirma reserva
+        SRV->>SN: Solicita notificación al cliente
+        SN-->>C: Notificación de reserva confirmada y pago
+    else Transacción RECHAZADA
+        SRV-->>C: Informa rechazo, solicita otro medio de pago
+    end</div>
+    </div>
+    <div id="e1c" class="ex-pane">
+      <div class="cg">
+        <div class="cc"><div class="cc-icon" style="background:rgba(167,139,250,.15);color:var(--violet)"><i class="fas fa-code-branch"></i></div><div class="cc-name">Fragmento alt</div><div class="cc-desc">El resultado del pago tiene dos caminos: aprobado o rechazado. Se modela con <strong>alt</strong>, el equivalente a un if/else en el diagrama.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(14,165,233,.15);color:var(--sky)"><i class="fas fa-rotate-left"></i></div><div class="cc-name">Patrón Callback</div><div class="cc-desc">El Sistema de Pago opera de forma semi-independiente (WebApi externa) y retorna el control al SRV vía <strong>redirect a URL de callback</strong>. Patrón común en integraciones de pago.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(20,184,166,.15);color:var(--teal)"><i class="fas fa-bell"></i></div><div class="cc-name">Desacoplamiento</div><div class="cc-desc">El <strong>Sistema de Notificaciones</strong> es un actor separado. El SRV delega el envío de mensajes al cliente: bajo acoplamiento y alta cohesión.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="fas fa-arrow-right-arrow-left"></i></div><div class="cc-name">Mensajes síncronos</div><div class="cc-desc">La mayoría de los mensajes son síncronos (<code>─▶</code>): el emisor espera la respuesta. Los retornos usan flecha punteada (<code>──</code>).</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 4 – EJ 2: STREAMING
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-film"></i> Ejercicio 2</div>
+    <h2 class="sh-title">Sistema de <span>Streaming</span></h2>
+    <p class="sh-desc">Registro, login, gestión de perfiles y recomendaciones de contenido personalizadas.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="tab(this,'e2r')"><i class="fas fa-list-check me-1"></i>Actores y Pasos</button>
+      <button class="ex-tab" onclick="tab(this,'e2d')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="tab(this,'e2c')"><i class="fas fa-brain me-1"></i>Conceptos</button>
+    </div>
+    <div id="e2r" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="gc tl">
+            <div class="gc-label"><i class="fas fa-users"></i> Actores</div>
+            <div class="actor-row" style="flex-direction:column">
+              <div class="actor-b actor-user"><i class="fas fa-user"></i> Usuario</div>
+              <div class="actor-b actor-sys"><i class="fas fa-play-circle"></i> Sistema de Streaming</div>
+              <div class="actor-b actor-sys" style="background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.3)"><i class="fas fa-id-card"></i> Sistema Gestión de Perfiles</div>
+              <div class="actor-b actor-ext"><i class="fas fa-star"></i> Sistema de Recomendaciones</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="gc tl2">
+            <div class="gc-label teal"><i class="fas fa-list-ol"></i> Flujo de Pasos</div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-text">El <strong>Usuario</strong> se registra en el <strong>SS</strong> con su información personal</div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-text">El <strong>SS</strong> crea cuenta y solicita al <strong>SGP</strong> crear un nuevo perfil</div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-text">El <strong>SGP</strong> crea el perfil y lo vincula a la cuenta en el <strong>SS</strong></div></div>
+              <div class="step" style="border-left-color:var(--amber)"><div class="step-num" style="background:linear-gradient(135deg,var(--amber),var(--sky))">4</div><div class="step-text">El <strong>Usuario</strong> inicia sesión en el <strong>SS</strong></div></div>
+              <div class="step"><div class="step-num">5</div><div class="step-text">El <strong>SS</strong> solicita al <strong>SGP</strong> el perfil del usuario</div></div>
+              <div class="step"><div class="step-num">6</div><div class="step-text">El <strong>SGP</strong> envía el perfil al <strong>SS</strong></div></div>
+              <div class="step"><div class="step-num">7</div><div class="step-text">El <strong>SS</strong> solicita al <strong>SR</strong> recomendaciones basadas en el perfil</div></div>
+              <div class="step"><div class="step-num">8</div><div class="step-text">El <strong>SR</strong> analiza el perfil y genera lista de contenidos recomendados</div></div>
+              <div class="step"><div class="step-num">9</div><div class="step-text">El <strong>SR</strong> envía la lista al <strong>SS</strong></div></div>
+              <div class="step"><div class="step-num">10</div><div class="step-text">El <strong>SS</strong> muestra los contenidos recomendados al <strong>Usuario</strong></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="e2d" class="ex-pane">
+      <div class="mwrap" id="d2w"><div style="color:var(--text-muted);font-size:.83rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando...</div></div>
+      <div id="d2c" style="display:none">sequenceDiagram
+    actor U as Usuario
+    participant SS as Sistema Streaming
+    participant SGP as Gestión de Perfiles
+    participant SR as Sistema Recomendaciones
+
+    Note over U,SR: Fase de Registro
+    U->>SS: Registro con información personal
+    SS->>SS: Crea cuenta de usuario
+    SS->>SGP: Solicita crear nuevo perfil
+    SGP->>SGP: Crea perfil del usuario
+    SGP-->>SS: Vincula perfil a la cuenta
+
+    Note over U,SR: Fase de Login y Recomendaciones
+    U->>SS: Inicia sesión
+    SS->>SGP: Solicita perfil del usuario
+    SGP-->>SS: Envía perfil del usuario
+    SS->>SR: Solicita recomendaciones (perfil)
+    SR->>SR: Analiza perfil y genera recomendaciones
+    SR-->>SS: Lista de contenidos recomendados
+    SS-->>U: Muestra contenidos recomendados</div>
+    </div>
+    <div id="e2c" class="ex-pane">
+      <div class="cg">
+        <div class="cc"><div class="cc-icon" style="background:rgba(14,165,233,.15);color:var(--sky)"><i class="fas fa-note-sticky"></i></div><div class="cc-name">Notas / Notes</div><div class="cc-desc">Se puede usar <code>Note over A,B</code> para agrupar pasos en fases: "Registro" y "Login+Recomendaciones". Clarifica el flujo sin agregar actores.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(20,184,166,.15);color:var(--teal)"><i class="fas fa-microchip"></i></div><div class="cc-name">Auto-mensaje interno</div><div class="cc-desc">Pasos 2, 3 y 8: el sistema se envía mensajes a sí mismo (<code>SS->>SS</code>, <code>SR->>SR</code>) para modelar procesamiento interno sin intervención externa.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="fas fa-cubes"></i></div><div class="cc-name">Arquitectura de Microservicios</div><div class="cc-desc">SGP y SR son sistemas independientes. El SS orquesta la comunicación. Este patrón refleja una <strong>arquitectura orientada a servicios</strong>.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(167,139,250,.15);color:var(--violet)"><i class="fas fa-brain"></i></div><div class="cc-name">Motor de Recomendaciones</div><div class="cc-desc">El SR encapsula la lógica de análisis del perfil. El SS no sabe cómo funciona: solo envía el perfil y recibe la lista. <strong>Encapsulamiento entre sistemas</strong>.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 5 – EJ 3: RED SOCIAL COCINA
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-utensils"></i> Ejercicio 3</div>
+    <h2 class="sh-title">Red Social de <span>Cocina</span></h2>
+    <p class="sh-desc">Registro, login, creación de recetas vinculadas al perfil y compartición social.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="tab(this,'e3r')"><i class="fas fa-list-check me-1"></i>Actores y Pasos</button>
+      <button class="ex-tab" onclick="tab(this,'e3d')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="tab(this,'e3c')"><i class="fas fa-brain me-1"></i>Conceptos</button>
+    </div>
+    <div id="e3r" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="gc tl">
+            <div class="gc-label"><i class="fas fa-users"></i> Actores</div>
+            <div class="actor-row" style="flex-direction:column">
+              <div class="actor-b actor-user"><i class="fas fa-user"></i> Usuario</div>
+              <div class="actor-b actor-sys"><i class="fas fa-share-nodes"></i> Sistema Red Social Cocina</div>
+              <div class="actor-b actor-sys" style="background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.3)"><i class="fas fa-id-card"></i> Sistema Gestión de Perfiles</div>
+              <div class="actor-b actor-ext"><i class="fas fa-book-open"></i> Sistema Gestión de Recetas</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="gc tl2">
+            <div class="gc-label teal"><i class="fas fa-list-ol"></i> Flujo de Pasos</div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-text">El <strong>Usuario</strong> se registra en el <strong>SRSC</strong> con su información personal</div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-text">El <strong>SRSC</strong> crea cuenta y solicita al <strong>SGP</strong> crear nuevo perfil</div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-text">El <strong>SGP</strong> crea el perfil y lo vincula a la cuenta en el <strong>SRSC</strong></div></div>
+              <div class="step" style="border-left-color:var(--amber)"><div class="step-num" style="background:linear-gradient(135deg,var(--amber),var(--sky))">4</div><div class="step-text">El <strong>Usuario</strong> inicia sesión en el <strong>SRSC</strong></div></div>
+              <div class="step"><div class="step-num">5</div><div class="step-text">El <strong>SRSC</strong> solicita al <strong>SGP</strong> el perfil del usuario</div></div>
+              <div class="step"><div class="step-num">6</div><div class="step-text">El <strong>SGP</strong> envía el perfil al <strong>SRSC</strong></div></div>
+              <div class="step" style="border-left-color:var(--violet)"><div class="step-num" style="background:linear-gradient(135deg,var(--violet),var(--teal))">7</div><div class="step-text">El <strong>Usuario</strong> crea una nueva receta e ingresa los detalles en el <strong>SRSC</strong></div></div>
+              <div class="step"><div class="step-num">8</div><div class="step-text">El <strong>SRSC</strong> envía la info de la receta al <strong>SGR</strong> para guardarla</div></div>
+              <div class="step"><div class="step-num">9</div><div class="step-text">El <strong>SGR</strong> guarda la receta y la vincula al perfil del usuario</div></div>
+              <div class="step"><div class="step-num">10</div><div class="step-text">El <strong>SGR</strong> envía confirmación al <strong>SRSC</strong></div></div>
+              <div class="step"><div class="step-num">11</div><div class="step-text">El <strong>SRSC</strong> muestra la receta en el perfil y la comparte con seguidores</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="e3d" class="ex-pane">
+      <div class="mwrap" id="d3w"><div style="color:var(--text-muted);font-size:.83rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando...</div></div>
+      <div id="d3c" style="display:none">sequenceDiagram
+    actor U as Usuario
+    participant SRSC as Red Social Cocina
+    participant SGP as Gestión de Perfiles
+    participant SGR as Gestión de Recetas
+
+    Note over U,SGR: Registro y creación de cuenta
+    U->>SRSC: Registro con información personal
+    SRSC->>SRSC: Crea cuenta de usuario
+    SRSC->>SGP: Solicita crear nuevo perfil
+    SGP->>SGP: Crea perfil del usuario
+    SGP-->>SRSC: Vincula perfil a la cuenta
+
+    Note over U,SGR: Login y recuperación de perfil
+    U->>SRSC: Inicia sesión
+    SRSC->>SGP: Solicita perfil del usuario
+    SGP-->>SRSC: Envía perfil del usuario
+
+    Note over U,SGR: Creación y publicación de receta
+    U->>SRSC: Crea nueva receta con detalles
+    SRSC->>SGR: Envía información de la receta
+    SGR->>SGR: Guarda receta y vincula al perfil
+    SGR-->>SRSC: Confirmación de guardado exitoso
+    SRSC-->>U: Muestra receta en perfil y la comparte</div>
+    </div>
+    <div id="e3c" class="ex-pane">
+      <div class="cg">
+        <div class="cc"><div class="cc-icon" style="background:rgba(14,165,233,.15);color:var(--sky)"><i class="fas fa-copy"></i></div><div class="cc-name">Patrón similar al Ej.2</div><div class="cc-desc">Los pasos 1–6 son idénticos al sistema de Streaming. Esto refleja un <strong>patrón de arquitectura reutilizable</strong>: registro → perfil → login. Reconocer patrones ahorra modelado.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(20,184,166,.15);color:var(--teal)"><i class="fas fa-database"></i></div><div class="cc-name">Persistencia delegada</div><div class="cc-desc">El SRSC <strong>delega</strong> la persistencia de recetas al SGR. El sistema principal no guarda datos directamente: responsabilidad única (SRP).</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(167,139,250,.15);color:var(--violet)"><i class="fas fa-check-double"></i></div><div class="cc-name">Confirmación explícita</div><div class="cc-desc">El paso 10 modela la <strong>confirmación de guardado</strong>. Es buena práctica en UML incluir los retornos de confirmación para mostrar que la operación fue exitosa.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(244,63,94,.15);color:var(--rose)"><i class="fas fa-share-nodes"></i></div><div class="cc-name">Difusión social (broadcast)</div><div class="cc-desc">El paso 11 ("comparte con seguidores") podría expandirse con un fragmento <strong>loop</strong> sobre cada seguidor, o con un mensaje asíncrono a un sistema de feed.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 6 – EJ 4: CHATBOT WHATSAPP
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fab fa-whatsapp"></i> Ejercicio 4</div>
+    <h2 class="sh-title">Chatbot <span>WhatsApp</span> — Restaurantes</h2>
+    <p class="sh-desc">Chatbot que nuclea restaurantes cercanos e integra Google Maps para rutas.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="tab(this,'e4r')"><i class="fas fa-list-check me-1"></i>Actores y Pasos</button>
+      <button class="ex-tab" onclick="tab(this,'e4d')"><i class="fas fa-diagram-project me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="tab(this,'e4c')"><i class="fas fa-brain me-1"></i>Conceptos</button>
+    </div>
+    <div id="e4r" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="gc tl">
+            <div class="gc-label"><i class="fas fa-users"></i> Actores</div>
+            <div class="actor-row" style="flex-direction:column">
+              <div class="actor-b actor-user"><i class="fas fa-user"></i> Usuario</div>
+              <div class="actor-b actor-sys"><i class="fab fa-whatsapp"></i> Chatbot de WhatsApp</div>
+              <div class="actor-b actor-ext"><i class="fas fa-database"></i> Base de Datos de Restaurantes</div>
+              <div class="actor-b actor-ext" style="background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.3);color:var(--teal)"><i class="fas fa-map-location-dot"></i> API de Google Maps</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="gc tl2">
+            <div class="gc-label teal"><i class="fas fa-list-ol"></i> Flujo de Pasos (15 pasos)</div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-text">El <strong>Usuario</strong> inicia conversación con el <strong>Chatbot</strong></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-text">El <strong>Usuario</strong> solicita lista de restaurantes cercanos</div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-text">El <strong>Chatbot</strong> procesa la solicitud internamente</div></div>
+              <div class="step"><div class="step-num">4</div><div class="step-text">El <strong>Chatbot</strong> solicita la ubicación actual del usuario</div></div>
+              <div class="step"><div class="step-num">5</div><div class="step-text">El <strong>Usuario</strong> comparte su ubicación actual</div></div>
+              <div class="step"><div class="step-num">6</div><div class="step-text">El <strong>Chatbot</strong> consulta la <strong>BDR</strong> con la ubicación del usuario</div></div>
+              <div class="step"><div class="step-num">7</div><div class="step-text">La <strong>BDR</strong> devuelve lista de restaurantes cercanos</div></div>
+              <div class="step"><div class="step-num">8</div><div class="step-text">El <strong>Chatbot</strong> envía lista de restaurantes al <strong>Usuario</strong></div></div>
+              <div class="step" style="border-left-color:var(--amber)"><div class="step-num" style="background:linear-gradient(135deg,var(--amber),var(--sky))">9</div><div class="step-text">El <strong>Usuario</strong> selecciona un restaurante y solicita indicaciones</div></div>
+              <div class="step"><div class="step-num">10</div><div class="step-text">El <strong>Chatbot</strong> solicita ruta a <strong>Google Maps</strong> (ubicación + dirección)</div></div>
+              <div class="step"><div class="step-num">11</div><div class="step-text">La <strong>API Maps</strong> procesa y genera indicaciones de ruta</div></div>
+              <div class="step"><div class="step-num">12</div><div class="step-text">La <strong>API Maps</strong> envía indicaciones al <strong>Chatbot</strong></div></div>
+              <div class="step"><div class="step-num">13</div><div class="step-text">El <strong>Chatbot</strong> procesa las indicaciones para formato legible</div></div>
+              <div class="step"><div class="step-num">14</div><div class="step-text">El <strong>Chatbot</strong> envía indicaciones de ruta al <strong>Usuario</strong></div></div>
+              <div class="step"><div class="step-num">15</div><div class="step-text">El <strong>Usuario</strong> recibe y sigue las instrucciones</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="e4d" class="ex-pane">
+      <div class="mwrap" id="d4w"><div style="color:var(--text-muted);font-size:.83rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando...</div></div>
+      <div id="d4c" style="display:none">sequenceDiagram
+    actor U as Usuario
+    participant CW as Chatbot WhatsApp
+    participant BDR as BD Restaurantes
+    participant GM as API Google Maps
+
+    Note over U,GM: Búsqueda de restaurantes cercanos
+    U->>CW: Inicia conversación
+    U->>CW: Solicita restaurantes cercanos
+    CW->>CW: Procesa solicitud del usuario
+    CW-->>U: Solicita ubicación actual
+    U->>CW: Comparte ubicación actual
+
+    CW->>BDR: Consulta restaurantes cercanos (ubicación)
+    BDR-->>CW: Lista de restaurantes cercanos
+    CW-->>U: Envía lista de restaurantes
+
+    Note over U,GM: Obtención de indicaciones de ruta
+    U->>CW: Selecciona restaurante y pide indicaciones
+    CW->>GM: Solicita ruta (ubicación + dirección restaurante)
+    GM->>GM: Procesa solicitud y genera indicaciones
+    GM-->>CW: Indicaciones de ruta en formato estructurado
+    CW->>CW: Procesa indicaciones a formato legible
+    CW-->>U: Envía indicaciones para llegar al restaurante
+    U->>CW: Recibe y confirma recepción</div>
+    </div>
+    <div id="e4c" class="ex-pane">
+      <div class="cg">
+        <div class="cc"><div class="cc-icon" style="background:rgba(14,165,233,.15);color:var(--sky)"><i class="fas fa-robot"></i></div><div class="cc-name">Chatbot como Mediador</div><div class="cc-desc">El <strong>Chatbot</strong> centraliza todas las interacciones. El usuario nunca habla directamente con BDR o Maps. Patrón <strong>Mediator/Facade</strong>.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(20,184,166,.15);color:var(--teal)"><i class="fas fa-plug"></i></div><div class="cc-name">Integración con API externa</div><div class="cc-desc">La <strong>API de Google Maps</strong> es un sistema externo. El chatbot adapta la respuesta al formato de WhatsApp (paso 13). Patrón <strong>Adapter</strong>.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="fas fa-location-dot"></i></div><div class="cc-name">Datos contextuales</div><div class="cc-desc">La <strong>ubicación del usuario</strong> es un dato contextual esencial. El chatbot la solicita explícitamente (paso 4) antes de consultar la BD.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(167,139,250,.15);color:var(--violet)"><i class="fas fa-layer-group"></i></div><div class="cc-name">Dos fases bien delimitadas</div><div class="cc-desc">Se pueden identificar dos subflujos: <strong>búsqueda de restaurantes</strong> y <strong>obtención de ruta</strong>. Cada uno podría modelarse en un <code>ref</code> separado para mayor claridad.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 7 – QUIZ
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-brain"></i> Evaluación</div>
+    <h2 class="sh-title">Quiz de <span>Evaluación</span></h2>
+    <p class="sh-desc">Poneme a prueba sobre los fundamentos de los diagramas de secuencia.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1;overflow-y:auto" id="quiz-box"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 8 – COMPARATIVA Y BUENAS PRÁCTICAS
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-table"></i> Resumen</div>
+    <h2 class="sh-title">Buenas Prácticas y <span>Comparativa</span></h2>
+    <p class="sh-desc">Guía de referencia rápida para diseñar diagramas de secuencia correctamente.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1;overflow-y:auto">
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="comp-table">
+          <table>
+            <thead><tr>
+              <th>Fragmento</th><th>Operador</th><th>Uso en los ejercicios</th><th>Equivalente en código</th>
+            </tr></thead>
+            <tbody>
+              <tr><td><span style="color:var(--violet);font-weight:700">Alternativa</span></td><td><code style="color:var(--sky)">alt</code></td><td>Ej.1: Transacción aprobada vs rechazada</td><td><code>if / else if / else</code></td></tr>
+              <tr><td><span style="color:var(--teal);font-weight:700">Opcional</span></td><td><code style="color:var(--sky)">opt</code></td><td>Ej.3: Compartir receta si tiene seguidores</td><td><code>if (condición)</code> sin else</td></tr>
+              <tr><td><span style="color:var(--amber);font-weight:700">Bucle</span></td><td><code style="color:var(--sky)">loop</code></td><td>Ej.4: Procesar cada restaurante de la lista</td><td><code>while / for</code></td></tr>
+              <tr><td><span style="color:var(--sky);font-weight:700">Referencia</span></td><td><code style="color:var(--sky)">ref</code></td><td>Todos: encapsular subflujos complejos</td><td>Llamada a función/método</td></tr>
+              <tr><td><span style="color:var(--rose);font-weight:700">Paralelo</span></td><td><code style="color:var(--sky)">par</code></td><td>Ej.1: Enviar notif. mientras actualiza BD</td><td><code>async / parallel</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="gc tl">
+          <div class="gc-label"><i class="fas fa-star"></i> Buenas Prácticas</div>
+          <div class="steps">
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">Nombrar los mensajes con <strong>verbos</strong> en infinitivo: <em>obtenerPerfil()</em>, <em>procesarPago()</em></div></div>
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">Usar <strong>auto-mensajes</strong> para modelar procesamiento interno sin sobrecargar el diagrama</div></div>
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">Incluir siempre los mensajes de <strong>retorno</strong> (─ ─▷) cuando la respuesta tiene información relevante</div></div>
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">Usar <strong>notas</strong> (<code>Note over</code>) para separar fases del flujo sin saturar de actores</div></div>
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">Modelar <strong>un escenario por diagrama</strong>: no combinar el flujo feliz con todos los errores posibles</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="gc tl2">
+          <div class="gc-label teal"><i class="fas fa-diagram-project"></i> Patrones identificados en TA6</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:.82rem">
+            <div style="padding:9px 12px;background:var(--bg-card2);border-radius:7px"><strong style="color:var(--sky)">Facade / Mediator:</strong> <span style="color:var(--text-muted)">Chatbot WhatsApp centraliza comunicación (Ej.4)</span></div>
+            <div style="padding:9px 12px;background:var(--bg-card2);border-radius:7px"><strong style="color:var(--sky)">Adapter:</strong> <span style="color:var(--text-muted)">Chatbot adapta respuesta de Google Maps a formato WA (Ej.4)</span></div>
+            <div style="padding:9px 12px;background:var(--bg-card2);border-radius:7px"><strong style="color:var(--sky)">Callback / Webhook:</strong> <span style="color:var(--text-muted)">SRV pasa URL de callback al Sistema de Pago (Ej.1)</span></div>
+            <div style="padding:9px 12px;background:var(--bg-card2);border-radius:7px"><strong style="color:var(--sky)">Orquestador de Servicios:</strong> <span style="color:var(--text-muted)">SS coordina SGP y SR sin acoplamiento directo (Ej.2 y 3)</span></div>
+            <div style="padding:9px 12px;background:var(--bg-card2);border-radius:7px"><strong style="color:var(--sky)">SRP – Responsabilidad única:</strong> <span style="color:var(--text-muted)">Cada sistema tiene una sola responsabilidad: Notif, Pago, Perfiles, Recetas</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 9 – DIAGRAMA VS SECUENCIA vs CLASES
+══════════════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-scale-balanced"></i> Comparativa</div>
+    <h2 class="sh-title">Diagrama de Clases <span>vs</span> Diagrama de Secuencia</h2>
+    <p class="sh-desc">Cuándo usar cada uno, cómo se complementan y qué modela cada tipo de diagrama UML.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="gc tl h-100">
+          <div class="gc-label" style="font-size:.85rem"><i class="fas fa-sitemap"></i> Diagrama de Clases (TA5)</div>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">Modela la <strong style="color:#fff">estructura estática</strong> del sistema.</div>
+          <div class="steps">
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">¿Qué <strong>entidades existen</strong> en el sistema?</div></div>
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">¿Qué <strong>atributos y métodos</strong> tienen las clases?</div></div>
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">¿Cómo <strong>se relacionan</strong> las clases entre sí? (herencia, composición…)</div></div>
+            <div class="step"><div class="step-num"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">Responde: <em>"¿Qué hay en el sistema?"</em></div></div>
+            <div class="step"><div class="step-num"><i class="fas fa-times" style="font-size:.55rem;color:var(--rose)"></i></div><div class="step-text" style="color:var(--rose)">NO muestra el orden temporal de los mensajes</div></div>
+          </div>
+          <div style="margin-top:12px;padding:10px 13px;background:rgba(14,165,233,.08);border-radius:8px;font-size:.79rem;color:var(--sky)"><i class="fas fa-tools me-2"></i>Se usa en la <strong>fase de diseño</strong> de la arquitectura del sistema.</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="gc tl2 h-100">
+          <div class="gc-label teal" style="font-size:.85rem"><i class="fas fa-timeline"></i> Diagrama de Secuencia (TA6)</div>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">Modela el <strong style="color:#fff">comportamiento dinámico</strong> del sistema.</div>
+          <div class="steps">
+            <div class="step" style="border-left-color:var(--teal)"><div class="step-num" style="background:linear-gradient(135deg,var(--teal),var(--sky))"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">¿En qué <strong>orden</strong> ocurren las interacciones?</div></div>
+            <div class="step" style="border-left-color:var(--teal)"><div class="step-num" style="background:linear-gradient(135deg,var(--teal),var(--sky))"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">¿Qué <strong>mensajes</strong> se intercambian entre actores?</div></div>
+            <div class="step" style="border-left-color:var(--teal)"><div class="step-num" style="background:linear-gradient(135deg,var(--teal),var(--sky))"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">¿Cuándo ocurre cada <strong>evento</strong> en el tiempo?</div></div>
+            <div class="step" style="border-left-color:var(--teal)"><div class="step-num" style="background:linear-gradient(135deg,var(--teal),var(--sky))"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="step-text">Responde: <em>"¿Cómo y cuándo pasa?"</em></div></div>
+            <div class="step" style="border-left-color:var(--rose)"><div class="step-num" style="background:linear-gradient(135deg,var(--rose),var(--amber))"><i class="fas fa-times" style="font-size:.55rem"></i></div><div class="step-text" style="color:var(--rose)">NO muestra atributos ni herencia entre clases</div></div>
+          </div>
+          <div style="margin-top:12px;padding:10px 13px;background:rgba(20,184,166,.08);border-radius:8px;font-size:.79rem;color:var(--teal)"><i class="fas fa-tools me-2"></i>Se usa para modelar <strong>casos de uso</strong> y validar la lógica de negocio.</div>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="gc" style="background:rgba(14,165,233,.06);border-color:rgba(14,165,233,.3);padding:14px">
+          <div class="gc-label" style="color:var(--amber)"><i class="fas fa-lightbulb"></i> ¿Cuándo se usan juntos?</div>
+          <p style="font-size:.85rem;color:var(--text-muted);line-height:1.65">En un proyecto real, ambos diagramas son <strong style="color:#fff">complementarios</strong>. El <strong style="color:var(--sky)">Diagrama de Clases</strong> define el vocabulario del sistema (las entidades), y el <strong style="color:var(--teal)">Diagrama de Secuencia</strong> define cómo esas entidades colaboran para realizar un caso de uso. Los métodos que aparecen en los mensajes del diagrama de secuencia (<em>procesarPago()</em>, <em>obtenerPerfil()</em>) deben existir como operaciones en las clases del diagrama de clases.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SLIDE 10 – CIERRE
+══════════════════════════════════════════════════ -->
+<div class="slide close-slide" id="s10">
+  <div class="animate__animated animate__fadeInUp" style="text-align:center">
+    <div style="width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--teal));display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-size:1.8rem;box-shadow:0 0 40px rgba(14,165,233,.35)"><i class="fas fa-check"></i></div>
+    <h2 style="font-size:2rem;font-weight:800;margin-bottom:8px">¡Presentación <span style="color:var(--sky)">completada</span>!</h2>
+    <p style="color:var(--text-muted);max-width:520px;margin:0 auto 26px;font-size:.92rem">Hemos modelado 4 sistemas reales con diagramas de secuencia UML: mensajes síncronos, retornos, auto-mensajes, fragmentos alt, notas y patrones de arquitectura.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:28px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center"><div style="font-size:1.7rem;font-weight:800;color:var(--sky)">4</div><div style="font-size:.76rem;color:var(--text-muted)">Ejercicios</div></div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center"><div style="font-size:1.7rem;font-weight:800;color:var(--teal)">4</div><div style="font-size:.76rem;color:var(--text-muted)">Tipos de mensajes</div></div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center"><div style="font-size:1.7rem;font-weight:800;color:var(--amber)">5</div><div style="font-size:.76rem;color:var(--text-muted)">Fragmentos UML</div></div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center"><div style="font-size:1.7rem;font-weight:800;color:var(--violet)">5</div><div style="font-size:.76nm;color:var(--text-muted)">Patrones de diseño</div></div>
+    </div>
+    <button class="btn-go" onclick="resetTo(0)" style="margin-right:12px"><i class="fas fa-rotate-left me-2"></i>Volver al inicio</button>
+    <button class="btn-go" style="background:linear-gradient(135deg,var(--amber),var(--violet))" onclick="credits()"><i class="fas fa-star me-2"></i>Créditos</button>
+  </div>
+</div>
+
+</div><!-- /slides -->
+<div id="kbd"><kbd>←</kbd><kbd>→</kbd> navegar &nbsp; <kbd>F</kbd> fullscreen</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── MERMAID ───────────────────────────────────────────────
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#0d2035',
+    primaryTextColor: '#e2eaf4',
+    primaryBorderColor: '#0ea5e9',
+    lineColor: '#0ea5e9',
+    secondaryColor: '#0d1826',
+    tertiaryColor: '#111f30',
+    background: '#07111e',
+    mainBkg: '#0d1826',
+    nodeBorder: '#0ea5e9',
+    actorBkg: '#0d1826',
+    actorBorder: '#0ea5e9',
+    actorTextColor: '#e2eaf4',
+    actorLineColor: '#0ea5e9',
+    signalColor: '#e2eaf4',
+    signalTextColor: '#e2eaf4',
+    labelBoxBkgColor: '#0d1826',
+    labelBoxBorderColor: '#0ea5e9',
+    labelTextColor: '#e2eaf4',
+    loopTextColor: '#e2eaf4',
+    noteBorderColor: '#14b8a6',
+    noteBkgColor: '#0a2a28',
+    noteTextColor: '#e2eaf4',
+    activationBorderColor: '#14b8a6',
+    activationBkgColor: '#0a2028',
+  }
+});
+
+// ── SLIDE ENGINE ──────────────────────────────────────────
+let cur = 0;
+const TOTAL = 11;
+const rendered = new Set();
+
+const diagMap = {
+  3: { w: 'd1w', c: 'd1c' },
+  4: { w: 'd2w', c: 'd2c' },
+  5: { w: 'd3w', c: 'd3c' },
+  6: { w: 'd4w', c: 'd4c' },
+};
+
+function go(d) {
+  const nx = cur + d;
+  if (nx < 0 || nx >= TOTAL) return;
+  document.getElementById('s' + cur).classList.remove('active');
+  cur = nx;
+  const sl = document.getElementById('s' + cur);
+  sl.classList.add('active');
+  // re-trigger animations
+  sl.querySelectorAll('.animate__animated').forEach(el => {
+    const c = el.className;
+    el.className = c.replace('animate__fadeInDown','').replace('animate__fadeInUp','');
+    void el.offsetWidth;
+    el.className = c;
+  });
+  updateUI();
+  if (cur === 7 && !quizReady) initQuiz();
+  renderIfDiagram();
+}
+
+function resetTo(n) { while (cur > n) go(-1); }
+
+function updateUI() {
+  document.getElementById('sctr').textContent =
+    String(cur+1).padStart(2,'0') + ' / ' + String(TOTAL).padStart(2,'0');
+  document.getElementById('pbar').style.width = ((cur+1)/TOTAL*100) + '%';
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === TOTAL-1;
+}
+
+async function renderDiag(idx) {
+  const m = diagMap[idx];
+  if (!m || rendered.has(idx)) return;
+  const code = document.getElementById(m.c)?.textContent.trim();
+  const wrap = document.getElementById(m.w);
+  if (!code || !wrap) return;
+  try {
+    const id = 'mm_' + idx + '_' + Date.now();
+    const { svg } = await mermaid.render(id, code);
+    wrap.innerHTML = svg;
+    rendered.add(idx);
+  } catch(e) {
+    wrap.innerHTML = `<div style="color:#f43f5e;padding:20px;font-size:.8rem"><i class="fas fa-triangle-exclamation me-2"></i>${e.message}</div>`;
+  }
+}
+
+function renderIfDiagram() {
+  if (!diagMap[cur]) return;
+  const active = document.querySelector('#s'+cur+' .ex-tab.active');
+  if (active && active.textContent.includes('Diagrama')) renderDiag(cur);
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function tab(btn, paneId) {
+  const wrap = btn.closest('[style]') || btn.parentElement.parentElement;
+  btn.closest('.ex-tabs').querySelectorAll('.ex-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`#s${cur} .ex-pane`).forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId).classList.add('active');
+  if (paneId.endsWith('d')) renderDiag(cur);
+}
+
+// ── QUIZ ──────────────────────────────────────────────────
+let quizReady = false, score = 0, done = 0;
+
+const qs = [
+  {
+    q: '¿Qué eje representa el tiempo en un diagrama de secuencia?',
+    opts: ['El eje horizontal (izquierda a derecha)', 'El eje vertical (de arriba a abajo)', 'No hay representación del tiempo', 'Ambos ejes simultáneamente'],
+    a: 1,
+    exp: 'El <strong>eje vertical</strong> representa el tiempo. Los mensajes que aparecen más arriba ocurren primero. El eje horizontal representa los diferentes participantes.'
+  },
+  {
+    q: '¿Qué tipo de notación se usa para el mensaje de retorno en un diagrama de secuencia?',
+    opts: ['Línea sólida con flecha rellena (──▶)', 'Línea sólida con rombo', 'Línea punteada con flecha abierta (– –▷)', 'Línea con triángulo hueco'],
+    a: 2,
+    exp: 'Los <strong>mensajes de retorno</strong> usan línea punteada con flecha abierta <code>──▷</code>. Los mensajes de llamada usan línea sólida con flecha rellena.'
+  },
+  {
+    q: 'En el sistema de reservas de vuelos (Ej.1), ¿qué fragmento combinado se usa para modelar "aprobado vs rechazado"?',
+    opts: ['loop', 'opt', 'alt', 'ref'],
+    a: 2,
+    exp: 'El fragmento <strong>alt</strong> modela condiciones alternativas mutuamente excluyentes (equivalente a if/else). Se usa para "aprobado" como una rama y "rechazado" como otra.'
+  },
+  {
+    q: '¿Qué representa un auto-mensaje (self-message) en un diagrama de secuencia?',
+    opts: ['Un mensaje de un actor externo', 'Un objeto que procesa algo internamente sin intervención de otro participante', 'Un mensaje asíncrono entre sistemas', 'El inicio del diagrama'],
+    a: 1,
+    exp: 'El <strong>auto-mensaje</strong> (<code>SRV->>SRV</code>) modela procesamiento interno de un participante. Ej: "verificar disponibilidad", "procesar pago", "generar recomendaciones".'
+  },
+  {
+    q: '¿Cuál es la diferencia principal entre un Diagrama de Clases y un Diagrama de Secuencia?',
+    opts: [
+      'El de clases usa flechas y el de secuencia usa líneas',
+      'El de clases muestra la estructura estática; el de secuencia muestra el comportamiento dinámico con orden temporal',
+      'El de secuencia es para base de datos y el de clases para frontend',
+      'No hay diferencia, son el mismo tipo de diagrama'
+    ],
+    a: 1,
+    exp: 'El <strong>Diagrama de Clases</strong> modela qué existe (estructura estática: clases, atributos, relaciones). El <strong>Diagrama de Secuencia</strong> modela cómo interactúan en el tiempo (comportamiento dinámico).'
+  },
+  {
+    q: 'En el Chatbot WhatsApp (Ej.4), ¿qué patrón de diseño aplica el Chatbot al adaptar la respuesta de Google Maps a formato WhatsApp?',
+    opts: ['Singleton', 'Adapter', 'Observer', 'Factory'],
+    a: 1,
+    exp: 'El patrón <strong>Adapter</strong> convierte la interfaz de un sistema (respuesta de Google Maps en formato estructurado) en otra que el cliente puede usar (formato legible para WhatsApp). El Chatbot actúa como adaptador.'
+  }
+];
+
+function initQuiz() {
+  quizReady = true;
+  const box = document.getElementById('quiz-box');
+  box.innerHTML = qs.map((q,i) => `
+    <div class="qcard" id="qc${i}">
+      <div class="q-text"><span style="color:var(--sky);font-family:var(--mono)">${i+1}.</span> ${q.q}</div>
+      ${q.opts.map((o,j) => `<button class="q-opt" onclick="ans(${i},${j})" id="opt${i}_${j}">${o}</button>`).join('')}
+      <div class="q-exp" id="exp${i}"><i class="fas fa-circle-info me-2" style="color:var(--teal)"></i>${q.exp}</div>
+    </div>`).join('') +
+    `<div id="qres" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:22px;text-align:center"><i class="fas fa-trophy" style="font-size:1.8rem;color:var(--amber);margin-bottom:10px;display:block"></i><div id="qscore"></div><button class="btn-go" style="margin-top:14px;font-size:.85rem;padding:10px 22px" onclick="resetQuiz()"><i class="fas fa-rotate-left me-2"></i>Reintentar</button></div>`;
+}
+
+function ans(qi, oi) {
+  const q = qs[qi];
+  document.querySelectorAll(`[id^="opt${qi}_"]`).forEach(b => b.disabled = true);
+  document.getElementById(`opt${qi}_${oi}`).classList.add(oi === q.a ? 'ok' : 'no');
+  if (oi !== q.a) document.getElementById(`opt${qi}_${q.a}`).classList.add('ok');
+  document.getElementById(`exp${qi}`).style.display = 'block';
+  if (oi === q.a) score++;
+  done++;
+  if (done === qs.length) {
+    const pct = Math.round(score/qs.length*100);
+    document.getElementById('qres').style.display = 'block';
+    document.getElementById('qscore').innerHTML = `<div style="font-size:1.9rem;font-weight:800;color:${pct>=66?'var(--teal)':'var(--rose)'}">${score}/${qs.length}</div><div style="color:#fff;margin:6px 0">${pct}% correcto</div><div style="font-size:.83rem;color:var(--text-muted)">${pct===100?'🎉 ¡Perfecto!':pct>=66?'👍 Muy bien, seguí practicando':'📚 Repasá los fundamentos de secuencia'}</div>`;
+    Swal.fire({
+      title: pct >= 66 ? '¡Bien hecho!' : 'Seguí practicando',
+      html: `<div>Obtuviste <strong style="color:${pct>=66?'#14b8a6':'#f43f5e'}">${score} de ${qs.length}</strong> correctas</div>`,
+      icon: pct >= 66 ? 'success' : 'info',
+      background: '#0d1826', color: '#e2eaf4',
+      confirmButtonColor: '#0ea5e9', confirmButtonText: 'Ver resultado'
+    });
+  }
+}
+
+function resetQuiz() { score=0; done=0; quizReady=false; initQuiz(); }
+
+// ── KEYBOARD ──────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if (e.key==='ArrowRight'||e.key==='ArrowDown') go(1);
+  if (e.key==='ArrowLeft'||e.key==='ArrowUp') go(-1);
+  if (e.key==='f'||e.key==='F') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
+});
+
+// ── CREDITS ───────────────────────────────────────────────
+function credits() {
+  Swal.fire({
+    title: 'UT3 – TA6 | Diagramas de Secuencia',
+    html: `<div style="text-align:left;font-size:.87rem;line-height:1.9">
+      <div style="color:#7a9bb5"><i class="fas fa-timeline me-2" style="color:#0ea5e9"></i><strong style="color:#fff">Unidad Temática 3 – Diseño y UML</strong></div>
+      <div style="color:#7a9bb5"><i class="fas fa-file me-2" style="color:#14b8a6"></i><strong style="color:#fff">Trabajo de Aplicación 6</strong></div>
+      <hr style="border-color:rgba(14,165,233,.25);margin:10px 0">
+      <div style="color:#7a9bb5"><i class="fas fa-layer-group me-2" style="color:#f59e0b"></i>Bootstrap 5 · FontAwesome 6 · Animate.css 4</div>
+      <div style="color:#7a9bb5"><i class="fas fa-diagram-project me-2" style="color:#a78bfa"></i>Mermaid.js 10 · SweetAlert2 11</div>
+      <div style="color:#7a9bb5"><i class="fas fa-font me-2" style="color:#0ea5e9"></i>Sora · Fira Code</div>
+    </div>`,
+    background: '#0d1826', color: '#e2eaf4',
+    confirmButtonColor: '#0ea5e9', confirmButtonText: 'Cerrar'
+  });
+}
+
+updateUI();
+</script>
+</body>
+</html>
