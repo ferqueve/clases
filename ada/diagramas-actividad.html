@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UT3 – TA7 | Diagramas de Actividad UML</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg:      #060a0f;
+  --card:    #0c1318;
+  --card2:   #101a1f;
+  --em:      #10b981;   /* emerald */
+  --am:      #f59e0b;   /* amber   */
+  --vi:      #818cf8;   /* indigo  */
+  --pk:      #f472b6;   /* pink    */
+  --rs:      #f87171;   /* red     */
+  --txt:     #dce8e0;
+  --muted:   #6b8a78;
+  --bdr:     rgba(16,185,129,.2);
+  --bdr2:    rgba(245,158,11,.2);
+  --glow:    0 0 28px rgba(16,185,129,.22);
+  --font:    'Plus Jakarta Sans', sans-serif;
+  --mono:    'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--txt);overflow:hidden;}
+
+/* ── PROGRESS ── */
+#pb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--em),var(--am));z-index:9999;transition:width .4s ease;}
+
+/* ── TOPBAR ── */
+#tb{position:fixed;top:3px;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:9px 24px;background:rgba(6,10,15,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--bdr);z-index:999;}
+.tb-brand{display:flex;align-items:center;gap:9px;font-size:.78rem;font-weight:600;color:var(--muted);}
+.tb-brand i{color:var(--em);font-size:1rem;}
+#sc{font-size:.76rem;font-weight:700;color:var(--am);font-family:var(--mono);letter-spacing:.06em;}
+.nb{display:flex;gap:6px;}
+.nb button{background:var(--card2);border:1px solid var(--bdr);color:var(--txt);padding:5px 14px;border-radius:6px;font-size:.79rem;cursor:pointer;transition:all .2s;font-family:var(--font);}
+.nb button:hover{background:var(--em);border-color:var(--em);box-shadow:var(--glow);}
+.nb button:disabled{opacity:.25;cursor:not-allowed;}
+
+/* ── SLIDES ── */
+#slides{position:fixed;top:47px;left:0;right:0;bottom:0;overflow-y:auto;}
+.slide{display:none;min-height:calc(100vh - 47px);padding:26px 40px;flex-direction:column;}
+.slide.active{display:flex;}
+
+/* ── COVER ── */
+.cover{justify-content:center;align-items:center;text-align:center;
+  background:
+    radial-gradient(ellipse at 15% 25%,rgba(16,185,129,.15) 0%,transparent 50%),
+    radial-gradient(ellipse at 85% 75%,rgba(245,158,11,.1) 0%,transparent 48%),
+    radial-gradient(ellipse at 55% 90%,rgba(129,140,248,.07) 0%,transparent 40%),
+    var(--bg);}
+.cv-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--em);color:var(--em);background:rgba(16,185,129,.1);padding:5px 16px;border-radius:20px;font-size:.78rem;font-weight:700;margin-bottom:18px;letter-spacing:.05em;}
+.cv-title{font-size:clamp(2rem,5.5vw,4rem);font-weight:800;line-height:1.06;
+  background:linear-gradient(130deg,#fff 20%,var(--em) 55%,var(--am) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;}
+.cv-sub{font-size:1.05rem;color:var(--muted);max-width:560px;margin:0 auto 28px;line-height:1.6;}
+.cv-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:32px;}
+.cv-chip{background:var(--card2);border:1px solid var(--bdr);padding:6px 14px;border-radius:8px;font-size:.79rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.cv-chip i{color:var(--am);}
+.btn-go{background:linear-gradient(135deg,var(--em),var(--am));border:none;padding:13px 34px;border-radius:10px;font-size:.94rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.04em;transition:transform .2s,box-shadow .2s;font-family:var(--font);}
+.btn-go:hover{transform:translateY(-3px);box-shadow:0 14px 32px rgba(16,185,129,.35);}
+
+/* ── SLIDE HEADER ── */
+.sh{margin-bottom:20px;}
+.sh-tag{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--am);margin-bottom:6px;}
+.sh-title{font-size:clamp(1.4rem,3vw,2.05rem);font-weight:800;line-height:1.18;color:#fff;}
+.sh-title span{color:var(--em);}
+.sh-desc{font-size:.88rem;color:var(--muted);margin-top:5px;}
+
+/* ── CARDS ── */
+.gc{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:17px;}
+.gc:hover{border-color:rgba(16,185,129,.38);transition:border-color .2s;}
+.gc.em{border-left:3px solid var(--em);}
+.gc.am{border-left:3px solid var(--am);}
+.gc.vi{border-left:3px solid var(--vi);}
+.gc.pk{border-left:3px solid var(--pk);}
+.lbl{font-size:.77rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.lbl.em{color:var(--em);}
+.lbl.am{color:var(--am);}
+.lbl.vi{color:var(--vi);}
+
+/* ── ELEMENT ROWS ── */
+.el-row{display:flex;align-items:flex-start;gap:12px;padding:10px 13px;background:var(--card2);border-radius:8px;margin-bottom:7px;}
+.el-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;}
+.el-name{font-size:.84rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.el-desc{font-size:.77rem;color:var(--muted);line-height:1.45;}
+
+/* ── STEPS ── */
+.steps{display:flex;flex-direction:column;gap:6px;}
+.step{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:var(--card2);border-radius:8px;font-size:.82rem;border-left:2px solid var(--em);}
+.step.am{border-left-color:var(--am);}
+.step.vi{border-left-color:var(--vi);}
+.step.rs{border-left-color:var(--rs);}
+.snum{background:linear-gradient(135deg,var(--em),var(--am));color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;margin-top:1px;}
+.stxt{color:var(--muted);line-height:1.5;}
+.stxt strong{color:var(--txt);}
+
+/* ── TABS ── */
+.ex-tabs{display:flex;gap:4px;margin-bottom:13px;border-bottom:1px solid var(--bdr);padding-bottom:4px;}
+.ex-tab{background:none;border:none;color:var(--muted);padding:7px 14px;font-size:.81rem;font-weight:600;border-radius:6px 6px 0 0;cursor:pointer;transition:all .2s;font-family:var(--font);}
+.ex-tab.active{background:rgba(16,185,129,.1);color:var(--em);border-bottom:2px solid var(--em);}
+.ex-tab:hover{color:var(--txt);}
+.ex-pane{display:none;}
+.ex-pane.active{display:block;animation:fadeIn .3s ease;}
+
+/* ── MERMAID ── */
+.mwrap{background:#07110e;border:1px solid var(--bdr);border-radius:12px;padding:14px;overflow:auto;display:flex;justify-content:center;min-height:240px;max-height:430px;}
+.mwrap svg{max-width:100%;height:auto;}
+
+/* ── CONCEPT CARDS ── */
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px;margin-top:8px;}
+.cc{background:var(--card2);border:1px solid var(--bdr);border-radius:10px;padding:13px;transition:all .2s;}
+.cc:hover{border-color:var(--em);transform:translateY(-2px);}
+.cc-icon{width:33px;height:33px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:9px;font-size:.82rem;}
+.cc-name{font-size:.82rem;font-weight:700;color:#fff;margin-bottom:4px;}
+.cc-desc{font-size:.74rem;color:var(--muted);line-height:1.45;}
+
+/* ── SWIMLANE DEMO ── */
+.sw-demo{border:1px solid var(--bdr);border-radius:10px;overflow:hidden;font-size:.78rem;}
+.sw-header{display:flex;background:rgba(16,185,129,.12);}
+.sw-th{flex:1;padding:8px 12px;font-weight:700;border-right:1px solid var(--bdr);text-align:center;}
+.sw-th:last-child{border-right:none;}
+.sw-row{display:flex;border-top:1px solid var(--bdr);}
+.sw-cell{flex:1;padding:9px 12px;border-right:1px solid var(--bdr);color:var(--muted);text-align:center;min-height:50px;display:flex;align-items:center;justify-content:center;}
+.sw-cell:last-child{border-right:none;}
+.sw-act{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.35);border-radius:6px;padding:4px 8px;color:var(--em);font-weight:600;font-size:.75rem;}
+.sw-dec{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);border-radius:6px;padding:4px 8px;color:var(--am);font-weight:600;font-size:.75rem;transform:rotate(0deg);}
+
+/* ── NOTATION BOX ── */
+.not-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px;}
+.not-card{background:var(--card2);border:1px solid var(--bdr);border-radius:8px;padding:13px;text-align:center;}
+.not-sym{font-size:1.3rem;margin-bottom:7px;}
+.not-name{font-size:.8rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.not-desc{font-size:.72rem;color:var(--muted);line-height:1.4;}
+
+/* ── QUIZ ── */
+.qcard{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:17px;margin-bottom:13px;}
+.q-text{font-size:.91rem;font-weight:600;color:#fff;margin-bottom:11px;}
+.q-opt{background:var(--card2);border:1px solid var(--bdr);border-radius:8px;padding:9px 13px;font-size:.82rem;cursor:pointer;margin-bottom:5px;transition:all .2s;display:block;text-align:left;color:var(--txt);width:100%;font-family:var(--font);}
+.q-opt:hover{border-color:var(--em);background:rgba(16,185,129,.1);}
+.q-opt.ok{border-color:var(--em);background:rgba(16,185,129,.12);color:#6ee7b7;}
+.q-opt.no{border-color:var(--rs);background:rgba(248,113,113,.1);color:#fca5a5;}
+.q-exp{display:none;margin-top:8px;padding:9px 12px;background:rgba(16,185,129,.07);border-radius:8px;font-size:.79rem;color:var(--muted);}
+
+/* ── COMP TABLE ── */
+.ctbl{background:var(--card);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;}
+.ctbl table{width:100%;font-size:.82rem;}
+.ctbl th{background:rgba(16,185,129,.14);padding:11px 13px;color:var(--em);font-weight:700;border-bottom:1px solid var(--bdr);}
+.ctbl td{padding:10px 13px;border-bottom:1px solid rgba(16,185,129,.07);vertical-align:top;color:var(--muted);}
+.ctbl tr:last-child td{border-bottom:none;}
+
+/* ── FORK/JOIN DEMO ── */
+.fj-demo{display:flex;flex-direction:column;align-items:center;gap:0;padding:10px 0;}
+.fj-bar{width:180px;height:5px;background:var(--em);border-radius:2px;margin:6px 0;}
+.fj-parallel{display:flex;gap:30px;justify-content:center;}
+.fj-lane{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.fj-act{background:rgba(16,185,129,.12);border:1px solid var(--em);border-radius:8px;padding:6px 14px;font-size:.75rem;font-weight:600;color:var(--em);text-align:center;white-space:nowrap;}
+.fj-line{width:2px;height:20px;background:rgba(16,185,129,.35);}
+.fj-arr{font-size:.6rem;color:var(--em);}
+
+/* ── CLOSING ── */
+.close-sl{justify-content:center;align-items:center;text-align:center;
+  background:radial-gradient(ellipse at center,rgba(16,185,129,.12) 0%,transparent 65%),var(--bg);}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:rgba(16,185,129,.3);border-radius:3px;}
+#kbd{position:fixed;bottom:13px;right:17px;font-size:.69rem;color:rgba(107,138,120,.38);display:flex;align-items:center;gap:5px;}
+kbd{background:rgba(107,138,120,.1);border:1px solid rgba(107,138,120,.2);padding:2px 6px;border-radius:4px;font-size:.69rem;}
+code{font-family:var(--mono);font-size:.82em;}
+</style>
+</head>
+<body>
+<div id="pb"></div>
+<div id="tb">
+  <div class="tb-brand"><i class="fas fa-diagram-predecessor"></i> UT3 – TA7 | Diagramas de Actividad UML</div>
+  <span id="sc">01 / 10</span>
+  <div class="nb">
+    <button id="bp" onclick="go(-1)" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+    <button id="bn" onclick="go(1)">Siguiente <i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<div id="slides">
+
+<!-- ══ SLIDE 0 – COVER ══════════════════════════════════ -->
+<div class="slide cover active" id="s0">
+  <div class="animate__animated animate__fadeInDown" style="text-align:center">
+    <div class="cv-badge"><i class="fas fa-diagram-predecessor"></i> Unidad Temática 3 – Diseño y UML</div>
+    <h1 class="cv-title">Diagramas de<br>Actividad UML</h1>
+    <p class="cv-sub">Trabajo de Aplicación 7 · Modelado de flujos de trabajo, decisiones, paralelismo y sincronización de procesos.</p>
+    <div class="cv-chips">
+      <div class="cv-chip"><i class="fas fa-layer-group"></i> 3 ejercicios</div>
+      <div class="cv-chip"><i class="fas fa-code-branch"></i> Decisiones · Fork · Join · Swim Lanes</div>
+      <div class="cv-chip"><i class="fas fa-arrows-split-up-and-left"></i> Flujos paralelos con Scrum</div>
+      <div class="cv-chip"><i class="fas fa-brain"></i> Quiz de evaluación</div>
+    </div>
+    <button class="btn-go" onclick="go(1)"><i class="fas fa-play me-2"></i>Comenzar</button>
+  </div>
+</div>
+
+<!-- ══ SLIDE 1 – QUÉ ES UN DIAGRAMA DE ACTIVIDAD ══════ -->
+<div class="slide" id="s1">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-book-open"></i> Fundamentos</div>
+    <h2 class="sh-title">¿Qué es un <span>Diagrama de Actividad</span>?</h2>
+    <p class="sh-desc">El diagrama UML que modela flujos de trabajo, procesos de negocio y algoritmos complejos.</p>
+  </div>
+  <div class="row g-3 animate__animated animate__fadeInUp">
+    <div class="col-md-5">
+      <div class="gc em h-100">
+        <div class="lbl em"><i class="fas fa-info-circle"></i> Definición</div>
+        <p style="font-size:.87rem;color:var(--muted);line-height:1.7;margin-bottom:12px">Un <strong style="color:#fff">diagrama de actividad</strong> es un diagrama de comportamiento UML que representa el <strong style="color:var(--em)">flujo de control</strong> o <strong style="color:var(--em)">flujo de datos</strong> de un proceso, mostrando actividades, decisiones y flujos paralelos.</p>
+        <div style="padding:10px 13px;background:rgba(16,185,129,.08);border-radius:8px;font-size:.8rem;color:var(--em);margin-bottom:8px"><i class="fas fa-lightbulb me-2"></i><strong>¿Cuándo usarlo?</strong> Para modelar procesos de negocio, algoritmos, flujos de trabajo y casos de uso complejos con bifurcaciones y paralelismo.</div>
+        <div style="padding:10px 13px;background:rgba(245,158,11,.08);border-radius:8px;font-size:.8rem;color:var(--am)"><i class="fas fa-arrow-down-long me-2"></i><strong>Flujo de control:</strong> Siempre hay un token que circula desde el nodo inicial hacia el nodo final siguiendo las transiciones.</div>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="gc am h-100">
+        <div class="lbl am"><i class="fas fa-shapes"></i> Comparativa con otros diagramas UML</div>
+        <div class="ctbl" style="margin-bottom:0">
+          <table>
+            <thead><tr><th>Diagrama</th><th>Modela</th><th>Foco</th></tr></thead>
+            <tbody>
+              <tr><td><strong style="color:var(--vi)">Clases (TA5)</strong></td><td>Estructura del sistema</td><td>¿Qué existe?</td></tr>
+              <tr><td><strong style="color:#38bdf8)">Secuencia (TA6)</strong></td><td>Interacción en el tiempo</td><td>¿Quién habla con quién?</td></tr>
+              <tr><td><strong style="color:var(--em)">Actividad (TA7)</strong></td><td>Flujo de control/trabajo</td><td>¿Cómo fluye el proceso?</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:12px">
+          <div class="lbl em" style="margin-bottom:8px"><i class="fas fa-star"></i> Características únicas</div>
+          <div class="steps">
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Modela <strong>flujos paralelos</strong> con barras de Fork/Join</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Soporta <strong>swim lanes</strong> para asignar actividades a actores/departamentos</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Incluye <strong>nodos de decisión</strong> con guardas (condiciones)</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Permite modelar <strong>subflujos</strong> y actividades invocadas</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2 – ELEMENTOS Y NOTACIÓN ════════════════════ -->
+<div class="slide" id="s2">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-shapes"></i> Notación</div>
+    <h2 class="sh-title">Elementos y <span>Notación</span> del Diagrama de Actividad</h2>
+    <p class="sh-desc">Los símbolos estándar UML que construyen cualquier diagrama de actividad.</p>
+  </div>
+  <div class="row g-3 animate__animated animate__fadeInUp">
+    <div class="col-md-7">
+      <div class="gc em">
+        <div class="lbl em"><i class="fas fa-shapes"></i> Símbolos Principales</div>
+        <div class="el-row">
+          <div class="el-icon" style="background:rgba(16,185,129,.15)"><i class="fas fa-circle" style="color:var(--em)"></i></div>
+          <div><div class="el-name">Nodo Inicial (Initial Node)</div><div class="el-desc">Círculo sólido negro (●). Marca el <strong>punto de comienzo</strong> del flujo. Solo puede haber uno por diagrama.</div></div>
+        </div>
+        <div class="el-row">
+          <div class="el-icon" style="background:rgba(245,158,11,.12)"><i class="fas fa-rectangle-list" style="color:var(--am)"></i></div>
+          <div><div class="el-name">Actividad / Acción</div><div class="el-desc">Rectángulo con esquinas redondeadas. Representa una <strong>tarea o paso</strong> del proceso. Ej: "Verificar disponibilidad", "Enviar notificación".</div></div>
+        </div>
+        <div class="el-row">
+          <div class="el-icon" style="background:rgba(129,140,248,.12)"><i class="fas fa-diamond" style="color:var(--vi)"></i></div>
+          <div><div class="el-name">Nodo de Decisión / Merge</div><div class="el-desc">Rombo (◇). Bifurca el flujo según una <strong>condición de guarda</strong> [condición]. Las salidas son mutuamente excluyentes. El merge une las ramas.</div></div>
+        </div>
+        <div class="el-row">
+          <div class="el-icon" style="background:rgba(244,114,182,.12)"><i class="fas fa-equals" style="color:var(--pk)"></i></div>
+          <div><div class="el-name">Fork (Bifurcación Paralela)</div><div class="el-desc">Barra gruesa horizontal (━━). Divide el flujo en <strong>múltiples ramas paralelas</strong> que se ejecutan simultáneamente.</div></div>
+        </div>
+        <div class="el-row">
+          <div class="el-icon" style="background:rgba(244,114,182,.12)"><i class="fas fa-compress" style="color:var(--pk)"></i></div>
+          <div><div class="el-name">Join (Sincronización)</div><div class="el-desc">Barra gruesa horizontal (━━). <strong>Sincroniza todas las ramas</strong> paralelas: espera que todas terminen antes de continuar.</div></div>
+        </div>
+        <div class="el-row">
+          <div class="el-icon" style="background:rgba(16,185,129,.12)"><i class="fas fa-circle-dot" style="color:var(--em)"></i></div>
+          <div><div class="el-name">Nodo Final de Actividad</div><div class="el-desc">Círculo con punto interior (⊙). Indica el <strong>fin del proceso</strong>. Cuando el token llega aquí, la actividad termina.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="gc am h-100">
+        <div class="lbl am"><i class="fas fa-table-columns"></i> Swim Lanes (Carriles)</div>
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Los swim lanes dividen el diagrama en <strong style="color:#fff">carriles verticales u horizontales</strong>, asignando cada actividad a un <strong style="color:var(--am)">responsable específico</strong> (persona, sistema, departamento).</p>
+        <div class="sw-demo">
+          <div class="sw-header">
+            <div class="sw-th" style="color:var(--em)"><i class="fas fa-user me-1"></i>Empleado</div>
+            <div class="sw-th" style="color:var(--am)"><i class="fas fa-user-tie me-1"></i>Jefe Directo</div>
+            <div class="sw-th" style="color:var(--vi)"><i class="fas fa-building me-1"></i>RRHH</div>
+          </div>
+          <div class="sw-row">
+            <div class="sw-cell"><div class="sw-act">Solicitar licencia</div></div>
+            <div class="sw-cell"></div>
+            <div class="sw-cell"></div>
+          </div>
+          <div class="sw-row">
+            <div class="sw-cell"></div>
+            <div class="sw-cell"><div class="sw-dec">¿Aprueba?</div></div>
+            <div class="sw-cell"></div>
+          </div>
+          <div class="sw-row">
+            <div class="sw-cell"></div>
+            <div class="sw-cell"></div>
+            <div class="sw-cell"><div class="sw-act">Procesar en sistema</div></div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px 12px;background:rgba(16,185,129,.07);border-radius:8px;font-size:.78rem;color:var(--muted)"><i class="fas fa-info-circle me-2" style="color:var(--em)"></i>Los swim lanes son <strong style="color:#fff">opcionales</strong> pero muy útiles para procesos multi-actor como los del TA7.</div>
+        <div style="margin-top:10px">
+          <div class="lbl em" style="font-size:.72rem"><i class="fas fa-arrow-right"></i> Transiciones</div>
+          <div style="font-size:.78rem;color:var(--muted)">Flechas que conectan los nodos. Pueden tener <strong style="color:#fff">etiquetas de guarda</strong> <code>[condición]</code> cuando salen de un nodo de decisión.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3 – EJ 1: RRHH ════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-id-badge"></i> Ejercicio 1</div>
+    <h2 class="sh-title">Aprobación de Licencias – <span>RRHH</span></h2>
+    <p class="sh-desc">Flujo de aprobación de licencias, comisiones y llegadas tarde con dos niveles jerárquicos.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="tab(this,'e1r')"><i class="fas fa-file-lines me-1"></i>Descripción</button>
+      <button class="ex-tab" onclick="tab(this,'e1d')"><i class="fas fa-diagram-predecessor me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="tab(this,'e1c')"><i class="fas fa-brain me-1"></i>Conceptos</button>
+    </div>
+    <div id="e1r" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <div class="gc em h-100">
+            <div class="lbl em"><i class="fas fa-users"></i> Actores / Swim Lanes</div>
+            <div class="steps" style="margin-bottom:12px">
+              <div class="step"><div class="snum"><i class="fas fa-user" style="font-size:.55rem"></i></div><div class="stxt"><strong>Empleado</strong> — inicia la solicitud y recibe la notificación del resultado</div></div>
+              <div class="step am"><div class="snum" style="background:linear-gradient(135deg,var(--am),var(--em))"><i class="fas fa-user-tie" style="font-size:.55rem"></i></div><div class="stxt"><strong>Jefe Directo</strong> — primera instancia de aprobación/rechazo</div></div>
+              <div class="step vi"><div class="snum" style="background:linear-gradient(135deg,var(--vi),var(--em))"><i class="fas fa-building" style="font-size:.55rem"></i></div><div class="stxt"><strong>Jefe de Área</strong> — segunda instancia de aprobación/rechazo</div></div>
+              <div class="step" style="border-left-color:var(--pk)"><div class="snum" style="background:linear-gradient(135deg,var(--pk),var(--am))"><i class="fas fa-file-contract" style="font-size:.55rem"></i></div><div class="stxt"><strong>RRHH / Liquidación</strong> — procesa la solicitud aprobada en el sistema</div></div>
+            </div>
+            <div style="padding:10px 12px;background:rgba(245,158,11,.08);border-radius:8px;font-size:.79rem;color:var(--am)"><i class="fas fa-code-branch me-2"></i><strong>2 nodos de decisión:</strong> Jefe Directo y Jefe de Área. Ambos pueden aprobar o rechazar de forma independiente.</div>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <div class="gc am">
+            <div class="lbl am"><i class="fas fa-list-ol"></i> Flujo del Proceso</div>
+            <div class="steps">
+              <div class="step"><div class="snum">1</div><div class="stxt">El <strong>Empleado</strong> solicita licencia, comisión o reporta llegada tarde</div></div>
+              <div class="step"><div class="snum">2</div><div class="stxt">La solicitud se envía al <strong>Jefe Directo</strong> para su evaluación</div></div>
+              <div class="step am"><div class="snum" style="background:linear-gradient(135deg,var(--am),var(--em))">3</div><div class="stxt">⬦ <strong>Decisión #1:</strong> ¿El Jefe Directo aprueba?</div></div>
+              <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))">3a</div><div class="stxt"><strong>[Rechaza]</strong> → Se notifica al empleado del rechazo → Fin</div></div>
+              <div class="step"><div class="snum">3b</div><div class="stxt"><strong>[Aprueba]</strong> → La solicitud pasa al <strong>Jefe de Área</strong></div></div>
+              <div class="step am"><div class="snum" style="background:linear-gradient(135deg,var(--am),var(--em))">4</div><div class="stxt">⬦ <strong>Decisión #2:</strong> ¿El Jefe de Área aprueba?</div></div>
+              <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))">4a</div><div class="stxt"><strong>[Rechaza]</strong> → Se notifica al empleado del rechazo → Fin</div></div>
+              <div class="step"><div class="snum">4b</div><div class="stxt"><strong>[Aprueba]</strong> → Solicitud enviada a la oficina de RRHH</div></div>
+              <div class="step"><div class="snum">5</div><div class="stxt">RRHH <strong>procesa la solicitud</strong> en el sistema de liquidación de sueldos</div></div>
+              <div class="step"><div class="snum">6</div><div class="stxt">Se <strong>notifica al empleado</strong> del resultado → Fin del proceso</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="e1d" class="ex-pane">
+      <div class="mwrap" id="d1w"><div style="color:var(--muted);font-size:.82rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="d1c" style="display:none">flowchart TD
+    A([&#11044; Inicio]) --> B[/Empleado solicita licencia&#44;\ncomisión o llegada tarde/]
+    B --> C[Enviar solicitud al Jefe Directo]
+    C --> D{¿Jefe Directo\naprueba?}
+    D -- Rechaza --> N[Notificar al empleado\nSolicitud RECHAZADA]
+    D -- Aprueba --> E[Enviar solicitud al Jefe de Área]
+    E --> F{¿Jefe de Área\naprueba?}
+    F -- Rechaza --> N
+    F -- Aprueba --> G[Enviar a la oficina de RRHH]
+    G --> H[Procesar en sistema\nde liquidación de sueldos]
+    H --> N
+    N --> Z([&#11044; Fin])
+
+    style A fill:#064e3b,stroke:#10b981,color:#fff
+    style Z fill:#064e3b,stroke:#10b981,color:#fff
+    style D fill:#78350f,stroke:#f59e0b,color:#fff
+    style F fill:#78350f,stroke:#f59e0b,color:#fff
+    style N fill:#1e1b4b,stroke:#818cf8,color:#fff
+    style B fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style C fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style E fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style G fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style H fill:#0d1826,stroke:#10b981,color:#dce8e0</div>
+    </div>
+    <div id="e1c" class="ex-pane">
+      <div class="cg">
+        <div class="cc"><div class="cc-icon" style="background:rgba(129,140,248,.15);color:var(--vi)"><i class="fas fa-diamond"></i></div><div class="cc-name">2 Nodos de Decisión</div><div class="cc-desc">Hay dos rombos independientes: <strong>Jefe Directo</strong> y <strong>Jefe de Área</strong>. Cada uno puede rechazar, cortocircuitando el flujo hacia la notificación.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(16,185,129,.15);color:var(--em)"><i class="fas fa-code-merge"></i></div><div class="cc-name">Merge (Unión de ramas)</div><div class="cc-desc">El nodo "Notificar al empleado" actúa como <strong>merge</strong>: recibe el token tanto del rechazo del J.Directo, del J.Área, como de la aprobación exitosa.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(245,158,11,.15);color:var(--am)"><i class="fas fa-table-columns"></i></div><div class="cc-name">Swim Lanes (4 actores)</div><div class="cc-desc">Este proceso se presta para 4 carriles: <strong>Empleado → Jefe Directo → Jefe de Área → RRHH</strong>, mostrando claramente quién es responsable de cada actividad.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(244,114,182,.15);color:var(--pk)"><i class="fas fa-shield-halved"></i></div><div class="cc-name">Guardas en transiciones</div><div class="cc-desc">Las transiciones del rombo llevan condiciones de guarda: <code>[Aprueba]</code> y <code>[Rechaza]</code>. Son mutuamente excluyentes: solo una puede ser verdadera.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4 – EJ 2: CONTRATACIÓN ════════════════════ -->
+<div class="slide" id="s4">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-handshake"></i> Ejercicio 2</div>
+    <h2 class="sh-title">Proceso de <span>Contratación</span></h2>
+    <p class="sh-desc">Flujo secuencial con múltiples etapas: entrevistas, psicotécnico, proyecto y evaluación por comité.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="tab(this,'e2r')"><i class="fas fa-file-lines me-1"></i>Descripción</button>
+      <button class="ex-tab" onclick="tab(this,'e2d')"><i class="fas fa-diagram-predecessor me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="tab(this,'e2c')"><i class="fas fa-brain me-1"></i>Conceptos</button>
+    </div>
+    <div id="e2r" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <div class="gc em h-100">
+            <div class="lbl em"><i class="fas fa-list-check"></i> Etapas del proceso</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="padding:10px 13px;background:var(--card2);border-radius:8px;border-left:2px solid var(--em)">
+                <div style="font-size:.8rem;font-weight:700;color:var(--em);margin-bottom:3px"><i class="fas fa-1 me-1"></i> Entrevista Introductoria</div>
+                <div style="font-size:.76rem;color:var(--muted)">Con el área de reclutamiento. Instancia inicial de filtrado.</div>
+              </div>
+              <div style="padding:10px 13px;background:var(--card2);border-radius:8px;border-left:2px solid var(--am)">
+                <div style="font-size:.8rem;font-weight:700;color:var(--am);margin-bottom:3px"><i class="fas fa-2 me-1"></i> Entrevista Técnica</div>
+                <div style="font-size:.76rem;color:var(--muted)">Evaluación de habilidades técnicas específicas del rol.</div>
+              </div>
+              <div style="padding:10px 13px;background:var(--card2);border-radius:8px;border-left:2px solid var(--vi)">
+                <div style="font-size:.8rem;font-weight:700;color:var(--vi);margin-bottom:3px"><i class="fas fa-3 me-1"></i> Examen Psicotécnico</div>
+                <div style="font-size:.76rem;color:var(--muted)">Evaluación psicológica y de aptitudes. Instancia adicional.</div>
+              </div>
+              <div style="padding:10px 13px;background:var(--card2);border-radius:8px;border-left:2px solid var(--pk)">
+                <div style="font-size:.8rem;font-weight:700;color:var(--pk);margin-bottom:3px"><i class="fas fa-4 me-1"></i> Prueba / Proyecto</div>
+                <div style="font-size:.76rem;color:var(--muted)">Duración <strong style="color:#fff">variable</strong> según tipo. El candidato lo completa y presenta resultados.</div>
+              </div>
+              <div style="padding:10px 13px;background:var(--card2);border-radius:8px;border-left:2px solid var(--rs)">
+                <div style="font-size:.8rem;font-weight:700;color:var(--rs);margin-bottom:3px"><i class="fas fa-5 me-1"></i> Evaluación del Comité</div>
+                <div style="font-size:.76rem;color:var(--muted)">2 líderes técnicos + gerente de ingeniería. Decisión final de contratación.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <div class="gc am">
+            <div class="lbl am"><i class="fas fa-list-ol"></i> Flujo del Proceso</div>
+            <div class="steps">
+              <div class="step"><div class="snum">1</div><div class="stxt">El <strong>candidato es seleccionado</strong> para ser entrevistado</div></div>
+              <div class="step"><div class="snum">2</div><div class="stxt"><strong>Entrevista introductoria</strong> con el área de reclutamiento</div></div>
+              <div class="step"><div class="snum">3</div><div class="stxt"><strong>Entrevista técnica</strong> para evaluar competencias específicas</div></div>
+              <div class="step"><div class="snum">4</div><div class="stxt"><strong>Examen psicotécnico</strong> programado tras las entrevistas</div></div>
+              <div class="step"><div class="snum">5</div><div class="stxt"><strong>Prueba/Proyecto:</strong> duración <em>variable</em> según el tipo asignado</div></div>
+              <div class="step"><div class="snum">6</div><div class="stxt">El candidato <strong>presenta los resultados</strong> ante el Comité</div></div>
+              <div class="step"><div class="snum">7</div><div class="stxt">El <strong>Comité</strong> (2 líderes técnicos + gerente) evalúa y decide</div></div>
+              <div class="step am"><div class="snum" style="background:linear-gradient(135deg,var(--am),var(--em))">8</div><div class="stxt">⬦ <strong>Decisión final:</strong> ¿Contratar al candidato?</div></div>
+              <div class="step"><div class="snum">8a</div><div class="stxt"><strong>[Sí]</strong> → Candidato contratado → Fin</div></div>
+              <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))">8b</div><div class="stxt"><strong>[No]</strong> → Candidato no contratado → Fin</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="e2d" class="ex-pane">
+      <div class="mwrap" id="d2w"><div style="color:var(--muted);font-size:.82rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="d2c" style="display:none">flowchart TD
+    A([&#11044; Inicio]) --> B[Candidato seleccionado\npara entrevistar]
+    B --> C[Entrevista Introductoria\nÁrea de Reclutamiento]
+    C --> D[Entrevista Técnica]
+    D --> E[Examen Psicotécnico]
+    E --> F[/Prueba o Presentación\nde Proyecto\nDuración variable/]
+    F --> G[Presenta resultados\nante el Comité]
+    G --> H[Comité evalúa:\n2 líderes técnicos\n+ Gerente de Ingeniería]
+    H --> I{¿Comité decide\ncontratar?}
+    I -- Sí --> J[Candidato\nCONTRATADO]
+    I -- No --> K[Candidato\nNO contratado]
+    J --> Z([&#11044; Fin])
+    K --> Z
+
+    style A fill:#064e3b,stroke:#10b981,color:#fff
+    style Z fill:#064e3b,stroke:#10b981,color:#fff
+    style I fill:#78350f,stroke:#f59e0b,color:#fff
+    style F fill:#1e1b4b,stroke:#818cf8,color:#fff
+    style J fill:#064e3b,stroke:#10b981,color:#fff
+    style K fill:#450a0a,stroke:#f87171,color:#fff
+    style B fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style C fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style D fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style E fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style G fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style H fill:#0d1826,stroke:#10b981,color:#dce8e0</div>
+    </div>
+    <div id="e2c" class="ex-pane">
+      <div class="cg">
+        <div class="cc"><div class="cc-icon" style="background:rgba(129,140,248,.15);color:var(--vi)"><i class="fas fa-arrow-down-long"></i></div><div class="cc-name">Flujo Secuencial Puro</div><div class="cc-desc">A diferencia del Ej.1 y Ej.3, este proceso es mayormente <strong>lineal</strong>: cada etapa se completa antes de pasar a la siguiente. Solo hay una bifurcación al final.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(245,158,11,.15);color:var(--am)"><i class="fas fa-clock"></i></div><div class="cc-name">Duración Variable</div><div class="cc-desc">La actividad "Prueba/Proyecto" tiene <strong>duración variable</strong>. En UML se puede modelar con un símbolo especial (rectángulo con borde redondeado y símbolo de tiempo) o con una nota.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(244,114,182,.15);color:var(--pk)"><i class="fas fa-people-group"></i></div><div class="cc-name">Actor Colectivo: Comité</div><div class="cc-desc">El <strong>Comité</strong> (3 personas) actúa como un solo actor en el diagrama. Internamente puede modelarse con un sub-diagrama de actividad si se necesita más detalle.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(248,113,113,.15);color:var(--rs)"><i class="fas fa-diamond"></i></div><div class="cc-name">Decisión Final única</div><div class="cc-desc">Hay solo un nodo de decisión al final: <code>[contratar]</code> o <code>[no contratar]</code>. Ambas ramas convergen en el nodo final de actividad.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5 – EJ 3: SCRUM ════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-arrows-split-up-and-left"></i> Ejercicio 3</div>
+    <h2 class="sh-title">Proceso <span>Scrum</span> – Actividades Paralelas</h2>
+    <p class="sh-desc">Sprint con fork/join: desarrollo, pruebas y documentación ejecutadas en paralelo y sincronizadas.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1">
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="tab(this,'e3r')"><i class="fas fa-file-lines me-1"></i>Descripción</button>
+      <button class="ex-tab" onclick="tab(this,'e3d')"><i class="fas fa-diagram-predecessor me-1"></i>Diagrama UML</button>
+      <button class="ex-tab" onclick="tab(this,'e3c')"><i class="fas fa-brain me-1"></i>Conceptos</button>
+    </div>
+    <div id="e3r" class="ex-pane active">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <div class="gc em h-100">
+            <div class="lbl em"><i class="fas fa-people-arrows"></i> Equipos Paralelos</div>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:14px">
+              <div style="padding:10px 13px;background:var(--card2);border-radius:8px;border-left:2px solid var(--em)">
+                <div style="font-size:.8rem;font-weight:700;color:var(--em);margin-bottom:3px"><i class="fas fa-code me-1"></i> Equipo de Desarrollo</div>
+                <div style="font-size:.76rem;color:var(--muted)">Implementa las funcionalidades seleccionadas durante el sprint</div>
+              </div>
+              <div style="padding:10px 13px;background:var(--card2);border-radius:8px;border-left:2px solid var(--am)">
+                <div style="font-size:.8rem;font-weight:700;color:var(--am);margin-bottom:3px"><i class="fas fa-vial me-1"></i> Equipo de Pruebas</div>
+                <div style="font-size:.76rem;color:var(--muted)">Pruebas unitarias e integración en paralelo al desarrollo</div>
+              </div>
+              <div style="padding:10px 13px;background:var(--card2);border-radius:8px;border-left:2px solid var(--vi)">
+                <div style="font-size:.8rem;font-weight:700;color:var(--vi);margin-bottom:3px"><i class="fas fa-file-pen me-1"></i> Equipo de Documentación</div>
+                <div style="font-size:.76rem;color:var(--muted)">Crea y actualiza la documentación del software</div>
+              </div>
+            </div>
+            <div style="text-align:center">
+              <div class="lbl em" style="justify-content:center;margin-bottom:10px"><i class="fas fa-equals"></i> Fork / Join (visual)</div>
+              <div class="fj-demo">
+                <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px">Inicio Sprint</div>
+                <div class="fj-bar"></div>
+                <div class="fj-parallel">
+                  <div class="fj-lane">
+                    <div class="fj-line"></div>
+                    <div class="fj-act">Desarrollo</div>
+                    <div class="fj-line"></div>
+                  </div>
+                  <div class="fj-lane">
+                    <div class="fj-line"></div>
+                    <div class="fj-act">Pruebas</div>
+                    <div class="fj-line"></div>
+                  </div>
+                  <div class="fj-lane">
+                    <div class="fj-line"></div>
+                    <div class="fj-act">Docs.</div>
+                    <div class="fj-line"></div>
+                  </div>
+                </div>
+                <div class="fj-bar"></div>
+                <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Revisión Sprint</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <div class="gc am">
+            <div class="lbl am"><i class="fas fa-list-ol"></i> Flujo del Proceso (por fases)</div>
+            <div class="steps">
+              <div class="step"><div class="snum">1</div><div class="stxt"><strong>Planificación del Sprint:</strong> el equipo selecciona tareas del backlog</div></div>
+              <div class="step"><div class="snum">2</div><div class="stxt">Se <strong>inicia el Sprint</strong> y se activa el Fork de paralelismo</div></div>
+              <div class="step" style="border-color:var(--pk);border-style:dashed"><div class="snum" style="background:linear-gradient(135deg,var(--pk),var(--em))">━</div><div class="stxt"><strong>FORK</strong> — el flujo se divide en 3 ramas paralelas simultáneas</div></div>
+              <div class="step"><div class="snum">3a</div><div class="stxt"><strong>[Rama 1]</strong> Equipo de Desarrollo implementa funcionalidades</div></div>
+              <div class="step am"><div class="snum" style="background:linear-gradient(135deg,var(--am),var(--em))">3b</div><div class="stxt"><strong>[Rama 2]</strong> Equipo de Pruebas realiza pruebas unitarias e integración</div></div>
+              <div class="step vi"><div class="snum" style="background:linear-gradient(135deg,var(--vi),var(--em))">3c</div><div class="stxt"><strong>[Rama 3]</strong> Equipo de Documentación crea y actualiza documentación</div></div>
+              <div class="step" style="border-color:var(--pk);border-style:dashed"><div class="snum" style="background:linear-gradient(135deg,var(--pk),var(--em))">━</div><div class="stxt"><strong>JOIN</strong> — sincronización: se espera que las 3 ramas finalicen</div></div>
+              <div class="step"><div class="snum">4</div><div class="stxt"><strong>Revisión del Sprint:</strong> evaluación del progreso y mejoras</div></div>
+              <div class="step"><div class="snum">5</div><div class="stxt"><strong>Retrospectiva del Sprint:</strong> reflexión y propuestas de mejora</div></div>
+              <div class="step am"><div class="snum" style="background:linear-gradient(135deg,var(--am),var(--em))">6</div><div class="stxt">⬦ <strong>Decisión:</strong> ¿Proyecto completo?</div></div>
+              <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))">6a</div><div class="stxt"><strong>[No]</strong> → Volver al paso 1 (siguiente Sprint) — Ciclo iterativo</div></div>
+              <div class="step"><div class="snum">6b</div><div class="stxt"><strong>[Sí]</strong> → Fin del proyecto</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="e3d" class="ex-pane">
+      <div class="mwrap" id="d3w"><div style="color:var(--muted);font-size:.82rem;margin:auto"><i class="fas fa-spinner fa-spin me-2"></i>Renderizando diagrama...</div></div>
+      <div id="d3c" style="display:none">flowchart TD
+    A([&#11044; Inicio]) --> B[Planificación del Sprint\nSelección de tareas del backlog]
+    B --> FORK[ FORK — Inicio del Sprint ]
+
+    FORK --> D[Equipo Desarrollo\nImplementar funcionalidades]
+    FORK --> E[Equipo Pruebas\nPruebas unitarias e integración]
+    FORK --> F[Equipo Documentación\nCrear y actualizar documentación]
+
+    D --> JOIN[ JOIN — Sincronización ]
+    E --> JOIN
+    F --> JOIN
+
+    JOIN --> G[Revisión del Sprint\nEvaluar progreso y mejoras]
+    G --> H[Retrospectiva del Sprint\nReflexión y propuestas]
+    H --> I{¿Proyecto\ncompleto?}
+    I -- No --> B
+    I -- Sí --> Z([&#11044; Fin])
+
+    style A fill:#064e3b,stroke:#10b981,color:#fff
+    style Z fill:#064e3b,stroke:#10b981,color:#fff
+    style FORK fill:#1a0533,stroke:#f472b6,color:#fff,stroke-width:3px
+    style JOIN fill:#1a0533,stroke:#f472b6,color:#fff,stroke-width:3px
+    style I fill:#78350f,stroke:#f59e0b,color:#fff
+    style D fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style E fill:#0d1826,stroke:#f59e0b,color:#dce8e0
+    style F fill:#0d1826,stroke:#818cf8,color:#dce8e0
+    style B fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style G fill:#0d1826,stroke:#10b981,color:#dce8e0
+    style H fill:#0d1826,stroke:#10b981,color:#dce8e0</div>
+    </div>
+    <div id="e3c" class="ex-pane">
+      <div class="cg">
+        <div class="cc"><div class="cc-icon" style="background:rgba(244,114,182,.15);color:var(--pk)"><i class="fas fa-equals"></i></div><div class="cc-name">Fork / Join (paralelismo)</div><div class="cc-desc">El <strong>Fork</strong> activa las 3 ramas simultáneamente. El <strong>Join</strong> bloquea el flujo hasta que <em>todas</em> las ramas terminan. Esto garantiza sincronización antes de la revisión.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(245,158,11,.15);color:var(--am)"><i class="fas fa-rotate"></i></div><div class="cc-name">Ciclo Iterativo</div><div class="cc-desc">El nodo de decisión "¿Proyecto completo?" crea un <strong>bucle</strong>. Si no está completo, el flujo regresa a la planificación: esto modela la <em>iteratividad</em> de Scrum.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(16,185,129,.15);color:var(--em)"><i class="fas fa-table-columns"></i></div><div class="cc-name">3 Swim Lanes</div><div class="cc-desc">Se puede modelar con 3 carriles: <strong>Dev / QA / Docs</strong>. El fork y join quedan fuera o en una zona de "Equipo Scrum" para mostrar la coordinación.</div></div>
+        <div class="cc"><div class="cc-icon" style="background:rgba(129,140,248,.15);color:var(--vi)"><i class="fas fa-clock-rotate-left"></i></div><div class="cc-name">Retrospectiva como Actividad</div><div class="cc-desc">La <strong>retrospectiva</strong> es una actividad explícita post-sprint. Aparece como nodo separado para enfatizar que es un paso formal del proceso, no un sub-paso de la revisión.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6 – QUIZ ══════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-brain"></i> Evaluación</div>
+    <h2 class="sh-title">Quiz de <span>Evaluación</span></h2>
+    <p class="sh-desc">Poneme a prueba sobre diagramas de actividad UML.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1;overflow-y:auto" id="qbox"></div>
+</div>
+
+<!-- ══ SLIDE 7 – COMPARATIVA 3 DIAGRAMAS ═══════════════ -->
+<div class="slide" id="s7">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-scale-balanced"></i> Comparativa TA5–TA6–TA7</div>
+    <h2 class="sh-title">Los tres diagramas <span>UML</span> estudiados</h2>
+    <p class="sh-desc">Cuándo usar cada diagrama, qué modela y cómo se complementan en un proyecto real.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1;overflow-y:auto">
+    <div class="ctbl" style="margin-bottom:14px">
+      <table>
+        <thead><tr><th>Diagrama</th><th>Tipo</th><th>Pregunta que responde</th><th>Casos de uso típicos</th><th>Elementos únicos</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:var(--vi)"><i class="fas fa-sitemap me-1"></i>Clases (TA5)</strong></td>
+            <td>Estructural</td>
+            <td>¿Qué existe?</td>
+            <td>Arquitectura del sistema, modelado del dominio, base de datos</td>
+            <td>Herencia, composición, atributos, multiplicidad</td>
+          </tr>
+          <tr>
+            <td><strong style="color:#38bdf8"><i class="fas fa-timeline me-1"></i>Secuencia (TA6)</strong></td>
+            <td>Comportamiento</td>
+            <td>¿Quién habla con quién y cuándo?</td>
+            <td>Validar lógica de negocio, modelar APIs, casos de uso</td>
+            <td>Lifelines, mensajes síncronos/asíncronos, alt/loop/opt</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--em)"><i class="fas fa-diagram-predecessor me-1"></i>Actividad (TA7)</strong></td>
+            <td>Comportamiento</td>
+            <td>¿Cómo fluye el proceso?</td>
+            <td>Procesos de negocio, algoritmos, flujos de trabajo multi-actor</td>
+            <td>Fork/Join, swim lanes, nodos de decisión, merge</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="gc em h-100">
+          <div class="lbl em"><i class="fas fa-lightbulb"></i> ¿Cuándo elegir Actividad?</div>
+          <div class="steps">
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Cuando hay <strong>flujos con decisiones</strong> que bifurcan el proceso</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Cuando existen <strong>actividades paralelas</strong> que deben sincronizarse</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Cuando hay <strong>múltiples actores</strong> con responsabilidades distintas</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Para documentar <strong>procesos de negocio</strong> o flujos de trabajo complejos</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Cuando se quiere mostrar <strong>iteración o ciclos</strong> dentro del proceso</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gc am h-100">
+          <div class="lbl am"><i class="fas fa-puzzle-piece"></i> Complementariedad</div>
+          <div style="font-size:.82rem;color:var(--muted);line-height:1.65">
+            <p style="margin-bottom:10px">En un proyecto real, los tres diagramas trabajan juntos:</p>
+            <div style="padding:9px 12px;background:var(--card2);border-radius:7px;margin-bottom:7px"><strong style="color:var(--vi)">Clases</strong> → define las entidades del sistema</div>
+            <div style="padding:9px 12px;background:var(--card2);border-radius:7px;margin-bottom:7px"><strong style="color:#38bdf8">Secuencia</strong> → muestra cómo colaboran en un escenario</div>
+            <div style="padding:9px 12px;background:var(--card2);border-radius:7px"><strong style="color:var(--em)">Actividad</strong> → describe el flujo de trabajo del proceso</div>
+            <p style="margin-top:10px;font-size:.78rem">Los <em>métodos</em> en las clases corresponden a los <em>mensajes</em> en secuencia, y las <em>actividades</em> del diagrama de actividad.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gc vi h-100">
+          <div class="lbl vi"><i class="fas fa-table"></i> Resumen de notación TA7</div>
+          <div class="not-grid" style="grid-template-columns:1fr 1fr">
+            <div class="not-card"><div class="not-sym">●</div><div class="not-name">Nodo Inicial</div><div class="not-desc">Círculo sólido</div></div>
+            <div class="not-card"><div class="not-sym" style="color:var(--am)">⬦</div><div class="not-name">Decisión</div><div class="not-desc">Rombo</div></div>
+            <div class="not-card"><div class="not-sym" style="color:var(--pk)">━━</div><div class="not-name">Fork / Join</div><div class="not-desc">Barra gruesa</div></div>
+            <div class="not-card"><div class="not-sym" style="color:var(--em)">[ ]</div><div class="not-name">Actividad</div><div class="not-desc">Rect. redondeado</div></div>
+            <div class="not-card"><div class="not-sym">⊙</div><div class="not-name">Nodo Final</div><div class="not-desc">Círculo con punto</div></div>
+            <div class="not-card"><div class="not-sym" style="color:var(--am)">→</div><div class="not-name">Transición</div><div class="not-desc">Flecha [guarda]</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8 – BUENAS PRÁCTICAS ═══════════════════════ -->
+<div class="slide" id="s8">
+  <div class="sh animate__animated animate__fadeInDown">
+    <div class="sh-tag"><i class="fas fa-star"></i> Buenas Prácticas</div>
+    <h2 class="sh-title">Buenas Prácticas en <span>Diagramas de Actividad</span></h2>
+    <p class="sh-desc">Guía de referencia para crear diagramas claros, correctos y profesionales.</p>
+  </div>
+  <div class="animate__animated animate__fadeInUp" style="flex:1;overflow-y:auto">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="gc em h-100">
+          <div class="lbl em"><i class="fas fa-check-double"></i> DOs — Buenas prácticas</div>
+          <div class="steps">
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Nombrar las actividades con <strong>verbos en infinitivo</strong>: "Enviar solicitud", "Verificar aprobación"</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Todas las guardas en un nodo de decisión deben ser <strong>mutuamente excluyentes y completas</strong> (cubrir todos los casos)</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Usar <strong>swim lanes</strong> cuando intervienen más de 2 actores para clarificar responsabilidades</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Verificar que todo fork tiene su <strong>join correspondiente</strong>: cada rama paralela debe sincronizarse</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Asegurarse de que el diagrama tiene <strong>exactamente un nodo inicial</strong> y puede tener varios nodos finales</div></div>
+            <div class="step"><div class="snum"><i class="fas fa-check" style="font-size:.55rem"></i></div><div class="stxt">Usar el símbolo de <strong>actividad invocada</strong> (rectángulo con rake) para indicar sub-actividades complejas</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="gc" style="border-left:3px solid var(--rs);background:rgba(248,113,113,.04)">
+          <div class="lbl" style="color:var(--rs)"><i class="fas fa-xmark"></i> DON'Ts — Errores comunes</div>
+          <div class="steps">
+            <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))"><i class="fas fa-xmark" style="font-size:.55rem"></i></div><div class="stxt">❌ No dejar <strong>ramas sin etiquetar</strong> en los nodos de decisión: siempre poner la condición de guarda</div></div>
+            <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))"><i class="fas fa-xmark" style="font-size:.55rem"></i></div><div class="stxt">❌ No crear <strong>flujos sin destino</strong> (flechas que no van a ningún nodo)</div></div>
+            <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))"><i class="fas fa-xmark" style="font-size:.55rem"></i></div><div class="stxt">❌ No confundir <strong>Fork/Join</strong> (paralelismo) con <strong>Decisión/Merge</strong> (alternativas excluyentes)</div></div>
+            <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))"><i class="fas fa-xmark" style="font-size:.55rem"></i></div><div class="stxt">❌ No omitir el <strong>nodo final</strong>: el flujo siempre debe tener un punto de terminación explícito</div></div>
+            <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))"><i class="fas fa-xmark" style="font-size:.55rem"></i></div><div class="stxt">❌ No saturar el diagrama: si es demasiado complejo, dividirlo en <strong>sub-actividades referenciadas</strong></div></div>
+            <div class="step rs"><div class="snum" style="background:linear-gradient(135deg,var(--rs),var(--am))"><i class="fas fa-xmark" style="font-size:.55rem"></i></div><div class="stxt">❌ No dejar <strong>ramas del fork sin unirse</strong> en el join: provoca tokens perdidos en el modelo</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="gc am" style="padding:13px">
+          <div class="lbl am"><i class="fas fa-map"></i> Patrones identificados en TA7</div>
+          <div class="row g-2">
+            <div class="col-md-3"><div style="padding:9px 12px;background:var(--card2);border-radius:7px;font-size:.81rem"><strong style="color:var(--em)">Aprobación jerárquica:</strong> <span style="color:var(--muted)">cadena de decisiones en cascada (Ej.1)</span></div></div>
+            <div class="col-md-3"><div style="padding:9px 12px;background:var(--card2);border-radius:7px;font-size:.81rem"><strong style="color:var(--em)">Pipeline secuencial:</strong> <span style="color:var(--muted)">etapas en orden sin paralelismo (Ej.2)</span></div></div>
+            <div class="col-md-3"><div style="padding:9px 12px;background:var(--card2);border-radius:7px;font-size:.81rem"><strong style="color:var(--em)">Fork/Join paralelo:</strong> <span style="color:var(--muted)">3 equipos en simultáneo con sincronización (Ej.3)</span></div></div>
+            <div class="col-md-3"><div style="padding:9px 12px;background:var(--card2);border-radius:7px;font-size:.81rem"><strong style="color:var(--em)">Ciclo iterativo:</strong> <span style="color:var(--muted)">loop con decisión de corte — Scrum sprints (Ej.3)</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9 – CIERRE ════════════════════════════════ -->
+<div class="slide close-sl" id="s9">
+  <div class="animate__animated animate__fadeInUp" style="text-align:center">
+    <div style="width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--em),var(--am));display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-size:1.8rem;box-shadow:0 0 40px rgba(16,185,129,.32)"><i class="fas fa-check"></i></div>
+    <h2 style="font-size:2rem;font-weight:800;margin-bottom:8px">¡Presentación <span style="color:var(--em)">completada</span>!</h2>
+    <p style="color:var(--muted);max-width:520px;margin:0 auto 26px;font-size:.91rem">Modelamos 3 procesos reales con diagramas de actividad: decisiones jerárquicas, flujos secuenciales, paralelismo Fork/Join y ciclos iterativos de Scrum.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:28px">
+      <div style="background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 18px;text-align:center"><div style="font-size:1.7rem;font-weight:800;color:var(--em)">3</div><div style="font-size:.75rem;color:var(--muted)">Ejercicios</div></div>
+      <div style="background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 18px;text-align:center"><div style="font-size:1.7rem;font-weight:800;color:var(--am)">6</div><div style="font-size:.75rem;color:var(--muted)">Elementos UML</div></div>
+      <div style="background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 18px;text-align:center"><div style="font-size:1.7rem;font-weight:800;color:var(--vi)">4</div><div style="font-size:.75rem;color:var(--muted)">Patrones modelados</div></div>
+      <div style="background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 18px;text-align:center"><div style="font-size:1.7rem;font-weight:800;color:var(--pk)">3</div><div style="font-size:.75rem;color:var(--muted)">TAs UML completados</div></div>
+    </div>
+    <button class="btn-go" onclick="resetTo(0)" style="margin-right:12px"><i class="fas fa-rotate-left me-2"></i>Volver al inicio</button>
+    <button class="btn-go" style="background:linear-gradient(135deg,var(--am),var(--vi))" onclick="credits()"><i class="fas fa-star me-2"></i>Créditos</button>
+  </div>
+</div>
+
+</div><!-- /slides -->
+<div id="kbd"><kbd>←</kbd><kbd>→</kbd> navegar &nbsp;<kbd>F</kbd> fullscreen</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── MERMAID ──────────────────────────────────────────────
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#0c1f18',
+    primaryTextColor: '#dce8e0',
+    primaryBorderColor: '#10b981',
+    lineColor: '#10b981',
+    secondaryColor: '#0c1318',
+    tertiaryColor: '#101a1f',
+    background: '#07110e',
+    mainBkg: '#0c1318',
+    nodeBorder: '#10b981',
+    clusterBkg: '#101a1f',
+    edgeLabelBackground: '#0c1318',
+    fillType0: '#0c1f18',
+    fillType1: '#1a1005',
+  },
+  flowchart: { curve: 'basis', padding: 20 }
+});
+
+// ── SLIDES ────────────────────────────────────────────────
+let cur = 0;
+const TOTAL = 10;
+const rendered = new Set();
+
+const diags = {
+  3: { w:'d1w', c:'d1c' },
+  4: { w:'d2w', c:'d2c' },
+  5: { w:'d3w', c:'d3c' },
+};
+
+function go(d) {
+  const nx = cur + d;
+  if (nx < 0 || nx >= TOTAL) return;
+  document.getElementById('s'+cur).classList.remove('active');
+  cur = nx;
+  const sl = document.getElementById('s'+cur);
+  sl.classList.add('active');
+  sl.querySelectorAll('.animate__animated').forEach(el => {
+    const c = el.className;
+    el.className = c.replace('animate__fadeInDown','').replace('animate__fadeInUp','');
+    void el.offsetWidth; el.className = c;
+  });
+  updateUI();
+  if (cur === 6 && !quizReady) initQuiz();
+  checkRenderDiag();
+}
+
+function resetTo(n) { while (cur > n) go(-1); }
+
+function updateUI() {
+  document.getElementById('sc').textContent = String(cur+1).padStart(2,'0')+' / '+String(TOTAL).padStart(2,'0');
+  document.getElementById('pb').style.width = ((cur+1)/TOTAL*100)+'%';
+  document.getElementById('bp').disabled = cur===0;
+  document.getElementById('bn').disabled = cur===TOTAL-1;
+}
+
+async function renderDiag(idx) {
+  const m = diags[idx];
+  if (!m || rendered.has(idx)) return;
+  const code = document.getElementById(m.c)?.textContent.trim();
+  const wrap = document.getElementById(m.w);
+  if (!code || !wrap) return;
+  try {
+    const { svg } = await mermaid.render('mm_'+idx+'_'+Date.now(), code);
+    wrap.innerHTML = svg;
+    rendered.add(idx);
+  } catch(e) {
+    wrap.innerHTML = `<div style="color:var(--rs);padding:20px;font-size:.8rem"><i class="fas fa-triangle-exclamation me-2"></i>${e.message}</div>`;
+  }
+}
+
+function checkRenderDiag() {
+  if (!diags[cur]) return;
+  const a = document.querySelector('#s'+cur+' .ex-tab.active');
+  if (a && a.textContent.includes('Diagrama')) renderDiag(cur);
+}
+
+function tab(btn, pid) {
+  btn.closest('.ex-tabs').querySelectorAll('.ex-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#s'+cur+' .ex-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(pid).classList.add('active');
+  if (pid.endsWith('d')) renderDiag(cur);
+}
+
+// ── QUIZ ─────────────────────────────────────────────────
+let quizReady = false, score = 0, done = 0;
+
+const qs = [
+  {
+    q: '¿Qué símbolo representa el inicio de un diagrama de actividad?',
+    opts: ['Un rombo (◇)', 'Un rectángulo redondeado', 'Un círculo sólido negro (●)', 'Una barra gruesa horizontal'],
+    a: 2,
+    exp: 'El <strong>nodo inicial</strong> es un círculo sólido negro (●). Marca el único punto de comienzo del flujo. El nodo final es un círculo con punto interior (⊙).'
+  },
+  {
+    q: 'En el Ejercicio 1 (RRHH), ¿cuántos nodos de decisión tiene el diagrama?',
+    opts: ['Uno (solo el Jefe Directo)', 'Dos (Jefe Directo y Jefe de Área)', 'Tres (incluye RRHH)', 'Cuatro (uno por cada actor)'],
+    a: 1,
+    exp: 'Hay <strong>dos nodos de decisión</strong>: uno para el Jefe Directo y otro para el Jefe de Área. Ambos pueden aprobar o rechazar independientemente.'
+  },
+  {
+    q: '¿Cuál es la diferencia entre Fork y Decisión en un diagrama de actividad?',
+    opts: [
+      'Son exactamente lo mismo, distintos nombres',
+      'Fork bifurca en ramas paralelas (simultáneas); Decisión bifurca en ramas alternativas (excluyentes)',
+      'Fork es para sistemas, Decisión para personas',
+      'Fork usa rombo, Decisión usa barra gruesa'
+    ],
+    a: 1,
+    exp: '<strong>Fork</strong> (barra gruesa ━) activa múltiples ramas en <em>paralelo simultáneo</em>. <strong>Decisión</strong> (rombo ◇) activa solo <em>una</em> de las ramas según la condición. Son opuestos.'
+  },
+  {
+    q: '¿Qué elemento del Ejercicio 3 (Scrum) modela la espera a que todos los equipos terminen antes de continuar?',
+    opts: ['El nodo de decisión "¿Proyecto completo?"', 'La retrospectiva del sprint', 'El JOIN (barra gruesa de sincronización)', 'El nodo inicial'],
+    a: 2,
+    exp: 'El <strong>Join</strong> (barra gruesa) sincroniza las 3 ramas paralelas (Desarrollo, Pruebas, Documentación). El flujo no avanza hasta que <em>todas</em> las ramas completan su actividad.'
+  },
+  {
+    q: '¿Para qué sirven los Swim Lanes en un diagrama de actividad?',
+    opts: [
+      'Para mostrar el tiempo de ejecución de cada actividad',
+      'Para representar las condiciones de guarda en las transiciones',
+      'Para asignar actividades a actores/responsables específicos y organizar el diagrama',
+      'Para indicar que las actividades son opcionales'
+    ],
+    a: 2,
+    exp: 'Los <strong>Swim Lanes</strong> dividen el diagrama en carriles, asignando cada actividad a su responsable (persona, sistema, departamento). Son fundamentales en procesos multi-actor como los del TA7.'
+  },
+  {
+    q: '¿Qué patrón modela el ciclo de sprints en el Ejercicio 3 (Scrum)?',
+    opts: ['Fork/Join', 'Pipeline secuencial', 'Ciclo iterativo con nodo de decisión de salida', 'Swim lanes superpuestos'],
+    a: 2,
+    exp: 'El <strong>ciclo iterativo</strong> se modela con un bucle: después de la retrospectiva, el nodo de decisión "¿Proyecto completo?" redirige el flujo de vuelta a la planificación si la respuesta es No.'
+  }
+];
+
+function initQuiz() {
+  quizReady = true;
+  document.getElementById('qbox').innerHTML =
+    qs.map((q,i) => `<div class="qcard" id="qc${i}">
+      <div class="q-text"><span style="color:var(--em);font-family:var(--mono)">${i+1}.</span> ${q.q}</div>
+      ${q.opts.map((o,j) => `<button class="q-opt" onclick="ans(${i},${j})" id="o${i}_${j}">${o}</button>`).join('')}
+      <div class="q-exp" id="ex${i}"><i class="fas fa-circle-info me-2" style="color:var(--am)"></i>${q.exp}</div>
+    </div>`).join('') +
+    `<div id="qres" style="display:none;background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:22px;text-align:center">
+      <i class="fas fa-trophy" style="font-size:1.8rem;color:var(--am);margin-bottom:10px;display:block"></i>
+      <div id="qsc"></div>
+      <button class="btn-go" style="margin-top:14px;font-size:.84rem;padding:10px 22px" onclick="resetQuiz()"><i class="fas fa-rotate-left me-2"></i>Reintentar</button>
+    </div>`;
+}
+
+function ans(qi, oi) {
+  const q = qs[qi];
+  document.querySelectorAll(`[id^="o${qi}_"]`).forEach(b => b.disabled = true);
+  document.getElementById(`o${qi}_${oi}`).classList.add(oi === q.a ? 'ok' : 'no');
+  if (oi !== q.a) document.getElementById(`o${qi}_${q.a}`).classList.add('ok');
+  document.getElementById(`ex${qi}`).style.display = 'block';
+  if (oi === q.a) score++;
+  if (++done === qs.length) {
+    const pct = Math.round(score/qs.length*100);
+    document.getElementById('qres').style.display = 'block';
+    document.getElementById('qsc').innerHTML = `<div style="font-size:1.9rem;font-weight:800;color:${pct>=66?'var(--em)':'var(--rs)'}">${score}/${qs.length}</div><div style="color:#fff;margin:6px 0">${pct}% correcto</div><div style="font-size:.82rem;color:var(--muted)">${pct===100?'🎉 ¡Perfecto!':pct>=66?'👍 Muy bien, dominás el tema':'📚 Repasá los elementos del diagrama de actividad'}</div>`;
+    Swal.fire({
+      title: pct>=66 ? '¡Bien hecho!' : 'Seguí practicando',
+      html: `<div>Obtuviste <strong style="color:${pct>=66?'#10b981':'#f87171'}">${score} de ${qs.length}</strong> correctas</div>`,
+      icon: pct>=66 ? 'success' : 'info',
+      background:'#0c1318', color:'#dce8e0',
+      confirmButtonColor:'#10b981', confirmButtonText:'Ver resultado'
+    });
+  }
+}
+
+function resetQuiz() { score=0; done=0; quizReady=false; initQuiz(); }
+
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.key==='ArrowRight'||e.key==='ArrowDown') go(1);
+  if (e.key==='ArrowLeft'||e.key==='ArrowUp') go(-1);
+  if (e.key==='f'||e.key==='F') document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();
+});
+
+function credits() {
+  Swal.fire({
+    title:'UT3 – TA7 | Diagramas de Actividad',
+    html:`<div style="text-align:left;font-size:.87rem;line-height:1.9">
+      <div style="color:#6b8a78"><i class="fas fa-diagram-predecessor me-2" style="color:#10b981"></i><strong style="color:#fff">Unidad Temática 3 – Diseño y UML</strong></div>
+      <div style="color:#6b8a78"><i class="fas fa-file me-2" style="color:#f59e0b"></i><strong style="color:#fff">Trabajo de Aplicación 7</strong></div>
+      <hr style="border-color:rgba(16,185,129,.2);margin:10px 0">
+      <div style="color:#6b8a78"><i class="fas fa-layer-group me-2" style="color:#f59e0b"></i>Bootstrap 5 · FontAwesome 6 · Animate.css 4</div>
+      <div style="color:#6b8a78"><i class="fas fa-diagram-project me-2" style="color:#818cf8"></i>Mermaid.js 10 · SweetAlert2 11</div>
+      <div style="color:#6b8a78"><i class="fas fa-font me-2" style="color:#10b981"></i>Plus Jakarta Sans · JetBrains Mono</div>
+    </div>`,
+    background:'#0c1318', color:'#dce8e0',
+    confirmButtonColor:'#10b981', confirmButtonText:'Cerrar'
+  });
+}
+
+updateUI();
+</script>
+</body>
+</html>
