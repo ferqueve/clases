@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UT3 – TA9 | Diagramas de Despliegue UML</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root {
+      --bg: #080c18;
+      --bg-card: #0f1724;
+      --bg-card2: #16202f;
+      --cyan: #00d4ff;
+      --amber: #f59e0b;
+      --green: #10b981;
+      --purple: #8b5cf6;
+      --orange: #f97316;
+      --pink: #ec4899;
+      --blue: #3b82f6;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --border: #1a3050;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- PROGRESS ---- */
+    #progress-bar {
+      position: fixed; top: 0; left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      transition: width .4s ease;
+      z-index: 1000;
+    }
+
+    /* ---- SECTION LABEL ---- */
+    .section-label {
+      position: fixed; top: 12px; left: 18px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); z-index: 900;
+    }
+    .section-label span { color: var(--cyan); }
+
+    /* ---- DOTS ---- */
+    #slide-dots {
+      position: fixed; right: 18px; top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 7px;
+      z-index: 900;
+    }
+    .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--border); cursor: pointer;
+      transition: all .3s;
+    }
+    .dot.active {
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      transform: scale(1.8);
+    }
+
+    /* ---- SLIDES ---- */
+    #slides-container { height: 100vh; overflow: hidden; position: relative; }
+
+    .slide {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 20px 30px 70px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .35s ease;
+      overflow-y: auto;
+    }
+    .slide.active { opacity: 1; pointer-events: all; }
+
+    /* ---- NAV ---- */
+    #nav-controls {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(8,12,24,.9);
+      border: 1px solid var(--border);
+      border-radius: 50px; padding: 7px 20px;
+      backdrop-filter: blur(12px); z-index: 800;
+    }
+    .nav-btn {
+      background: none; border: 1px solid var(--cyan);
+      color: var(--cyan); border-radius: 50%;
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .2s; font-size: 13px;
+    }
+    .nav-btn:hover { background: var(--cyan); color: var(--bg); }
+    .nav-btn:disabled { opacity: .25; cursor: not-allowed; }
+    .nav-btn:disabled:hover { background: none; color: var(--cyan); }
+    #slide-counter {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; color: var(--muted);
+      min-width: 55px; text-align: center;
+    }
+
+    /* ---- COVER ---- */
+    .slide-cover {
+      background:
+        radial-gradient(ellipse at 15% 50%, rgba(0,212,255,.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(139,92,246,.07) 0%, transparent 55%),
+        var(--bg);
+      text-align: center;
+    }
+    .badge-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      background: rgba(0,212,255,.08); border: 1px solid rgba(0,212,255,.25);
+      color: var(--cyan); padding: 5px 16px; border-radius: 4px;
+      display: inline-block; margin-bottom: 22px;
+    }
+    .slide-cover h1 {
+      font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 700; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+    .slide-cover .subtitle { font-size: clamp(1rem, 2.5vw, 1.3rem); color: var(--muted); margin-bottom: 32px; }
+    .cover-grid { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+    .cover-pill {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 18px; font-size: 13px;
+      color: var(--muted); display: flex; align-items: center; gap: 8px;
+    }
+    .cover-pill i { color: var(--cyan); }
+
+    /* ---- CONTENT ---- */
+    .slide-content {
+      background: radial-gradient(ellipse at 80% 80%, rgba(0,212,255,.03) 0%, transparent 50%), var(--bg);
+    }
+    .slide-title {
+      font-size: clamp(1.3rem, 3vw, 1.9rem); font-weight: 700; color: #fff;
+      margin-bottom: 6px; display: flex; align-items: center; gap: 12px;
+    }
+    .slide-title i { color: var(--cyan); }
+    .slide-subtitle {
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+      color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px;
+    }
+
+    .concept-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-left: 3px solid var(--cyan); border-radius: 8px;
+      padding: 15px 20px; margin-bottom: 12px;
+    }
+    .concept-box h4 {
+      font-size: .95rem; font-weight: 600; color: var(--cyan);
+      margin-bottom: 7px; display: flex; align-items: center; gap: 8px;
+    }
+    .concept-box p { font-size: .9rem; color: var(--muted); line-height: 1.6; }
+
+    .element-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 14px; width: 100%; max-width: 880px;
+    }
+    .element-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 17px; text-align: center;
+      transition: transform .2s, border-color .2s;
+    }
+    .element-card:hover { transform: translateY(-3px); border-color: var(--cyan); }
+    .element-card .icon { font-size: 1.7rem; margin-bottom: 9px; }
+    .element-card h5 { font-size: .9rem; font-weight: 600; color: #fff; margin-bottom: 5px; }
+    .element-card p { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+    .stereotype { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--amber); }
+
+    /* Analysis steps */
+    .analysis-step {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px;
+      display: flex; align-items: flex-start; gap: 14px; margin-bottom: 11px;
+      transition: border-color .2s;
+    }
+    .analysis-step:hover { border-color: rgba(0,212,255,.3); }
+    .step-num {
+      background: rgba(0,212,255,.08); border: 1px solid var(--cyan);
+      color: var(--cyan); font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px; font-weight: 600;
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-content h5 { font-size: .9rem; font-weight: 600; color: #fff; margin-bottom: 3px; }
+    .step-content p { font-size: .83rem; color: var(--muted); line-height: 1.5; }
+
+    /* Diagram slides */
+    .slide-diagram { padding: 10px 20px 70px; }
+    .diagram-wrapper {
+      background: #080c18; border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; overflow: auto;
+      max-height: calc(100vh - 180px);
+    }
+    .diagram-wrapper svg { width: 100%; height: auto; min-width: 760px; }
+
+    /* Tags */
+    .tag-c { color: var(--cyan); }
+    .tag-a { color: var(--amber); }
+    .tag-g { color: var(--green); }
+
+    /* Quiz */
+    .quiz-btn {
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border: none; color: #fff;
+      font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 600;
+      padding: 12px 30px; border-radius: 8px; cursor: pointer;
+      letter-spacing: 1px; transition: transform .2s, box-shadow .2s;
+    }
+    .quiz-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,212,255,.3); }
+
+    /* Info badge */
+    .info-badge {
+      font-family: 'IBM Plex Mono', monospace; font-size: .75rem;
+      border-radius: 4px; padding: 4px 10px; display: inline-block;
+    }
+
+    @media (max-width: 768px) {
+      #slide-dots { display: none; }
+      .element-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div class="section-label">ANDIS I — <span id="section-name">INICIO</span></div>
+<div id="slide-dots"></div>
+
+<div id="slides-container">
+
+  <!-- ═══════════════════════════════════ SLIDE 0: PORTADA ═══════════════════════════════════ -->
+  <div class="slide slide-cover active" data-section="INICIO">
+    <div class="animate__animated animate__fadeInDown">
+      <div class="badge-tag">UT3 · TA9 · Diseño y UML</div>
+      <h1>Diagramas de<br>Despliegue</h1>
+      <p class="subtitle">Análisis y Diseño de Aplicaciones I</p>
+    </div>
+    <div class="cover-grid animate__animated animate__fadeInUp" style="animation-delay:.2s">
+      <div class="cover-pill"><i class="fas fa-server"></i> Arquitectura Distribuida</div>
+      <div class="cover-pill"><i class="fas fa-diagram-project"></i> UML 2.x</div>
+      <div class="cover-pill"><i class="fas fa-layer-group"></i> 2 Ejercicios Resueltos</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 1: QUÉ ES ═══════════════════════════════════ -->
+  <div class="slide slide-content" data-section="CONCEPTOS">
+    <div style="max-width:800px;width:100%">
+      <p class="slide-subtitle"><i class="fas fa-circle-info me-2"></i>Conceptos base</p>
+      <h2 class="slide-title"><i class="fas fa-cubes"></i> ¿Qué es un Diagrama de Despliegue?</h2>
+
+      <div class="concept-box">
+        <h4><i class="fas fa-lightbulb"></i> Definición</h4>
+        <p>Es un diagrama UML <strong style="color:#fff">estructural</strong> que modela la arquitectura física de un sistema: muestra cómo el software se distribuye sobre el hardware, qué nodos existen, qué artefactos corren en cada uno y cómo se comunican.</p>
+      </div>
+      <div class="concept-box">
+        <h4><i class="fas fa-bullseye"></i> ¿Para qué sirve?</h4>
+        <p>Permite visualizar la <strong style="color:#fff">infraestructura de despliegue</strong>, planificar la distribución de componentes, identificar puntos únicos de fallo y documentar sistemas distribuidos, microservicios o aplicaciones en la nube.</p>
+      </div>
+      <div class="concept-box">
+        <h4><i class="fas fa-code-branch"></i> ¿Cuándo se usa?</h4>
+        <p>En la fase de <strong style="color:#fff">diseño arquitectónico</strong>: para comunicar la infraestructura al equipo de operaciones, documentar sistemas existentes o planificar migraciones entre entornos.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 2: ELEMENTOS ═══════════════════════════════════ -->
+  <div class="slide slide-content" data-section="CONCEPTOS">
+    <div style="max-width:900px;width:100%">
+      <p class="slide-subtitle"><i class="fas fa-shapes me-2"></i>Elementos del diagrama</p>
+      <h2 class="slide-title"><i class="fas fa-puzzle-piece"></i> Componentes UML</h2>
+
+      <div class="element-grid mt-3">
+        <div class="element-card">
+          <div class="icon" style="color:var(--cyan)"><i class="fas fa-cube"></i></div>
+          <div class="stereotype">«node» / «device»</div>
+          <h5>Nodo</h5>
+          <p>Recurso computacional físico o virtual donde se ejecutan artefactos: servidor, PC, dispositivo, VM o contenedor.</p>
+        </div>
+        <div class="element-card">
+          <div class="icon" style="color:var(--amber)"><i class="fas fa-file-code"></i></div>
+          <div class="stereotype">«artifact»</div>
+          <h5>Artefacto</h5>
+          <p>Elemento de software desplegado en un nodo: .jar, .war, .exe, base de datos, archivo de configuración.</p>
+        </div>
+        <div class="element-card">
+          <div class="icon" style="color:var(--green)"><i class="fas fa-arrows-left-right"></i></div>
+          <div class="stereotype">«communication path»</div>
+          <h5>Ruta de Comunicación</h5>
+          <p>Línea entre nodos que indica la conexión de red: HTTP, TCP, REST, JDBC, MongoDB Wire, Kafka Protocol…</p>
+        </div>
+        <div class="element-card">
+          <div class="icon" style="color:var(--purple)"><i class="fas fa-box"></i></div>
+          <div class="stereotype">«executionEnvironment»</div>
+          <h5>Entorno de Ejecución</h5>
+          <p>Contenedor de ejecución software dentro de un nodo: JVM, servidor web, Docker, Node.js runtime.</p>
+        </div>
+      </div>
+
+      <div class="concept-box mt-3">
+        <h4><i class="fas fa-pencil-ruler"></i> Notación Visual</h4>
+        <p>Los nodos se dibujan como <strong style="color:#fff">cajas 3D</strong> (rectángulo con aristas visibles en la esquina superior derecha). Los artefactos aparecen como rectángulos <strong style="color:#fff">dentro</strong> del nodo con el ícono de documento y el stereotype <span class="stereotype">«artifact»</span>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 3: EJ1 DESCRIPCIÓN ═══════════════════════════════════ -->
+  <div class="slide slide-content" data-section="EJERCICIO 1">
+    <div style="max-width:800px;width:100%">
+      <p class="slide-subtitle"><i class="fas fa-1 me-2"></i>Ejercicio 1 · E-Commerce</p>
+      <h2 class="slide-title"><i class="fas fa-cart-shopping"></i> Sistema de Comercio Electrónico</h2>
+
+      <div class="analysis-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h5><i class="fas fa-globe tag-c"></i> Interfaz de Usuario</h5>
+          <p>App <strong style="color:#fff">React</strong> servida a través de un <strong style="color:#fff">balanceador de carga NGINX</strong> que distribuye solicitudes a <strong style="color:#fff">tres servidores web Linux</strong>.</p>
+        </div>
+      </div>
+      <div class="analysis-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h5><i class="fas fa-microchip tag-c"></i> Backend de Lógica</h5>
+          <p>Construido con <strong style="color:#fff">Java Spring</strong>. Se comunica con los servidores web, con <strong style="color:#fff">PostgreSQL</strong> (datos de usuarios) y <strong style="color:#fff">MongoDB</strong> (datos de productos).</p>
+        </div>
+      </div>
+      <div class="analysis-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h5><i class="fas fa-message tag-a"></i> Cola de Mensajes</h5>
+          <p><strong style="color:#fff">Apache Kafka</strong> maneja comunicaciones asíncronas: actualizaciones de inventario y notificaciones de usuarios en tiempo real.</p>
+        </div>
+      </div>
+      <div class="analysis-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h5><i class="fas fa-folder tag-g"></i> Servidor de Archivos Compartido</h5>
+          <p>Todos los servidores tienen acceso a un <strong style="color:#fff">servidor de archivos independiente</strong> con archivos de configuración y datos compartidos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 4: EJ1 ANÁLISIS ═══════════════════════════════════ -->
+  <div class="slide slide-content" data-section="EJERCICIO 1">
+    <div style="max-width:860px;width:100%">
+      <p class="slide-subtitle"><i class="fas fa-magnifying-glass me-2"></i>Análisis · Ejercicio 1</p>
+      <h2 class="slide-title"><i class="fas fa-network-wired"></i> Identificación de Nodos y Artefactos</h2>
+      <div class="row g-3 mt-1">
+        <div class="col-md-4">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--cyan);border-radius:10px;padding:14px;height:100%">
+            <h6 style="color:var(--cyan);font-size:.8rem;letter-spacing:1px;margin-bottom:12px">NODOS <span class="stereotype">«node»</span></h6>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-desktop" style="color:var(--muted);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">Navegador del Cliente</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-server" style="color:var(--cyan);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">NGINX Load Balancer</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-server" style="color:var(--cyan);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">Web Server 1 (Linux)</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-server" style="color:var(--cyan);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">Web Server 2 (Linux)</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-server" style="color:var(--cyan);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">Web Server 3 (Linux)</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-server" style="color:var(--purple);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">Backend Java Spring</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-database" style="color:var(--amber);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">PostgreSQL Server</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-database" style="color:var(--green);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">MongoDB Server</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-arrows-left-right" style="color:var(--orange);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">Kafka Broker</span></div>
+            <div class="d-flex gap-2 align-items-center"><i class="fas fa-folder" style="color:var(--pink);width:16px;font-size:.8rem"></i><span style="font-size:.85rem">File Server</span></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--amber);border-radius:10px;padding:14px;height:100%">
+            <h6 style="color:var(--amber);font-size:.8rem;letter-spacing:1px;margin-bottom:12px">ARTEFACTOS <span class="stereotype">«artifact»</span></h6>
+            <div class="d-flex gap-2 mb-2"><i class="fas fa-file-code" style="color:var(--amber);font-size:.8rem;margin-top:2px"></i><span style="font-size:.82rem;font-family:'IBM Plex Mono',monospace">react-app (bundle JS)</span></div>
+            <div class="d-flex gap-2 mb-2"><i class="fas fa-file-code" style="color:var(--amber);font-size:.8rem;margin-top:2px"></i><span style="font-size:.82rem;font-family:'IBM Plex Mono',monospace">nginx.conf</span></div>
+            <div class="d-flex gap-2 mb-2"><i class="fas fa-file-code" style="color:var(--amber);font-size:.8rem;margin-top:2px"></i><span style="font-size:.82rem;font-family:'IBM Plex Mono',monospace">backend.jar</span></div>
+            <div class="d-flex gap-2 mb-2"><i class="fas fa-file-code" style="color:var(--amber);font-size:.8rem;margin-top:2px"></i><span style="font-size:.82rem;font-family:'IBM Plex Mono',monospace">users.db (PostgreSQL)</span></div>
+            <div class="d-flex gap-2 mb-2"><i class="fas fa-file-code" style="color:var(--amber);font-size:.8rem;margin-top:2px"></i><span style="font-size:.82rem;font-family:'IBM Plex Mono',monospace">products.db (MongoDB)</span></div>
+            <div class="d-flex gap-2 mb-2"><i class="fas fa-file-code" style="color:var(--amber);font-size:.8rem;margin-top:2px"></i><span style="font-size:.82rem;font-family:'IBM Plex Mono',monospace">kafka-broker</span></div>
+            <div class="d-flex gap-2"><i class="fas fa-file-code" style="color:var(--amber);font-size:.8rem;margin-top:2px"></i><span style="font-size:.82rem;font-family:'IBM Plex Mono',monospace">config-files</span></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:10px;padding:14px;height:100%">
+            <h6 style="color:var(--green);font-size:.8rem;letter-spacing:1px;margin-bottom:12px">PROTOCOLOS / RUTAS</h6>
+            <div style="display:flex;flex-wrap:wrap;gap:7px">
+              <span class="info-badge" style="background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:var(--cyan)">HTTPS</span>
+              <span class="info-badge" style="background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:var(--cyan)">HTTP (proxy)</span>
+              <span class="info-badge" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--green)">REST API</span>
+              <span class="info-badge" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--amber)">JDBC</span>
+              <span class="info-badge" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--green)">MongoDB Wire</span>
+              <span class="info-badge" style="background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);color:var(--orange)">Kafka Protocol</span>
+              <span class="info-badge" style="background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.2);color:var(--pink)">NFS / SMB</span>
+            </div>
+            <div class="mt-3 p-2" style="background:rgba(0,0,0,.3);border-radius:6px">
+              <p style="font-size:.78rem;color:var(--muted);line-height:1.6">
+                <strong style="color:#fff">Nota:</strong> El File Server se conecta mediante líneas <strong style="color:var(--pink)">discontinuas</strong> al resto de los nodos (acceso compartido, no flujo directo de datos de negocio).
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 5: EJ1 DIAGRAMA ═══════════════════════════════════ -->
+  <div class="slide slide-diagram" data-section="EJERCICIO 1">
+    <div style="max-width:1020px;width:100%;padding-bottom:10px">
+      <p class="slide-subtitle text-center"><i class="fas fa-diagram-project me-2"></i>Solución · Ejercicio 1</p>
+      <h2 class="slide-title justify-content-center mb-2"><i class="fas fa-cart-shopping"></i> Diagrama de Despliegue — E-Commerce</h2>
+      <div class="diagram-wrapper">
+        <svg viewBox="0 0 940 710" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#4a6fa5"/>
+            </marker>
+          </defs>
+          <rect width="940" height="710" fill="#080c18"/>
+
+          <!-- ========== BROWSER ========== -->
+          <polygon points="60,18 78,8 840,8 822,18" fill="#1e2d45" stroke="#2d4a7a" stroke-width="1.5"/>
+          <polygon points="840,8 840,78 822,88 822,18" fill="#16253a" stroke="#2d4a7a" stroke-width="1.5"/>
+          <rect x="60" y="18" width="762" height="70" fill="#1a2235" stroke="#2d4a7a" stroke-width="1.5"/>
+          <text x="78" y="36" font-size="9" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«device»</text>
+          <text x="78" y="54" font-size="14" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Navegador del Cliente</text>
+          <rect x="130" y="58" width="145" height="22" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="138" y="73" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» react-app (SPA)</text>
+
+          <!-- Arrow Browser → LB -->
+          <line x1="450" y1="88" x2="450" y2="118" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="456" y="108" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">HTTPS</text>
+
+          <!-- ========== NGINX LOAD BALANCER ========== -->
+          <polygon points="240,122 258,112 700,112 682,122" fill="#1e2d45" stroke="#00d4ff" stroke-width="1.8" stroke-opacity=".7"/>
+          <polygon points="700,112 700,182 682,192 682,122" fill="#16253a" stroke="#00d4ff" stroke-width="1.8" stroke-opacity=".7"/>
+          <rect x="240" y="122" width="442" height="70" fill="#1a2235" stroke="#00d4ff" stroke-width="1.8" stroke-opacity=".7"/>
+          <text x="256" y="140" font-size="9" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node»</text>
+          <text x="256" y="157" font-size="14" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">NGINX Load Balancer</text>
+          <rect x="380" y="162" width="148" height="22" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="388" y="177" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» nginx.conf</text>
+
+          <!-- LB → Web Servers -->
+          <line x1="315" y1="192" x2="172" y2="252" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="460" y1="192" x2="460" y2="252" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="605" y1="192" x2="738" y2="252" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="208" y="228" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">HTTP</text>
+          <text x="464" y="228" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">HTTP</text>
+          <text x="650" y="228" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">HTTP</text>
+
+          <!-- ========== WEB SERVER 1 ========== -->
+          <polygon points="62,256 80,246 228,246 210,256" fill="#1e2d45" stroke="#2d4a7a" stroke-width="1.5"/>
+          <polygon points="228,246 228,318 210,328 210,256" fill="#16253a" stroke="#2d4a7a" stroke-width="1.5"/>
+          <rect x="62" y="256" width="148" height="72" fill="#1a2235" stroke="#2d4a7a" stroke-width="1.5"/>
+          <text x="74" y="272" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» Linux</text>
+          <text x="74" y="288" font-size="12" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Web Server 1</text>
+          <rect x="74" y="293" width="128" height="20" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="80" y="307" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» react-app</text>
+
+          <!-- ========== WEB SERVER 2 ========== -->
+          <polygon points="370,256 388,246 536,246 518,256" fill="#1e2d45" stroke="#2d4a7a" stroke-width="1.5"/>
+          <polygon points="536,246 536,318 518,328 518,256" fill="#16253a" stroke="#2d4a7a" stroke-width="1.5"/>
+          <rect x="370" y="256" width="148" height="72" fill="#1a2235" stroke="#2d4a7a" stroke-width="1.5"/>
+          <text x="382" y="272" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» Linux</text>
+          <text x="382" y="288" font-size="12" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Web Server 2</text>
+          <rect x="382" y="293" width="128" height="20" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="388" y="307" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» react-app</text>
+
+          <!-- ========== WEB SERVER 3 ========== -->
+          <polygon points="656,256 674,246 822,246 804,256" fill="#1e2d45" stroke="#2d4a7a" stroke-width="1.5"/>
+          <polygon points="822,246 822,318 804,328 804,256" fill="#16253a" stroke="#2d4a7a" stroke-width="1.5"/>
+          <rect x="656" y="256" width="148" height="72" fill="#1a2235" stroke="#2d4a7a" stroke-width="1.5"/>
+          <text x="668" y="272" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» Linux</text>
+          <text x="668" y="288" font-size="12" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Web Server 3</text>
+          <rect x="668" y="293" width="128" height="20" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="674" y="307" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» react-app</text>
+
+          <!-- Web Servers → Backend -->
+          <line x1="155" y1="328" x2="368" y2="390" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="444" y1="328" x2="444" y2="390" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="730" y1="328" x2="520" y2="390" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="230" y="368" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">REST API</text>
+          <text x="448" y="368" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">REST</text>
+          <text x="595" y="368" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">REST API</text>
+
+          <!-- ========== BACKEND JAVA SPRING ========== -->
+          <polygon points="298,393 316,383 580,383 562,393" fill="#1e2d45" stroke="#8b5cf6" stroke-width="2" stroke-opacity=".9"/>
+          <polygon points="580,383 580,455 562,465 562,393" fill="#16253a" stroke="#8b5cf6" stroke-width="2" stroke-opacity=".9"/>
+          <rect x="298" y="393" width="264" height="72" fill="#1a2235" stroke="#8b5cf6" stroke-width="2" stroke-opacity=".9"/>
+          <text x="313" y="411" font-size="9" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» Application Server</text>
+          <text x="313" y="428" font-size="14" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Backend Java Spring</text>
+          <rect x="313" y="433" width="140" height="20" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="319" y="447" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» backend.jar</text>
+
+          <!-- Backend → DBs + Kafka -->
+          <line x1="360" y1="465" x2="205" y2="530" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="430" y1="465" x2="430" y2="530" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="500" y1="465" x2="645" y2="530" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="250" y="508" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">JDBC</text>
+          <text x="434" y="505" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">Mongo Wire</text>
+          <text x="540" y="505" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">Kafka Protocol</text>
+
+          <!-- ========== POSTGRESQL ========== -->
+          <polygon points="90,533 108,523 258,523 240,533" fill="#1e2d45" stroke="#f59e0b" stroke-width="1.8" stroke-opacity=".85"/>
+          <polygon points="258,523 258,600 240,610 240,533" fill="#16253a" stroke="#f59e0b" stroke-width="1.8" stroke-opacity=".85"/>
+          <rect x="90" y="533" width="150" height="77" fill="#1a2235" stroke="#f59e0b" stroke-width="1.8" stroke-opacity=".85"/>
+          <text x="102" y="549" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» DB Server</text>
+          <text x="102" y="566" font-size="13" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">PostgreSQL</text>
+          <text x="102" y="580" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Datos de Usuarios</text>
+          <rect x="102" y="584" width="128" height="19" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="108" y="597" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» users.db</text>
+
+          <!-- ========== MONGODB ========== -->
+          <polygon points="356,533 374,523 524,523 506,533" fill="#1e2d45" stroke="#10b981" stroke-width="1.8" stroke-opacity=".85"/>
+          <polygon points="524,523 524,600 506,610 506,533" fill="#16253a" stroke="#10b981" stroke-width="1.8" stroke-opacity=".85"/>
+          <rect x="356" y="533" width="150" height="77" fill="#1a2235" stroke="#10b981" stroke-width="1.8" stroke-opacity=".85"/>
+          <text x="368" y="549" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» DB Server</text>
+          <text x="368" y="566" font-size="13" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">MongoDB</text>
+          <text x="368" y="580" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Datos de Productos</text>
+          <rect x="368" y="584" width="130" height="19" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="374" y="597" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» products.db</text>
+
+          <!-- ========== KAFKA ========== -->
+          <polygon points="590,533 608,523 788,523 770,533" fill="#1e2d45" stroke="#f97316" stroke-width="1.8" stroke-opacity=".85"/>
+          <polygon points="788,523 788,600 770,610 770,533" fill="#16253a" stroke="#f97316" stroke-width="1.8" stroke-opacity=".85"/>
+          <rect x="590" y="533" width="180" height="77" fill="#1a2235" stroke="#f97316" stroke-width="1.8" stroke-opacity=".85"/>
+          <text x="602" y="549" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» Message Broker</text>
+          <text x="602" y="566" font-size="13" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Kafka Broker</text>
+          <text x="602" y="580" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Async / Eventos RT</text>
+          <rect x="602" y="584" width="145" height="19" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="608" y="597" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» kafka-broker</text>
+
+          <!-- ========== FILE SERVER ========== -->
+          <polygon points="820,393 838,383 916,383 898,393" fill="#1e2d45" stroke="#ec4899" stroke-width="1.5" stroke-opacity=".8"/>
+          <polygon points="916,383 916,460 898,470 898,393" fill="#16253a" stroke="#ec4899" stroke-width="1.5" stroke-opacity=".8"/>
+          <rect x="820" y="393" width="96" height="77" fill="#1a2235" stroke="#ec4899" stroke-width="1.5" stroke-opacity=".8"/>
+          <text x="828" y="409" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node»</text>
+          <text x="828" y="424" font-size="11" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">File Server</text>
+          <text x="828" y="438" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Config / Shared</text>
+          <rect x="828" y="441" width="80" height="19" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="832" y="454" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» configs</text>
+
+          <!-- All nodes → File Server (shared, dashed) -->
+          <line x1="562" y1="424" x2="820" y2="424" stroke="#ec4899" stroke-width="1.2" stroke-opacity=".5" stroke-dasharray="5,3"/>
+          <line x1="228" y1="290" x2="820" y2="410" stroke="#ec4899" stroke-width="1" stroke-opacity=".3" stroke-dasharray="5,3"/>
+          <line x1="822" y1="290" x2="860" y2="393" stroke="#ec4899" stroke-width="1" stroke-opacity=".3" stroke-dasharray="5,3"/>
+          <text x="680" y="418" font-size="8" fill="#ec4899" font-family="'IBM Plex Mono',monospace">NFS (acceso compartido)</text>
+
+          <!-- LEGEND -->
+          <rect x="10" y="625" width="920" height="75" rx="6" fill="#0f1724" stroke="#1a3050" stroke-width="1"/>
+          <text x="22" y="643" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">LEYENDA:</text>
+          <line x1="80" y1="639" x2="112" y2="639" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="117" y="643" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Comunicación síncrona</text>
+          <line x1="275" y1="639" x2="307" y2="639" stroke="#ec4899" stroke-width="1.2" stroke-dasharray="5,3"/>
+          <text x="312" y="643" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Acceso compartido (NFS)</text>
+          <rect x="478" y="633" width="11" height="11" rx="1" fill="#1a2235" stroke="#8b5cf6" stroke-width="1.8" stroke-opacity=".9"/>
+          <text x="494" y="643" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Nodo de aplicación</text>
+          <rect x="610" y="633" width="11" height="11" rx="1" fill="#1a2235" stroke="#f59e0b" stroke-width="1.8" stroke-opacity=".85"/>
+          <text x="626" y="643" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Nodo DB</text>
+          <rect x="690" y="633" width="11" height="11" rx="1" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="706" y="643" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» desplegado</text>
+          <text x="22" y="662" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">Flujo: Cliente → NGINX (balanceo) → Web Server 1/2/3 → Java Spring Backend → PostgreSQL / MongoDB / Kafka</text>
+          <text x="22" y="678" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">Diagrama de Despliegue UML 2.x · Ejercicio 1 · ANDIS I – DevFuture</text>
+          <text x="22" y="694" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">Todos los servidores acceden al File Server mediante NFS para configuración compartida.</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 6: EJ2 DESCRIPCIÓN ═══════════════════════════════════ -->
+  <div class="slide slide-content" data-section="EJERCICIO 2">
+    <div style="max-width:800px;width:100%">
+      <p class="slide-subtitle"><i class="fas fa-2 me-2"></i>Ejercicio 2 · Multiplataforma + DW</p>
+      <h2 class="slide-title"><i class="fas fa-mobile-screen"></i> App Multiplataforma y DataWarehouse</h2>
+
+      <div class="analysis-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h5><i class="fas fa-mobile-screen tag-c"></i> Apps Clientes (Android, iOS, Desktop)</h5>
+          <p>Android (Google Play), iOS (App Store) y escritorio (Windows/macOS/Linux desde el sitio web). Todas se comunican con el backend vía <strong style="color:#fff">API RESTful</strong>.</p>
+        </div>
+      </div>
+      <div class="analysis-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h5><i class="fas fa-server tag-c"></i> Backend + Base de Datos Replicada</h5>
+          <p><strong style="color:#fff">Java Spring</strong> con esquema <strong style="color:#fff">maestro-esclavo</strong>. El nodo maestro (PostgreSQL) almacena todos los datos; las <strong style="color:#fff">esclavas</strong> replican para redundancia y balanceo de carga de lectura.</p>
+        </div>
+      </div>
+      <div class="analysis-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h5><i class="fas fa-chart-column tag-a"></i> Proceso ETL y Business Intelligence</h5>
+          <p><strong style="color:#fff">Pentaho</strong> extrae, transforma y carga datos en el <strong style="color:#fff">DataWarehouse</strong>. <strong style="color:#fff">Tableau</strong> consume el DW para generar análisis e informes de negocio.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 7: EJ2 ANÁLISIS ═══════════════════════════════════ -->
+  <div class="slide slide-content" data-section="EJERCICIO 2">
+    <div style="max-width:880px;width:100%">
+      <p class="slide-subtitle"><i class="fas fa-magnifying-glass me-2"></i>Análisis · Ejercicio 2</p>
+      <h2 class="slide-title"><i class="fas fa-sitemap"></i> Identificación de Nodos y Artefactos</h2>
+      <div class="row g-3 mt-1">
+        <div class="col-md-4">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--cyan);border-radius:10px;padding:14px;height:100%">
+            <h6 style="color:var(--cyan);font-size:.8rem;letter-spacing:1px;margin-bottom:10px">NODOS CLIENTE</h6>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fab fa-android" style="color:#3ddc84;font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Android Device</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fab fa-apple" style="color:#94a3b8;font-size:.85rem;width:18px"></i><span style="font-size:.84rem">iOS Device</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fab fa-windows" style="color:#0078d7;font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Desktop Windows</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fab fa-apple" style="color:#94a3b8;font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Desktop macOS</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fab fa-linux" style="color:var(--amber);font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Desktop Linux</span></div>
+            <hr style="border-color:#1a3050;margin:8px 0">
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fab fa-google-play" style="color:#00c853;font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Google Play Store</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fab fa-app-store-ios" style="color:#0d84ff;font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Apple App Store</span></div>
+            <div class="d-flex gap-2 align-items-center"><i class="fas fa-globe" style="color:var(--cyan);font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Company Website</span></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--purple);border-radius:10px;padding:14px;height:100%">
+            <h6 style="color:var(--purple);font-size:.8rem;letter-spacing:1px;margin-bottom:10px">NODOS SERVIDOR</h6>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-server" style="color:var(--purple);font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Java Spring Backend</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-database" style="color:var(--amber);font-size:.85rem;width:18px"></i><span style="font-size:.84rem">DB Master (PostgreSQL)</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-database" style="color:var(--green);font-size:.85rem;width:18px"></i><span style="font-size:.84rem">DB Slave 1 (PostgreSQL)</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-database" style="color:var(--green);font-size:.85rem;width:18px"></i><span style="font-size:.84rem">DB Slave 2 (PostgreSQL)</span></div>
+            <hr style="border-color:#1a3050;margin:8px 0">
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-flask" style="color:var(--orange);font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Pentaho ETL Server</span></div>
+            <div class="d-flex gap-2 mb-2 align-items-center"><i class="fas fa-warehouse" style="color:var(--green);font-size:.85rem;width:18px"></i><span style="font-size:.84rem">DataWarehouse</span></div>
+            <div class="d-flex gap-2 align-items-center"><i class="fas fa-chart-bar" style="color:#0ea5e9;font-size:.85rem;width:18px"></i><span style="font-size:.84rem">Tableau Server</span></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:10px;padding:14px;height:100%">
+            <h6 style="color:var(--green);font-size:.8rem;letter-spacing:1px;margin-bottom:10px">ARTEFACTOS Y FLUJOS</h6>
+            <div class="mb-2"><span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--amber)">android-app.apk</span></div>
+            <div class="mb-2"><span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--amber)">ios-app.ipa</span></div>
+            <div class="mb-2"><span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--amber)">desktop-app.exe / .dmg / .deb</span></div>
+            <div class="mb-2"><span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--amber)">backend.jar</span></div>
+            <hr style="border-color:#1a3050;margin:8px 0">
+            <p style="font-size:.8rem;color:var(--muted);line-height:1.7">
+              <strong style="color:#fff">Flujo ETL:</strong><br>
+              DB Master <span style="color:var(--orange)">→ Extract</span><br>
+              Pentaho <span style="color:var(--orange)">→ Transform</span><br>
+              DataWarehouse <span style="color:var(--orange)">→ Load</span><br>
+              Tableau <span style="color:var(--orange)">→ Visualize</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 8: EJ2 DIAGRAMA ═══════════════════════════════════ -->
+  <div class="slide slide-diagram" data-section="EJERCICIO 2">
+    <div style="max-width:1020px;width:100%;padding-bottom:10px">
+      <p class="slide-subtitle text-center"><i class="fas fa-diagram-project me-2"></i>Solución · Ejercicio 2</p>
+      <h2 class="slide-title justify-content-center mb-2"><i class="fas fa-mobile-screen"></i> Diagrama de Despliegue — Multiplataforma + DW</h2>
+      <div class="diagram-wrapper">
+        <svg viewBox="0 0 960 760" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#4a6fa5"/>
+            </marker>
+            <marker id="arrG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+            </marker>
+          </defs>
+          <rect width="960" height="760" fill="#080c18"/>
+
+          <!-- ============ ROW 1: DISTRIBUTION STORES ============ -->
+          <!-- Google Play -->
+          <polygon points="18,14 36,4 178,4 160,14" fill="#1e2d45" stroke="#3ddc84" stroke-width="1.3" stroke-opacity=".7"/>
+          <polygon points="178,4 178,64 160,74 160,14" fill="#16253a" stroke="#3ddc84" stroke-width="1.3" stroke-opacity=".7"/>
+          <rect x="18" y="14" width="142" height="60" fill="#1a2235" stroke="#3ddc84" stroke-width="1.3" stroke-opacity=".7"/>
+          <text x="28" y="30" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node»</text>
+          <text x="28" y="46" font-size="11" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Google Play Store</text>
+          <rect x="28" y="50" width="118" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="33" y="62" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» .apk</text>
+
+          <!-- Apple App Store -->
+          <polygon points="210,14 228,4 388,4 370,14" fill="#1e2d45" stroke="#94a3b8" stroke-width="1.3" stroke-opacity=".7"/>
+          <polygon points="388,4 388,64 370,74 370,14" fill="#16253a" stroke="#94a3b8" stroke-width="1.3" stroke-opacity=".7"/>
+          <rect x="210" y="14" width="160" height="60" fill="#1a2235" stroke="#94a3b8" stroke-width="1.3" stroke-opacity=".7"/>
+          <text x="220" y="30" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node»</text>
+          <text x="220" y="46" font-size="11" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Apple App Store</text>
+          <rect x="220" y="50" width="118" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="225" y="62" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» .ipa</text>
+
+          <!-- Company Website -->
+          <polygon points="420,14 438,4 620,4 602,14" fill="#1e2d45" stroke="#00d4ff" stroke-width="1.3" stroke-opacity=".7"/>
+          <polygon points="620,4 620,64 602,74 602,14" fill="#16253a" stroke="#00d4ff" stroke-width="1.3" stroke-opacity=".7"/>
+          <rect x="420" y="14" width="182" height="60" fill="#1a2235" stroke="#00d4ff" stroke-width="1.3" stroke-opacity=".7"/>
+          <text x="430" y="30" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node»</text>
+          <text x="430" y="46" font-size="11" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Company Website</text>
+          <rect x="430" y="50" width="155" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="435" y="62" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» .exe / .dmg / .deb</text>
+
+          <!-- Stores → devices (download, dashed) -->
+          <line x1="89" y1="74" x2="89" y2="120" stroke="#4a6fa5" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+          <text x="94" y="102" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">Download</text>
+          <line x1="290" y1="74" x2="290" y2="120" stroke="#4a6fa5" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+          <text x="295" y="102" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">Download</text>
+          <line x1="511" y1="74" x2="511" y2="120" stroke="#4a6fa5" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+          <text x="516" y="102" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">Download</text>
+
+          <!-- ============ ROW 2: CLIENT DEVICES ============ -->
+          <!-- Android -->
+          <polygon points="18,124 36,114 178,114 160,124" fill="#1e2d45" stroke="#3ddc84" stroke-width="1.6" stroke-opacity=".85"/>
+          <polygon points="178,114 178,188 160,198 160,124" fill="#16253a" stroke="#3ddc84" stroke-width="1.6" stroke-opacity=".85"/>
+          <rect x="18" y="124" width="142" height="74" fill="#1a2235" stroke="#3ddc84" stroke-width="1.6" stroke-opacity=".85"/>
+          <text x="28" y="140" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«device»</text>
+          <text x="28" y="156" font-size="12" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Android Device</text>
+          <rect x="28" y="161" width="125" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="33" y="173" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» android-app</text>
+
+          <!-- iOS -->
+          <polygon points="210,124 228,114 388,114 370,124" fill="#1e2d45" stroke="#94a3b8" stroke-width="1.6" stroke-opacity=".85"/>
+          <polygon points="388,114 388,188 370,198 370,124" fill="#16253a" stroke="#94a3b8" stroke-width="1.6" stroke-opacity=".85"/>
+          <rect x="210" y="124" width="160" height="74" fill="#1a2235" stroke="#94a3b8" stroke-width="1.6" stroke-opacity=".85"/>
+          <text x="220" y="140" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«device»</text>
+          <text x="220" y="156" font-size="12" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">iOS Device</text>
+          <rect x="220" y="161" width="118" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="225" y="173" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» ios-app</text>
+
+          <!-- Desktop -->
+          <polygon points="420,124 438,114 620,114 602,124" fill="#1e2d45" stroke="#0078d7" stroke-width="1.6" stroke-opacity=".85"/>
+          <polygon points="620,114 620,198 602,198 602,124" fill="#16253a" stroke="#0078d7" stroke-width="1.6" stroke-opacity=".85"/>
+          <rect x="420" y="124" width="182" height="74" fill="#1a2235" stroke="#0078d7" stroke-width="1.6" stroke-opacity=".85"/>
+          <text x="430" y="140" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«device» Desktop</text>
+          <text x="430" y="156" font-size="11" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Windows / macOS / Linux</text>
+          <rect x="430" y="161" width="162" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="435" y="173" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» desktop-app</text>
+
+          <!-- Devices → Backend REST -->
+          <line x1="89" y1="198" x2="370" y2="295" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="300" y1="198" x2="390" y2="295" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="511" y1="198" x2="430" y2="295" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <text x="170" y="258" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">HTTPS / REST</text>
+          <text x="325" y="258" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">REST</text>
+          <text x="445" y="258" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">HTTPS / REST</text>
+
+          <!-- ============ BACKEND ============ -->
+          <polygon points="280,298 298,288 548,288 530,298" fill="#1e2d45" stroke="#8b5cf6" stroke-width="2" stroke-opacity=".9"/>
+          <polygon points="548,288 548,362 530,372 530,298" fill="#16253a" stroke="#8b5cf6" stroke-width="2" stroke-opacity=".9"/>
+          <rect x="280" y="298" width="250" height="74" fill="#1a2235" stroke="#8b5cf6" stroke-width="2" stroke-opacity=".9"/>
+          <text x="294" y="314" font-size="9" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» Application Server</text>
+          <text x="294" y="331" font-size="14" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Backend Java Spring</text>
+          <text x="294" y="346" font-size="9" fill="#8b5cf6" font-family="Rajdhani,sans-serif">REST API</text>
+          <rect x="294" y="349" width="130" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="300" y="361" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» backend.jar</text>
+
+          <!-- Backend → DB Master, Slave 1, Slave 2 -->
+          <line x1="350" y1="372" x2="192" y2="438" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="405" y1="372" x2="405" y2="438" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="460" y1="372" x2="608" y2="438" stroke="#4a6fa5" stroke-width="1.2" stroke-dasharray="none" marker-end="url(#arr2)"/>
+          <text x="218" y="415" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">JDBC (write)</text>
+          <text x="410" y="415" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">JDBC (read)</text>
+          <text x="488" y="415" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">JDBC (read)</text>
+
+          <!-- ============ DB MASTER ============ -->
+          <polygon points="100,441 118,431 268,431 250,441" fill="#1e2d45" stroke="#f59e0b" stroke-width="1.8" stroke-opacity=".9"/>
+          <polygon points="268,431 268,510 250,520 250,441" fill="#16253a" stroke="#f59e0b" stroke-width="1.8" stroke-opacity=".9"/>
+          <rect x="100" y="441" width="150" height="79" fill="#1a2235" stroke="#f59e0b" stroke-width="1.8" stroke-opacity=".9"/>
+          <text x="112" y="457" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» DB Master</text>
+          <text x="112" y="473" font-size="12" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">PostgreSQL</text>
+          <text x="112" y="488" font-size="9" fill="#f59e0b" font-family="Rajdhani,sans-serif">MASTER</text>
+          <rect x="112" y="492" width="128" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="118" y="504" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» users+products</text>
+
+          <!-- Master → Slave 1 replication -->
+          <line x1="250" y1="476" x2="320" y2="476" stroke="#10b981" stroke-width="1.4" stroke-dasharray="5,2" marker-end="url(#arrG)"/>
+          <text x="256" y="472" font-size="7" fill="#10b981" font-family="'IBM Plex Mono',monospace">Replication</text>
+
+          <!-- ============ DB SLAVE 1 ============ -->
+          <polygon points="326,441 344,431 494,431 476,441" fill="#1e2d45" stroke="#10b981" stroke-width="1.4" stroke-opacity=".7"/>
+          <polygon points="494,431 494,510 476,520 476,441" fill="#16253a" stroke="#10b981" stroke-width="1.4" stroke-opacity=".7"/>
+          <rect x="326" y="441" width="150" height="79" fill="#1a2235" stroke="#10b981" stroke-width="1.4" stroke-opacity=".7"/>
+          <text x="338" y="457" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» DB Slave</text>
+          <text x="338" y="473" font-size="12" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">PostgreSQL</text>
+          <text x="338" y="488" font-size="9" fill="#10b981" font-family="Rajdhani,sans-serif">SLAVE 1 (Réplica)</text>
+          <rect x="338" y="492" width="128" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="344" y="504" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» replica-db</text>
+
+          <!-- Slave 1 → Slave 2 replication -->
+          <line x1="476" y1="476" x2="558" y2="476" stroke="#10b981" stroke-width="1.2" stroke-dasharray="5,2" marker-end="url(#arrG)"/>
+
+          <!-- ============ DB SLAVE 2 ============ -->
+          <polygon points="564,441 582,431 752,431 734,441" fill="#1e2d45" stroke="#10b981" stroke-width="1.4" stroke-opacity=".5"/>
+          <polygon points="752,431 752,510 734,520 734,441" fill="#16253a" stroke="#10b981" stroke-width="1.4" stroke-opacity=".5"/>
+          <rect x="564" y="441" width="170" height="79" fill="#1a2235" stroke="#10b981" stroke-width="1.4" stroke-opacity=".5"/>
+          <text x="576" y="457" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» DB Slave</text>
+          <text x="576" y="473" font-size="12" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">PostgreSQL</text>
+          <text x="576" y="488" font-size="9" fill="#10b981" font-family="Rajdhani,sans-serif">SLAVE 2 (Réplica)</text>
+          <rect x="576" y="492" width="128" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="582" y="504" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» replica-db</text>
+
+          <!-- DB Master → Pentaho ETL -->
+          <line x1="175" y1="520" x2="175" y2="573" stroke="#f97316" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <text x="180" y="552" font-size="8" fill="#f97316" font-family="'IBM Plex Mono',monospace">ETL Extract</text>
+
+          <!-- ============ PENTAHO ============ -->
+          <polygon points="58,576 76,566 278,566 260,576" fill="#1e2d45" stroke="#f97316" stroke-width="1.8" stroke-opacity=".85"/>
+          <polygon points="278,566 278,638 260,648 260,576" fill="#16253a" stroke="#f97316" stroke-width="1.8" stroke-opacity=".85"/>
+          <rect x="58" y="576" width="202" height="72" fill="#1a2235" stroke="#f97316" stroke-width="1.8" stroke-opacity=".85"/>
+          <text x="70" y="592" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» ETL Server</text>
+          <text x="70" y="610" font-size="13" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Pentaho ETL</text>
+          <rect x="70" y="614" width="175" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="76" y="626" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» etl-jobs.kjb</text>
+
+          <!-- Pentaho → DW -->
+          <line x1="260" y1="612" x2="446" y2="612" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <text x="316" y="606" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">ETL Load</text>
+
+          <!-- ============ DATA WAREHOUSE ============ -->
+          <polygon points="452,576 470,566 682,566 664,576" fill="#1e2d45" stroke="#10b981" stroke-width="2" stroke-opacity=".9"/>
+          <polygon points="682,566 682,638 664,648 664,576" fill="#16253a" stroke="#10b981" stroke-width="2" stroke-opacity=".9"/>
+          <rect x="452" y="576" width="212" height="72" fill="#1a2235" stroke="#10b981" stroke-width="2" stroke-opacity=".9"/>
+          <text x="464" y="592" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» Data Store</text>
+          <text x="464" y="610" font-size="13" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">DataWarehouse</text>
+          <rect x="464" y="614" width="175" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="470" y="626" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» data-warehouse</text>
+
+          <!-- DW → Tableau -->
+          <line x1="664" y1="612" x2="750" y2="612" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <text x="672" y="606" font-size="8" fill="#64748b" font-family="'IBM Plex Mono',monospace">JDBC/ODBC</text>
+
+          <!-- ============ TABLEAU ============ -->
+          <polygon points="756,576 774,566 944,566 926,576" fill="#1e2d45" stroke="#0ea5e9" stroke-width="1.8" stroke-opacity=".85"/>
+          <polygon points="944,566 944,638 926,648 926,576" fill="#16253a" stroke="#0ea5e9" stroke-width="1.8" stroke-opacity=".85"/>
+          <rect x="756" y="576" width="170" height="72" fill="#1a2235" stroke="#0ea5e9" stroke-width="1.8" stroke-opacity=".85"/>
+          <text x="768" y="592" font-size="8" fill="#f59e0b" font-family="'IBM Plex Mono',monospace">«node» BI Server</text>
+          <text x="768" y="610" font-size="13" fill="#e2e8f0" font-weight="600" font-family="Rajdhani,sans-serif">Tableau</text>
+          <rect x="768" y="614" width="148" height="17" rx="3" fill="#0f1923" stroke="#1e3a5f" stroke-width="1"/>
+          <text x="774" y="626" font-size="8" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">«artifact» dashboards</text>
+
+          <!-- LEGEND -->
+          <rect x="10" y="660" width="940" height="90" rx="6" fill="#0f1724" stroke="#1a3050" stroke-width="1"/>
+          <text x="22" y="678" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">LEYENDA:</text>
+          <line x1="80" y1="674" x2="112" y2="674" stroke="#4a6fa5" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <text x="117" y="678" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Comunicación REST/JDBC</text>
+          <line x1="292" y1="674" x2="324" y2="674" stroke="#4a6fa5" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+          <text x="329" y="678" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Descarga de aplicación</text>
+          <line x1="482" y1="674" x2="514" y2="674" stroke="#10b981" stroke-width="1.4" stroke-dasharray="5,2" marker-end="url(#arrG)"/>
+          <text x="519" y="678" font-size="9" fill="#94a3b8" font-family="'IBM Plex Mono',monospace">Replicación DB (Master → Slave)</text>
+
+          <text x="22" y="698" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">Flujo ETL: DB Master → Pentaho (Extract + Transform) → DataWarehouse (Load) → Tableau (Análisis + Reportes)</text>
+          <text x="22" y="714" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">Backend puede leer de cualquier DB (Master para escritura, Slaves para lecturas). Slaves replican datos del Master automáticamente.</text>
+          <text x="22" y="730" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">Diagrama de Despliegue UML 2.x · Ejercicio 2 · ANDIS I – DevFuture</text>
+          <text x="22" y="746" font-size="9" fill="#64748b" font-family="'IBM Plex Mono',monospace">Las apps de escritorio se instalan en el nodo del usuario; las móviles se descargan desde sus tiendas oficiales.</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SLIDE 9: CONCLUSIONES + QUIZ ═══════════════════════════════════ -->
+  <div class="slide slide-content" data-section="CIERRE">
+    <div style="max-width:820px;width:100%;text-align:center">
+      <p class="slide-subtitle"><i class="fas fa-flag-checkered me-2"></i>Cierre de la Unidad</p>
+      <h2 class="slide-title justify-content-center"><i class="fas fa-graduation-cap"></i> Conclusiones</h2>
+
+      <div class="row g-3 mt-2 text-start">
+        <div class="col-md-6">
+          <div class="concept-box">
+            <h4><i class="fas fa-check-circle"></i> Lo aprendido</h4>
+            <p>Los diagramas de despliegue modelan la <strong style="color:#fff">infraestructura física</strong>, identificando nodos, artefactos y rutas de comunicación entre ellos.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="concept-box">
+            <h4><i class="fas fa-check-circle"></i> Cuándo usarlos</h4>
+            <p>En arquitecturas distribuidas, microservicios, sistemas cloud, o siempre que necesitemos comunicar <strong style="color:#fff">dónde vive</strong> cada componente y cómo se conecta.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="concept-box">
+            <h4><i class="fas fa-check-circle"></i> Diferencia clave</h4>
+            <p>El diagrama de <strong style="color:#fff">componentes</strong> muestra qué hace el software; el de <strong style="color:#fff">despliegue</strong> muestra dónde vive, en qué hardware y cómo se conecta.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="concept-box">
+            <h4><i class="fas fa-check-circle"></i> Buenas prácticas</h4>
+            <p>Indicar siempre el <strong style="color:#fff">protocolo</strong> en cada ruta, usar correctamente los stereotypes (<span class="stereotype">«node»</span>, <span class="stereotype">«artifact»</span>, <span class="stereotype">«device»</span>) y agrupar artefactos dentro de su nodo contenedor.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex gap-3 justify-content-center flex-wrap">
+        <button class="quiz-btn" onclick="startQuiz()">
+          <i class="fas fa-question-circle me-2"></i>¡Quiz de Verificación!
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #slides-container -->
+
+<!-- NAV CONTROLS -->
+<div id="nav-controls">
+  <button class="nav-btn" id="btn-prev" onclick="changeSlide(-1)" disabled>
+    <i class="fas fa-chevron-left"></i>
+  </button>
+  <span id="slide-counter">1 / 10</span>
+  <button class="nav-btn" id="btn-next" onclick="changeSlide(1)">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let cur = 0;
+
+  // Build dots
+  const dotsEl = document.getElementById('slide-dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function updateUI() {
+    document.getElementById('progress-bar').style.width = ((cur + 1) / total * 100) + '%';
+    document.getElementById('slide-counter').textContent = `${cur + 1} / ${total}`;
+    document.getElementById('btn-prev').disabled = cur === 0;
+    document.getElementById('btn-next').disabled = cur === total - 1;
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+    document.getElementById('section-name').textContent = slides[cur].dataset.section || '';
+  }
+
+  function goTo(idx) {
+    if (idx < 0 || idx >= total) return;
+    slides[cur].classList.remove('active');
+    cur = idx;
+    slides[cur].classList.add('active');
+    slides[cur].querySelectorAll('.animate__animated').forEach(el => {
+      el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+    });
+    updateUI();
+  }
+
+  function changeSlide(d) { goTo(cur + d); }
+
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight','ArrowDown',' '].includes(e.key)) { e.preventDefault(); changeSlide(1); }
+    else if (['ArrowLeft','ArrowUp'].includes(e.key)) { e.preventDefault(); changeSlide(-1); }
+  });
+
+  updateUI();
+
+  // ============ QUIZ ============
+  const quiz = [
+    {
+      q: "¿Qué elemento UML representa un servidor físico o virtual en un diagrama de despliegue?",
+      opts: ["Componente", "Nodo (Node)", "Paquete", "Clase"],
+      ans: 1,
+      exp: "Un <strong>Nodo</strong> con el stereotype <code>«node»</code> o <code>«device»</code> representa recursos computacionales físicos o virtuales: servidores, PCs, VMs, etc."
+    },
+    {
+      q: "En el Ejercicio 1, ¿cuál es el propósito del NGINX Load Balancer en la arquitectura?",
+      opts: [
+        "Almacenar la base de datos",
+        "Distribuir las solicitudes HTTP entre los tres servidores web",
+        "Ejecutar la lógica del backend Java",
+        "Manejar mensajes Kafka"
+      ],
+      ans: 1,
+      exp: "El <strong>NGINX Load Balancer</strong> actúa como punto de entrada único y distribuye las solicitudes entre los 3 Web Servers Linux, mejorando la disponibilidad y el rendimiento."
+    },
+    {
+      q: "¿Cuál es la diferencia entre un «artifact» y un «node» en UML?",
+      opts: [
+        "No hay diferencia, son sinónimos",
+        "Un «node» es el recurso computacional (hardware/VM) y un «artifact» es el elemento de software que se despliega en él",
+        "«artifact» es solo para bases de datos",
+        "«node» es solo para redes"
+      ],
+      ans: 1,
+      exp: "<strong>«node»</strong> representa el hardware o entorno de ejecución (servidor, PC, VM). <strong>«artifact»</strong> representa el software concreto desplegado: .jar, .war, .exe, archivo de configuración, base de datos, etc."
+    },
+    {
+      q: "En el Ejercicio 2, ¿cuál es el flujo correcto del proceso ETL hacia Business Intelligence?",
+      opts: [
+        "Tableau → Pentaho → DataWarehouse → DB Master",
+        "DB Master → DataWarehouse → Pentaho → Tableau",
+        "DB Master → Pentaho → DataWarehouse → Tableau",
+        "Backend → Tableau → DataWarehouse → Pentaho"
+      ],
+      ans: 2,
+      exp: "El flujo ETL es: <strong>DB Master</strong> (fuente) → <strong>Pentaho</strong> (extrae, transforma y carga) → <strong>DataWarehouse</strong> (almacén analítico) → <strong>Tableau</strong> (visualización e informes de negocio)."
+    },
+    {
+      q: "En el esquema maestro-esclavo del Ejercicio 2, ¿cuál es la función de las bases de datos esclavas?",
+      opts: [
+        "Procesar escrituras nuevas en reemplazo del master",
+        "Proporcionar redundancia y equilibrio de carga para lecturas",
+        "Ejecutar los procesos ETL de Pentaho",
+        "Servir como caché de la interfaz móvil"
+      ],
+      ans: 1,
+      exp: "Las <strong>DB Slaves</strong> replican datos del Master y sirven para lecturas, distribuyendo la carga y proporcionando <strong>redundancia</strong>. El Master sigue siendo el único nodo que recibe escrituras."
+    }
+  ];
+
+  let qIdx = 0, score = 0;
+
+  async function startQuiz() {
+    qIdx = 0; score = 0;
+    await showQ();
+  }
+
+  async function showQ() {
+    if (qIdx >= quiz.length) {
+      const pct = Math.round((score / quiz.length) * 100);
+      const e = pct >= 80 ? '🏆' : pct >= 60 ? '📚' : '💡';
+      await Swal.fire({
+        title: `${e} Resultado Final`,
+        html: `<p style="font-size:1.15rem">Obtuviste <strong style="color:#00d4ff">${score} / ${quiz.length}</strong> (${pct}%)</p>
+               <p style="color:#64748b;font-size:.9rem;margin-top:8px">${pct >= 80 ? '¡Dominio excelente del tema!' : pct >= 60 ? 'Buen trabajo, repasa los conceptos clave.' : 'Revisá los diagramas y los elementos UML nuevamente.'}</p>`,
+        background: '#0f1724', color: '#e2e8f0',
+        confirmButtonColor: '#00d4ff', confirmButtonText: 'Cerrar'
+      });
+      return;
+    }
+    const q = quiz[qIdx];
+    const inputOptions = {};
+    q.opts.forEach((o, i) => inputOptions[i] = o);
+
+    const { value, isDismissed } = await Swal.fire({
+      title: `Pregunta ${qIdx + 1} de ${quiz.length}`,
+      html: `<p style="color:#e2e8f0;font-size:.95rem;text-align:left;margin-bottom:12px">${q.q}</p>`,
+      input: 'radio', inputOptions,
+      background: '#0f1724', color: '#e2e8f0',
+      confirmButtonColor: '#00d4ff', confirmButtonText: 'Confirmar',
+      showCancelButton: true, cancelButtonText: 'Salir del quiz', cancelButtonColor: '#374151',
+      inputValidator: v => !v && 'Por favor seleccioná una opción'
+    });
+
+    if (isDismissed) return;
+    const ok = parseInt(value) === q.ans;
+    if (ok) score++;
+
+    await Swal.fire({
+      title: ok ? '✅ ¡Correcto!' : '❌ Incorrecto',
+      html: `<div style="text-align:left;color:#94a3b8;font-size:.88rem;line-height:1.6">${q.exp}</div>`,
+      icon: ok ? 'success' : 'error',
+      background: '#0f1724', color: '#e2e8f0',
+      confirmButtonColor: '#00d4ff',
+      confirmButtonText: qIdx < quiz.length - 1 ? 'Siguiente ➜' : 'Ver resultado'
+    });
+
+    qIdx++;
+    await showQ();
+  }
+</script>
+</body>
+</html>
