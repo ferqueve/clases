@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UT3 – TFU Sistema Electoral | FIT UCU</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:       #07081a;
+    --bg-card:  #0d0f26;
+    --bg-panel: #111330;
+    --accent:   #818cf8;
+    --accent2:  #f472b6;
+    --accent3:  #fbbf24;
+    --success:  #34d399;
+    --danger:   #f87171;
+    --text:     #e0e2ff;
+    --muted:    #4b5085;
+    --border:   rgba(129,140,248,.14);
+    --radius:   12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Fraunces', Georgia, serif;
+    min-height: 100vh; overflow: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 80%, rgba(129,140,248,.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 10%, rgba(244,114,182,.06) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  #app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 28px; border-bottom: 1px solid var(--border);
+    background: rgba(7,8,26,.93); backdrop-filter: blur(16px); flex-shrink: 0;
+  }
+  .brand { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; font-weight: 500; color: var(--muted); letter-spacing: .15em; text-transform: uppercase; }
+  .slide-counter { font-family: 'IBM Plex Mono', monospace; font-size: .8rem; color: var(--accent); }
+
+  #progress-bar-wrap { height: 3px; background: #1a1d40; flex-shrink: 0; }
+  #progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width .4s ease; }
+
+  #slide-area { flex: 1; overflow-y: auto; padding: 28px 42px; }
+  #slide-area::-webkit-scrollbar { width: 4px; }
+  #slide-area::-webkit-scrollbar-track { background: transparent; }
+  #slide-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  .slide { display: none; }
+  .slide.active { display: block; }
+
+  .slide-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'IBM Plex Mono', monospace; font-size: .68rem;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--accent2); border: 1px solid rgba(244,114,182,.35);
+    border-radius: 4px; padding: 3px 12px; margin-bottom: 14px;
+  }
+  h1.slide-title { font-size: clamp(1.9rem, 4vw, 2.9rem); font-weight: 900; line-height: 1.12; margin-bottom: 10px; font-style: italic; }
+  h2.slide-title { font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+  .a1 { color: var(--accent); }
+  .a2 { color: var(--accent2); }
+  .a3 { color: var(--accent3); }
+  .body-text { font-family: 'IBM Plex Mono', monospace; font-size: .85rem; color: #7b80c0; line-height: 1.75; }
+  .lead-text { font-size: 1rem; color: #9ea3e0; line-height: 1.75; }
+
+  .glass-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px; position: relative; overflow: hidden;
+  }
+  .glass-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+  .hl-box {
+    border-left: 3px solid var(--accent); background: rgba(129,140,248,.06);
+    border-radius: 0 8px 8px 0; padding: 12px 18px; margin: 14px 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: .83rem; color: var(--text);
+  }
+  .warn-box {
+    border-left: 3px solid var(--accent3); background: rgba(251,191,36,.06);
+    border-radius: 0 8px 8px 0; padding: 12px 18px; margin: 14px 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: .83rem; color: var(--text);
+  }
+  .req-item {
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace; font-size: .8rem;
+    display: flex; align-items: flex-start; gap: 10px; color: #9ea3e0;
+  }
+  .req-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 700; margin-top: 1px; }
+  .req-num.pink { background: var(--accent2); }
+  .req-num.amber { background: var(--accent3); color: #000; }
+
+  .diagram-wrap {
+    background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; overflow-x: auto;
+  }
+  .diagram-wrap svg { display: block; margin: 0 auto; }
+
+  .badge-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(129,140,248,.1); border: 1px solid rgba(129,140,248,.25); border-radius: 99px; padding: 5px 14px; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; color: var(--accent); font-weight: 500; }
+  .badge-pink { display: inline-flex; align-items: center; gap: 6px; background: rgba(244,114,182,.1); border: 1px solid rgba(244,114,182,.25); border-radius: 99px; padding: 5px 14px; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; color: var(--accent2); }
+
+  .part-label { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: .7rem; background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.3); color: var(--accent3); border-radius: 4px; padding: 2px 10px; margin-bottom: 10px; }
+
+  footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 28px; border-top: 1px solid var(--border);
+    background: rgba(7,8,26,.93); backdrop-filter: blur(16px); flex-shrink: 0;
+  }
+  .nav-btn {
+    background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+    padding: 8px 22px; font-family: 'Fraunces', serif; font-weight: 700; font-size: .88rem;
+    cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all .2s;
+  }
+  .nav-btn:hover { background: rgba(129,140,248,.08); border-color: var(--accent); color: var(--accent); }
+  .nav-btn:disabled { opacity: .25; cursor: default; pointer-events: none; }
+  .nav-btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .nav-btn.primary:hover { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+  /* QUIZ */
+  .quiz-opt {
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 13px 16px; cursor: pointer; transition: all .2s; margin-bottom: 9px;
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'IBM Plex Mono', monospace; font-size: .82rem;
+  }
+  .quiz-opt:hover { border-color: var(--accent); background: rgba(129,140,248,.06); }
+  .quiz-opt.correct { border-color: var(--success); background: rgba(52,211,153,.08); }
+  .quiz-opt.wrong   { border-color: var(--danger);  background: rgba(248,113,113,.08); }
+  .quiz-opt.disabled { pointer-events: none; }
+  .opt-ltr { flex-shrink:0; width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.07); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.75rem; }
+  .qfeedback { border-radius:8px; padding:11px 15px; margin-top:11px; font-family:'IBM Plex Mono',monospace; font-size:.8rem; display:none; }
+  .qfeedback.show { display:block; }
+  .qfeedback.ok { background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.35); color:#6ee7b7; }
+  .qfeedback.ko { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.35); color:#fca5a5; }
+  .q-count { font-family:'IBM Plex Mono',monospace; font-size:.73rem; color:var(--muted); margin-bottom:8px; }
+  .q-text  { font-size:.95rem; font-weight:700; margin-bottom:16px; line-height:1.5; }
+
+  #result-section { display:none; }
+  .score-ring { position:relative; width:140px; height:140px; margin:0 auto 18px; }
+  .score-inner { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .score-num { font-size:2.1rem; font-weight:900; color:var(--accent); font-family:'IBM Plex Mono',monospace; }
+  .score-lbl { font-size:.7rem; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
+
+  /* UML text helpers */
+  .uml-title { font-family: 'IBM Plex Mono', monospace; }
+  .diag-label { font-family: 'IBM Plex Mono', monospace; font-size: .78rem; color: var(--muted); margin-top: 8px; text-align: center; }
+
+  @media (max-width:700px) { #slide-area { padding:16px 12px; } header,footer { padding:10px 12px; } }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brand"><i class="fa-solid fa-university me-2"></i>FIT · UCU &nbsp;·&nbsp; Diseño y UML · UT3 TFU</div>
+    <div class="slide-counter"><span id="cur-slide">1</span> / <span id="tot-slides">15</span></div>
+  </header>
+  <div id="progress-bar-wrap"><div id="progress-bar" style="width:6.67%"></div></div>
+
+  <div id="slide-area">
+
+    <!-- ══ 1 PORTADA ══ -->
+    <div class="slide active" id="slide-1">
+      <div class="animate__animated animate__fadeIn" style="min-height:62vh;display:flex;flex-direction:column;justify-content:center;position:relative;">
+        <div style="position:absolute;right:-80px;top:-60px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(129,140,248,.18) 0%,transparent 70%);pointer-events:none"></div>
+        <div class="slide-tag"><i class="fa-solid fa-diagram-project me-1"></i>UT3 · Trabajo Final de Unidad</div>
+        <h1 class="slide-title">Sistema de Registro<br>y Reporte para las<br><span class="a1">Elecciones Municipales</span></h1>
+        <p class="lead-text mt-3" style="max-width:580px;">Análisis del problema, identificación de requerimientos adicionales y solución UML completa con diagramas de estructura y comportamiento.</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <span class="badge-pill"><i class="fa-solid fa-mobile-screen"></i>App Android Tablet</span>
+          <span class="badge-pink"><i class="fa-solid fa-globe"></i>Sitio Web Responsive</span>
+          <span class="badge-pill"><i class="fa-solid fa-sitemap"></i>Modelado UML</span>
+        </div>
+        <div class="mt-4 glass-card" style="max-width:580px;">
+          <p class="body-text mb-0">Tres partes: <span class="a1">Requerimientos adicionales</span> · <span class="a2">Diagramas UML (≥2 estructura + ≥2 comportamiento)</span> · <span class="a3">Disertación 7 minutos</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 2 CONTEXTO ══ -->
+    <div class="slide" id="slide-2">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="slide-tag"><i class="fa-solid fa-landmark me-1"></i>Contexto del problema</div>
+        <h2 class="slide-title">Elecciones Municipales en <span class="a1">Uruguay</span></h2>
+        <p class="body-text mb-4">Cada cinco años, segundo domingo de mayo. Se eligen autoridades departamentales y locales.</p>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="glass-card h-100 text-center">
+              <i class="fa-solid fa-person-booth fa-2x mb-2" style="color:var(--accent)"></i>
+              <h6 class="mb-1">Intendentes</h6>
+              <p class="body-text">1 por departamento<br><strong>19 en total</strong></p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="glass-card h-100 text-center">
+              <i class="fa-solid fa-users fa-2x mb-2" style="color:var(--accent2)"></i>
+              <h6 class="mb-1">Ediles</h6>
+              <p class="body-text">31 por junta departamental<br><strong>19 juntas</strong></p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="glass-card h-100 text-center">
+              <i class="fa-solid fa-building-columns fa-2x mb-2" style="color:var(--accent3)"></i>
+              <h6 class="mb-1">Alcaldes y Concejales</h6>
+              <p class="body-text">1 alcalde + 4 concejales<br><strong>por municipio</strong></p>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="glass-card">
+              <h6 class="mb-2 a1"><i class="fa-solid fa-id-card me-2"></i>Padrón Electoral</h6>
+              <p class="body-text">Nombre completo + serie y número de credencial cívica. Disponible via API REST de la Corte Electoral.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card">
+              <h6 class="mb-2 a2"><i class="fa-solid fa-map-location-dot me-2"></i>Plan Circuital</h6>
+              <p class="body-text">Define qué electores votan en qué circuito. Circuitos <strong>urbanos</strong> (≤400) y <strong>rurales</strong> (≤300 inscriptos).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 3 REGLAS DE VOTACIÓN ══ -->
+    <div class="slide" id="slide-3">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="slide-tag"><i class="fa-solid fa-scale-balanced me-1"></i>Reglas del dominio</div>
+        <h2 class="slide-title">Reglas de <span class="a2">votación</span> y tipos de voto</h2>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="glass-card h-100">
+              <h6 class="mb-3 a1"><i class="fa-solid fa-check-circle me-2"></i>Voto normal</h6>
+              <ul class="body-text" style="padding-left:1.2rem">
+                <li>Elector inscripto en el circuito de esa comisión.</li>
+                <li>Se registra serie y número de credencial.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card h-100" style="border-left:3px solid var(--accent3)">
+              <h6 class="mb-3 a3"><i class="fa-solid fa-envelope me-2"></i>Voto observado (sobre azul)</h6>
+              <ul class="body-text" style="padding-left:1.2rem">
+                <li>Funcionarios públicos de la comisión (si credencial = mismo departamento).</li>
+                <li>En circuitos <strong>rurales</strong>: electores de otros circuitos rurales del mismo distrito.</li>
+                <li>Se registra en planilla aparte. La Corte Electoral verifica.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="glass-card">
+              <h6 class="mb-2 a2"><i class="fa-solid fa-file-alt me-2"></i>Hojas departamentales</h6>
+              <p class="body-text">Lema + número. Lista de candidatos a intendente (1 titular, ≤4 suplentes) y ediles (1–31 titulares, ≤3 suplentes c/u).</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card">
+              <h6 class="mb-2 a1"><i class="fa-solid fa-file-alt me-2"></i>Hojas municipales</h6>
+              <p class="body-text">Lema + número. Lista de candidatos a alcalde (1 titular, ≤4 suplentes) y concejales (1–4 titulares, ≤3 suplentes c/u).</p>
+            </div>
+          </div>
+        </div>
+        <div class="hl-box mt-3">
+          <i class="fa-solid fa-arrows-rotate me-2"></i>
+          <strong>Escrutinio:</strong> se cuentan votos emitidos (deben coincidir con los registrados), se abren sobres, se extrae hoja de votación, se clasifica como válido (agrupado por lema/número) o anulado.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 4 REQ TABLET ══ -->
+    <div class="slide" id="slide-4">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="slide-tag"><i class="fa-solid fa-tablet-screen-button me-1"></i>App Tablet · Comisión</div>
+        <h2 class="slide-title">Requerimientos: <span class="a1">App Android</span></h2>
+        <p class="body-text mb-3">Aplicación Android en tablets para la comisión receptora de votos. Se comunica con backend .NET Core via REST/HTTPS detrás de Nginx.</p>
+        <div class="row g-2">
+          <div class="col-12">
+            <div class="req-item"><div class="req-num">1</div>Validar identidad de integrantes de la comisión via <strong>LDAP</strong> (serie/número de credencial).</div>
+            <div class="req-item"><div class="req-num">2</div>Inhabilitar <em>todas</em> las funcionalidades hasta que estén validados <strong>todos</strong> los integrantes.</div>
+            <div class="req-item"><div class="req-num">3</div>Indicar inicio de votación → habilitar funcionalidades de registro de votos.</div>
+            <div class="req-item"><div class="req-num">4</div>Buscar elector por serie/número de credencial e informar si votó o no.</div>
+            <div class="req-item"><div class="req-num">5</div>Registrar electores que votaron: serie/número + indicador de voto observado.</div>
+            <div class="req-item"><div class="req-num">6</div>Indicar fin de votación → inhabilitar registro de votos + habilitar escrutinio.</div>
+            <div class="req-item"><div class="req-num">7</div>Registrar voto a una hoja de votación (escrutinio).</div>
+            <div class="req-item"><div class="req-num">8</div>Indicar fin de escrutinio → todas las funcionalidades quedan inhabilitadas.</div>
+          </div>
+        </div>
+        <div class="warn-box mt-2">
+          <i class="fa-solid fa-server me-2" style="color:var(--accent3)"></i>
+          <strong>Infraestructura:</strong> Varios servidores Linux con .NET Core · Nginx como balanceador/API gateway · PostgreSQL en alta disponibilidad con testigo.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 5 REQ WEB ══ -->
+    <div class="slide" id="slide-5">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="slide-tag"><i class="fa-solid fa-globe me-1"></i>Sitio Web · Público</div>
+        <h2 class="slide-title">Requerimientos: <span class="a2">Sitio Web</span></h2>
+        <p class="body-text mb-3">Sitio web responsive accesible desde cualquier navegador. Misma infraestructura backend que la app tablet.</p>
+        <div class="req-item"><div class="req-num pink">1</div>Mostrar el <strong>estado actual</strong>: no iniciada · en progreso · terminada (sin escrutinio) · escrutinio en progreso · escrutinio terminado.</div>
+        <div class="req-item"><div class="req-num pink">2</div>Votos totales a cada <strong>intendente</strong>, discriminados por lema/número, por departamento y por distrito.</div>
+        <div class="req-item"><div class="req-num pink">3</div>Votos totales a cada candidato a <strong>edil</strong>, discriminados por lema/número, por departamento y por distrito.</div>
+        <div class="req-item"><div class="req-num pink">4</div>Votos totales a cada <strong>alcalde</strong>, discriminados por lema/número, por municipio y por distrito.</div>
+        <div class="req-item"><div class="req-num pink">5</div>Votos totales a cada candidato a <strong>concejal</strong>, discriminados por lema/número, por municipio y por distrito.</div>
+        <div class="hl-box mt-2">
+          <i class="fa-solid fa-eye me-2"></i>
+          El sitio es <strong>solo de consulta</strong>: no permite votar ni modificar datos. Debe ser accesible en tiempo real durante el escrutinio.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 6 PARTE 1 – REQUERIMIENTOS ADICIONALES ══ -->
+    <div class="slide" id="slide-6">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-1 me-1"></i>PARTE 1</div>
+        <h2 class="slide-title">Requerimientos <span class="a3">adicionales</span> identificados</h2>
+        <p class="body-text mb-3">Analizando el enunciado detectamos los siguientes requerimientos implícitos o no especificados:</p>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <h6 class="a1 mb-2"><i class="fa-solid fa-shield-halved me-1"></i>Seguridad y auditoría</h6>
+            <div class="req-item"><div class="req-num amber">R1</div>Registro de auditoría de cada acción (quién, qué, cuándo).</div>
+            <div class="req-item"><div class="req-num amber">R2</div>Comunicación HTTPS con certificado válido en todos los endpoints.</div>
+            <div class="req-item"><div class="req-num amber">R3</div>La app tablet debe funcionar en <strong>modo offline</strong> con sincronización posterior (fallas de conectividad).</div>
+            <div class="req-item"><div class="req-num amber">R4</div>Validar que un elector no pueda registrarse dos veces en la misma comisión.</div>
+          </div>
+          <div class="col-md-6">
+            <h6 class="a2 mb-2"><i class="fa-solid fa-circle-nodes me-1"></i>Funcionales faltantes</h6>
+            <div class="req-item"><div class="req-num pink">R5</div>Definir quién puede iniciar/finalizar la votación y el escrutinio (rol de presidente de comisión).</div>
+            <div class="req-item"><div class="req-num pink">R6</div>Manejo de votos impugnados (distintos de anulados).</div>
+            <div class="req-item"><div class="req-num pink">R7</div>El sitio web debe actualizarse automáticamente (polling o WebSockets).</div>
+            <div class="req-item"><div class="req-num pink">R8</div>Restricción de horario: la votación solo puede iniciarse en el horario oficial.</div>
+            <div class="req-item"><div class="req-num pink">R9</div>Capacidad de corregir un registro erróneo de credencial antes de cerrar la votación.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 7 PARTE 2 ESTRATEGIA ══ -->
+    <div class="slide" id="slide-7">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-2 me-1"></i>PARTE 2</div>
+        <h2 class="slide-title">Estrategia de <span class="a1">modelado</span> UML</h2>
+        <p class="body-text mb-4">Seleccionamos cuatro diagramas que cubren los aspectos más significativos del sistema:</p>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="glass-card h-100" style="border-left:3px solid var(--accent)">
+              <h6 class="a1 mb-2"><i class="fa-solid fa-puzzle-piece me-2"></i>Diagrama de Componentes</h6>
+              <p class="body-text">Estructura. Muestra los componentes tecnológicos y sus interfaces. Justificación: el sistema tiene una arquitectura distribuida no trivial (Android, REST, .NET Core, Nginx, PostgreSQL, LDAP, API externa).</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card h-100" style="border-left:3px solid var(--accent2)">
+              <h6 class="a2 mb-2"><i class="fa-solid fa-table-cells me-2"></i>Diagrama de Clases</h6>
+              <p class="body-text">Estructura. Modelo del dominio del problema: electores, circuitos, comisiones, votos, hojas de votación, candidatos. Justificación: el dominio tiene reglas complejas que deben quedar explícitas.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card h-100" style="border-left:3px solid var(--accent3)">
+              <h6 class="a3 mb-2"><i class="fa-solid fa-user-group me-2"></i>Diagrama de Casos de Uso</h6>
+              <p class="body-text">Comportamiento. Identifica actores y funcionalidades de cada cliente. Justificación: hay dos clientes con actores distintos y responsabilidades bien diferenciadas.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card h-100" style="border-left:3px solid var(--success)">
+              <h6 style="color:var(--success)" class="mb-2"><i class="fa-solid fa-arrows-rotate me-2"></i>Diagrama de Estados</h6>
+              <p class="body-text">Comportamiento. Ciclo de vida de la ComisiónReceptora. Justificación: el sistema tiene fases bien definidas con transiciones y habilitaciones/inhabilitaciones de funcionalidades.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 8 DIAGRAMA COMPONENTES ══ -->
+    <div class="slide" id="slide-8">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-2 me-1"></i>PARTE 2 · Estructura</div>
+        <h2 class="slide-title">Diagrama de <span class="a1">Componentes</span></h2>
+        <p class="body-text mb-3">Arquitectura técnica del sistema. Muestra los componentes desplegables y sus relaciones.</p>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 820 420" xmlns="http://www.w3.org/2000/svg" style="max-width:820px;width:100%">
+            <defs>
+              <marker id="ac" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4b5085"/></marker>
+              <marker id="ac2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#818cf8"/></marker>
+            </defs>
+            <!-- Node: Tablet -->
+            <rect x="10" y="10" width="155" height="100" rx="8" fill="#0d0f26" stroke="#818cf8" stroke-width="1.5"/>
+            <rect x="10" y="10" width="155" height="22" rx="8" fill="#1a1d40"/>
+            <rect x="155" y="18" width="0" height="0"/>
+            <text x="87" y="26" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="9" font-weight="500">«device»</text>
+            <text x="87" y="40" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="9" font-weight="700">Android Tablet</text>
+            <rect x="22" y="50" width="131" height="50" rx="6" fill="#111330" stroke="#4b5085" stroke-width="1"/>
+            <text x="87" y="66" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="8">«component»</text>
+            <text x="87" y="80" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="9" font-weight="700">AppComision</text>
+            <text x="87" y="94" text-anchor="middle" fill="#4b5085" font-family="IBM Plex Mono" font-size="7.5">Android / REST client</text>
+
+            <!-- Node: Browser -->
+            <rect x="10" y="130" width="155" height="100" rx="8" fill="#0d0f26" stroke="#f472b6" stroke-width="1.5"/>
+            <rect x="10" y="130" width="155" height="22" rx="8" fill="#1a1d40"/>
+            <text x="87" y="146" text-anchor="middle" fill="#f472b6" font-family="IBM Plex Mono" font-size="9" font-weight="500">«device»</text>
+            <text x="87" y="160" text-anchor="middle" fill="#f9a8d4" font-family="IBM Plex Mono" font-size="9" font-weight="700">Browser</text>
+            <rect x="22" y="168" width="131" height="50" rx="6" fill="#111330" stroke="#4b5085" stroke-width="1"/>
+            <text x="87" y="184" text-anchor="middle" fill="#f472b6" font-family="IBM Plex Mono" font-size="8">«component»</text>
+            <text x="87" y="198" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="9" font-weight="700">SitioPublico</text>
+            <text x="87" y="212" text-anchor="middle" fill="#4b5085" font-family="IBM Plex Mono" font-size="7.5">Web Responsive</text>
+
+            <!-- Arrow tablet → nginx -->
+            <line x1="165" y1="75" x2="270" y2="100" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ac2)"/>
+            <text x="215" y="77" fill="#818cf8" font-family="IBM Plex Mono" font-size="7.5" text-anchor="middle">REST/HTTPS</text>
+
+            <!-- Arrow browser → nginx -->
+            <line x1="165" y1="195" x2="270" y2="180" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ac)"/>
+            <text x="215" y="198" fill="#f472b6" font-family="IBM Plex Mono" font-size="7.5" text-anchor="middle">HTTPS</text>
+
+            <!-- Node: Nginx -->
+            <rect x="270" y="60" width="155" height="145" rx="8" fill="#0d0f26" stroke="#fbbf24" stroke-width="1.5"/>
+            <rect x="270" y="60" width="155" height="22" rx="8" fill="#1a1d40"/>
+            <text x="347" y="76" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="9" font-weight="500">«node»</text>
+            <text x="347" y="90" text-anchor="middle" fill="#fde68a" font-family="IBM Plex Mono" font-size="9" font-weight="700">Nginx</text>
+            <rect x="282" y="98" width="131" height="45" rx="5" fill="#111330" stroke="#4b5085"/>
+            <text x="347" y="116" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="8">«component»</text>
+            <text x="347" y="130" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="9" font-weight="700">API Gateway</text>
+            <rect x="282" y="152" width="131" height="42" rx="5" fill="#111330" stroke="#4b5085"/>
+            <text x="347" y="168" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="8">«component»</text>
+            <text x="347" y="182" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="9" font-weight="700">Load Balancer</text>
+
+            <!-- Arrow nginx → backend -->
+            <line x1="425" y1="133" x2="490" y2="133" stroke="#4b5085" stroke-width="1.5" marker-end="url(#ac)"/>
+
+            <!-- Node: Backend cluster -->
+            <rect x="490" y="50" width="175" height="170" rx="8" fill="#0d0f26" stroke="#34d399" stroke-width="1.5"/>
+            <rect x="490" y="50" width="175" height="22" rx="8" fill="#111330"/>
+            <text x="577" y="66" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="9">«node cluster»</text>
+            <text x="577" y="80" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="9" font-weight="700">Servidores Linux</text>
+            <rect x="502" y="88" width="151" height="50" rx="5" fill="#111330" stroke="#4b5085"/>
+            <text x="577" y="105" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="8">«component»</text>
+            <text x="577" y="119" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="9" font-weight="700">Backend .NET Core</text>
+            <rect x="502" y="146" width="151" height="62" rx="5" fill="#111330" stroke="#4b5085"/>
+            <text x="577" y="163" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="8">«component»</text>
+            <text x="577" y="177" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="9" font-weight="700">EleccionesAPI</text>
+            <text x="577" y="192" text-anchor="middle" fill="#4b5085" font-family="IBM Plex Mono" font-size="7.5">REST endpoints</text>
+
+            <!-- Arrow backend → PG -->
+            <line x1="665" y1="130" x2="710" y2="130" stroke="#4b5085" stroke-width="1.5" marker-end="url(#ac)"/>
+
+            <!-- Node: PostgreSQL -->
+            <rect x="710" y="60" width="100" height="130" rx="8" fill="#0d0f26" stroke="#818cf8" stroke-width="1.5"/>
+            <rect x="710" y="60" width="100" height="22" rx="8" fill="#1a1d40"/>
+            <text x="760" y="75" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="8">«database»</text>
+            <text x="760" y="92" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">PostgreSQL</text>
+            <text x="760" y="107" text-anchor="middle" fill="#4b5085" font-family="IBM Plex Mono" font-size="7">Alta disponibilidad</text>
+            <rect x="720" y="114" width="80" height="30" rx="4" fill="#111330" stroke="#4b5085"/>
+            <text x="760" y="132" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="7.5">Primary + Replica</text>
+            <rect x="720" y="150" width="80" height="30" rx="4" fill="#111330" stroke="#4b5085"/>
+            <text x="760" y="168" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="7.5">+ Testigo</text>
+
+            <!-- Node: LDAP -->
+            <rect x="490" y="250" width="175" height="75" rx="8" fill="#0d0f26" stroke="#f472b6" stroke-width="1.5"/>
+            <rect x="490" y="250" width="175" height="22" rx="8" fill="#1a1d40"/>
+            <text x="577" y="266" text-anchor="middle" fill="#f472b6" font-family="IBM Plex Mono" font-size="9">«external system»</text>
+            <text x="577" y="282" text-anchor="middle" fill="#f9a8d4" font-family="IBM Plex Mono" font-size="9" font-weight="700">LDAP</text>
+            <text x="577" y="298" text-anchor="middle" fill="#4b5085" font-family="IBM Plex Mono" font-size="7.5">Autenticación comisión</text>
+            <text x="577" y="313" text-anchor="middle" fill="#4b5085" font-family="IBM Plex Mono" font-size="7.5">id: serie/nro credencial</text>
+
+            <!-- Arrow backend → LDAP -->
+            <line x1="577" y1="220" x2="577" y2="250" stroke="#4b5085" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ac)"/>
+
+            <!-- Node: Corte Electoral API -->
+            <rect x="710" y="220" width="100" height="110" rx="8" fill="#0d0f26" stroke="#fbbf24" stroke-width="1.5"/>
+            <rect x="710" y="220" width="100" height="22" rx="8" fill="#1a1d40"/>
+            <text x="760" y="236" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="7.5">«external»</text>
+            <text x="760" y="252" text-anchor="middle" fill="#fde68a" font-family="IBM Plex Mono" font-size="8" font-weight="700">Corte Electoral</text>
+            <text x="760" y="266" text-anchor="middle" fill="#fde68a" font-family="IBM Plex Mono" font-size="8" font-weight="700">API REST</text>
+            <text x="760" y="284" text-anchor="middle" fill="#4b5085" font-family="IBM Plex Mono" font-size="7">Padrón electoral</text>
+            <text x="760" y="297" text-anchor="middle" fill="#4b5085" font-family="IBM Plex Mono" font-size="7">Plan circuital</text>
+
+            <!-- Arrow backend → Corte Electoral -->
+            <line x1="665" y1="180" x2="720" y2="240" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ac)"/>
+
+            <!-- legend -->
+            <text x="10" y="400" fill="#4b5085" font-family="IBM Plex Mono" font-size="8">─ ─  usa / depende de     ——  provee interfaz</text>
+          </svg>
+        </div>
+        <p class="diag-label">Diagrama de Componentes · Arquitectura técnica distribuida</p>
+      </div>
+    </div>
+
+    <!-- ══ 9 DIAGRAMA DE CLASES ══ -->
+    <div class="slide" id="slide-9">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-2 me-1"></i>PARTE 2 · Estructura</div>
+        <h2 class="slide-title">Diagrama de <span class="a2">Clases</span> · Dominio</h2>
+        <p class="body-text mb-3">Modelo de las entidades principales del dominio y sus relaciones.</p>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 860 500" xmlns="http://www.w3.org/2000/svg" style="max-width:860px;width:100%">
+            <defs>
+              <marker id="assoc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4b5085"/></marker>
+              <marker id="inh" markerWidth="12" markerHeight="12" refX="6" refY="10" orient="auto"><path d="M6,0 L0,10 L12,10 z" fill="none" stroke="#818cf8" stroke-width="1.5"/></marker>
+              <marker id="comp" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto"><path d="M6,0 L12,6 L6,12 L0,6 z" fill="#f472b6"/></marker>
+            </defs>
+
+            <!-- Elector -->
+            <rect x="10" y="10" width="155" height="90" rx="6" fill="#0d0f26" stroke="#818cf8" stroke-width="1.5"/>
+            <rect x="10" y="10" width="155" height="24" rx="6" fill="#1a1d40"/>
+            <text x="87" y="27" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="10" font-weight="700">Elector</text>
+            <line x1="10" y1="34" x2="165" y2="34" stroke="#1a1d40"/>
+            <text x="20" y="49" fill="#7b80c0" font-family="IBM Plex Mono" font-size="8">- nombre: String</text>
+            <text x="20" y="62" fill="#7b80c0" font-family="IBM Plex Mono" font-size="8">- credencial: CredencialCivica</text>
+            <line x1="10" y1="70" x2="165" y2="70" stroke="#1a1d40"/>
+            <text x="20" y="84" fill="#818cf8" font-family="IBM Plex Mono" font-size="8">+ esHabilitado(): bool</text>
+
+            <!-- CredencialCivica -->
+            <rect x="200" y="10" width="165" height="80" rx="6" fill="#0d0f26" stroke="#818cf8" stroke-width="1.5"/>
+            <rect x="200" y="10" width="165" height="24" rx="6" fill="#1a1d40"/>
+            <text x="282" y="27" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="10" font-weight="700">CredencialCivica</text>
+            <line x1="200" y1="34" x2="365" y2="34" stroke="#1a1d40"/>
+            <text x="210" y="49" fill="#7b80c0" font-family="IBM Plex Mono" font-size="8">- serie: String</text>
+            <text x="210" y="62" fill="#7b80c0" font-family="IBM Plex Mono" font-size="8">- numero: int</text>
+
+            <!-- assoc Elector → Credencial -->
+            <line x1="165" y1="50" x2="200" y2="50" stroke="#4b5085" stroke-width="1.2" marker-end="url(#assoc)"/>
+            <text x="175" y="45" fill="#4b5085" font-family="IBM Plex Mono" font-size="7">1</text>
+
+            <!-- Circuito (abstract) -->
+            <rect x="400" y="10" width="165" height="95" rx="6" fill="#0d0f26" stroke="#fbbf24" stroke-width="1.5"/>
+            <rect x="400" y="10" width="165" height="24" rx="6" fill="#1a1d40"/>
+            <text x="482" y="24" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="7.5">«abstract»</text>
+            <text x="482" y="36" text-anchor="middle" fill="#fde68a" font-family="IBM Plex Mono" font-size="10" font-weight="700">Circuito</text>
+            <line x1="400" y1="42" x2="565" y2="42" stroke="#1a1d40"/>
+            <text x="410" y="56" fill="#7b80c0" font-family="IBM Plex Mono" font-size="8">- id: int</text>
+            <text x="410" y="69" fill="#7b80c0" font-family="IBM Plex Mono" font-size="8">- maxInscriptos: int</text>
+            <line x1="400" y1="77" x2="565" y2="77" stroke="#1a1d40"/>
+            <text x="410" y="91" fill="#fbbf24" font-family="IBM Plex Mono" font-size="8">+ getMaxInscriptos(): int</text>
+
+            <!-- CircuitoUrbano -->
+            <rect x="380" y="145" width="140" height="55" rx="6" fill="#0d0f26" stroke="#34d399" stroke-width="1.2"/>
+            <rect x="380" y="145" width="140" height="20" rx="6" fill="#111330"/>
+            <text x="450" y="159" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="9" font-weight="700">CircuitoUrbano</text>
+            <text x="390" y="180" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">maxInscriptos = 400</text>
+
+            <!-- CircuitoRural -->
+            <rect x="540" y="145" width="140" height="55" rx="6" fill="#0d0f26" stroke="#34d399" stroke-width="1.2"/>
+            <rect x="540" y="145" width="140" height="20" rx="6" fill="#111330"/>
+            <text x="610" y="159" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="9" font-weight="700">CircuitoRural</text>
+            <text x="550" y="180" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">maxInscriptos = 300</text>
+
+            <!-- herencia Urbano → Circuito -->
+            <line x1="450" y1="145" x2="460" y2="107" stroke="#818cf8" stroke-width="1.3" marker-end="url(#inh)"/>
+            <!-- herencia Rural → Circuito -->
+            <line x1="610" y1="145" x2="520" y2="107" stroke="#818cf8" stroke-width="1.3" marker-end="url(#inh)"/>
+
+            <!-- ComisionReceptora -->
+            <rect x="10" y="170" width="180" height="110" rx="6" fill="#0d0f26" stroke="#f472b6" stroke-width="1.8"/>
+            <rect x="10" y="170" width="180" height="24" rx="6" fill="#1a1d40"/>
+            <text x="100" y="187" text-anchor="middle" fill="#f9a8d4" font-family="IBM Plex Mono" font-size="9" font-weight="700">ComisionReceptora</text>
+            <line x1="10" y1="194" x2="190" y2="194" stroke="#1a1d40"/>
+            <text x="20" y="208" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- estado: EstadoComision</text>
+            <text x="20" y="220" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- funcionarios: List&lt;Elector&gt;</text>
+            <text x="20" y="232" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- circuito: Circuito</text>
+            <line x1="10" y1="240" x2="190" y2="240" stroke="#1a1d40"/>
+            <text x="20" y="252" fill="#f472b6" font-family="IBM Plex Mono" font-size="7.5">+ iniciarVotacion()</text>
+            <text x="20" y="265" fill="#f472b6" font-family="IBM Plex Mono" font-size="7.5">+ registrarVoto(credencial, obs)</text>
+            <text x="20" y="278" fill="#f472b6" font-family="IBM Plex Mono" font-size="7.5">+ finalizarEscrutinio()</text>
+
+            <!-- RegistroVoto -->
+            <rect x="10" y="320" width="175" height="85" rx="6" fill="#0d0f26" stroke="#818cf8" stroke-width="1.2"/>
+            <rect x="10" y="320" width="175" height="20" rx="6" fill="#1a1d40"/>
+            <text x="97" y="334" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="9" font-weight="700">RegistroVoto</text>
+            <line x1="10" y1="340" x2="185" y2="340" stroke="#1a1d40"/>
+            <text x="20" y="354" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- credencial: CredencialCivica</text>
+            <text x="20" y="367" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- observado: boolean</text>
+            <text x="20" y="380" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- timestamp: DateTime</text>
+
+            <!-- composicion Comision → RegistroVoto -->
+            <line x1="100" y1="320" x2="100" y2="280" stroke="#f472b6" stroke-width="1.3" marker-start="url(#comp)"/>
+            <text x="108" y="303" fill="#f472b6" font-family="IBM Plex Mono" font-size="7.5">0..*</text>
+
+            <!-- HojaVotacion (abstract) -->
+            <rect x="400" y="230" width="175" height="100" rx="6" fill="#0d0f26" stroke="#fbbf24" stroke-width="1.5"/>
+            <rect x="400" y="230" width="175" height="24" rx="6" fill="#1a1d40"/>
+            <text x="487" y="244" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="7.5">«abstract»</text>
+            <text x="487" y="255" text-anchor="middle" fill="#fde68a" font-family="IBM Plex Mono" font-size="9" font-weight="700">HojaVotacion</text>
+            <line x1="400" y1="260" x2="575" y2="260" stroke="#1a1d40"/>
+            <text x="410" y="274" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- lema: String</text>
+            <text x="410" y="287" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- numero: int</text>
+            <text x="410" y="300" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- candidatos: List&lt;Candidato&gt;</text>
+            <line x1="400" y1="308" x2="575" y2="308" stroke="#1a1d40"/>
+            <text x="410" y="322" fill="#fbbf24" font-family="IBM Plex Mono" font-size="7.5">+ esDepartamental(): bool</text>
+
+            <!-- HojaDepartamental -->
+            <rect x="380" y="375" width="155" height="50" rx="6" fill="#0d0f26" stroke="#34d399" stroke-width="1.2"/>
+            <rect x="380" y="375" width="155" height="20" rx="6" fill="#111330"/>
+            <text x="457" y="389" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">HojaDepartamental</text>
+            <text x="390" y="413" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">departamento: String</text>
+
+            <!-- HojaMunicipal -->
+            <rect x="560" y="375" width="145" height="50" rx="6" fill="#0d0f26" stroke="#34d399" stroke-width="1.2"/>
+            <rect x="560" y="375" width="145" height="20" rx="6" fill="#111330"/>
+            <text x="632" y="389" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">HojaMunicipal</text>
+            <text x="570" y="413" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">municipio: String</text>
+
+            <!-- herencia Dpto → Hoja -->
+            <line x1="457" y1="375" x2="465" y2="332" stroke="#818cf8" stroke-width="1.2" marker-end="url(#inh)"/>
+            <!-- herencia Mun → Hoja -->
+            <line x1="632" y1="375" x2="510" y2="332" stroke="#818cf8" stroke-width="1.2" marker-end="url(#inh)"/>
+
+            <!-- Candidato -->
+            <rect x="710" y="230" width="140" height="80" rx="6" fill="#0d0f26" stroke="#818cf8" stroke-width="1.2"/>
+            <rect x="710" y="230" width="140" height="20" rx="6" fill="#1a1d40"/>
+            <text x="780" y="244" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="9" font-weight="700">Candidato</text>
+            <line x1="710" y1="250" x2="850" y2="250" stroke="#1a1d40"/>
+            <text x="720" y="264" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- nombre: String</text>
+            <text x="720" y="277" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- esTitular: boolean</text>
+            <text x="720" y="290" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">- numSuplente: int</text>
+
+            <!-- Hoja → Candidato -->
+            <line x1="575" y1="280" x2="710" y2="270" stroke="#4b5085" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#assoc)"/>
+            <text x="640" y="265" fill="#4b5085" font-family="IBM Plex Mono" font-size="7.5">1..*</text>
+
+            <!-- Comision → Circuito -->
+            <line x1="190" y1="200" x2="400" y2="60" stroke="#4b5085" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#assoc)"/>
+            <text x="285" y="115" fill="#4b5085" font-family="IBM Plex Mono" font-size="7.5" text-anchor="middle">1</text>
+          </svg>
+        </div>
+        <p class="diag-label">Diagrama de Clases · Modelo de dominio simplificado</p>
+      </div>
+    </div>
+
+    <!-- ══ 10 DIAGRAMA CASOS DE USO ══ -->
+    <div class="slide" id="slide-10">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-2 me-1"></i>PARTE 2 · Comportamiento</div>
+        <h2 class="slide-title">Diagrama de <span class="a3">Casos de Uso</span></h2>
+        <p class="body-text mb-3">Actores y funcionalidades de los dos clientes del sistema.</p>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg" style="max-width:820px;width:100%">
+            <defs>
+              <marker id="ua" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4b5085"/></marker>
+              <marker id="uag" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#34d399"/></marker>
+            </defs>
+            <!-- System boundary: Tablet -->
+            <rect x="120" y="10" width="370" height="430" rx="10" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="6,4"/>
+            <text x="305" y="30" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="10" font-weight="700">«AppComision» – Tablet</text>
+
+            <!-- System boundary: Web -->
+            <rect x="520" y="10" width="270" height="430" rx="10" fill="none" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="6,4"/>
+            <text x="655" y="30" text-anchor="middle" fill="#f472b6" font-family="IBM Plex Mono" font-size="10" font-weight="700">«SitioPublico» – Web</text>
+
+            <!-- Use cases Tablet -->
+            <ellipse cx="305" cy="68" rx="85" ry="16" fill="#111330" stroke="#818cf8" stroke-width="1.2"/>
+            <text x="305" y="72" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="8.5">Autenticar integrantes</text>
+
+            <ellipse cx="305" cy="112" rx="80" ry="16" fill="#111330" stroke="#818cf8" stroke-width="1.2"/>
+            <text x="305" y="116" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="8.5">Iniciar votación</text>
+
+            <ellipse cx="305" cy="158" rx="85" ry="16" fill="#111330" stroke="#818cf8" stroke-width="1.2"/>
+            <text x="305" y="162" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="8.5">Buscar elector</text>
+
+            <ellipse cx="305" cy="204" rx="85" ry="16" fill="#111330" stroke="#818cf8" stroke-width="1.2"/>
+            <text x="305" y="208" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="8.5">Registrar voto (normal/obs)</text>
+
+            <ellipse cx="305" cy="252" rx="85" ry="16" fill="#111330" stroke="#818cf8" stroke-width="1.2"/>
+            <text x="305" y="256" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="8.5">Finalizar votación</text>
+
+            <ellipse cx="305" cy="300" rx="85" ry="16" fill="#111330" stroke="#818cf8" stroke-width="1.2"/>
+            <text x="305" y="304" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="8.5">Registrar escrutinio</text>
+
+            <ellipse cx="305" cy="348" rx="85" ry="16" fill="#111330" stroke="#818cf8" stroke-width="1.2"/>
+            <text x="305" y="352" text-anchor="middle" fill="#e0e2ff" font-family="IBM Plex Mono" font-size="8.5">Finalizar escrutinio</text>
+
+            <!-- Use cases Web -->
+            <ellipse cx="655" cy="80" rx="85" ry="16" fill="#111330" stroke="#f472b6" stroke-width="1.2"/>
+            <text x="655" y="84" text-anchor="middle" fill="#fce7f3" font-family="IBM Plex Mono" font-size="8.5">Ver estado votación</text>
+
+            <ellipse cx="655" cy="148" rx="85" ry="16" fill="#111330" stroke="#f472b6" stroke-width="1.2"/>
+            <text x="655" y="152" text-anchor="middle" fill="#fce7f3" font-family="IBM Plex Mono" font-size="8.5">Ver resultados intendente</text>
+
+            <ellipse cx="655" cy="215" rx="85" ry="16" fill="#111330" stroke="#f472b6" stroke-width="1.2"/>
+            <text x="655" y="219" text-anchor="middle" fill="#fce7f3" font-family="IBM Plex Mono" font-size="8.5">Ver resultados ediles</text>
+
+            <ellipse cx="655" cy="283" rx="85" ry="16" fill="#111330" stroke="#f472b6" stroke-width="1.2"/>
+            <text x="655" y="287" text-anchor="middle" fill="#fce7f3" font-family="IBM Plex Mono" font-size="8.5">Ver resultados alcaldes</text>
+
+            <ellipse cx="655" cy="350" rx="85" ry="16" fill="#111330" stroke="#f472b6" stroke-width="1.2"/>
+            <text x="655" y="354" text-anchor="middle" fill="#fce7f3" font-family="IBM Plex Mono" font-size="8.5">Ver resultados concejales</text>
+
+            <!-- Actor: MiembroComision -->
+            <circle cx="55" cy="200" r="14" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+            <line x1="55" y1="214" x2="55" y2="248" stroke="#818cf8" stroke-width="1.5"/>
+            <line x1="30" y1="228" x2="80" y2="228" stroke="#818cf8" stroke-width="1.5"/>
+            <line x1="55" y1="248" x2="35" y2="270" stroke="#818cf8" stroke-width="1.5"/>
+            <line x1="55" y1="248" x2="75" y2="270" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="55" y="285" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">Miembro</text>
+            <text x="55" y="296" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">Comision</text>
+            <!-- arrows to tablet uses -->
+            <line x1="70" y1="195" x2="220" y2="120" stroke="#818cf8" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="70" y1="200" x2="220" y2="160" stroke="#818cf8" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="70" y1="205" x2="220" y2="200" stroke="#818cf8" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="70" y1="210" x2="220" y2="250" stroke="#818cf8" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="70" y1="215" x2="220" y2="300" stroke="#818cf8" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="68" y1="215" x2="220" y2="348" stroke="#818cf8" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="68" y1="186" x2="220" y2="68" stroke="#818cf8" stroke-width="1" marker-end="url(#ua)"/>
+
+            <!-- Actor: Ciudadano -->
+            <circle cx="790" cy="215" r="14" fill="none" stroke="#f472b6" stroke-width="1.5"/>
+            <line x1="790" y1="229" x2="790" y2="263" stroke="#f472b6" stroke-width="1.5"/>
+            <line x1="765" y1="243" x2="815" y2="243" stroke="#f472b6" stroke-width="1.5"/>
+            <line x1="790" y1="263" x2="770" y2="285" stroke="#f472b6" stroke-width="1.5"/>
+            <line x1="790" y1="263" x2="810" y2="285" stroke="#f472b6" stroke-width="1.5"/>
+            <text x="790" y="300" text-anchor="middle" fill="#f9a8d4" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">Ciudadano</text>
+            <line x1="776" y1="210" x2="740" y2="86" stroke="#f472b6" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="776" y1="213" x2="740" y2="153" stroke="#f472b6" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="776" y1="216" x2="740" y2="220" stroke="#f472b6" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="776" y1="220" x2="740" y2="287" stroke="#f472b6" stroke-width="1" marker-end="url(#ua)"/>
+            <line x1="776" y1="223" x2="740" y2="354" stroke="#f472b6" stroke-width="1" marker-end="url(#ua)"/>
+
+            <!-- Actor: CorteElectoral (sistema) -->
+            <rect x="25" y="390" width="60" height="40" rx="4" fill="none" stroke="#fbbf24" stroke-width="1.3"/>
+            <text x="55" y="406" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="7">«system»</text>
+            <text x="55" y="420" text-anchor="middle" fill="#fde68a" font-family="IBM Plex Mono" font-size="7">CorteElectoral</text>
+            <line x1="85" y1="410" x2="220" y2="68" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ua)"/>
+          </svg>
+        </div>
+        <p class="diag-label">Diagrama de Casos de Uso · Actores y funcionalidades de cada cliente</p>
+      </div>
+    </div>
+
+    <!-- ══ 11 DIAGRAMA DE ESTADOS ══ -->
+    <div class="slide" id="slide-11">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-2 me-1"></i>PARTE 2 · Comportamiento</div>
+        <h2 class="slide-title">Diagrama de <span class="a1">Estados</span> · ComisiónReceptora</h2>
+        <p class="body-text mb-3">Modela el ciclo de vida de una comisión receptora de votos, con las transiciones y las funcionalidades habilitadas/inhabilitadas en cada fase.</p>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" style="max-width:820px;width:100%">
+            <defs>
+              <marker id="sta" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#818cf8"/></marker>
+            </defs>
+
+            <!-- Initial -->
+            <circle cx="40" cy="200" r="12" fill="#818cf8"/>
+            <line x1="52" y1="200" x2="90" y2="200" stroke="#818cf8" stroke-width="1.5" marker-end="url(#sta)"/>
+
+            <!-- Estado 1: Pendiente Validación -->
+            <rect x="90" y="160" width="135" height="80" rx="8" fill="#0d0f26" stroke="#fbbf24" stroke-width="1.5"/>
+            <rect x="90" y="160" width="135" height="22" rx="8" fill="#1a1d40"/>
+            <text x="157" y="175" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">PendienteValidacion</text>
+            <text x="157" y="193" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">entry: cargarPlanCircuital()</text>
+            <text x="157" y="206" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">do: validarIntegrantesLDAP()</text>
+            <text x="157" y="219" text-anchor="middle" fill="#f87171" font-family="IBM Plex Mono" font-size="7">🔒 funciones bloqueadas</text>
+            <text x="157" y="232" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">(hasta validar todos)</text>
+
+            <!-- transition 1→2 -->
+            <line x1="225" y1="200" x2="285" y2="200" stroke="#818cf8" stroke-width="1.5" marker-end="url(#sta)"/>
+            <text x="255" y="193" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="7.5">todosValidados</text>
+
+            <!-- Estado 2: Habilitada -->
+            <rect x="285" y="160" width="130" height="80" rx="8" fill="#0d0f26" stroke="#34d399" stroke-width="1.5"/>
+            <rect x="285" y="160" width="130" height="22" rx="8" fill="#111330"/>
+            <text x="350" y="175" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">Habilitada</text>
+            <text x="350" y="193" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7.5">entry: habilitarInicio()</text>
+            <text x="350" y="206" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="7">✓ solo: iniciarVotacion</text>
+            <text x="350" y="220" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">  buscarElector</text>
+
+            <!-- transition 2→3 -->
+            <line x1="415" y1="200" x2="475" y2="200" stroke="#818cf8" stroke-width="1.5" marker-end="url(#sta)"/>
+            <text x="445" y="193" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="7.5">iniciarVotacion()</text>
+
+            <!-- Estado 3: VotacionEnProgreso -->
+            <rect x="475" y="145" width="145" height="110" rx="8" fill="#0d0f26" stroke="#818cf8" stroke-width="2"/>
+            <rect x="475" y="145" width="145" height="22" rx="8" fill="#1a1d40"/>
+            <text x="547" y="160" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">VotacionEnProgreso</text>
+            <text x="547" y="178" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="7">✓ registrarVoto()</text>
+            <text x="547" y="190" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="7">✓ buscarElector()</text>
+            <text x="547" y="202" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="7">✓ finalizarVotacion()</text>
+            <text x="547" y="217" text-anchor="middle" fill="#f87171" font-family="IBM Plex Mono" font-size="7">🔒 escrutinio bloqueado</text>
+            <text x="547" y="229" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="7">• verifica dups credencial</text>
+
+            <!-- transition 3→4 -->
+            <line x1="547" y1="255" x2="547" y2="300" stroke="#818cf8" stroke-width="1.5" marker-end="url(#sta)"/>
+            <text x="570" y="282" fill="#818cf8" font-family="IBM Plex Mono" font-size="7.5">finalizarVotacion()</text>
+
+            <!-- Estado 4: EscrutinioEnProgreso -->
+            <rect x="460" y="300" width="175" height="80" rx="8" fill="#0d0f26" stroke="#f472b6" stroke-width="1.5"/>
+            <rect x="460" y="300" width="175" height="22" rx="8" fill="#1a1d40"/>
+            <text x="547" y="316" text-anchor="middle" fill="#f472b6" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">EscrutinioEnProgreso</text>
+            <text x="547" y="334" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="7">✓ registrarVotoHoja()</text>
+            <text x="547" y="347" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="7">✓ registrarAnulado()</text>
+            <text x="547" y="360" text-anchor="middle" fill="#f87171" font-family="IBM Plex Mono" font-size="7">🔒 registro votos bloqueado</text>
+            <text x="547" y="373" text-anchor="middle" fill="#fbbf24" font-family="IBM Plex Mono" font-size="7">• verifica conteo == registrados</text>
+
+            <!-- transition 4→5 -->
+            <line x1="460" y1="340" x2="345" y2="340" stroke="#818cf8" stroke-width="1.5" marker-end="url(#sta)"/>
+            <text x="400" y="333" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="7.5">finalizarEscrutinio()</text>
+
+            <!-- Estado 5: Cerrada -->
+            <rect x="200" y="300" width="130" height="70" rx="8" fill="#0d0f26" stroke="#4b5085" stroke-width="1.5"/>
+            <rect x="200" y="300" width="130" height="22" rx="8" fill="#1a1d40"/>
+            <text x="265" y="316" text-anchor="middle" fill="#9ea3e0" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">Cerrada</text>
+            <text x="265" y="334" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">entry: enviarResultados()</text>
+            <text x="265" y="347" text-anchor="middle" fill="#f87171" font-family="IBM Plex Mono" font-size="7">🔒 TODO inhabilitado</text>
+            <text x="265" y="360" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">do: sincronizarBackend()</text>
+
+            <!-- Final -->
+            <circle cx="175" cy="335" r="10" fill="none" stroke="#818cf8" stroke-width="2"/>
+            <circle cx="175" cy="335" r="6" fill="#818cf8"/>
+            <line x1="200" y1="335" x2="186" y2="335" stroke="#818cf8" stroke-width="1.5"/>
+
+            <!-- Web public note -->
+            <rect x="690" y="300" width="120" height="70" rx="6" fill="rgba(244,114,182,.07)" stroke="rgba(244,114,182,.35)" stroke-width="1"/>
+            <text x="750" y="318" text-anchor="middle" fill="#f472b6" font-family="IBM Plex Mono" font-size="7.5" font-weight="700">Sitio Público</text>
+            <text x="750" y="332" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">refleja el estado</text>
+            <text x="750" y="344" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">de la comision</text>
+            <text x="750" y="356" text-anchor="middle" fill="#7b80c0" font-family="IBM Plex Mono" font-size="7">en tiempo real</text>
+            <line x1="635" y1="340" x2="690" y2="335" stroke="#f472b6" stroke-width="1" stroke-dasharray="3,3"/>
+          </svg>
+        </div>
+        <p class="diag-label">Diagrama de Estados · Ciclo de vida de ComisionReceptora</p>
+      </div>
+    </div>
+
+    <!-- ══ 12 DIAGRAMA DE SECUENCIA ══ -->
+    <div class="slide" id="slide-12">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-2 me-1"></i>PARTE 2 · Comportamiento (bonus)</div>
+        <h2 class="slide-title">Diagrama de <span class="a2">Secuencia</span> · Registrar Voto</h2>
+        <p class="body-text mb-3">Flujo de mensajes para el caso de uso "Registrar voto" en la app tablet, incluyendo validaciones clave.</p>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" style="max-width:820px;width:100%">
+            <defs>
+              <marker id="seq" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#818cf8"/></marker>
+              <marker id="seqr" markerWidth="7" markerHeight="7" refX="2" refY="3" orient="auto"><path d="M7,0 L7,6 L0,3 z" fill="#34d399"/></marker>
+            </defs>
+
+            <!-- Lifeline headers -->
+            <rect x="25" y="10" width="100" height="32" rx="5" fill="#1a1d40" stroke="#818cf8" stroke-width="1.3"/>
+            <text x="75" y="31" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">MiembroC.</text>
+
+            <rect x="175" y="10" width="100" height="32" rx="5" fill="#1a1d40" stroke="#818cf8" stroke-width="1.3"/>
+            <text x="225" y="31" text-anchor="middle" fill="#c7d2fe" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">AppTablet</text>
+
+            <rect x="330" y="10" width="100" height="32" rx="5" fill="#1a1d40" stroke="#fbbf24" stroke-width="1.3"/>
+            <text x="380" y="31" text-anchor="middle" fill="#fde68a" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">API Gateway</text>
+
+            <rect x="480" y="10" width="110" height="32" rx="5" fill="#1a1d40" stroke="#34d399" stroke-width="1.3"/>
+            <text x="535" y="31" text-anchor="middle" fill="#a7f3d0" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">BackendSvc</text>
+
+            <rect x="635" y="10" width="90" height="32" rx="5" fill="#1a1d40" stroke="#f472b6" stroke-width="1.3"/>
+            <text x="680" y="31" text-anchor="middle" fill="#f9a8d4" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">PostgreSQL</text>
+
+            <!-- Lifelines -->
+            <line x1="75" y1="42" x2="75" y2="395" stroke="#818cf8" stroke-width="1" stroke-dasharray="4,4" opacity=".4"/>
+            <line x1="225" y1="42" x2="225" y2="395" stroke="#818cf8" stroke-width="1" stroke-dasharray="4,4" opacity=".4"/>
+            <line x1="380" y1="42" x2="380" y2="395" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4" opacity=".4"/>
+            <line x1="535" y1="42" x2="535" y2="395" stroke="#34d399" stroke-width="1" stroke-dasharray="4,4" opacity=".4"/>
+            <line x1="680" y1="42" x2="680" y2="395" stroke="#f472b6" stroke-width="1" stroke-dasharray="4,4" opacity=".4"/>
+
+            <!-- Msg 1 -->
+            <line x1="75" y1="68" x2="218" y2="68" stroke="#818cf8" stroke-width="1.3" marker-end="url(#seq)"/>
+            <text x="145" y="62" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="8">1: ingresarCredencial(serie, num)</text>
+
+            <!-- Msg 2 -->
+            <line x1="225" y1="95" x2="373" y2="95" stroke="#818cf8" stroke-width="1.3" marker-end="url(#seq)"/>
+            <text x="298" y="89" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="8">2: POST /votos {credencial, obs}</text>
+
+            <!-- Msg 3 -->
+            <line x1="380" y1="120" x2="528" y2="120" stroke="#818cf8" stroke-width="1.3" marker-end="url(#seq)"/>
+            <text x="453" y="114" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="8">3: registrarVoto(dto)</text>
+
+            <!-- Msg 4 DB query -->
+            <line x1="535" y1="148" x2="673" y2="148" stroke="#818cf8" stroke-width="1.3" marker-end="url(#seq)"/>
+            <text x="603" y="142" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="7.5">4: SELECT (ya votó?)</text>
+
+            <!-- Return 4 -->
+            <line x1="673" y1="170" x2="542" y2="170" stroke="#34d399" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#seqr)"/>
+            <text x="607" y="164" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="7.5">4r: false (no votó)</text>
+
+            <!-- opt fragment -->
+            <rect x="145" y="182" width="560" height="70" rx="4" fill="rgba(251,191,36,.04)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="5,3"/>
+            <text x="155" y="196" fill="#fbbf24" font-family="IBM Plex Mono" font-size="7.5" font-weight="700">alt [elector habilitado en circuito]</text>
+
+            <!-- Msg 5 -->
+            <line x1="535" y1="207" x2="673" y2="207" stroke="#818cf8" stroke-width="1.3" marker-end="url(#seq)"/>
+            <text x="603" y="201" text-anchor="middle" fill="#818cf8" font-family="IBM Plex Mono" font-size="7.5">5: INSERT RegistroVoto</text>
+
+            <!-- Return 5 -->
+            <line x1="673" y1="228" x2="542" y2="228" stroke="#34d399" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#seqr)"/>
+            <text x="607" y="222" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="7.5">5r: OK</text>
+
+            <!-- Return 3 -->
+            <line x1="528" y1="260" x2="387" y2="260" stroke="#34d399" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#seqr)"/>
+            <text x="453" y="254" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="7.5">6r: 201 Created {registroId}</text>
+
+            <!-- Return 2 -->
+            <line x1="373" y1="283" x2="232" y2="283" stroke="#34d399" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#seqr)"/>
+            <text x="303" y="277" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="7.5">7r: {ok: true, observado: bool}</text>
+
+            <!-- Return 1 -->
+            <line x1="218" y1="310" x2="82" y2="310" stroke="#34d399" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#seqr)"/>
+            <text x="150" y="304" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="7.5">8r: mostrar confirmación</text>
+
+            <!-- alt else -->
+            <line x1="145" y1="252" x2="705" y2="252" stroke="#fbbf24" stroke-width=".8" stroke-dasharray="3,3"/>
+            <text x="155" y="266" fill="#4b5085" font-family="IBM Plex Mono" font-size="7">[else] → 409 Conflict (ya votó / no habilitado)</text>
+          </svg>
+        </div>
+        <p class="diag-label">Diagrama de Secuencia · Caso de uso: Registrar Voto</p>
+      </div>
+    </div>
+
+    <!-- ══ 13 DISCUSIÓN SOLUCIÓN ══ -->
+    <div class="slide" id="slide-13">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-2 me-1"></i>PARTE 2 · Justificaciones</div>
+        <h2 class="slide-title">¿Por qué <span class="a1">estos diagramas</span>?</h2>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="glass-card h-100">
+              <h6 class="a1 mb-2"><i class="fa-solid fa-puzzle-piece me-2"></i>Componentes</h6>
+              <p class="body-text" style="font-size:.82rem;">El enunciado describe explícitamente una arquitectura distribuida con tecnologías heterogéneas. Necesitamos mostrar cómo se comunican Android, REST, .NET Core, Nginx, PostgreSQL, LDAP y la API de la Corte Electoral. <span class="a1">Diagrama de estructura</span> ideal para esto.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card h-100">
+              <h6 class="a2 mb-2"><i class="fa-solid fa-table-cells me-2"></i>Clases</h6>
+              <p class="body-text" style="font-size:.82rem;">El dominio es rico: electores, circuitos con tipos y límites distintos, hojas de votación de dos categorías, candidatos con roles. Las reglas de negocio (voto observado, escrutinio) se modelan con atributos y métodos. <span class="a2">Diagrama de estructura</span> para el dominio.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card h-100">
+              <h6 class="a3 mb-2"><i class="fa-solid fa-user-group me-2"></i>Casos de Uso</h6>
+              <p class="body-text" style="font-size:.82rem;">Hay tres actores distintos (comisión, ciudadano, sistema Corte Electoral) y dos sistemas con responsabilidades muy diferentes. El <span class="a3">diagrama de comportamiento</span> aclara el alcance de cada cliente sin entrar en detalles de implementación.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="glass-card h-100">
+              <h6 style="color:var(--success)" class="mb-2"><i class="fa-solid fa-arrows-rotate me-2"></i>Estados</h6>
+              <p class="body-text" style="font-size:.82rem;">El enunciado describe explícitamente fases con habilitaciones/inhabilitaciones: antes de validar, durante votación, durante escrutinio, cerrada. El <span style="color:var(--success)">diagrama de estados</span> es exactamente para esto: modelar el ciclo de vida de un objeto que cambia de comportamiento según su estado.</p>
+            </div>
+          </div>
+        </div>
+        <div class="hl-box mt-3">
+          <i class="fa-solid fa-lightbulb me-2" style="color:var(--accent3)"></i>
+          El diagrama de <strong>secuencia</strong> de "Registrar Voto" es un bonus que detalla el flujo más crítico del sistema, incluyendo las validaciones (duplicado, habilitación) y los errores posibles.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 14 PARTE 3 ══ -->
+    <div class="slide" id="slide-14">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="part-label"><i class="fa-solid fa-3 me-1"></i>PARTE 3</div>
+        <h2 class="slide-title">Guía para la <span class="a2">disertación</span> de 7 minutos</h2>
+        <p class="body-text mb-3">Estructura sugerida para la presentación ante el grupo. Cada segmento debe ser conciso y enfocado.</p>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <div class="req-item"><div class="req-num" style="background:#818cf8">1'</div>
+              <div><strong>Introducción y contexto</strong><br><span class="body-text">Enunciar brevemente el problema. Dos clientes, arquitectura distribuida, dominio electoral.</span></div>
+            </div>
+            <div class="req-item"><div class="req-num" style="background:#818cf8">1'</div>
+              <div><strong>Requerimientos adicionales</strong><br><span class="body-text">Presentar los más relevantes: offline, rol presidente, actualización en tiempo real del sitio web.</span></div>
+            </div>
+            <div class="req-item"><div class="req-num amber">1.5'</div>
+              <div><strong>Diagrama de Componentes</strong><br><span class="body-text">Recorrer la arquitectura: tablet → Nginx → .NET Core → PG. LDAP y Corte Electoral como externos.</span></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="req-item"><div class="req-num amber">1.5'</div>
+              <div><strong>Diagrama de Clases</strong><br><span class="body-text">Destacar la jerarquía Circuito/HojaVotacion y el rol de RegistroVoto. Comentar la regla de voto observado.</span></div>
+            </div>
+            <div class="req-item"><div class="req-num pink">1'</div>
+              <div><strong>Diagrama de Estados</strong><br><span class="body-text">Recorrer los 5 estados. Énfasis en qué se habilita/inhabilita en cada transición.</span></div>
+            </div>
+            <div class="req-item"><div class="req-num pink">1'</div>
+              <div><strong>Cierre y decisiones de diseño</strong><br><span class="body-text">Justificar por qué se eligió cada diagrama. Mencionar trade-offs y requerimientos adicionales pendientes.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="warn-box mt-3">
+          <i class="fa-solid fa-clock me-2" style="color:var(--accent3)"></i>
+          <strong>Tip:</strong> Practicar el recorrido de cada diagrama con puntero. No leer el diagrama: <em>explicarlo</em>. Anticipar posibles preguntas sobre las reglas de voto observado y la sincronización offline.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 15 QUIZ ══ -->
+    <div class="slide" id="slide-15">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="slide-tag"><i class="fa-solid fa-clipboard-question me-1"></i>Evaluación</div>
+        <h2 class="slide-title">Cuestionario <span class="a1">UT3 TFU</span></h2>
+        <p class="body-text mb-4">Verificá tu comprensión del ejercicio y la solución propuesta.</p>
+
+        <div id="quiz-section">
+          <div class="glass-card mb-3">
+            <div class="q-count">Pregunta <span id="q-num">1</span> de 8</div>
+            <div class="q-text" id="q-text"></div>
+            <div id="q-options"></div>
+            <div class="qfeedback" id="q-feedback"></div>
+            <div class="text-end mt-3">
+              <button class="nav-btn primary" id="btn-next-q" onclick="nextQuestion()" style="display:none">
+                Siguiente <i class="fa-solid fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="result-section">
+          <div class="glass-card text-center mb-3">
+            <h4 class="mb-3">Resultado final</h4>
+            <div class="score-ring mb-3">
+              <canvas id="donut-chart" width="140" height="140"></canvas>
+              <div class="score-inner">
+                <div class="score-num" id="score-display">0/8</div>
+                <div class="score-lbl">correctas</div>
+              </div>
+            </div>
+            <div id="result-msg" class="mb-3"></div>
+            <div class="mb-3"><canvas id="bar-chart" height="80"></canvas></div>
+            <button class="nav-btn primary mt-2" onclick="restartQuiz()">
+              <i class="fa-solid fa-rotate-left me-2"></i>Reiniciar cuestionario
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /slide-area -->
+
+  <footer>
+    <button class="nav-btn" id="btn-prev" onclick="changeSlide(-1)" disabled>
+      <i class="fa-solid fa-arrow-left"></i> Anterior
+    </button>
+    <div class="d-flex gap-1 flex-wrap justify-content-center" id="dot-nav"></div>
+    <button class="nav-btn primary" id="btn-next" onclick="changeSlide(1)">
+      Siguiente <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </footer>
+</div>
+
+<script>
+const TOTAL = 15;
+let cur = 1;
+
+const quizData = [
+  {
+    q: "¿Cuántos circuitos urbanos puede tener una comisión receptora de votos asignados como máximo?",
+    opts: ["400 inscriptos en total", "Uno: cada circuito tiene asignada una sola comisión y viceversa.", "Varios, según el tamaño del distrito.", "Depende de si es urbano o rural."],
+    correct: 1,
+    ok: "Correcto. La relación es biyectiva: cada circuito tiene exactamente una comisión receptora y cada comisión corresponde a un circuito.",
+    ko: "Incorrecto. Cada circuito tiene asignada una sola comisión receptora de votos y viceversa."
+  },
+  {
+    q: "¿Cuándo puede un funcionario público de la comisión votar en esa comisión, y cómo se registra?",
+    opts: [
+      "Siempre puede votar, como cualquier elector.",
+      "Solo si su credencial corresponde al mismo departamento; el voto es observado.",
+      "Nunca puede votar en la comisión donde trabaja.",
+      "Solo si el circuito es rural."
+    ],
+    correct: 1,
+    ok: "Correcto. Los funcionarios votan observado si su credencial es del mismo departamento, en un sobre azul con registro en planilla aparte.",
+    ko: "Incorrecto. Los funcionarios solo pueden votar si su credencial es del mismo departamento, y su voto es siempre observado."
+  },
+  {
+    q: "¿Qué diferencia al diagrama de estados del diagrama de casos de uso en cuanto a su propósito?",
+    opts: [
+      "El diagrama de estados modela actores; el de casos de uso modela fases.",
+      "El diagrama de estados muestra el ciclo de vida y transiciones de un objeto; el de casos de uso muestra actores y funcionalidades.",
+      "Son equivalentes, solo cambia la notación.",
+      "El de estados se usa para datos; el de casos de uso para procesos."
+    ],
+    correct: 1,
+    ok: "Correcto. El diagrama de estados modela cómo cambia el estado interno de un objeto (ComisiónReceptora); el de casos de uso modela qué puede hacer cada actor.",
+    ko: "Incorrecto. El diagrama de estados modela el ciclo de vida y transiciones de un objeto; el de casos de uso identifica actores y las funcionalidades que les corresponden."
+  },
+  {
+    q: "¿Por qué se modela HojaVotacion como clase abstracta en el diagrama de clases?",
+    opts: [
+      "Porque no se puede instanciar en C#.",
+      "Porque tiene comportamiento común (lema, numero, candidatos) pero dos subtipos con diferencias: departamental y municipal.",
+      "Porque el enunciado dice que no se puede modificar.",
+      "Porque hereda de SalesBaseItem."
+    ],
+    correct: 1,
+    ok: "Correcto. Ambas hojas comparten lema, número y candidatos, pero tienen especificidades distintas (candidatos a intendente vs. alcalde). La abstracción evita duplicar código.",
+    ko: "Incorrecto. HojaVotacion es abstracta porque hay comportamiento común entre hojas departamentales y municipales, pero también diferencias significativas que justifican subclases."
+  },
+  {
+    q: "¿Cuál es el rol del componente Nginx en la arquitectura del sistema?",
+    opts: [
+      "Base de datos de alta disponibilidad.",
+      "Cliente Android de la comisión.",
+      "Balanceador de carga y API gateway entre los clientes y los servidores .NET Core.",
+      "Servidor LDAP para autenticación."
+    ],
+    correct: 2,
+    ok: "Correcto. Nginx actúa como punto de entrada único (API gateway) que distribuye la carga entre los múltiples servidores Linux con .NET Core.",
+    ko: "Incorrecto. Nginx cumple el rol de balanceador de carga y API gateway frente a los servidores .NET Core."
+  },
+  {
+    q: "¿Qué requerimiento adicional es fundamental por las condiciones del día de elecciones?",
+    opts: [
+      "Soporte para múltiples idiomas.",
+      "Modo offline en la app tablet con sincronización posterior, ante posibles fallas de conectividad.",
+      "Integración con redes sociales para publicar resultados.",
+      "Autenticación biométrica de los electores."
+    ],
+    correct: 1,
+    ok: "Correcto. En zonas rurales o con conectividad inestable, la app tablet debe poder operar sin red y sincronizar cuando vuelva la conexión.",
+    ko: "Incorrecto. El requerimiento crítico es el modo offline con sincronización posterior, dado que los circuitos rurales pueden tener conectividad inestable."
+  },
+  {
+    q: "En el diagrama de secuencia de 'Registrar Voto', ¿qué ocurre si el elector ya votó anteriormente?",
+    opts: [
+      "Se registra igual como segundo voto.",
+      "Se devuelve un error 409 Conflict y no se registra el voto.",
+      "Se genera automáticamente un voto observado.",
+      "El sistema redirige al elector a otro circuito."
+    ],
+    correct: 1,
+    ok: "Correcto. El backend verifica si ya existe un RegistroVoto para esa credencial y devuelve 409 Conflict, evitando el doble voto.",
+    ko: "Incorrecto. El sistema verifica en base de datos si la credencial ya votó y devuelve un error 409 Conflict si es así."
+  },
+  {
+    q: "¿Qué tipo de diagrama UML modela mejor la arquitectura técnica distribuida del sistema?",
+    opts: [
+      "Diagrama de clases.",
+      "Diagrama de secuencia.",
+      "Diagrama de componentes.",
+      "Diagrama de casos de uso."
+    ],
+    correct: 2,
+    ok: "Correcto. El diagrama de componentes muestra las unidades desplegables del sistema y sus interfaces de comunicación, ideal para arquitecturas distribuidas.",
+    ko: "Incorrecto. El diagrama de componentes es el más apropiado para modelar la arquitectura técnica: componentes desplegables y sus interfaces."
+  }
+];
+
+let qCur = 0, qScore = 0, qAnswered = [];
+let donutChart = null, barChart = null;
+
+function changeSlide(dir) {
+  document.querySelectorAll('.slide')[cur-1].classList.remove('active');
+  cur = Math.max(1, Math.min(TOTAL, cur + dir));
+  const s = document.querySelectorAll('.slide')[cur-1];
+  s.classList.add('active');
+  const a = s.querySelector('.animate__animated');
+  if (a) { a.classList.remove('animate__fadeInRight','animate__fadeIn'); void a.offsetWidth; a.classList.add(cur===1?'animate__fadeIn':'animate__fadeInRight'); }
+  document.getElementById('cur-slide').textContent = cur;
+  document.getElementById('progress-bar').style.width = ((cur/TOTAL)*100)+'%';
+  document.getElementById('btn-prev').disabled = cur===1;
+  document.getElementById('btn-next').disabled = cur===TOTAL;
+  updateDots();
+  document.getElementById('slide-area').scrollTop = 0;
+}
+
+function updateDots() {
+  const n = document.getElementById('dot-nav'); n.innerHTML = '';
+  for (let i=1;i<=TOTAL;i++) {
+    const d = document.createElement('div');
+    const active = i===cur, visited = i<cur;
+    d.style.cssText = `width:${active?'18px':'6px'};height:6px;border-radius:99px;background:${active?'var(--accent)':visited?'rgba(129,140,248,.3)':'#1a1d40'};border:1px solid ${active||visited?'var(--accent)':'#2a2d55'};transition:all .3s;cursor:pointer;flex-shrink:0`;
+    d.onclick = ()=>{ const diff=i-cur; if(diff) changeSlide(diff); };
+    n.appendChild(d);
+  }
+}
+
+function loadQuestion() {
+  if (qCur >= quizData.length) { showResults(); return; }
+  const q = quizData[qCur];
+  document.getElementById('q-num').textContent = qCur+1;
+  document.getElementById('q-text').textContent = q.q;
+  const L = ['A','B','C','D'];
+  document.getElementById('q-options').innerHTML = q.opts.map((o,i)=>
+    `<div class="quiz-opt" onclick="selectAnswer(${i})" id="opt-${i}"><span class="opt-ltr">${L[i]}</span><span>${o}</span></div>`
+  ).join('');
+  const fb = document.getElementById('q-feedback');
+  fb.textContent=''; fb.className='qfeedback';
+  document.getElementById('btn-next-q').style.display='none';
+}
+
+function selectAnswer(idx) {
+  const q = quizData[qCur];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('disabled'));
+  const fb = document.getElementById('q-feedback');
+  if (idx===q.correct) {
+    document.getElementById(`opt-${idx}`).classList.add('correct');
+    fb.textContent='✓ '+q.ok; fb.className='qfeedback show ok';
+    qScore++; qAnswered.push(true);
+  } else {
+    document.getElementById(`opt-${idx}`).classList.add('wrong');
+    document.getElementById(`opt-${q.correct}`).classList.add('correct');
+    fb.textContent='✗ '+q.ko; fb.className='qfeedback show ko';
+    qAnswered.push(false);
+  }
+  document.getElementById('btn-next-q').style.display='inline-flex';
+}
+
+function nextQuestion() { qCur++; loadQuestion(); }
+
+function showResults() {
+  document.getElementById('quiz-section').style.display='none';
+  document.getElementById('result-section').style.display='block';
+  const pct = Math.round((qScore/quizData.length)*100);
+  document.getElementById('score-display').textContent=`${qScore}/${quizData.length}`;
+  let msg='',color='';
+  if(pct>=87){msg='🏆 ¡Excelente! Dominas el ejercicio.';color='#818cf8';}
+  else if(pct>=62){msg='👍 Bien. Repasá los puntos donde fallaste.';color='#fbbf24';}
+  else{msg='📖 Revisá el material y los diagramas.';color='#f87171';}
+  document.getElementById('result-msg').innerHTML=`<p style="font-size:1.05rem;font-weight:700;color:${color}">${msg}</p><p class="body-text">Obtuviste <strong>${qScore} de ${quizData.length}</strong> correctas (${pct}%).</p>`;
+  if(donutChart) donutChart.destroy();
+  donutChart=new Chart(document.getElementById('donut-chart'),{
+    type:'doughnut',
+    data:{datasets:[{data:[qScore,quizData.length-qScore],backgroundColor:['#818cf8','#1a1d40'],borderColor:['#6366f1','#2a2d55'],borderWidth:2}]},
+    options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
+  });
+  if(barChart) barChart.destroy();
+  barChart=new Chart(document.getElementById('bar-chart'),{
+    type:'bar',
+    data:{
+      labels:qAnswered.map((_,i)=>`P${i+1}`),
+      datasets:[{data:qAnswered.map(a=>a?1:0),
+        backgroundColor:qAnswered.map(a=>a?'rgba(129,140,248,.7)':'rgba(248,113,113,.7)'),
+        borderColor:qAnswered.map(a=>a?'#818cf8':'#f87171'),
+        borderWidth:1,borderRadius:4}]
+    },
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw===1?'✓ Correcta':'✗ Incorrecta'}}},
+      scales:{y:{display:false,max:1.3},x:{ticks:{color:'#4b5085',font:{family:'IBM Plex Mono',size:10}},grid:{color:'rgba(255,255,255,.03)'}}}}
+  });
+  Swal.fire({
+    title: qScore>=6?'¡Buen trabajo!':'Sigue practicando',
+    html:`<strong>${qScore}/${quizData.length}</strong> correctas · ${pct}%`,
+    icon:qScore>=6?'success':qScore>=4?'warning':'error',
+    background:'#0d0f26',color:'#e0e2ff',
+    confirmButtonColor:'#818cf8',confirmButtonText:'Ver resultados',
+    customClass:{popup:'border border-secondary'}
+  });
+}
+
+function restartQuiz() {
+  qCur=0;qScore=0;qAnswered=[];
+  document.getElementById('quiz-section').style.display='block';
+  document.getElementById('result-section').style.display='none';
+  loadQuestion();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{ hljs.highlightAll(); updateDots(); loadQuestion(); });
+</script>
+</body>
+</html>
