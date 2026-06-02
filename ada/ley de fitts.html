@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ley de Fitts | UT4 · Interfaz de Usuario · FIT UCU</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/monokai.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:     #060a0f;
+    --bgc:    #0a1018;
+    --bgp:    #0d1520;
+    --a1:     #f59e0b;   /* amber */
+    --a2:     #38bdf8;   /* sky */
+    --a3:     #a3e635;   /* lime */
+    --a4:     #c084fc;   /* purple */
+    --err:    #fb7185;
+    --text:   #f0f4f8;
+    --muted:  #3d5060;
+    --border: rgba(245,158,11,.13);
+    --r:      12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    min-height:100vh; overflow:hidden;
+  }
+  body::before{
+    content:''; position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 70% 50% at 100% 0%, rgba(245,158,11,.09) 0%,transparent 55%),
+      radial-gradient(ellipse 50% 60% at 0% 100%, rgba(56,189,248,.07) 0%,transparent 55%);
+    pointer-events:none; z-index:0;
+  }
+  #app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 28px; border-bottom:1px solid var(--border);
+    background:rgba(6,10,15,.95); backdrop-filter:blur(18px); flex-shrink:0;
+  }
+  .brand{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;}
+  .sc{font-family:'Space Mono',monospace;font-size:.82rem;color:var(--a1);font-weight:700;}
+
+  #pbw{height:3px;background:#0d1a25;flex-shrink:0;}
+  #pb{height:100%;background:linear-gradient(90deg,var(--a4),var(--a1));transition:width .4s ease;}
+
+  #sa{flex:1;overflow-y:auto;padding:28px 44px;}
+  #sa::-webkit-scrollbar{width:4px;}
+  #sa::-webkit-scrollbar-track{background:transparent;}
+  #sa::-webkit-scrollbar-thumb{background:rgba(245,158,11,.2);border-radius:99px;}
+
+  .slide{display:none;} .slide.active{display:block;}
+
+  /* TYPO */
+  .stag{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:.67rem;letter-spacing:.2em;text-transform:uppercase;color:var(--a1);border:1px solid rgba(245,158,11,.35);border-radius:4px;padding:3px 12px;margin-bottom:14px;}
+  h1.t{font-size:clamp(1.9rem,4vw,3.1rem);font-weight:700;line-height:1.08;margin-bottom:10px;}
+  h2.t{font-size:clamp(1.4rem,2.8vw,2.1rem);font-weight:700;line-height:1.2;margin-bottom:16px;}
+  .c1{color:var(--a1);} .c2{color:var(--a2);} .c3{color:var(--a3);} .c4{color:var(--a4);}
+  .bt{font-family:'Space Mono',monospace;font-size:.81rem;color:#4a6070;line-height:1.82;}
+  .lt{font-size:1rem;color:#7090a0;line-height:1.78;}
+
+  /* CARDS */
+  .gc{background:var(--bgc);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;position:relative;overflow:hidden;}
+  .gc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--a4),var(--a1));}
+
+  /* FORMULA */
+  .formula{text-align:center;padding:24px 32px;margin:16px 0;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(163,230,53,.06));border:1px solid rgba(245,158,11,.3);border-radius:14px;}
+  .fm{font-family:'Space Mono',monospace;font-size:1.7rem;font-weight:700;color:#fff;letter-spacing:.04em;}
+  .fm-sub{font-size:.85rem;color:#7090a0;margin-top:8px;font-family:'Space Mono',monospace;}
+
+  /* BOXES */
+  .hl{border-left:3px solid var(--a1);background:rgba(245,158,11,.06);border-radius:0 8px 8px 0;padding:12px 18px;margin:12px 0;font-family:'Space Mono',monospace;font-size:.81rem;color:var(--text);}
+  .hl.sky{border-left-color:var(--a2);background:rgba(56,189,248,.06);}
+  .hl.lime{border-left-color:var(--a3);background:rgba(163,230,53,.06);}
+  .hl.pu{border-left-color:var(--a4);background:rgba(192,132,252,.06);}
+  .hl.er{border-left-color:var(--err);background:rgba(251,113,133,.06);}
+
+  /* STEP */
+  .sl{list-style:none;padding:0;display:flex;flex-direction:column;gap:11px;}
+  .sl li{display:flex;align-items:flex-start;gap:13px;}
+  .sn{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--a1);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#060a0f;margin-top:1px;}
+  .sn.sk{background:var(--a2);} .sn.li{background:var(--a3);} .sn.pu{background:var(--a4);color:#fff;} .sn.er{background:var(--err);color:#fff;}
+
+  /* PARAM BOX */
+  .param{background:var(--bgp);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center;}
+  .param-val{font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;}
+  .param-lbl{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.12em;}
+
+  /* DIAGRAM */
+  .dw{background:var(--bgp);border:1px solid var(--border);border-radius:var(--r);padding:20px;overflow-x:auto;}
+  .dw svg{display:block;margin:0 auto;}
+  .dlbl{font-family:'Space Mono',monospace;font-size:.74rem;color:var(--muted);text-align:center;margin-top:8px;}
+
+  /* CODE */
+  .cw{border-radius:var(--r);overflow:hidden;border:1px solid rgba(255,255,255,.07);}
+  .ch{background:#0a0f14;padding:8px 16px;display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);}
+  .dot{width:10px;height:10px;border-radius:50%;}
+  .dr{background:#ff5f57;}.dy{background:#febc2e;}.dg{background:#28c840;}
+
+  /* TABLE */
+  .dt{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;}
+  .dt th{background:#0d1520;padding:10px 14px;font-family:'Space Mono',monospace;font-size:.77rem;font-weight:700;}
+  .dt td{padding:10px 14px;border-top:1px solid var(--border);font-family:'Space Mono',monospace;font-size:.78rem;color:#4a6070;vertical-align:top;}
+  .dt tr:hover td{background:rgba(245,158,11,.03);}
+
+  /* DATASET CARD */
+  .ds-card{border-radius:10px;padding:16px;border:1px solid var(--border);background:var(--bgp);position:relative;}
+  .ds-num{position:absolute;top:-10px;left:16px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;background:var(--a1);color:#060a0f;padding:2px 10px;border-radius:4px;}
+  .ds-card.sky{border-color:rgba(56,189,248,.25);} .ds-card.sky .ds-num{background:var(--a2);}
+  .ds-card.lime{border-color:rgba(163,230,53,.25);} .ds-card.lime .ds-num{background:var(--a3);color:#060a0f;}
+  .ds-card.pu{border-color:rgba(192,132,252,.25);} .ds-card.pu .ds-num{background:var(--a4);color:#fff;}
+
+  /* FITTS SIMULATOR */
+  #fitts-sim{background:var(--bgp);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:relative;}
+  #sim-area{background:#0a0f14;border-radius:8px;height:180px;position:relative;overflow:hidden;cursor:crosshair;border:1px solid rgba(245,158,11,.15);}
+  .sim-target{position:absolute;border-radius:50%;background:var(--a1);transform:translate(-50%,-50%);cursor:pointer;transition:transform .1s;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#060a0f;user-select:none;}
+  .sim-target:hover{transform:translate(-50%,-50%) scale(1.08);}
+  .sim-target.border-t{border-radius:0;background:var(--a2);}
+
+  /* NAV */
+  footer{display:flex;align-items:center;justify-content:space-between;padding:10px 28px;border-top:1px solid var(--border);background:rgba(6,10,15,.95);backdrop-filter:blur(18px);flex-shrink:0;}
+  .nb{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 22px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;}
+  .nb:hover{background:rgba(245,158,11,.08);border-color:var(--a1);color:var(--a1);}
+  .nb:disabled{opacity:.22;cursor:default;pointer-events:none;}
+  .nb.p{background:var(--a1);color:#060a0f;border-color:var(--a1);font-weight:800;}
+  .nb.p:hover{background:#d97706;}
+
+  /* QUIZ */
+  .qo{background:var(--bgp);border:1px solid var(--border);border-radius:8px;padding:13px 17px;cursor:pointer;transition:all .2s;margin-bottom:9px;display:flex;align-items:center;gap:12px;font-family:'Space Mono',monospace;font-size:.81rem;}
+  .qo:hover{border-color:var(--a1);background:rgba(245,158,11,.05);}
+  .qo.correct{border-color:var(--a3);background:rgba(163,230,53,.08);}
+  .qo.wrong{border-color:var(--err);background:rgba(251,113,133,.08);}
+  .qo.disabled{pointer-events:none;}
+  .ol{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;}
+  .qf{border-radius:8px;padding:11px 15px;margin-top:11px;font-family:'Space Mono',monospace;font-size:.8rem;display:none;}
+  .qf.show{display:block;}
+  .qf.ok{background:rgba(163,230,53,.1);border:1px solid rgba(163,230,53,.35);color:#bef264;}
+  .qf.ko{background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.35);color:#fda4af;}
+  .qcount{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--muted);margin-bottom:8px;}
+  .qq{font-size:.95rem;font-weight:600;margin-bottom:16px;line-height:1.5;}
+
+  #rs{display:none;}
+  .sr{position:relative;width:140px;height:140px;margin:0 auto 18px;}
+  .si{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .snum{font-size:2.2rem;font-weight:800;color:var(--a1);font-family:'Space Mono',monospace;}
+  .slb{font-size:.7rem;color:var(--muted);font-family:'Space Mono',monospace;}
+
+  @media(max-width:700px){#sa{padding:16px 12px;}header,footer{padding:10px 12px;}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brand"><i class="fa-solid fa-computer-mouse me-2"></i>FIT · UCU &nbsp;·&nbsp; UT4 · Interfaz de Usuario</div>
+    <div class="sc"><span id="cs">1</span> / <span id="ts">14</span></div>
+  </header>
+  <div id="pbw"><div id="pb" style="width:7.14%"></div></div>
+
+  <div id="sa">
+
+    <!-- ══ 1 PORTADA ══ -->
+    <div class="slide active" id="slide-1">
+      <div class="animate__animated animate__fadeIn" style="min-height:63vh;display:flex;flex-direction:column;justify-content:center;position:relative;">
+        <div style="position:absolute;right:-60px;top:-40px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,.15) 0%,transparent 68%);pointer-events:none"></div>
+        <div class="stag"><i class="fa-solid fa-hand-pointer me-1"></i>UT4 · TA2 · Interfaz de Usuario</div>
+        <h1 class="t">La <span class="c1">Ley de Fitts</span><br>y el diseño<br>de interfaces</h1>
+        <p class="lt mt-3" style="max-width:580px;">¿Por qué los botones grandes en los bordes de pantalla son más fáciles de usar? La ley de Fitts explica matemáticamente la relación entre tamaño, distancia y tiempo de apuntado.</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:99px;padding:5px 14px;font-family:'Space Mono',monospace;font-size:.76rem;color:var(--a1)"><i class="fa-solid fa-flask"></i>Ejercicio experimental</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);border-radius:99px;padding:5px 14px;font-family:'Space Mono',monospace;font-size:.76rem;color:var(--a2)"><i class="fa-solid fa-chart-line"></i>simonwallner.at/ext/fitts</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(163,230,53,.1);border:1px solid rgba(163,230,53,.25);border-radius:99px;padding:5px 14px;font-family:'Space Mono',monospace;font-size:.76rem;color:var(--a3)"><i class="fa-solid fa-university"></i>FIT – UCU</span>
+        </div>
+        <div class="mt-4 gc" style="max-width:580px;">
+          <p class="bt mb-0"><span class="c1 fw-bold">Temas:</span> qué es la Ley de Fitts · fórmula e Índice de Dificultad · el efecto borde · 3 configuraciones de dataset · cómo interpretar los resultados · aplicaciones en diseño de UI.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 2 PAUL FITTS Y CONTEXTO ══ -->
+    <div class="slide" id="slide-2">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-clock-rotate-left me-1"></i>Origen</div>
+        <h2 class="t">Paul Fitts y el <span class="c1">modelo de apuntado</span></h2>
+        <p class="lt mb-4">En 1954, el psicólogo Paul Fitts propuso un modelo matemático del movimiento humano hacia un objetivo. Originalmente concebido para la aviación, se convirtió en uno de los pilares del diseño de interfaces.</p>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="gc h-100 text-center">
+              <i class="fa-solid fa-plane fa-2x mb-2" style="color:var(--a1)"></i>
+              <h6 class="mb-2">1954 · Aviación</h6>
+              <p class="bt">Fitts estudió cómo los pilotos movían controles entre paneles. Midió tiempos y precisión.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="gc h-100 text-center">
+              <i class="fa-solid fa-computer-mouse fa-2x mb-2" style="color:var(--a2)"></i>
+              <h6 class="mb-2">1980s · HCI</h6>
+              <p class="bt">Card, English y Burr adaptaron la ley para el mouse y el diseño de interfaces gráficas.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="gc h-100 text-center">
+              <i class="fa-solid fa-mobile-screen fa-2x mb-2" style="color:var(--a3)"></i>
+              <h6 class="mb-2">Hoy · Pantallas táctiles</h6>
+              <p class="bt">Rige el diseño de botones, menús, targets táctiles en móviles, escritorio y web.</p>
+            </div>
+          </div>
+        </div>
+        <div class="hl">
+          <i class="fa-solid fa-quote-left me-2 opacity-40"></i>
+          La ley de Fitts es uno de los <strong>modelos más respaldados empíricamente</strong> en Interacción Humano-Computadora. Sigue siendo relevante 70 años después.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 3 LA FÓRMULA ══ -->
+    <div class="slide" id="slide-3">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-square-root-variable me-1"></i>La fórmula</div>
+        <h2 class="t">La ecuación central de <span class="c1">Fitts</span></h2>
+        <p class="lt mb-3">El tiempo de movimiento (<strong>MT</strong>) para alcanzar un objetivo depende de su distancia y su tamaño.</p>
+
+        <div class="formula mb-4">
+          <div class="fm">MT = a + b · log₂( 2A / W )</div>
+          <div class="fm-sub mt-2">donde &nbsp;&nbsp; <strong style="color:var(--a1)">ID = log₂(2A/W)</strong> &nbsp;&nbsp; es el Índice de Dificultad (bits)</div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6 col-md-3">
+            <div class="param">
+              <div class="param-val c1">MT</div>
+              <div class="param-lbl">Movement Time</div>
+              <p class="bt mt-1" style="font-size:.74rem">Tiempo de movimiento (ms). Lo que medimos.</p>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="param">
+              <div class="param-val c2">A</div>
+              <div class="param-lbl">Amplitude</div>
+              <p class="bt mt-1" style="font-size:.74rem">Distancia desde la posición inicial hasta el centro del objetivo.</p>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="param">
+              <div class="param-val c3">W</div>
+              <div class="param-lbl">Width</div>
+              <p class="bt mt-1" style="font-size:.74rem">Ancho (tamaño) del objetivo en la dirección del movimiento.</p>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="param">
+              <div class="param-val c4">a, b</div>
+              <div class="param-lbl">Constantes</div>
+              <p class="bt mt-1" style="font-size:.74rem">Determinadas empíricamente por regresión lineal.</p>
+            </div>
+          </div>
+        </div>
+        <div class="hl sky">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          <strong>Interpretación:</strong> MT aumenta cuando <em>A crece</em> (objetivo más lejos) o cuando <em>W disminuye</em> (objetivo más pequeño). A mayor ID, más difícil.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 4 ÍNDICE DE DIFICULTAD ══ -->
+    <div class="slide" id="slide-4">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-gauge me-1"></i>Índice de Dificultad</div>
+        <h2 class="t">Índice de Dificultad <span class="c1">(ID)</span></h2>
+        <p class="lt mb-3">El ID resume en un solo número (en <strong>bits</strong>) cuán difícil es alcanzar un objetivo. Permite comparar configuraciones muy distintas.</p>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="dw">
+              <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+                <defs>
+                  <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4a6070"/></marker>
+                  <marker id="arr2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#f59e0b"/></marker>
+                </defs>
+                <!-- cursor start -->
+                <circle cx="40" cy="110" r="8" fill="#38bdf8"/>
+                <text x="40" y="130" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="8">cursor</text>
+
+                <!-- amplitude arrow -->
+                <line x1="48" y1="110" x2="242" y2="110" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr2)"/>
+                <text x="145" y="100" text-anchor="middle" fill="#f59e0b" font-family="Space Mono" font-size="10" font-weight="700">A = Amplitude</text>
+
+                <!-- target -->
+                <rect x="245" y="75" width="70" height="70" rx="8" fill="rgba(245,158,11,.15)" stroke="#f59e0b" stroke-width="2"/>
+                <text x="280" y="115" text-anchor="middle" fill="#f59e0b" font-family="Space Mono" font-size="11" font-weight="700">W</text>
+                <text x="280" y="130" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="8">objetivo</text>
+
+                <!-- W arrows -->
+                <line x1="245" y1="155" x2="315" y2="155" stroke="#a3e635" stroke-width="1.3" marker-end="url(#arr)"/>
+                <line x1="315" y1="155" x2="245" y2="155" stroke="#a3e635" stroke-width="1.3"/>
+                <text x="280" y="170" text-anchor="middle" fill="#a3e635" font-family="Space Mono" font-size="9">W = Width</text>
+
+                <!-- ID formula -->
+                <rect x="10" y="185" width="340" height="28" rx="5" fill="rgba(245,158,11,.07)" stroke="rgba(245,158,11,.25)"/>
+                <text x="180" y="204" text-anchor="middle" fill="#f59e0b" font-family="Space Mono" font-size="11" font-weight="700">ID = log₂( 2A / W )</text>
+              </svg>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100">
+              <h6 class="c1 mb-3"><i class="fa-solid fa-table me-2"></i>Ejemplos de ID</h6>
+              <table class="dt">
+                <thead><tr>
+                  <th style="color:var(--a2)">A (dist.)</th>
+                  <th style="color:var(--a3)">W (tamaño)</th>
+                  <th style="color:var(--a1)">ID (bits)</th>
+                  <th>Dificultad</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td>100 px</td><td>50 px</td><td style="color:var(--a3);font-weight:700">2.0</td><td style="color:var(--a3)">Fácil</td></tr>
+                  <tr><td>200 px</td><td>30 px</td><td style="color:var(--a1);font-weight:700">3.7</td><td style="color:var(--a1)">Medio</td></tr>
+                  <tr><td>400 px</td><td>15 px</td><td style="color:var(--err);font-weight:700">5.7</td><td style="color:var(--err)">Difícil</td></tr>
+                  <tr><td>400 px</td><td>50 px</td><td style="color:var(--a1);font-weight:700">4.0</td><td style="color:var(--a1)">Medio</td></tr>
+                </tbody>
+              </table>
+              <div class="hl lime mt-3">
+                <i class="fa-solid fa-lightbulb me-2"></i>
+                Mismo ID → mismo tiempo de movimiento, aunque A y W sean distintos.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 5 THROUGHPUT ══ -->
+    <div class="slide" id="slide-5">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-tachometer-alt me-1"></i>Throughput</div>
+        <h2 class="t"><span class="c2">Throughput</span>: capacidad del canal humano</h2>
+        <p class="lt mb-3">El <strong>Throughput (TP)</strong> es la métrica que mide la eficiencia del sistema humano-dispositivo en bits por segundo. Es independiente de las condiciones del experimento.</p>
+
+        <div class="formula mb-4">
+          <div class="fm">TP = ID / MT &nbsp;&nbsp; [bits/s]</div>
+          <div class="fm-sub">Throughput = Índice de Dificultad / Tiempo de Movimiento</div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="gc h-100">
+              <h6 class="c2 mb-3"><i class="fa-solid fa-arrows-up-down-left-right me-2"></i>¿Qué significa?</h6>
+              <ul class="sl">
+                <li><div class="sn sk">→</div><div class="bt">Un <strong>TP más alto</strong> significa que el usuario puede hacer tareas más difíciles en menos tiempo.</div></li>
+                <li><div class="sn sk">→</div><div class="bt">Permite comparar <strong>distintos dispositivos</strong> (mouse vs. trackpad vs. touchscreen).</div></li>
+                <li><div class="sn sk">→</div><div class="bt">Valor típico para mouse: <strong>~4 bits/s</strong>. Touchscreen: ~2–3 bits/s.</div></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100">
+              <h6 class="c1 mb-3"><i class="fa-solid fa-chart-bar me-2"></i>La línea de regresión</h6>
+              <p class="bt">En el simulador de Fitts, los puntos del gráfico deben ajustarse a una <strong>línea recta</strong> (regresión lineal).</p>
+              <ul class="sl mt-2">
+                <li><div class="sn li">a</div><div class="bt"><strong>Intersección (a):</strong> tiempo mínimo para iniciar cualquier movimiento.</div></li>
+                <li><div class="sn li">b</div><div class="bt"><strong>Pendiente (b):</strong> tiempo adicional por cada bit de dificultad.</div></li>
+              </ul>
+              <div class="hl mt-2">
+                R² cercano a 1.0 → el modelo de Fitts <strong>predice bien</strong> los datos.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 6 EL EFECTO BORDE ══ -->
+    <div class="slide" id="slide-6">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-border-top-left me-1"></i>El efecto borde</div>
+        <h2 class="t">El <span class="c3">efecto borde</span>: ¿por qué los bordes son especiales?</h2>
+        <p class="lt mb-3">Los bordes y esquinas de la pantalla tienen una propiedad única: el cursor <strong>se detiene al llegar al borde</strong>. Esto equivale a un objetivo de ancho infinito.</p>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-7">
+            <div class="dw">
+              <svg viewBox="0 0 420 230" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+                <defs>
+                  <marker id="fa" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#a3e635"/></marker>
+                  <marker id="fb" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4a6070"/></marker>
+                </defs>
+
+                <!-- Screen border -->
+                <rect x="10" y="10" width="400" height="210" rx="6" fill="none" stroke="#3d5060" stroke-width="1.5" stroke-dasharray="5,3"/>
+                <text x="215" y="28" text-anchor="middle" fill="#3d5060" font-family="Space Mono" font-size="8">BORDE DE PANTALLA</text>
+
+                <!-- Normal target center -->
+                <rect x="140" y="90" width="50" height="50" rx="6" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="1.5"/>
+                <text x="165" y="120" text-anchor="middle" fill="#f59e0b" font-family="Space Mono" font-size="9" font-weight="700">W</text>
+                <text x="165" y="155" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="8">objetivo normal</text>
+
+                <!-- Cursor position -->
+                <circle cx="50" cy="115" r="7" fill="#38bdf8"/>
+                <line x1="57" y1="115" x2="140" y2="115" stroke="#4a6070" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#fb)"/>
+                <text x="95" y="108" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="8">A</text>
+
+                <!-- Border target -->
+                <rect x="360" y="10" width="50" height="210" rx="0" fill="rgba(163,230,53,.15)" stroke="#a3e635" stroke-width="2"/>
+                <text x="385" y="115" text-anchor="middle" fill="#a3e635" font-family="Space Mono" font-size="9" font-weight="700" transform="rotate(-90,385,115)">W = ∞ (borde)</text>
+
+                <!-- Cursor to border -->
+                <line x1="57" y1="135" x2="360" y2="135" stroke="#a3e635" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#fa)"/>
+                <text x="205" y="150" text-anchor="middle" fill="#a3e635" font-family="Space Mono" font-size="8">cursor se detiene</text>
+                <text x="205" y="161" text-anchor="middle" fill="#a3e635" font-family="Space Mono" font-size="8">automáticamente</text>
+
+                <!-- Infinity label -->
+                <text x="385" y="180" text-anchor="middle" fill="#a3e635" font-family="Space Mono" font-size="11">∞</text>
+                <text x="385" y="195" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="7">no se puede</text>
+                <text x="385" y="204" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="7">pasar el borde</text>
+              </svg>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="gc h-100">
+              <h6 class="c3 mb-3"><i class="fa-solid fa-infinity me-2"></i>W efectivo = ∞</h6>
+              <p class="bt">Cuando el objetivo está en el borde, el usuario puede moverse rápidamente <strong>sin necesitar frenar con precisión</strong>: el borde actúa de tope.</p>
+              <div class="hl lime mt-3">
+                <strong>ID_borde = log₂(2A/∞) ≈ 0</strong><br>
+                → Tiempo de movimiento mínimo.
+              </div>
+              <div class="hl mt-2">
+                <i class="fa-solid fa-check me-2" style="color:var(--a3)"></i>
+                Las <strong>esquinas</strong> son aún más rápidas: el cursor queda atrapado en la esquina sin importar cuánto se mueva el mouse.
+              </div>
+              <div class="hl pu mt-2">
+                <i class="fa-solid fa-apple-whole me-2"></i>
+                macOS pone el menú en la barra superior del escritorio (borde) precisamente por esto. Windows lo puso dentro de las ventanas → más difícil.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 7 EL SIMULADOR ══ -->
+    <div class="slide" id="slide-7">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-flask me-1"></i>Herramienta</div>
+        <h2 class="t">El simulador: <span class="c2">simonwallner.at/ext/fitts</span></h2>
+        <p class="lt mb-3">El simulador online permite realizar experimentos controlados de apuntado y observar la regresión lineal en tiempo real.</p>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="gc h-100">
+              <h6 class="c1 mb-3"><i class="fa-solid fa-sliders me-2"></i>Parámetros configurables</h6>
+              <ul class="sl">
+                <li><div class="sn">W</div><div class="bt"><strong>Target Width (W):</strong> ancho del objetivo en píxeles.</div></li>
+                <li><div class="sn sk">A</div><div class="bt"><strong>Amplitude (A):</strong> distancia entre el punto de inicio y el centro del objetivo.</div></li>
+                <li><div class="sn li">B</div><div class="bt"><strong>Border:</strong> activa el efecto borde (el objetivo queda en el límite de la pantalla).</div></li>
+                <li><div class="sn pu">N</div><div class="bt"><strong>Nro. de repeticiones:</strong> cantidad de clics por condición experimental.</div></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100">
+              <h6 class="c2 mb-3"><i class="fa-solid fa-chart-line me-2"></i>Qué muestra el gráfico</h6>
+              <ul class="sl">
+                <li><div class="sn sk">X</div><div class="bt">Eje horizontal: <strong>ID</strong> (Índice de Dificultad, en bits).</div></li>
+                <li><div class="sn sk">Y</div><div class="bt">Eje vertical: <strong>MT</strong> (Tiempo de Movimiento promedio, en ms).</div></li>
+                <li><div class="sn li">●</div><div class="bt">Cada <strong>punto</strong> = una configuración (A, W) con su MT promedio.</div></li>
+                <li><div class="sn li">—</div><div class="bt">La <strong>línea de regresión</strong> y el R² muestran qué tan bien predice Fitts.</div></li>
+              </ul>
+              <div class="hl sky mt-3">
+                <i class="fa-solid fa-external-link-alt me-2"></i>
+                URL: <strong>simonwallner.at/ext/fitts/</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 8 GUÍA PASO A PASO ══ -->
+    <div class="slide" id="slide-8">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-list-check me-1"></i>Procedimiento</div>
+        <h2 class="t">Cómo ejecutar el <span class="c1">experimento</span></h2>
+        <p class="lt mb-3">Seguí estos pasos para obtener datos comparables entre los tres datasets.</p>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <ul class="sl">
+              <li><div class="sn">1</div><div class="bt">Abrí <strong>simonwallner.at/ext/fitts</strong> en el navegador.</div></li>
+              <li><div class="sn">2</div><div class="bt">Configurá los parámetros del <strong>primer dataset</strong> (ver slide siguiente).</div></li>
+              <li><div class="sn">3</div><div class="bt">Cliqueá el botón <strong>"Start"</strong> para iniciar la sesión de apuntado.</div></li>
+              <li><div class="sn">4</div><div class="bt">Apuntá y hacé clic en cada <strong>objetivo</strong> que aparece lo más rápido posible.</div></li>
+              <li><div class="sn">5</div><div class="bt">Al terminar, el simulador muestra el <strong>gráfico</strong> con la regresión. <strong>Anotá</strong> los valores de a, b y R².</div></li>
+              <li><div class="sn sk">6</div><div class="bt">Repetí con el <strong>segundo</strong> y <strong>tercer dataset</strong>.</div></li>
+              <li><div class="sn sk">7</div><div class="bt"><strong>Comparar</strong> los tres resultados y elaborar conclusiones.</div></li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="c3 mb-3"><i class="fa-solid fa-triangle-exclamation me-2"></i>Recomendaciones</h6>
+              <ul class="sl">
+                <li><div class="sn li">✓</div><div class="bt">Usá el <strong>mismo dispositivo</strong> (mouse o trackpad) en los tres datasets.</div></li>
+                <li><div class="sn li">✓</div><div class="bt">Intentá mantener el mismo <strong>ritmo y esfuerzo</strong> en cada sesión.</div></li>
+                <li><div class="sn li">✓</div><div class="bt">Hacé al menos <strong>5 repeticiones</strong> por condición para reducir ruido.</div></li>
+                <li><div class="sn li">✓</div><div class="bt">Anotá o hacé captura de pantalla del <strong>gráfico resultante</strong> de cada dataset.</div></li>
+                <li><div class="sn er">✗</div><div class="bt">No repitas si salió un outlier; es parte natural de los datos humanos.</div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 9 DATASET 1 ══ -->
+    <div class="slide" id="slide-9">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-1 me-1"></i>Dataset 1</div>
+        <h2 class="t">Dataset 1: <span class="c1">objetivos normales</span> (sin borde)</h2>
+        <p class="lt mb-3">Línea base. Objetivos en el <strong>centro de la pantalla</strong>, sin el efecto borde. Aquí se verifica la relación lineal entre ID y MT.</p>
+
+        <div class="ds-card mb-4">
+          <div class="ds-num">Dataset 1</div>
+          <div class="row g-3 mt-2">
+            <div class="col-md-3"><div class="param"><div class="param-val c1">OFF</div><div class="param-lbl">Border</div></div></div>
+            <div class="col-md-3"><div class="param"><div class="param-val c2">Varía</div><div class="param-lbl">Width (W)</div><p class="bt mt-1" style="font-size:.72rem">20 · 40 · 60 px</p></div></div>
+            <div class="col-md-3"><div class="param"><div class="param-val c3">Varía</div><div class="param-lbl">Amplitude (A)</div><p class="bt mt-1" style="font-size:.72rem">100 · 200 · 400 px</p></div></div>
+            <div class="col-md-3"><div class="param"><div class="param-val c4">≥5</div><div class="param-lbl">Repeticiones</div></div></div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="c1 mb-2"><i class="fa-solid fa-flask me-2"></i>Lo que esperás ver</h6>
+              <ul class="sl">
+                <li><div class="sn">→</div><div class="bt">Puntos distribuidos a lo largo de una <strong>línea recta</strong>.</div></li>
+                <li><div class="sn">→</div><div class="bt"><strong>R² cercano a 0.9–1.0</strong>: la ley de Fitts predice bien.</div></li>
+                <li><div class="sn">→</div><div class="bt">A más ID → más MT. La relación es <strong>lineal</strong>.</div></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="c2 mb-2"><i class="fa-solid fa-pen me-2"></i>Qué anotar</h6>
+              <ul class="sl">
+                <li><div class="sn sk">a</div><div class="bt">Intercepto <strong>a</strong> (ms): tiempo de latencia de movimiento.</div></li>
+                <li><div class="sn sk">b</div><div class="bt">Pendiente <strong>b</strong> (ms/bit): tiempo por bit de dificultad.</div></li>
+                <li><div class="sn sk">R²</div><div class="bt"><strong>R²</strong>: bondad del ajuste lineal.</div></li>
+                <li><div class="sn sk">TP</div><div class="bt"><strong>Throughput</strong> promedio (bits/s).</div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 10 DATASET 2 ══ -->
+    <div class="slide" id="slide-10">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-2 me-1"></i>Dataset 2</div>
+        <h2 class="t">Dataset 2: <span class="c2">objetivos en el borde</span></h2>
+        <p class="lt mb-3">Activamos el efecto borde. Los objetivos están en el límite de la pantalla. El cursor se detiene al llegar al borde → <strong>W efectivo = ∞</strong>.</p>
+
+        <div class="ds-card sky mb-4">
+          <div class="ds-num">Dataset 2</div>
+          <div class="row g-3 mt-2">
+            <div class="col-md-3"><div class="param"><div class="param-val c2">ON</div><div class="param-lbl">Border</div></div></div>
+            <div class="col-md-3"><div class="param"><div class="param-val c1">Varía</div><div class="param-lbl">Width (W)</div><p class="bt mt-1" style="font-size:.72rem">20 · 40 · 60 px<br>(mismo que DS1)</p></div></div>
+            <div class="col-md-3"><div class="param"><div class="param-val c3">Varía</div><div class="param-lbl">Amplitude (A)</div><p class="bt mt-1" style="font-size:.72rem">100 · 200 · 400 px<br>(mismo que DS1)</p></div></div>
+            <div class="col-md-3"><div class="param"><div class="param-val c4">≥5</div><div class="param-lbl">Repeticiones</div></div></div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="c2 mb-2"><i class="fa-solid fa-flask me-2"></i>Lo que esperás ver</h6>
+              <ul class="sl">
+                <li><div class="sn sk">→</div><div class="bt"><strong>MT significativamente menores</strong> que en Dataset 1 para igual ID nominal.</div></li>
+                <li><div class="sn sk">→</div><div class="bt">La <strong>pendiente b puede ser menor</strong>: el borde reduce la penalidad por tamaño pequeño.</div></li>
+                <li><div class="sn sk">→</div><div class="bt"><strong>TP más alto</strong>: el usuario puede ser más rápido gracias al borde.</div></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc" style="border-left:3px solid var(--a2)">
+              <h6 class="c2 mb-2"><i class="fa-solid fa-lightbulb me-2"></i>Por qué importa en UI</h6>
+              <p class="bt">Este resultado explica por qué los sistemas de escritorio colocan elementos críticos en los bordes:</p>
+              <ul class="sl mt-2">
+                <li><div class="sn sk">→</div><div class="bt"><strong>macOS</strong>: menú en borde superior.</div></li>
+                <li><div class="sn sk">→</div><div class="bt"><strong>Windows</strong>: botón de inicio en esquina inferior izquierda.</div></li>
+                <li><div class="sn sk">→</div><div class="bt"><strong>Docksidebars</strong>: paneles laterales que aprovechan el borde.</div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 11 DATASET 3 ══ -->
+    <div class="slide" id="slide-11">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-3 me-1"></i>Dataset 3</div>
+        <h2 class="t">Dataset 3: <span class="c3">mismo ID, distinto A y W</span></h2>
+        <p class="lt mb-3">Verificamos la predicción de Fitts: <em>si el ID es el mismo, el MT debería ser el mismo</em>. Usamos pares (A, W) que den el mismo ID pero con valores muy distintos.</p>
+
+        <div class="ds-card lime mb-4">
+          <div class="ds-num">Dataset 3</div>
+          <div class="row g-3 mt-2">
+            <div class="col-md-3"><div class="param"><div class="param-val c1">OFF</div><div class="param-lbl">Border</div></div></div>
+            <div class="col-md-9">
+              <div class="gc" style="padding:12px">
+                <h6 class="c3 mb-2" style="font-size:.82rem">Pares con ID ≈ 3.0 bits</h6>
+                <table class="dt" style="font-size:.76rem">
+                  <thead><tr><th style="color:var(--a2)">A</th><th style="color:var(--a3)">W</th><th style="color:var(--a1)">ID = log₂(2A/W)</th></tr></thead>
+                  <tbody>
+                    <tr><td>100 px</td><td>25 px</td><td style="color:var(--a3);font-weight:700">3.0 bits</td></tr>
+                    <tr><td>200 px</td><td>50 px</td><td style="color:var(--a3);font-weight:700">3.0 bits</td></tr>
+                    <tr><td>400 px</td><td>100 px</td><td style="color:var(--a3);font-weight:700">3.0 bits</td></tr>
+                    <tr><td>50 px</td><td>12.5 px</td><td style="color:var(--a3);font-weight:700">3.0 bits</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="c3 mb-2"><i class="fa-solid fa-flask me-2"></i>Lo que esperás ver</h6>
+              <ul class="sl">
+                <li><div class="sn li">→</div><div class="bt">Todos los puntos <strong>agrupados en un rango estrecho de MT</strong> (mismo ID).</div></li>
+                <li><div class="sn li">→</div><div class="bt">Confirma que la ley de Fitts <strong>abstrae</strong> la combinación (A, W) en un solo número (ID).</div></li>
+                <li><div class="sn er">!</div><div class="bt">Puede haber dispersión: los valores extremos de A y W pueden romper un poco el modelo.</div></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc" style="border-left:3px solid var(--a3)">
+              <h6 class="c3 mb-2"><i class="fa-solid fa-lightbulb me-2"></i>Conclusión esperada</h6>
+              <p class="bt">Un botón pequeño y cercano puede ser <strong>igual de difícil</strong> de usar que uno grande y lejano si tienen el mismo ID. El tamaño importa tanto como la distancia.</p>
+              <div class="hl lime mt-2">Esto justifica usar botones grandes cuando el espacio lo permite, aun en posiciones cercanas al usuario.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 12 INTERPRETACIÓN Y CONCLUSIONES ══ -->
+    <div class="slide" id="slide-12">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-chart-line me-1"></i>Análisis</div>
+        <h2 class="t">Interpretar los <span class="c1">resultados</span></h2>
+        <p class="lt mb-3">Cómo leer el gráfico del simulador y qué conclusiones extraer para el diseño de interfaces.</p>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="dw">
+              <svg viewBox="0 0 340 230" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+                <defs>
+                  <marker id="ax" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4a6070"/></marker>
+                </defs>
+                <!-- Axes -->
+                <line x1="40" y1="200" x2="320" y2="200" stroke="#3d5060" stroke-width="1.5" marker-end="url(#ax)"/>
+                <line x1="40" y1="200" x2="40" y2="20" stroke="#3d5060" stroke-width="1.5" marker-end="url(#ax)"/>
+                <text x="330" y="204" fill="#4a6070" font-family="Space Mono" font-size="9">ID</text>
+                <text x="10" y="20" fill="#4a6070" font-family="Space Mono" font-size="9">MT</text>
+                <text x="175" y="218" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="8">(bits)</text>
+                <text x="12" y="100" fill="#4a6070" font-family="Space Mono" font-size="8" transform="rotate(-90,12,100)">(ms)</text>
+
+                <!-- Grid lines -->
+                <line x1="40" y1="160" x2="310" y2="160" stroke="#1a2535" stroke-width="1"/>
+                <line x1="40" y1="120" x2="310" y2="120" stroke="#1a2535" stroke-width="1"/>
+                <line x1="40" y1="80" x2="310" y2="80" stroke="#1a2535" stroke-width="1"/>
+
+                <!-- Dataset 1 points + line (sin borde) -->
+                <line x1="60" y1="170" x2="290" y2="55" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="5,2"/>
+                <circle cx="70" cy="165" r="5" fill="#f59e0b"/>
+                <circle cx="120" cy="140" r="5" fill="#f59e0b"/>
+                <circle cx="175" cy="112" r="5" fill="#f59e0b"/>
+                <circle cx="230" cy="88" r="5" fill="#f59e0b"/>
+                <circle cx="280" cy="64" r="5" fill="#f59e0b"/>
+                <text x="295" y="58" fill="#f59e0b" font-family="Space Mono" font-size="8">DS1</text>
+
+                <!-- Dataset 2 points + line (con borde) — lower -->
+                <line x1="60" y1="192" x2="290" y2="100" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="5,2"/>
+                <circle cx="70" cy="190" r="5" fill="#38bdf8"/>
+                <circle cx="120" cy="170" r="5" fill="#38bdf8"/>
+                <circle cx="175" cy="148" r="5" fill="#38bdf8"/>
+                <circle cx="230" cy="126" r="5" fill="#38bdf8"/>
+                <circle cx="280" cy="105" r="5" fill="#38bdf8"/>
+                <text x="295" y="99" fill="#38bdf8" font-family="Space Mono" font-size="8">DS2</text>
+
+                <!-- Axis labels -->
+                <text x="60" y="212" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="7">1</text>
+                <text x="120" y="212" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="7">2</text>
+                <text x="175" y="212" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="7">3</text>
+                <text x="230" y="212" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="7">4</text>
+                <text x="280" y="212" text-anchor="middle" fill="#4a6070" font-family="Space Mono" font-size="7">5</text>
+              </svg>
+            </div>
+            <p class="dlbl">DS1 (sin borde) vs DS2 (con borde) — mismas configuraciones A y W</p>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100">
+              <h6 class="c1 mb-3"><i class="fa-solid fa-magnifying-glass me-2"></i>Qué observar y concluir</h6>
+              <ul class="sl">
+                <li><div class="sn">1</div><div class="bt"><strong>DS1 vs DS2:</strong> La línea del DS2 (borde) debe estar <em>por debajo</em> de DS1 → mismo ID, menor MT.</div></li>
+                <li><div class="sn sk">2</div><div class="bt"><strong>R² de cada dataset:</strong> si se acerca a 1.0, la ley de Fitts describe bien los datos de ese usuario/dispositivo.</div></li>
+                <li><div class="sn li">3</div><div class="bt"><strong>DS3:</strong> puntos con mismo ID agrupados → confirma la abstracción del modelo.</div></li>
+                <li><div class="sn pu">4</div><div class="bt">La <strong>pendiente b</strong> de DS2 será menor: el borde reduce el efecto del tamaño del objetivo.</div></li>
+              </ul>
+              <div class="hl sky mt-3">
+                <i class="fa-solid fa-pen me-2"></i>
+                Presentá un cuadro comparativo de a, b, R² y TP para cada dataset como parte de tus conclusiones.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 13 APLICACIONES EN UI ══ -->
+    <div class="slide" id="slide-13">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-star me-1"></i>Diseño</div>
+        <h2 class="t">Aplicaciones de Fitts en el <span class="c1">diseño de UI</span></h2>
+        <p class="lt mb-3">La ley de Fitts no es solo teoría: sus implicaciones se ven en cada menú, botón y panel que usamos a diario.</p>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="gc h-100" style="border-left:3px solid var(--a3)">
+              <h6 class="c3 mb-3"><i class="fa-solid fa-circle-check me-2"></i>Buenas prácticas derivadas</h6>
+              <ul class="sl">
+                <li><div class="sn li">✓</div><div class="bt"><strong>Hacer botones grandes</strong> para acciones frecuentes o críticas.</div></li>
+                <li><div class="sn li">✓</div><div class="bt"><strong>Colocar acciones en los bordes/esquinas</strong> de la pantalla (menús, dock).</div></li>
+                <li><div class="sn li">✓</div><div class="bt"><strong>Reducir la distancia</strong> hasta controles que se usan seguido: menús contextuales.</div></li>
+                <li><div class="sn li">✓</div><div class="bt"><strong>Agrupar elementos relacionados</strong> para minimizar desplazamientos.</div></li>
+                <li><div class="sn li">✓</div><div class="bt">En móviles, targets táctiles de <strong>mínimo 44×44 pt</strong> (Apple HIG) o 48×48 dp (Material Design).</div></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100" style="border-left:3px solid var(--err)">
+              <h6 class="mb-3" style="color:var(--err)"><i class="fa-solid fa-circle-xmark me-2"></i>Errores comunes de diseño</h6>
+              <ul class="sl">
+                <li><div class="sn er">✗</div><div class="bt">Botones muy pequeños para acciones críticas (ej: "Confirmar eliminar").</div></li>
+                <li><div class="sn er">✗</div><div class="bt">Acciones frecuentes alejadas del área de trabajo habitual.</div></li>
+                <li><div class="sn er">✗</div><div class="bt">Menús desplegables muy largos con ítems dispersos.</div></li>
+                <li><div class="sn er">✗</div><div class="bt">Usar pie-menus lineales cuando pie-menus radiales serían más rápidos (igual distancia, mayor área).</div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(163,230,53,.07));border:1px solid rgba(245,158,11,.28);border-radius:14px;padding:20px;text-align:center">
+          <p style="font-size:1.05rem;font-weight:700;color:#fff;margin:0">
+            <i class="fa-solid fa-graduation-cap me-2" style="color:var(--a1)"></i>
+            <span class="c1">Tamaño</span> y <span class="c2">distancia</span> son los dos ejes del diseño de interacción. <span class="c3">Fitts</span> da la fórmula para optimizarlos.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 14 QUIZ ══ -->
+    <div class="slide" id="slide-14">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-clipboard-question me-1"></i>Evaluación</div>
+        <h2 class="t">Cuestionario <span class="c1">Ley de Fitts</span></h2>
+        <p class="bt mb-4">Verificá tu comprensión del modelo y del experimento.</p>
+
+        <div id="quiz-section">
+          <div class="gc mb-3">
+            <div class="qcount">Pregunta <span id="q-num">1</span> de 10</div>
+            <div class="qq" id="q-text"></div>
+            <div id="q-options"></div>
+            <div class="qf" id="q-feedback"></div>
+            <div class="text-end mt-3">
+              <button class="nb p" id="btn-nq" onclick="nextQ()" style="display:none">
+                Siguiente <i class="fa-solid fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="rs">
+          <div class="gc text-center mb-3">
+            <h4 class="mb-3">Resultado final</h4>
+            <div class="sr mb-3">
+              <canvas id="dc" width="140" height="140"></canvas>
+              <div class="si"><div class="snum" id="sd">0/10</div><div class="slb">correctas</div></div>
+            </div>
+            <div id="rm" class="mb-3"></div>
+            <div class="mb-3"><canvas id="bc" height="80"></canvas></div>
+            <button class="nb p mt-2" onclick="restart()">
+              <i class="fa-solid fa-rotate-left me-2"></i>Reiniciar cuestionario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sa -->
+
+  <footer>
+    <button class="nb" id="bp" onclick="go(-1)" disabled><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+    <div class="d-flex gap-1 flex-wrap justify-content-center" id="dn"></div>
+    <button class="nb p" id="bn" onclick="go(1)">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+  </footer>
+</div>
+
+<script>
+const TOTAL = 14;
+let cur = 1;
+
+const quiz = [
+  {
+    q:"¿Qué mide el Índice de Dificultad (ID) en la ley de Fitts?",
+    opts:["La velocidad de reacción del usuario en milisegundos.","La dificultad de alcanzar un objetivo en función de su distancia y tamaño, expresada en bits.","El número de errores cometidos al apuntar.","El tiempo máximo permitido para completar la tarea."],
+    ok:1,
+    ok_fb:"Correcto. ID = log₂(2A/W) cuantifica en bits cuán difícil es alcanzar un objetivo. A mayor ID, más difícil y más tiempo lleva.",
+    ko_fb:"Incorrecto. El ID (Índice de Dificultad) = log₂(2A/W) mide en bits la dificultad de alcanzar un objetivo según su distancia (A) y tamaño (W)."
+  },
+  {
+    q:"En la fórmula MT = a + b·ID, ¿qué representa el parámetro 'b'?",
+    opts:["El tiempo mínimo para iniciar cualquier movimiento.","La constante de ajuste del dispositivo de entrada.","La pendiente: tiempo adicional (ms) por cada bit de dificultad.","El error cuadrático medio del experimento."],
+    ok:2,
+    ok_fb:"Correcto. 'b' es la pendiente de la recta de regresión: cuántos ms se suman por cada bit adicional de dificultad. 'a' es el intercepto (latencia inicial).",
+    ko_fb:"Incorrecto. En MT = a + b·ID, 'b' es la pendiente (ms/bit): cuánto tiempo adicional se necesita por cada bit de dificultad. 'a' es el intercepto (tiempo de latencia inicial)."
+  },
+  {
+    q:"¿Por qué los objetivos ubicados en el borde de la pantalla son más fáciles de alcanzar?",
+    opts:["Porque el sistema operativo los agranda automáticamente.","Porque el usuario los ve antes que los del centro.","Porque el cursor se detiene en el borde, lo que equivale a un ancho efectivo infinito.","Porque los bordes tienen mayor resolución de pantalla."],
+    ok:2,
+    ok_fb:"Correcto. El borde actúa como tope: el usuario puede moverse rápido sin necesitar frenar con precisión. El ancho efectivo es prácticamente infinito, reduciendo el ID.",
+    ko_fb:"Incorrecto. La razón es que el cursor se detiene en el borde de la pantalla automáticamente. El usuario no necesita frenar con precisión, lo que equivale a un ancho (W) efectivamente infinito."
+  },
+  {
+    q:"Si dos configuraciones tienen el mismo ID pero diferente A y W, ¿qué predice la ley de Fitts?",
+    opts:["El MT será mayor para la que tenga A más grande.","El MT será igual para ambas configuraciones.","El MT será mayor para la que tenga W más pequeño.","No se puede predecir sin medir primero."],
+    ok:1,
+    ok_fb:"Correcto. La ley de Fitts establece que el MT depende del ID, no de A y W por separado. Mismo ID → mismo MT predicho.",
+    ko_fb:"Incorrecto. La ley de Fitts establece que el MT es función del ID. Si dos configuraciones tienen el mismo ID, la ley predice el mismo MT, independientemente de los valores individuales de A y W."
+  },
+  {
+    q:"¿Qué indica un R² cercano a 1.0 en el gráfico del simulador de Fitts?",
+    opts:["Que el usuario cometió muy pocos errores durante el experimento.","Que la línea de regresión lineal ajusta muy bien los datos: la ley de Fitts predice bien.","Que el throughput es máximo.","Que hay demasiados outliers en los datos."],
+    ok:1,
+    ok_fb:"Correcto. R² mide la bondad del ajuste lineal. Si R² ≈ 1, la relación entre ID y MT es efectivamente lineal, lo que confirma que la ley de Fitts describe bien el comportamiento del usuario.",
+    ko_fb:"Incorrecto. R² es el coeficiente de determinación de la regresión lineal. Cercano a 1.0 significa que los puntos se ajustan bien a la línea recta: la ley de Fitts predice bien los datos."
+  },
+  {
+    q:"¿Qué mide el Throughput (TP) en el contexto de Fitts?",
+    opts:["La velocidad del procesador durante el experimento.","El número de clics por minuto del usuario.","La eficiencia del sistema humano-dispositivo en bits por segundo (TP = ID/MT).","El total de distancia recorrida por el cursor durante el experimento."],
+    ok:2,
+    ok_fb:"Correcto. TP = ID/MT (bits/s). Es una métrica que captura la eficiencia del sistema humano-dispositivo y permite comparar distintos dispositivos o condiciones.",
+    ko_fb:"Incorrecto. El Throughput = ID/MT, medido en bits/s. Captura cuánta 'información de apuntado' puede procesar el usuario por segundo y permite comparar distintos dispositivos."
+  },
+  {
+    q:"¿Qué configuración de Dataset debe usarse para estudiar el efecto borde en el simulador de Fitts?",
+    opts:["Border = OFF con objetivos muy pequeños.","Border = ON, manteniendo los mismos valores de A y W que en el dataset sin borde.","Usar amplitudes muy largas (A > 500 px) con borde desactivado.","Cambiar el número de repeticiones con borde activado y desactivado."],
+    ok:1,
+    ok_fb:"Correcto. Para aislar el efecto borde, se mantienen iguales A y W y solo se cambia Border entre ON y OFF. Así la diferencia en MT se atribuye exclusivamente al efecto borde.",
+    ko_fb:"Incorrecto. Para estudiar el efecto borde correctamente se debe activar Border = ON y mantener los mismos valores de A y W del dataset sin borde. Así cualquier diferencia en MT se debe exclusivamente al borde."
+  },
+  {
+    q:"¿En qué posición de la pantalla tiene el cursor la mayor ventaja según la ley de Fitts?",
+    opts:["En el centro de la pantalla, donde el usuario ve mejor.","En las esquinas, donde el cursor queda atrapado y el W efectivo es infinito en dos dimensiones.","En la parte superior izquierda por convención cultural de lectura.","No hay diferencia según la posición en la pantalla."],
+    ok:1,
+    ok_fb:"Correcto. Las esquinas ofrecen la mayor ventaja: el cursor queda 'atrapado' en la esquina sin importar cuánto se mueva el mouse en diagonal, haciendo que W sea efectivamente infinito en dos dimensiones.",
+    ko_fb:"Incorrecto. Las esquinas de la pantalla son las posiciones más ventajosas: el cursor queda atrapado al llegar a la esquina, con ancho efectivo infinito en dos dimensiones simultáneamente."
+  },
+  {
+    q:"¿Cuál de estas decisiones de diseño de UI está directamente justificada por la ley de Fitts?",
+    opts:["Usar colores de alto contraste para los botones principales.","Colocar la barra de menú de macOS en el borde superior de toda la pantalla en lugar de dentro de cada ventana.","Usar tipografía más grande en interfaces para personas mayores.","Añadir animaciones de transición entre pantallas."],
+    ok:1,
+    ok_fb:"Correcto. La barra de menú en el borde superior es más fácil de alcanzar porque el W efectivo es infinito (el cursor se detiene en el borde). Es el ejemplo clásico de la ley de Fitts aplicada al diseño de SO.",
+    ko_fb:"Incorrecto. La decisión de diseño más directamente relacionada con Fitts es colocar el menú de macOS en el borde superior de toda la pantalla. El borde da W efectivo infinito, haciéndolo más rápido de alcanzar."
+  },
+  {
+    q:"Si aumentamos el tamaño (W) de un objetivo manteniendo fija la distancia (A), ¿cómo cambia el ID?",
+    opts:["El ID aumenta porque el objetivo ocupa más espacio.","El ID disminuye porque log₂(2A/W) disminuye al aumentar W.","El ID no cambia porque solo depende de A.","El ID es siempre el mismo independientemente de A y W."],
+    ok:1,
+    ok_fb:"Correcto. ID = log₂(2A/W). Si W aumenta, 2A/W disminuye, y por lo tanto log₂(2A/W) disminuye. El objetivo es más fácil de alcanzar.",
+    ko_fb:"Incorrecto. ID = log₂(2A/W). Al aumentar W (denominador), la fracción 2A/W disminuye, por lo que el logaritmo y el ID disminuyen. El objetivo más grande es más fácil de alcanzar."
+  }
+];
+
+let qcur=0,qsc=0,qans=[];
+let dc=null,bc=null;
+
+function go(d){
+  document.querySelectorAll('.slide')[cur-1].classList.remove('active');
+  cur=Math.max(1,Math.min(TOTAL,cur+d));
+  const s=document.querySelectorAll('.slide')[cur-1];
+  s.classList.add('active');
+  const a=s.querySelector('.animate__animated');
+  if(a){a.classList.remove('animate__fadeInRight','animate__fadeIn');void a.offsetWidth;
+    a.classList.add(cur===1?'animate__fadeIn':'animate__fadeInRight');}
+  document.getElementById('cs').textContent=cur;
+  document.getElementById('pb').style.width=((cur/TOTAL)*100)+'%';
+  document.getElementById('bp').disabled=cur===1;
+  document.getElementById('bn').disabled=cur===TOTAL;
+  dots(); document.getElementById('sa').scrollTop=0;
+}
+
+function dots(){
+  const n=document.getElementById('dn'); n.innerHTML='';
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.createElement('div');
+    const ac=i===cur,vi=i<cur;
+    d.style.cssText=`width:${ac?'18px':'6px'};height:6px;border-radius:99px;`+
+      `background:${ac?'var(--a1)':vi?'rgba(245,158,11,.3)':'#0d1a25'};`+
+      `border:1px solid ${ac||vi?'var(--a1)':'#1a2a35'};transition:all .3s;cursor:pointer;flex-shrink:0`;
+    d.onclick=()=>{const dif=i-cur;if(dif)go(dif);};
+    n.appendChild(d);
+  }
+}
+
+function loadQ(){
+  if(qcur>=quiz.length){showRes();return;}
+  const q=quiz[qcur];
+  document.getElementById('q-num').textContent=qcur+1;
+  document.getElementById('q-text').textContent=q.q;
+  const L=['A','B','C','D'];
+  document.getElementById('q-options').innerHTML=q.opts.map((o,i)=>
+    `<div class="qo" onclick="sel(${i})" id="op-${i}"><span class="ol">${L[i]}</span><span>${o}</span></div>`
+  ).join('');
+  const fb=document.getElementById('q-feedback');
+  fb.textContent='';fb.className='qf';
+  document.getElementById('btn-nq').style.display='none';
+}
+
+function sel(idx){
+  const q=quiz[qcur];
+  document.querySelectorAll('.qo').forEach(o=>o.classList.add('disabled'));
+  const fb=document.getElementById('q-feedback');
+  if(idx===q.ok){
+    document.getElementById(`op-${idx}`).classList.add('correct');
+    fb.textContent='✓ '+q.ok_fb;fb.className='qf show ok';
+    qsc++;qans.push(true);
+  } else {
+    document.getElementById(`op-${idx}`).classList.add('wrong');
+    document.getElementById(`op-${q.ok}`).classList.add('correct');
+    fb.textContent='✗ '+q.ko_fb;fb.className='qf show ko';
+    qans.push(false);
+  }
+  document.getElementById('btn-nq').style.display='inline-flex';
+}
+
+function nextQ(){qcur++;loadQ();}
+
+function showRes(){
+  document.getElementById('quiz-section').style.display='none';
+  document.getElementById('rs').style.display='block';
+  const tot=quiz.length,pct=Math.round((qsc/tot)*100);
+  document.getElementById('sd').textContent=`${qsc}/${tot}`;
+  let msg='',color='';
+  if(pct>=90){msg='🏆 ¡Excelente! Dominás la ley de Fitts.';color='var(--a1)';}
+  else if(pct>=70){msg='👍 Muy bien. Repasá los puntos fallidos.';color='var(--a3)';}
+  else if(pct>=50){msg='🔄 Vas bien encaminado. Revisá la fórmula y el efecto borde.';color='var(--a2)';}
+  else{msg='📖 Repasá el material antes del experimento.';color='var(--err)';}
+  document.getElementById('rm').innerHTML=
+    `<p style="font-size:1rem;font-weight:700;color:${color}">${msg}</p>`+
+    `<p class="bt">Obtuviste <strong>${qsc} de ${tot}</strong> correctas (${pct}%).</p>`;
+  if(dc)dc.destroy();
+  dc=new Chart(document.getElementById('dc'),{
+    type:'doughnut',
+    data:{datasets:[{data:[qsc,tot-qsc],backgroundColor:['#f59e0b','#0d1a25'],borderColor:['#d97706','#1a2a35'],borderWidth:2}]},
+    options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
+  });
+  if(bc)bc.destroy();
+  bc=new Chart(document.getElementById('bc'),{
+    type:'bar',
+    data:{
+      labels:qans.map((_,i)=>`P${i+1}`),
+      datasets:[{data:qans.map(a=>a?1:0),
+        backgroundColor:qans.map(a=>a?'rgba(163,230,53,.7)':'rgba(251,113,133,.7)'),
+        borderColor:qans.map(a=>a?'#a3e635':'#fb7185'),
+        borderWidth:1,borderRadius:4}]
+    },
+    options:{responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw===1?'✓ Correcta':'✗ Incorrecta'}}},
+      scales:{y:{display:false,max:1.3},x:{ticks:{color:'#3d5060',font:{family:'Space Mono',size:10}},grid:{color:'rgba(255,255,255,.03)'}}}}
+  });
+  Swal.fire({
+    title:qsc>=8?'¡Buen trabajo!':'Sigue practicando',
+    html:`<strong>${qsc}/${tot}</strong> correctas · ${pct}%`,
+    icon:qsc>=8?'success':qsc>=5?'warning':'error',
+    background:'#0a1018',color:'#f0f4f8',
+    confirmButtonColor:'#f59e0b',confirmButtonText:'Ver resultados',
+    customClass:{popup:'border border-secondary'}
+  });
+}
+
+function restart(){
+  qcur=0;qsc=0;qans=[];
+  document.getElementById('quiz-section').style.display='block';
+  document.getElementById('rs').style.display='none';
+  loadQ();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{dots();loadQ();});
+</script>
+</body>
+</html>
