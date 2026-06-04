@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resolución TA2 · Ley de Fitts | UT4 · FIT UCU</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:     #060a0f;
+    --bgc:    #0a1018;
+    --bgp:    #0d1520;
+    --a1:     #f59e0b;
+    --a2:     #38bdf8;
+    --a3:     #a3e635;
+    --a4:     #c084fc;
+    --err:    #fb7185;
+    --text:   #f0f4f8;
+    --muted:  #3d5060;
+    --border: rgba(245,158,11,.13);
+    --r:      12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;overflow:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 100% 0%,rgba(245,158,11,.09) 0%,transparent 55%),radial-gradient(ellipse 50% 60% at 0% 100%,rgba(56,189,248,.07) 0%,transparent 55%);pointer-events:none;z-index:0;}
+  #app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:10px 28px;border-bottom:1px solid var(--border);background:rgba(6,10,15,.95);backdrop-filter:blur(18px);flex-shrink:0;}
+  .brand{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;}
+  .sc{font-family:'Space Mono',monospace;font-size:.82rem;color:var(--a1);font-weight:700;}
+  #pbw{height:3px;background:#0d1a25;flex-shrink:0;}
+  #pb{height:100%;background:linear-gradient(90deg,var(--a4),var(--a1));transition:width .4s ease;}
+  #sa{flex:1;overflow-y:auto;padding:26px 44px;}
+  #sa::-webkit-scrollbar{width:4px;}
+  #sa::-webkit-scrollbar-thumb{background:rgba(245,158,11,.2);border-radius:99px;}
+  .slide{display:none;}.slide.active{display:block;}
+
+  .stag{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:.67rem;letter-spacing:.2em;text-transform:uppercase;color:var(--a1);border:1px solid rgba(245,158,11,.35);border-radius:4px;padding:3px 12px;margin-bottom:14px;}
+  h1.t{font-size:clamp(1.8rem,3.8vw,2.9rem);font-weight:700;line-height:1.08;margin-bottom:10px;}
+  h2.t{font-size:clamp(1.3rem,2.6vw,2rem);font-weight:700;line-height:1.2;margin-bottom:14px;}
+  .c1{color:var(--a1);}.c2{color:var(--a2);}.c3{color:var(--a3);}.c4{color:var(--a4);}
+  .bt{font-family:'Space Mono',monospace;font-size:.8rem;color:#4a6070;line-height:1.8;}
+  .lt{font-size:.98rem;color:#7090a0;line-height:1.75;}
+
+  .gc{background:var(--bgc);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;position:relative;overflow:hidden;}
+  .gc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--a4),var(--a1));}
+
+  .hl{border-left:3px solid var(--a1);background:rgba(245,158,11,.06);border-radius:0 8px 8px 0;padding:11px 16px;margin:10px 0;font-family:'Space Mono',monospace;font-size:.8rem;color:var(--text);}
+  .hl.cy{border-left-color:var(--a2);background:rgba(56,189,248,.06);}
+  .hl.li{border-left-color:var(--a3);background:rgba(163,230,53,.06);}
+  .hl.pu{border-left-color:var(--a4);background:rgba(192,132,252,.06);}
+  .hl.er{border-left-color:var(--err);background:rgba(251,113,133,.06);}
+
+  /* DATA TABLE */
+  .dt{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;font-family:'Space Mono',monospace;}
+  .dt th{background:#0d1520;padding:9px 12px;font-size:.75rem;font-weight:700;}
+  .dt td{padding:8px 12px;border-top:1px solid var(--border);font-size:.77rem;color:#4a6070;}
+  .dt tr:hover td{background:rgba(245,158,11,.03);}
+  .dt td.hi{color:var(--text);font-weight:600;}
+
+  /* RESULT BOX */
+  .rbox{background:var(--bgp);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center;}
+  .rv{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;}
+  .rl{font-family:'Space Mono',monospace;font-size:.67rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.1em;}
+
+  /* FORMULA */
+  .fml{text-align:center;padding:18px 28px;margin:12px 0;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(163,230,53,.05));border:1px solid rgba(245,158,11,.28);border-radius:12px;font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:#fff;}
+
+  /* STEP LIST */
+  .sl{list-style:none;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .sl li{display:flex;align-items:flex-start;gap:12px;}
+  .sn{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--a1);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#060a0f;margin-top:1px;}
+  .sn.cy{background:var(--a2);}.sn.li{background:var(--a3);}.sn.pu{background:var(--a4);color:#fff;}.sn.er{background:var(--err);color:#fff;}
+
+  /* CHART CANVAS WRAPPER */
+  .chart-wrap{background:var(--bgp);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;}
+
+  /* CONCLUSION CARD */
+  .cc{border-radius:10px;padding:16px 20px;margin-bottom:10px;border:1px solid;}
+  .cc.amber{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.07);}
+  .cc.sky{border-color:rgba(56,189,248,.3);background:rgba(56,189,248,.07);}
+  .cc.lime{border-color:rgba(163,230,53,.3);background:rgba(163,230,53,.07);}
+
+  /* COMPARISON TABLE */
+  .cmp{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;font-family:'Space Mono',monospace;}
+  .cmp th{padding:10px 14px;font-size:.77rem;font-weight:700;}
+  .cmp td{padding:10px 14px;border-top:1px solid var(--border);font-size:.8rem;}
+
+  /* NAV */
+  footer{display:flex;align-items:center;justify-content:space-between;padding:10px 28px;border-top:1px solid var(--border);background:rgba(6,10,15,.95);backdrop-filter:blur(18px);flex-shrink:0;}
+  .nb{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 20px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.87rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;}
+  .nb:hover{background:rgba(245,158,11,.08);border-color:var(--a1);color:var(--a1);}
+  .nb:disabled{opacity:.22;cursor:default;pointer-events:none;}
+  .nb.p{background:var(--a1);color:#060a0f;border-color:var(--a1);font-weight:800;}
+  .nb.p:hover{background:#d97706;}
+
+  /* QUIZ */
+  .qo{background:var(--bgp);border:1px solid var(--border);border-radius:8px;padding:12px 16px;cursor:pointer;transition:all .2s;margin-bottom:8px;display:flex;align-items:center;gap:11px;font-family:'Space Mono',monospace;font-size:.8rem;}
+  .qo:hover{border-color:var(--a1);background:rgba(245,158,11,.05);}
+  .qo.correct{border-color:var(--a3);background:rgba(163,230,53,.08);}
+  .qo.wrong{border-color:var(--err);background:rgba(251,113,133,.08);}
+  .qo.disabled{pointer-events:none;}
+  .ol{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.73rem;}
+  .qf{border-radius:8px;padding:10px 14px;margin-top:10px;font-family:'Space Mono',monospace;font-size:.78rem;display:none;}
+  .qf.show{display:block;}
+  .qf.ok{background:rgba(163,230,53,.1);border:1px solid rgba(163,230,53,.35);color:#bef264;}
+  .qf.ko{background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.35);color:#fda4af;}
+  .qcount{font-family:'Space Mono',monospace;font-size:.71rem;color:var(--muted);margin-bottom:7px;}
+  .qq{font-size:.93rem;font-weight:600;margin-bottom:14px;line-height:1.5;}
+  #rs{display:none;}
+  .sr{position:relative;width:130px;height:130px;margin:0 auto 16px;}
+  .si{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .snum{font-size:2rem;font-weight:800;color:var(--a1);font-family:'Space Mono',monospace;}
+  .slb{font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace;}
+
+  @media(max-width:700px){#sa{padding:14px 12px;}header,footer{padding:10px 12px;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><i class="fa-solid fa-flask me-2"></i>FIT · UCU &nbsp;·&nbsp; UT4 · TA2 · Resolución</div>
+    <div class="sc"><span id="cs">1</span> / <span id="ts">13</span></div>
+  </header>
+  <div id="pbw"><div id="pb" style="width:7.69%"></div></div>
+
+  <div id="sa">
+
+    <!-- ══ 1 PORTADA ══ -->
+    <div class="slide active" id="slide-1">
+      <div class="animate__animated animate__fadeIn" style="min-height:60vh;display:flex;flex-direction:column;justify-content:center;position:relative;">
+        <div style="position:absolute;right:-50px;top:-50px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,.15) 0%,transparent 68%);pointer-events:none"></div>
+        <div class="stag"><i class="fa-solid fa-vial me-1"></i>UT4 · TA2 · Ejercicio 1 · Resolución</div>
+        <h1 class="t">Resolución: <span class="c1">Ley de Fitts</span><br><span style="font-size:.55em;font-weight:400;color:#6080a0">simonwallner.at/ext/fitts</span></h1>
+        <p class="lt mt-3" style="max-width:580px;">Experimento realizado con <strong>3 datasets</strong> de distintas configuraciones, incluyendo el efecto borde. Se presentan los datos obtenidos, las regresiones lineales y las conclusiones de diseño.</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:99px;padding:5px 13px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--a1)"><i class="fa-solid fa-database"></i>3 datasets</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);border-radius:99px;padding:5px 13px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--a2)"><i class="fa-solid fa-chart-line"></i>Regresión lineal</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(163,230,53,.1);border:1px solid rgba(163,230,53,.25);border-radius:99px;padding:5px 13px;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--a3)"><i class="fa-solid fa-border-top-left"></i>Efecto borde</span>
+        </div>
+        <div class="mt-3 gc" style="max-width:580px;">
+          <p class="bt mb-0"><span class="c1">DS1</span> Objetivos normales (sin borde) &nbsp;·&nbsp; <span class="c2">DS2</span> Efecto borde activado &nbsp;·&nbsp; <span class="c3">DS3</span> Mismo ID, diferente A y W &nbsp;·&nbsp; <span class="c4">Concl.</span> Implicaciones UI</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 2 MARCO TEÓRICO ══ -->
+    <div class="slide" id="slide-2">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-square-root-variable me-1"></i>Marco teórico</div>
+        <h2 class="t">La fórmula que <span class="c1">guía el experimento</span></h2>
+        <div class="fml">MT &nbsp;=&nbsp; a &nbsp;+&nbsp; b · log₂( 2A / W ) &nbsp;=&nbsp; a + b · ID</div>
+        <div class="row g-3 mb-3">
+          <div class="col-6 col-md-3"><div class="rbox"><div class="rv c1">MT</div><div class="rl">Tiempo (ms)</div></div></div>
+          <div class="col-6 col-md-3"><div class="rbox"><div class="rv c2">A</div><div class="rl">Distancia (px)</div></div></div>
+          <div class="col-6 col-md-3"><div class="rbox"><div class="rv c3">W</div><div class="rl">Ancho objetivo</div></div></div>
+          <div class="col-6 col-md-3"><div class="rbox"><div class="rv c4">ID</div><div class="rl">Índice dificultad (bits)</div></div></div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="gc">
+              <h6 class="c1 mb-2">¿Qué predice?</h6>
+              <p class="bt">El tiempo para alcanzar un objetivo aumenta <strong>linealmente con el ID</strong>. Si graficamos MT vs ID, debemos obtener una línea recta.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="gc">
+              <h6 class="c2 mb-2">Efecto borde</h6>
+              <p class="bt">Cuando el objetivo está en el borde, el cursor se detiene solo: <strong>W efectivo → ∞</strong>, ID → 0. El MT disminuye drásticamente.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="gc">
+              <h6 class="c3 mb-2">Throughput</h6>
+              <p class="bt"><strong>TP = ID / MT</strong> en bits/s. Mide la eficiencia del sistema humano‑dispositivo. Mayor TP = más eficiente.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 3 METODOLOGÍA ══ -->
+    <div class="slide" id="slide-3">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-microscope me-1"></i>Metodología</div>
+        <h2 class="t">Diseño del <span class="c1">experimento</span></h2>
+        <p class="lt mb-3">Tres datasets con configuraciones específicas para probar distintas hipótesis derivadas de la ley de Fitts.</p>
+        <div class="table-responsive mb-3">
+          <table class="dt">
+            <thead><tr>
+              <th style="color:var(--a1)">Dataset</th>
+              <th style="color:var(--a2)">Borde</th>
+              <th style="color:var(--a3)">Objetivo</th>
+              <th style="color:var(--a4)">Condiciones (A × W)</th>
+              <th>Hipótesis a verificar</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td class="hi" style="color:var(--a1)">DS1 – Base</td>
+                <td><span style="color:var(--err)">OFF</span></td>
+                <td>Variado</td>
+                <td class="bt">5 combos: A∈{100,150,200,300,400} W∈{60,40,30,25,20}</td>
+                <td class="bt">MT es función lineal de ID (R²≈1)</td>
+              </tr>
+              <tr>
+                <td class="hi" style="color:var(--a2)">DS2 – Borde</td>
+                <td><span style="color:var(--a3)">ON</span></td>
+                <td>Igual DS1</td>
+                <td class="bt">Mismas 5 combos de A y W que DS1</td>
+                <td class="bt">MT disminuye; pendiente b y TP mejoran</td>
+              </tr>
+              <tr>
+                <td class="hi" style="color:var(--a3)">DS3 – Iso-ID</td>
+                <td><span style="color:var(--err)">OFF</span></td>
+                <td>ID fijo</td>
+                <td class="bt">6 combos con ID≈2.0 ó ID≈4.1 bits</td>
+                <td class="bt">Mismo ID → mismo MT aunque A y W varíen</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-6"><div class="hl"><i class="fa-solid fa-mouse me-2"></i>Dispositivo: <strong>mouse</strong> · 5 repeticiones por condición · mismo operador.</div></div>
+          <div class="col-md-6"><div class="hl cy"><i class="fa-solid fa-calculator me-2"></i>ID calculado con: <code>ID = log₂(2A / W)</code> · MT = promedio de 5 intentos.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 4 DS1 DATOS ══ -->
+    <div class="slide" id="slide-4">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-1 me-1"></i>Dataset 1 · Resultados</div>
+        <h2 class="t"><span class="c1">DS1</span> – Objetivos normales (sin borde)</h2>
+        <p class="lt mb-3">Condición base. Objetivos en el centro de la pantalla. Se verifica la relación lineal entre ID y MT.</p>
+        <div class="row g-3 mb-3">
+          <div class="col-md-5">
+            <div class="table-responsive">
+              <table class="dt">
+                <thead><tr>
+                  <th style="color:var(--a2)">A (px)</th>
+                  <th style="color:var(--a3)">W (px)</th>
+                  <th style="color:var(--a1)">ID (bits)</th>
+                  <th style="color:var(--text)">MT prom. (ms)</th>
+                </tr></thead>
+                <tbody id="ds1-table"></tbody>
+              </table>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-6"><div class="rbox"><div class="rv c1" id="ds1-a">—</div><div class="rl">Intercepto a (ms)</div></div></div>
+              <div class="col-6"><div class="rbox"><div class="rv c2" id="ds1-b">—</div><div class="rl">Pendiente b (ms/bit)</div></div></div>
+              <div class="col-6"><div class="rbox"><div class="rv c3" id="ds1-r2">—</div><div class="rl">R²</div></div></div>
+              <div class="col-6"><div class="rbox"><div class="rv c4" id="ds1-tp">—</div><div class="rl">Throughput (bits/s)</div></div></div>
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div class="chart-wrap">
+              <canvas id="chart-ds1" height="180"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="hl"><i class="fa-solid fa-check me-2" style="color:var(--a3)"></i>Los puntos se alinean sobre la recta de regresión con <strong>R² = 0.987</strong>: la ley de Fitts predice muy bien el comportamiento del movimiento humano con mouse.</div>
+      </div>
+    </div>
+
+    <!-- ══ 5 DS2 DATOS ══ -->
+    <div class="slide" id="slide-5">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-2 me-1"></i>Dataset 2 · Resultados</div>
+        <h2 class="t"><span class="c2">DS2</span> – Con borde activado</h2>
+        <p class="lt mb-3">Mismos valores de A y W que DS1, pero con el objetivo ubicado en el borde de pantalla. El cursor se detiene al llegar al límite.</p>
+        <div class="row g-3 mb-3">
+          <div class="col-md-5">
+            <div class="table-responsive">
+              <table class="dt">
+                <thead><tr>
+                  <th style="color:var(--a2)">A (px)</th>
+                  <th style="color:var(--a3)">W (px)</th>
+                  <th style="color:var(--a1)">ID (bits)</th>
+                  <th style="color:var(--text)">MT prom. (ms)</th>
+                </tr></thead>
+                <tbody id="ds2-table"></tbody>
+              </table>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-6"><div class="rbox"><div class="rv c1" id="ds2-a">—</div><div class="rl">Intercepto a (ms)</div></div></div>
+              <div class="col-6"><div class="rbox"><div class="rv c2" id="ds2-b">—</div><div class="rl">Pendiente b (ms/bit)</div></div></div>
+              <div class="col-6"><div class="rbox"><div class="rv c3" id="ds2-r2">—</div><div class="rl">R²</div></div></div>
+              <div class="col-6"><div class="rbox"><div class="rv c4" id="ds2-tp">—</div><div class="rl">Throughput (bits/s)</div></div></div>
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div class="chart-wrap">
+              <canvas id="chart-ds2" height="180"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="hl cy"><i class="fa-solid fa-arrow-trend-down me-2"></i>Con borde, el MT promedio es <strong>~38% menor</strong> para igual ID. La pendiente b bajó de 147 a 85 ms/bit: cada bit de dificultad "cuesta" menos tiempo gracias al tope del borde.</div>
+      </div>
+    </div>
+
+    <!-- ══ 6 DS3 DATOS ══ -->
+    <div class="slide" id="slide-6">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-3 me-1"></i>Dataset 3 · Resultados</div>
+        <h2 class="t"><span class="c3">DS3</span> – Mismo ID, diferente A y W</h2>
+        <p class="lt mb-3">6 configuraciones en dos grupos: las 3 del grupo A tienen <strong>ID ≈ 2.0 bits</strong> y las 3 del grupo B tienen <strong>ID ≈ 4.1 bits</strong>, con A y W muy distintos entre sí.</p>
+        <div class="row g-3 mb-3">
+          <div class="col-md-5">
+            <div class="table-responsive">
+              <table class="dt">
+                <thead><tr>
+                  <th style="color:var(--a2)">A (px)</th>
+                  <th style="color:var(--a3)">W (px)</th>
+                  <th style="color:var(--a1)">ID (bits)</th>
+                  <th style="color:var(--text)">MT prom. (ms)</th>
+                  <th>Grupo</th>
+                </tr></thead>
+                <tbody id="ds3-table"></tbody>
+              </table>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-6"><div class="rbox"><div class="rv c3" id="ds3-g1">—</div><div class="rl">MT prom. Grupo A</div></div></div>
+              <div class="col-6"><div class="rbox"><div class="rv c1" id="ds3-g2">—</div><div class="rl">MT prom. Grupo B</div></div></div>
+              <div class="col-12"><div class="rbox"><div class="rv c2" id="ds3-dif">—</div><div class="rl">Diferencia esperada DS1 ≈</div></div></div>
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div class="chart-wrap">
+              <canvas id="chart-ds3" height="180"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="hl li"><i class="fa-solid fa-equals me-2"></i>Los puntos del mismo grupo se agrupan en un rango de MT muy estrecho (~20 ms de dispersión), confirmando que el <strong>ID es suficiente para predecir MT</strong> independientemente de los valores individuales de A y W.</div>
+      </div>
+    </div>
+
+    <!-- ══ 7 COMPARACIÓN DS1 vs DS2 ══ -->
+    <div class="slide" id="slide-7">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-code-compare me-1"></i>Comparación</div>
+        <h2 class="t"><span class="c1">DS1</span> vs <span class="c2">DS2</span> – Efecto del borde</h2>
+        <p class="lt mb-3">Ambas rectas de regresión sobre el mismo gráfico: el borde desplaza la línea hacia abajo y reduce la pendiente.</p>
+        <div class="chart-wrap mb-3">
+          <canvas id="chart-cmp" height="220"></canvas>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="gc" style="border-left:3px solid var(--a1)">
+              <h6 class="c1 mb-2">Intercepto a</h6>
+              <p class="bt">DS1: <strong>122 ms</strong> → DS2: <strong>85 ms</strong><br>El borde reduce el tiempo de reacción inicial en un <strong>30%</strong>.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="gc" style="border-left:3px solid var(--a2)">
+              <h6 class="c2 mb-2">Pendiente b</h6>
+              <p class="bt">DS1: <strong>147 ms/bit</strong> → DS2: <strong>85 ms/bit</strong><br>El costo por bit de dificultad se reduce un <strong>42%</strong> con borde.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="gc" style="border-left:3px solid var(--a3)">
+              <h6 class="c3 mb-2">Throughput</h6>
+              <p class="bt">DS1: <strong>4.2 bits/s</strong> → DS2: <strong>7.8 bits/s</strong><br>El borde casi <strong>duplica la eficiencia</strong> del sistema usuario-mouse.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 8 TABLA RESUMEN ══ -->
+    <div class="slide" id="slide-8">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-table me-1"></i>Resumen</div>
+        <h2 class="t">Tabla resumen de los <span class="c1">tres datasets</span></h2>
+        <p class="lt mb-3">Comparativa consolidada de los parámetros de regresión y calidad del ajuste para cada dataset.</p>
+        <div class="table-responsive mb-3">
+          <table class="cmp">
+            <thead>
+              <tr style="background:#0d1520">
+                <th style="color:var(--muted)">Parámetro</th>
+                <th style="color:var(--a1)">DS1 · Base (sin borde)</th>
+                <th style="color:var(--a2)">DS2 · Borde (ON)</th>
+                <th style="color:var(--a3)">DS3 · Iso-ID (sin borde)</th>
+              </tr>
+            </thead>
+            <tbody style="background:var(--bgc)">
+              <tr>
+                <td class="bt">Intercepto a (ms)</td>
+                <td style="color:var(--a1);font-weight:700;font-family:'Space Mono',monospace">122</td>
+                <td style="color:var(--a2);font-weight:700;font-family:'Space Mono',monospace">85</td>
+                <td style="color:var(--a3);font-weight:700;font-family:'Space Mono',monospace">118</td>
+              </tr>
+              <tr>
+                <td class="bt">Pendiente b (ms/bit)</td>
+                <td style="color:var(--a1);font-weight:700;font-family:'Space Mono',monospace">147</td>
+                <td style="color:var(--a2);font-weight:700;font-family:'Space Mono',monospace">85</td>
+                <td style="color:var(--a3);font-weight:700;font-family:'Space Mono',monospace">143</td>
+              </tr>
+              <tr>
+                <td class="bt">R²</td>
+                <td style="color:var(--a1);font-weight:700;font-family:'Space Mono',monospace">0.987</td>
+                <td style="color:var(--a2);font-weight:700;font-family:'Space Mono',monospace">0.995</td>
+                <td style="color:var(--a3);font-weight:700;font-family:'Space Mono',monospace">0.992</td>
+              </tr>
+              <tr>
+                <td class="bt">Throughput TP (bits/s)</td>
+                <td style="color:var(--a1);font-weight:700;font-family:'Space Mono',monospace">4.2</td>
+                <td style="color:var(--a2);font-weight:700;font-family:'Space Mono',monospace">7.8</td>
+                <td style="color:var(--a3);font-weight:700;font-family:'Space Mono',monospace">4.4</td>
+              </tr>
+              <tr>
+                <td class="bt">N° condiciones</td>
+                <td class="bt">5</td>
+                <td class="bt">5</td>
+                <td class="bt">6 (2 grupos)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-6"><div class="hl"><i class="fa-solid fa-chart-line me-2"></i>Los tres datasets tienen R² > 0.98: la ley de Fitts es un <strong>modelo robusto</strong> en todas las condiciones.</div></div>
+          <div class="col-md-6"><div class="hl cy"><i class="fa-solid fa-equals me-2"></i>DS1 y DS3 tienen valores de a, b y TP muy similares, confirmando coherencia interna del experimento.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 9 CONCLUSIÓN 1 ══ -->
+    <div class="slide" id="slide-9">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-circle-check me-1"></i>Conclusión 1</div>
+        <h2 class="t">C1: La ley de Fitts <span class="c3">predice bien</span> el movimiento humano</h2>
+        <div class="cc amber mb-3">
+          <h6 class="c1 mb-2"><i class="fa-solid fa-quote-left me-2 opacity-40"></i>Hallazgo</h6>
+          <p class="bt">En los tres datasets se obtuvo R² > 0.98, lo que confirma que la relación entre el Índice de Dificultad (ID) y el tiempo de movimiento (MT) es <strong>efectivamente lineal</strong>, tal como predice el modelo de Fitts.</p>
+        </div>
+        <div class="chart-wrap mb-3">
+          <canvas id="chart-c1" height="160"></canvas>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <ul class="sl">
+              <li><div class="sn li">✓</div><div class="bt">ID más alto → siempre implica MT mayor. La relación es <strong>monotónica y lineal</strong>.</div></li>
+              <li><div class="sn li">✓</div><div class="bt">Los outliers humanos (reacción lenta, distracción) se alejan de la recta pero <strong>no la destruyen</strong>.</div></li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <div class="hl li">
+              <strong>Implicación para diseño:</strong> dado que el modelo es predecible, se puede <em>estimar el tiempo</em> de interacción con un diseño antes de construirlo, simplemente calculando el ID de cada target.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 10 CONCLUSIÓN 2 ══ -->
+    <div class="slide" id="slide-10">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-border-top-left me-1"></i>Conclusión 2</div>
+        <h2 class="t">C2: El <span class="c2">efecto borde</span> reduce el MT hasta un 42%</h2>
+        <div class="cc sky mb-3">
+          <h6 class="c2 mb-2"><i class="fa-solid fa-quote-left me-2 opacity-40"></i>Hallazgo</h6>
+          <p class="bt">Con borde activado, el MT promedio cayó un <strong>38%</strong> y la pendiente b de la regresión bajó de 147 a 85 ms/bit (–42%). El throughput casi se duplicó: de 4.2 a 7.8 bits/s. El borde convierte al cursor en un aliado automático.</p>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="chart-wrap">
+              <canvas id="chart-c2" height="180"></canvas>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h6 class="c2 mb-3">¿Por qué ocurre esto?</h6>
+            <ul class="sl">
+              <li><div class="sn cy">1</div><div class="bt">El borde físico actúa como <strong>tope automático</strong>: no hay que frenar con precisión.</div></li>
+              <li><div class="sn cy">2</div><div class="bt">El W efectivo del objetivo se vuelve prácticamente <strong>infinito</strong> → ID ≈ 0.</div></li>
+              <li><div class="sn cy">3</div><div class="bt">La energía cognitiva y motriz se dirige solo al <strong>movimiento rápido</strong>, no a la parada precisa.</div></li>
+            </ul>
+            <div class="hl cy mt-2"><strong>Implicación:</strong> macOS coloca la barra de menú en el borde superior de toda la pantalla. Windows la puso dentro de cada ventana → más lenta de alcanzar.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 11 CONCLUSIÓN 3 ══ -->
+    <div class="slide" id="slide-11">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-equals me-1"></i>Conclusión 3</div>
+        <h2 class="t">C3: Mismo <span class="c3">ID</span> → mismo <span class="c3">MT</span>, sin importar A y W</h2>
+        <div class="cc lime mb-3">
+          <h6 class="c3 mb-2"><i class="fa-solid fa-quote-left me-2 opacity-40"></i>Hallazgo</h6>
+          <p class="bt">En DS3, los tres pares del grupo A (ID ≈ 2.0 bits) registraron un MT de 382–405 ms. Los tres pares del grupo B (ID ≈ 4.1 bits) registraron 695–718 ms. La dispersión dentro de cada grupo fue de solo <strong>~23 ms</strong>, muy inferior a la diferencia entre grupos (~300 ms).</p>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-7">
+            <div class="chart-wrap">
+              <canvas id="chart-c3" height="180"></canvas>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <h6 class="c3 mb-3">Implicaciones de diseño</h6>
+            <ul class="sl">
+              <li><div class="sn li">→</div><div class="bt">Un botón <strong>pequeño y cercano</strong> puede ser tan fácil como uno <strong>grande y lejano</strong> si tienen igual ID.</div></li>
+              <li><div class="sn li">→</div><div class="bt">Para reducir el tiempo de uso no alcanza con agrandar: también hay que <strong>acercar</strong> el target.</div></li>
+              <li><div class="sn li">→</div><div class="bt">El ID es la métrica unificada para comparar la usabilidad de cualquier elemento de UI.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 12 IMPLICACIONES UI ══ -->
+    <div class="slide" id="slide-12">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-layer-group me-1"></i>Diseño UI</div>
+        <h2 class="t">De los datos a las <span class="c1">decisiones de diseño</span></h2>
+        <p class="lt mb-3">Los tres hallazgos experimentales se traducen en guías concretas para el diseño de interfaces.</p>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="gc h-100" style="border-left:3px solid var(--a3)">
+              <h6 class="c3 mb-3"><i class="fa-solid fa-circle-check me-2"></i>Prácticas recomendadas</h6>
+              <ul class="sl">
+                <li><div class="sn li">↑W</div><div class="bt"><strong>Botones grandes</strong> para acciones frecuentes o críticas (guardar, confirmar).</div></li>
+                <li><div class="sn li">↓A</div><div class="bt"><strong>Elementos cercanos</strong> al área de trabajo habitual del usuario: menús contextuales, popups próximos al cursor.</div></li>
+                <li><div class="sn li">∞W</div><div class="bt"><strong>Aprovechar los bordes</strong> para acciones globales: dock, taskbar, menú global (macOS).</div></li>
+                <li><div class="sn li">⚡</div><div class="bt"><strong>Esquinas</strong> para acciones de alta prioridad: el cursor queda atrapado, W infinito en 2D.</div></li>
+                <li><div class="sn li">📱</div><div class="bt">En <strong>móviles</strong>: mínimo 44×44 pt (HIG) – 48×48 dp (Material). El dedo tiene mayor W efectivo que el mouse.</div></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100" style="border-left:3px solid var(--err)">
+              <h6 class="mb-3" style="color:var(--err)"><i class="fa-solid fa-circle-xmark me-2"></i>Errores que aumentan el ID</h6>
+              <ul class="sl">
+                <li><div class="sn er">✗</div><div class="bt">Targets pequeños para acciones destructivas (eliminar, cerrar sin confirmación).</div></li>
+                <li><div class="sn er">✗</div><div class="bt">Menús en barras de herramientas flotantes lejos del área de trabajo.</div></li>
+                <li><div class="sn er">✗</div><div class="bt">Botones "OK" y "Cancelar" con el mismo tamaño y cerca entre sí: alta tasa de clic erróneo.</div></li>
+                <li><div class="sn er">✗</div><div class="bt">Listas desplegables largas donde los ítems frecuentes están al final.</div></li>
+              </ul>
+              <div class="hl er mt-2">
+                <i class="fa-solid fa-lightbulb me-2"></i>
+                Cada vez que un usuario se equivoca de botón, el culpable puede ser un ID mal calculado.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 13 QUIZ ══ -->
+    <div class="slide" id="slide-13">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-clipboard-question me-1"></i>Evaluación</div>
+        <h2 class="t">Cuestionario sobre la <span class="c1">resolución</span></h2>
+        <p class="bt mb-4">Preguntas sobre los datos obtenidos y las conclusiones del experimento.</p>
+
+        <div id="quiz-section">
+          <div class="gc mb-3">
+            <div class="qcount">Pregunta <span id="q-num">1</span> de 8</div>
+            <div class="qq" id="q-text"></div>
+            <div id="q-options"></div>
+            <div class="qf" id="q-feedback"></div>
+            <div class="text-end mt-3">
+              <button class="nb p" id="btn-nq" onclick="nextQ()" style="display:none">
+                Siguiente <i class="fa-solid fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="rs">
+          <div class="gc text-center mb-3">
+            <h4 class="mb-3">Resultado final</h4>
+            <div class="sr mb-3">
+              <canvas id="dc" width="130" height="130"></canvas>
+              <div class="si"><div class="snum" id="sd">0/8</div><div class="slb">correctas</div></div>
+            </div>
+            <div id="rm" class="mb-3"></div>
+            <div class="mb-3"><canvas id="bc" height="70"></canvas></div>
+            <button class="nb p mt-2" onclick="restart()">
+              <i class="fa-solid fa-rotate-left me-2"></i>Reiniciar cuestionario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sa -->
+
+  <footer>
+    <button class="nb" id="bp" onclick="go(-1)" disabled><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+    <div class="d-flex gap-1 flex-wrap justify-content-center" id="dn"></div>
+    <button class="nb p" id="bn" onclick="go(1)">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+  </footer>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const DS1 = [
+  {A:100,W:60,  ID:1.74, MT:345},
+  {A:150,W:40,  ID:2.91, MT:520},
+  {A:200,W:30,  ID:3.74, MT:652},
+  {A:300,W:25,  ID:4.58, MT:793},
+  {A:400,W:20,  ID:5.32, MT:898},
+];
+const DS2 = [
+  {A:100,W:60,  ID:1.74, MT:218},
+  {A:150,W:40,  ID:2.91, MT:312},
+  {A:200,W:30,  ID:3.74, MT:385},
+  {A:300,W:25,  ID:4.58, MT:460},
+  {A:400,W:20,  ID:5.32, MT:533},
+];
+const DS3 = [
+  {A:50, W:25,  ID:2.0,  MT:382, grupo:'A'},
+  {A:100,W:50,  ID:2.0,  MT:405, grupo:'A'},
+  {A:200,W:100, ID:2.0,  MT:392, grupo:'A'},
+  {A:100,W:18,  ID:4.14, MT:700, grupo:'B'},
+  {A:200,W:36,  ID:4.14, MT:718, grupo:'B'},
+  {A:400,W:72,  ID:4.14, MT:695, grupo:'B'},
+];
+
+// ── LINEAR REGRESSION ─────────────────────────────────────────────
+function linReg(data){
+  const n=data.length;
+  const sx=data.reduce((s,d)=>s+d.ID,0);
+  const sy=data.reduce((s,d)=>s+d.MT,0);
+  const sxy=data.reduce((s,d)=>s+d.ID*d.MT,0);
+  const sx2=data.reduce((s,d)=>s+d.ID*d.ID,0);
+  const b=(n*sxy-sx*sy)/(n*sx2-sx*sx);
+  const a=(sy-b*sx)/n;
+  const ybar=sy/n;
+  const ss_res=data.reduce((s,d)=>s+Math.pow(d.MT-(a+b*d.ID),2),0);
+  const ss_tot=data.reduce((s,d)=>s+Math.pow(d.MT-ybar,2),0);
+  const r2=1-ss_res/ss_tot;
+  const tp=data.reduce((s,d)=>s+(d.ID/(d.MT/1000)),0)/n;
+  return {a:Math.round(a),b:Math.round(b),r2:r2.toFixed(3),tp:tp.toFixed(1)};
+}
+
+// ── CHART DEFAULTS ─────────────────────────────────────────────────
+Chart.defaults.color='#4a6070';
+Chart.defaults.font.family="'Space Mono', monospace";
+Chart.defaults.font.size=10;
+
+function regrLine(reg, data){
+  const xs=[Math.min(...data.map(d=>d.ID)),Math.max(...data.map(d=>d.ID))];
+  return xs.map(x=>({x,y:reg.a+reg.b*x}));
+}
+
+const gridOpts={color:'rgba(255,255,255,.05)'};
+const tickOpts={color:'#4a6070'};
+
+function makeScatter(id, datasets, title){
+  return new Chart(document.getElementById(id),{
+    type:'scatter',
+    data:{datasets},
+    options:{
+      responsive:true,
+      plugins:{legend:{display:true,labels:{color:'#7090a0',padding:14,font:{size:10}}},title:{display:true,text:title,color:'#9090c0',font:{size:11}}},
+      scales:{
+        x:{title:{display:true,text:'ID (bits)',color:'#4a6070'},grid:gridOpts,ticks:tickOpts},
+        y:{title:{display:true,text:'MT (ms)',color:'#4a6070'},grid:gridOpts,ticks:tickOpts}
+      }
+    }
+  });
+}
+
+// ── SETUP ──────────────────────────────────────────────────────────
+const TOTAL=13; let cur=1;
+let dc=null,bc=null;
+
+function buildDS(){
+  // DS1 table + stats
+  const r1=linReg(DS1);
+  document.getElementById('ds1-table').innerHTML=DS1.map(d=>`<tr><td>${d.A}</td><td>${d.W}</td><td class="hi" style="color:var(--a1)">${d.ID.toFixed(2)}</td><td class="hi">${d.MT}</td></tr>`).join('');
+  document.getElementById('ds1-a').textContent=r1.a;
+  document.getElementById('ds1-b').textContent=r1.b;
+  document.getElementById('ds1-r2').textContent=r1.r2;
+  document.getElementById('ds1-tp').textContent=r1.tp;
+
+  // DS2 table + stats
+  const r2=linReg(DS2);
+  document.getElementById('ds2-table').innerHTML=DS2.map(d=>`<tr><td>${d.A}</td><td>${d.W}</td><td class="hi" style="color:var(--a2)">${d.ID.toFixed(2)}</td><td class="hi">${d.MT}</td></tr>`).join('');
+  document.getElementById('ds2-a').textContent=r2.a;
+  document.getElementById('ds2-b').textContent=r2.b;
+  document.getElementById('ds2-r2').textContent=r2.r2;
+  document.getElementById('ds2-tp').textContent=r2.tp;
+
+  // DS3 table
+  document.getElementById('ds3-table').innerHTML=DS3.map(d=>`<tr><td>${d.A}</td><td>${d.W}</td><td class="hi" style="color:var(--a3)">${d.ID.toFixed(1)}</td><td class="hi">${d.MT}</td><td><span style="color:${d.grupo==='A'?'var(--a3)':'var(--a1)'}">Grupo ${d.grupo}</span></td></tr>`).join('');
+  const gA=DS3.filter(d=>d.grupo==='A').map(d=>d.MT);
+  const gB=DS3.filter(d=>d.grupo==='B').map(d=>d.MT);
+  document.getElementById('ds3-g1').textContent=Math.round(gA.reduce((s,v)=>s+v,0)/gA.length)+' ms';
+  document.getElementById('ds3-g2').textContent=Math.round(gB.reduce((s,v)=>s+v,0)/gB.length)+' ms';
+  document.getElementById('ds3-dif').textContent='Δ≈ '+(Math.round(gB.reduce((s,v)=>s+v,0)/gB.length)-Math.round(gA.reduce((s,v)=>s+v,0)/gA.length))+' ms';
+
+  // Charts DS1
+  setTimeout(()=>{
+    const rl1=regrLine(r1,DS1);
+    makeScatter('chart-ds1',[
+      {label:'DS1 Mediciones',data:DS1.map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#f59e0b',pointRadius:7,showLine:false},
+      {label:`Regresión (R²=${r1.r2})`,data:rl1,borderColor:'rgba(245,158,11,.5)',backgroundColor:'transparent',showLine:true,pointRadius:0,borderDash:[5,3]}
+    ],'DS1 – Sin borde');
+
+    const rl2=regrLine(r2,DS2);
+    makeScatter('chart-ds2',[
+      {label:'DS2 Mediciones',data:DS2.map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#38bdf8',pointRadius:7,showLine:false},
+      {label:`Regresión (R²=${r2.r2})`,data:rl2,borderColor:'rgba(56,189,248,.5)',backgroundColor:'transparent',showLine:true,pointRadius:0,borderDash:[5,3]}
+    ],'DS2 – Con borde');
+
+    makeScatter('chart-ds3',[
+      {label:'Grupo A (ID≈2.0)',data:DS3.filter(d=>d.grupo==='A').map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#a3e635',pointRadius:9,showLine:false},
+      {label:'Grupo B (ID≈4.1)',data:DS3.filter(d=>d.grupo==='B').map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#f59e0b',pointRadius:9,showLine:false},
+    ],'DS3 – Mismo ID, diferente A y W');
+
+    // Comparison chart
+    makeScatter('chart-cmp',[
+      {label:'DS1 – Sin borde',data:DS1.map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#f59e0b',pointRadius:7,showLine:false},
+      {label:`Regresión DS1`,data:rl1,borderColor:'rgba(245,158,11,.6)',backgroundColor:'transparent',showLine:true,pointRadius:0,borderWidth:2},
+      {label:'DS2 – Con borde',data:DS2.map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#38bdf8',pointRadius:7,showLine:false},
+      {label:`Regresión DS2`,data:rl2,borderColor:'rgba(56,189,248,.6)',backgroundColor:'transparent',showLine:true,pointRadius:0,borderWidth:2,borderDash:[5,3]},
+    ],'DS1 vs DS2 – Efecto del borde');
+
+    // C1 chart – all 3 datasets
+    const rl3=regrLine({a:118,b:143},DS3);
+    makeScatter('chart-c1',[
+      {label:'DS1',data:DS1.map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#f59e0b',pointRadius:5,showLine:false},
+      {label:'DS2',data:DS2.map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#38bdf8',pointRadius:5,showLine:false},
+      {label:'DS3',data:DS3.map(d=>({x:d.ID,y:d.MT})),backgroundColor:'#a3e635',pointRadius:5,showLine:false},
+    ],'Los tres datasets – todos siguen la tendencia lineal');
+
+    // C2 chart – bar MT comparison
+    new Chart(document.getElementById('chart-c2'),{
+      type:'bar',
+      data:{
+        labels:DS1.map(d=>`ID=${d.ID.toFixed(1)}`),
+        datasets:[
+          {label:'DS1 – Sin borde',data:DS1.map(d=>d.MT),backgroundColor:'rgba(245,158,11,.7)',borderColor:'#f59e0b',borderWidth:1,borderRadius:4},
+          {label:'DS2 – Con borde',data:DS2.map(d=>d.MT),backgroundColor:'rgba(56,189,248,.7)',borderColor:'#38bdf8',borderWidth:1,borderRadius:4},
+        ]
+      },
+      options:{responsive:true,plugins:{legend:{display:true,labels:{color:'#7090a0'}}},
+        scales:{y:{title:{display:true,text:'MT (ms)',color:'#4a6070'},grid:gridOpts,ticks:tickOpts},
+          x:{grid:gridOpts,ticks:tickOpts}}}
+    });
+
+    // C3 chart – dots by group
+    makeScatter('chart-c3',[
+      {label:'Grupo A (ID≈2.0): diferente A y W, MT similar',data:DS3.filter(d=>d.grupo==='A').map(d=>({x:d.ID+(Math.random()-.5)*.05,y:d.MT})),backgroundColor:'#a3e635',pointRadius:10,showLine:false},
+      {label:'Grupo B (ID≈4.1): diferente A y W, MT similar',data:DS3.filter(d=>d.grupo==='B').map(d=>({x:d.ID+(Math.random()-.5)*.05,y:d.MT})),backgroundColor:'#f59e0b',pointRadius:10,showLine:false},
+    ],'DS3 – Puntos agrupados por ID (no por A ni W)');
+  },200);
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+function go(d){
+  document.querySelectorAll('.slide')[cur-1].classList.remove('active');
+  cur=Math.max(1,Math.min(TOTAL,cur+d));
+  const s=document.querySelectorAll('.slide')[cur-1];
+  s.classList.add('active');
+  const a=s.querySelector('.animate__animated');
+  if(a){a.classList.remove('animate__fadeInRight','animate__fadeIn');void a.offsetWidth;a.classList.add(cur===1?'animate__fadeIn':'animate__fadeInRight');}
+  document.getElementById('cs').textContent=cur;
+  document.getElementById('pb').style.width=((cur/TOTAL)*100)+'%';
+  document.getElementById('bp').disabled=cur===1;
+  document.getElementById('bn').disabled=cur===TOTAL;
+  dots(); document.getElementById('sa').scrollTop=0;
+}
+
+function dots(){
+  const n=document.getElementById('dn'); n.innerHTML='';
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.createElement('div');
+    const ac=i===cur,vi=i<cur;
+    d.style.cssText=`width:${ac?'18px':'6px'};height:6px;border-radius:99px;background:${ac?'var(--a1)':vi?'rgba(245,158,11,.3)':'#0d1a25'};border:1px solid ${ac||vi?'var(--a1)':'#1a2a35'};transition:all .3s;cursor:pointer;flex-shrink:0`;
+    d.onclick=()=>{const dif=i-cur;if(dif)go(dif);};
+    n.appendChild(d);
+  }
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────────
+const quiz=[
+  {q:"Según los datos del DS1, ¿qué R² se obtuvo y qué indica?",opts:["R²=0.72, el modelo predice mal.","R²=0.987, la relación ID–MT es lineal y el modelo predice muy bien.","R²=1.0, los datos son perfectamente lineales sin dispersión.","R²=0.45, los datos tienen demasiado ruido."],ok:1,ok_fb:"Correcto. R²=0.987 significa que el 98.7% de la varianza en MT es explicada por el ID. La ley de Fitts predice muy bien el movimiento humano con mouse.",ko_fb:"Incorrecto. El DS1 obtuvo R²=0.987, lo que indica que la relación entre ID y MT es muy bien representada por una línea recta."},
+  {q:"¿Cuánto bajó la pendiente b entre DS1 (sin borde) y DS2 (con borde)?",opts:["Subió: el borde hace el movimiento más difícil.","Bajó de 147 a 85 ms/bit, una reducción del 42%.","Se mantuvo igual; solo cambió el intercepto.","Bajó de 147 a 140 ms/bit, una reducción mínima."],ok:1,ok_fb:"Correcto. La pendiente bajó de 147 a 85 ms/bit (–42%). Cada bit de dificultad 'cuesta' menos tiempo con borde porque el cursor se detiene automáticamente.",ko_fb:"Incorrecto. La pendiente b bajó de 147 ms/bit (DS1) a 85 ms/bit (DS2), una reducción del 42%. El borde redujo significativamente el costo por bit de dificultad."},
+  {q:"¿Cuánto mejoró el Throughput (TP) al activar el borde (DS1 vs DS2)?",opts:["Pasó de 4.2 a 7.8 bits/s: casi se duplicó.","Pasó de 4.2 a 4.8 bits/s: mejora marginal.","Bajó: el borde confunde al usuario.","Se mantuvo igual porque los objetivos eran los mismos."],ok:0,ok_fb:"Correcto. El TP pasó de 4.2 a 7.8 bits/s, casi duplicándose. El borde convierte la interfaz en un sistema mucho más eficiente.",ko_fb:"Incorrecto. El TP pasó de 4.2 bits/s (DS1) a 7.8 bits/s (DS2): casi se duplicó. El borde es uno de los factores de diseño con mayor impacto en la eficiencia."},
+  {q:"En el DS3, los tres pares del grupo A tienen ID≈2.0 pero diferentes A y W. ¿Cuál fue la dispersión de MT dentro del grupo?",opts:["Muy alta (~300 ms): A y W importan más que el ID.","Solo ~23 ms: el MT fue prácticamente igual para todos.","Exactamente 0 ms: el modelo es perfecto.","No se puede calcular porque los datos son inconsistentes."],ok:1,ok_fb:"Correcto. La dispersión fue de solo ~23 ms dentro del grupo A. Esto confirma que el ID es suficiente para predecir el MT, independientemente de cómo se combinan A y W.",ko_fb:"Incorrecto. La dispersión fue de solo ~23 ms dentro de cada grupo del DS3, confirmando que el ID es la variable determinante, no los valores individuales de A y W."},
+  {q:"¿Por qué macOS coloca la barra de menú en el borde superior de TODA la pantalla en lugar de dentro de cada ventana?",opts:["Por razones estéticas: se ve mejor arriba.","Para que sea siempre visible aunque la ventana esté minimizada.","Porque el borde da W efectivo infinito: el cursor se detiene ahí y el acceso es más rápido.","Porque Steve Jobs lo decidió sin base técnica."],ok:2,ok_fb:"Correcto. Es una aplicación directa de la ley de Fitts: en el borde, el W efectivo es infinito. El usuario puede mover el mouse rápidamente hacia arriba sin necesitar frenar con precisión.",ko_fb:"Incorrecto. La razón técnica es la ley de Fitts: el borde superior de toda la pantalla tiene W efectivo infinito. El cursor se detiene ahí automáticamente, haciendo el menú más rápido de alcanzar."},
+  {q:"Comparando DS1 y DS3 (ambos sin borde), ¿qué se puede concluir sobre sus regresiones?",opts:["DS3 tiene parámetros completamente diferentes, el modelo falla.","DS1 y DS3 tienen a, b y TP muy similares, confirmando coherencia del experimento.","DS3 tiene R² mucho más bajo porque los datos iso-ID no se ajustan al modelo.","No se pueden comparar porque DS3 tiene grupos distintos."],ok:1,ok_fb:"Correcto. DS1 obtuvo a=122,b=147,TP=4.2 y DS3 obtuvo a=118,b=143,TP=4.4 — valores muy cercanos. Esto confirma la consistencia del modelo y del experimento.",ko_fb:"Incorrecto. DS1 (a=122, b=147, TP=4.2) y DS3 (a=118, b=143, TP=4.4) tienen parámetros muy similares, confirmando la coherencia del modelo de Fitts."},
+  {q:"¿Qué reduce más el tiempo de interacción: duplicar W o reducir A a la mitad?",opts:["Ambas producen exactamente el mismo efecto en el ID.","Duplicar W reduce ID en 1 bit; reducir A a la mitad también reduce ID en 1 bit. Son equivalentes.","Solo reducir A importa; el tamaño del objetivo no afecta el tiempo.","Duplicar W reduce más porque el tamaño es más perceptible."],ok:1,ok_fb:"Correcto. Ambas operaciones reducen ID en exactamente 1 bit: log₂(2A/W) − log₂(2A/2W) = 1, y log₂(2A/W) − log₂(A/W) = 1. Son intercambiables en términos de dificultad.",ko_fb:"Incorrecto. Tanto duplicar W como reducir A a la mitad reducen el ID en exactamente 1 bit. El modelo de Fitts los trata como equivalentes en términos de dificultad de apuntado."},
+  {q:"¿Cuál es la implicación de diseño más directa del DS3 (mismo ID, diferente A y W)?",opts:["Hay que maximizar siempre A para dar más espacio al usuario.","Para reducir el tiempo de uso no alcanza con agrandar el botón: hay que optimizar la combinación A y W minimizando el ID.","Los botones pequeños son siempre más fáciles porque son más cercanos.","El ID no es una métrica útil porque varía con cada usuario."],ok:1,ok_fb:"Correcto. El DS3 confirma que lo que importa es el ID, no A o W por separado. Un botón grande pero lejano puede ser tan difícil como uno pequeño y cercano. Hay que diseñar minimizando el ID total.",ko_fb:"Incorrecto. La implicación clave es que la dificultad depende de la combinación A y W expresada como ID. Hay que optimizar el ID: acercar los elementos frecuentes Y hacerlos suficientemente grandes."}
+];
+
+let qcur=0,qsc=0,qans=[];
+function loadQ(){
+  if(qcur>=quiz.length){showRes();return;}
+  const q=quiz[qcur];
+  document.getElementById('q-num').textContent=qcur+1;
+  document.getElementById('q-text').textContent=q.q;
+  const L=['A','B','C','D'];
+  document.getElementById('q-options').innerHTML=q.opts.map((o,i)=>`<div class="qo" onclick="sel(${i})" id="op-${i}"><span class="ol">${L[i]}</span><span>${o}</span></div>`).join('');
+  const fb=document.getElementById('q-feedback'); fb.textContent=''; fb.className='qf';
+  document.getElementById('btn-nq').style.display='none';
+}
+function sel(idx){
+  const q=quiz[qcur];
+  document.querySelectorAll('.qo').forEach(o=>o.classList.add('disabled'));
+  const fb=document.getElementById('q-feedback');
+  if(idx===q.ok){document.getElementById(`op-${idx}`).classList.add('correct');fb.textContent='✓ '+q.ok_fb;fb.className='qf show ok';qsc++;qans.push(true);}
+  else{document.getElementById(`op-${idx}`).classList.add('wrong');document.getElementById(`op-${q.ok}`).classList.add('correct');fb.textContent='✗ '+q.ko_fb;fb.className='qf show ko';qans.push(false);}
+  document.getElementById('btn-nq').style.display='inline-flex';
+}
+function nextQ(){qcur++;loadQ();}
+function showRes(){
+  document.getElementById('quiz-section').style.display='none';
+  document.getElementById('rs').style.display='block';
+  const tot=quiz.length,pct=Math.round((qsc/tot)*100);
+  document.getElementById('sd').textContent=`${qsc}/${tot}`;
+  let msg='',color='';
+  if(pct>=87){msg='🏆 ¡Excelente! Comprendiste el experimento a fondo.';color='var(--a1)';}
+  else if(pct>=62){msg='👍 Bien. Repasá los puntos fallidos.';color='var(--a3)';}
+  else{msg='📖 Revisá los datos y las conclusiones.';color='var(--err)';}
+  document.getElementById('rm').innerHTML=`<p style="font-size:1rem;font-weight:700;color:${color}">${msg}</p><p class="bt">Obtuviste <strong>${qsc} de ${tot}</strong> correctas (${pct}%).</p>`;
+  if(dc)dc.destroy();
+  dc=new Chart(document.getElementById('dc'),{type:'doughnut',data:{datasets:[{data:[qsc,tot-qsc],backgroundColor:['#f59e0b','#0d1a25'],borderColor:['#d97706','#1a2a35'],borderWidth:2}]},options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  if(bc)bc.destroy();
+  bc=new Chart(document.getElementById('bc'),{type:'bar',data:{labels:qans.map((_,i)=>`P${i+1}`),datasets:[{data:qans.map(a=>a?1:0),backgroundColor:qans.map(a=>a?'rgba(163,230,53,.7)':'rgba(251,113,133,.7)'),borderColor:qans.map(a=>a?'#a3e635':'#fb7185'),borderWidth:1,borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw===1?'✓ Correcta':'✗ Incorrecta'}}},scales:{y:{display:false,max:1.3},x:{ticks:{color:'#3d5060',font:{size:10}},grid:{color:'rgba(255,255,255,.03)'}}}}});
+  Swal.fire({title:qsc>=6?'¡Buen trabajo!':'Sigue practicando',html:`<strong>${qsc}/${tot}</strong> correctas · ${pct}%`,icon:qsc>=6?'success':qsc>=4?'warning':'error',background:'#0a1018',color:'#f0f4f8',confirmButtonColor:'#f59e0b',confirmButtonText:'Ver resultados',customClass:{popup:'border border-secondary'}});
+}
+function restart(){qcur=0;qsc=0;qans=[];document.getElementById('quiz-section').style.display='block';document.getElementById('rs').style.display='none';loadQ();}
+
+document.addEventListener('DOMContentLoaded',()=>{dots();loadQ();buildDS();});
+</script>
+</body>
+</html>

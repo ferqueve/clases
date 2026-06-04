@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TA3 · Nielsen vs Tognazzini | UT4 · FIT UCU</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:      #0f0f13;
+    --bgc:     #16161e;
+    --bgp:     #1c1c28;
+    --n:       #f97316;   /* nielsen orange */
+    --t:       #06b6d4;   /* tognazzini cyan */
+    --both:    #a855f7;   /* purple for both */
+    --new:     #10b981;   /* green for new */
+    --text:    #f1f0ff;
+    --muted:   #444466;
+    --border:  rgba(249,115,22,.14);
+    --r:       12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow:hidden;}
+  body::before{content:'';position:fixed;inset:0;
+    background:radial-gradient(ellipse 65% 45% at 95% 5%,rgba(249,115,22,.08) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 45% at 5% 95%,rgba(6,182,212,.06) 0%,transparent 55%);
+    pointer-events:none;z-index:0;}
+  #app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:10px 28px;border-bottom:1px solid var(--border);background:rgba(15,15,19,.96);backdrop-filter:blur(18px);flex-shrink:0;}
+  .brand{font-family:'JetBrains Mono',monospace;font-size:.69rem;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;}
+  .sc{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--n);font-weight:700;}
+  #pbw{height:3px;background:#1c1c28;flex-shrink:0;}
+  #pb{height:100%;background:linear-gradient(90deg,var(--t),var(--n));transition:width .4s ease;}
+  #sa{flex:1;overflow-y:auto;padding:26px 42px;}
+  #sa::-webkit-scrollbar{width:4px;}
+  #sa::-webkit-scrollbar-thumb{background:rgba(249,115,22,.2);border-radius:99px;}
+  .slide{display:none;}.slide.active{display:block;}
+
+  .stag{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--n);border:1px solid rgba(249,115,22,.35);border-radius:4px;padding:3px 12px;margin-bottom:13px;}
+  h1.t{font-size:clamp(1.8rem,3.8vw,2.9rem);font-weight:800;line-height:1.1;margin-bottom:10px;}
+  h2.t{font-size:clamp(1.3rem,2.6vw,1.95rem);font-weight:700;line-height:1.2;margin-bottom:14px;}
+  .cn{color:var(--n);}.ct{color:var(--t);}.cb{color:var(--both);}.cg{color:var(--new);}
+  .bt{font-family:'JetBrains Mono',monospace;font-size:.79rem;color:#5050a0;line-height:1.82;}
+  .lt{font-size:.97rem;color:#7070b0;line-height:1.76;}
+
+  .gc{background:var(--bgc);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;position:relative;overflow:hidden;}
+  .gc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--t),var(--n));}
+
+  .hl{border-left:3px solid var(--n);background:rgba(249,115,22,.06);border-radius:0 8px 8px 0;padding:11px 16px;margin:10px 0;font-family:'JetBrains Mono',monospace;font-size:.79rem;color:var(--text);}
+  .hl.cy{border-left-color:var(--t);background:rgba(6,182,212,.06);}
+  .hl.pu{border-left-color:var(--both);background:rgba(168,85,247,.06);}
+  .hl.gr{border-left-color:var(--new);background:rgba(16,185,129,.06);}
+
+  /* ── NIELSEN HEURISTIC CARD ── */
+  .nc{background:var(--bgp);border:1px solid rgba(249,115,22,.2);border-radius:10px;padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;transition:border-color .2s,background .2s;position:relative;}
+  .nc:hover{border-color:var(--n);background:rgba(249,115,22,.06);}
+  .nb-num{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:24px;height:24px;border-radius:50%;background:var(--n);color:#fff;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center;}
+  .nc-icon{font-size:1.5rem;color:var(--n);}
+  .nc-lbl{font-size:.72rem;font-weight:600;color:var(--text);line-height:1.3;}
+
+  /* ── TOGNAZZINI CARD ── */
+  .tc{background:var(--bgp);border:1px solid rgba(6,182,212,.2);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;transition:border-color .2s,background .2s;}
+  .tc:hover{border-color:var(--t);background:rgba(6,182,212,.05);}
+  .tb-num{width:26px;height:26px;border-radius:50%;background:var(--t);color:#0f0f13;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .tc-icon{font-size:1rem;color:var(--t);flex-shrink:0;width:20px;text-align:center;}
+  .tc-lbl{font-size:.75rem;font-weight:600;color:var(--text);line-height:1.3;}
+
+  /* ── CORRESPONDENCE CARD ── */
+  .corrcard{background:var(--bgp);border-radius:10px;padding:14px 16px;border:1px solid rgba(168,85,247,.2);margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;}
+  .n-badge{background:var(--n);color:#fff;border-radius:6px;padding:3px 8px;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;white-space:nowrap;flex-shrink:0;}
+  .t-badge{background:var(--t);color:#0f0f13;border-radius:6px;padding:3px 8px;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;white-space:nowrap;flex-shrink:0;}
+  .arrow-sep{color:var(--both);font-size:.9rem;flex-shrink:0;margin-top:2px;}
+  .corr-text{font-size:.8rem;color:#7070b0;line-height:1.5;}
+
+  /* ── MAPPING TABLE ── */
+  .mt{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;}
+  .mt th{background:#1c1c28;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;}
+  .mt td{padding:8px 12px;border-top:1px solid rgba(255,255,255,.05);font-family:'JetBrains Mono',monospace;font-size:.74rem;color:#5050a0;vertical-align:top;}
+  .mt tr:hover td{background:rgba(249,115,22,.03);}
+
+  /* ── NEW PRINCIPLE ── */
+  .np{background:var(--bgp);border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:14px 16px;margin-bottom:8px;}
+  .np-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--new);color:#0f0f13;font-weight:800;font-size:.78rem;margin-right:10px;flex-shrink:0;}
+
+  /* ── NAV ── */
+  footer{display:flex;align-items:center;justify-content:space-between;padding:10px 28px;border-top:1px solid var(--border);background:rgba(15,15,19,.96);backdrop-filter:blur(18px);flex-shrink:0;}
+  .nb{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 20px;font-family:'Inter',sans-serif;font-weight:700;font-size:.87rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;}
+  .nb:hover{background:rgba(249,115,22,.08);border-color:var(--n);color:var(--n);}
+  .nb:disabled{opacity:.22;cursor:default;pointer-events:none;}
+  .nb.p{background:var(--n);color:#fff;border-color:var(--n);font-weight:800;}
+  .nb.p:hover{background:#ea6c14;}
+
+  /* ── QUIZ ── */
+  .qo{background:var(--bgp);border:1px solid var(--border);border-radius:8px;padding:12px 16px;cursor:pointer;transition:all .2s;margin-bottom:8px;display:flex;align-items:center;gap:11px;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+  .qo:hover{border-color:var(--n);background:rgba(249,115,22,.05);}
+  .qo.correct{border-color:var(--new);background:rgba(16,185,129,.08);}
+  .qo.wrong{border-color:#f87171;background:rgba(248,113,113,.08);}
+  .qo.disabled{pointer-events:none;}
+  .ol{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.73rem;}
+  .qf{border-radius:8px;padding:10px 14px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:.78rem;display:none;}
+  .qf.show{display:block;}
+  .qf.ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;}
+  .qf.ko{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);color:#fca5a5;}
+  .qcount{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);margin-bottom:7px;}
+  .qq{font-size:.92rem;font-weight:600;margin-bottom:14px;line-height:1.5;}
+  #rs{display:none;}
+  .sr{position:relative;width:130px;height:130px;margin:0 auto 16px;}
+  .si{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .snum{font-size:2rem;font-weight:800;color:var(--n);font-family:'JetBrains Mono',monospace;}
+  .slb{font-size:.68rem;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:700px){#sa{padding:14px 12px;}header,footer{padding:10px 12px;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><i class="fa-solid fa-desktop me-2"></i>FIT · UCU &nbsp;·&nbsp; UT4 · TA3 · Resolución</div>
+    <div class="sc"><span id="cs">1</span> / <span id="ts">12</span></div>
+  </header>
+  <div id="pbw"><div id="pb" style="width:8.33%"></div></div>
+
+  <div id="sa">
+
+    <!-- ══ 1 PORTADA ══ -->
+    <div class="slide active" id="slide-1">
+      <div class="animate__animated animate__fadeIn" style="min-height:60vh;display:flex;flex-direction:column;justify-content:center;position:relative;">
+        <div style="position:absolute;right:-40px;top:-40px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.14) 0%,transparent 68%);pointer-events:none"></div>
+        <div class="stag"><i class="fa-solid fa-list-check me-1"></i>UT4 · TA3 · Ejercicio 1 · Resolución</div>
+        <h1 class="t">
+          <span class="cn">Nielsen</span> vs <span class="ct">Tognazzini</span><br>
+          <span style="font-size:.52em;font-weight:500;color:#5050a0">Comparación de heurísticas y principios de usabilidad</span>
+        </h1>
+        <p class="lt mt-3" style="max-width:580px;">Correspondencias entre las <strong>10 heurísticas de Nielsen</strong> y los <strong>16 principios de Tognazzini</strong>, más una propuesta de principios adicionales para el diseño de interfaces actuales.</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.28);border-radius:99px;padding:5px 13px;font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--n)"><i class="fa-solid fa-hashtag"></i>10 Heurísticas Nielsen</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.28);border-radius:99px;padding:5px 13px;font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--t)"><i class="fa-solid fa-hashtag"></i>16 Principios Tognazzini</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.28);border-radius:99px;padding:5px 13px;font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--new)"><i class="fa-solid fa-plus"></i>Nuevos principios propuestos</span>
+        </div>
+        <div class="mt-3 gc" style="max-width:580px;">
+          <p class="bt mb-0">Se identifican <span class="cn fw-bold">correspondencias directas</span>, <span class="ct fw-bold">parciales</span> y elementos que cada marco aporta de forma <span class="cb fw-bold">exclusiva</span>. Al final, se proponen principios nuevos relevantes para el contexto actual.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 2 HEURÍSTICAS NIELSEN ══ -->
+    <div class="slide" id="slide-2">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-n me-1"></i>Nielsen · Referencia</div>
+        <h2 class="t">Las 10 <span class="cn">Heurísticas de Nielsen</span></h2>
+        <p class="lt mb-3">Desarrolladas por Jakob Nielsen en 1994. Son las más citadas en evaluación heurística de usabilidad.</p>
+        <div class="row g-2">
+          <!-- N1 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">1</div>
+              <i class="fa-solid fa-traffic-light nc-icon"></i>
+              <div class="nc-lbl">Visibilidad del estado del sistema</div>
+            </div>
+          </div>
+          <!-- N2 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">2</div>
+              <i class="fa-solid fa-earth-americas nc-icon"></i>
+              <div class="nc-lbl">Alineación con el mundo real</div>
+            </div>
+          </div>
+          <!-- N3 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">3</div>
+              <i class="fa-solid fa-hand nc-icon"></i>
+              <div class="nc-lbl">Control y libertad del usuario</div>
+            </div>
+          </div>
+          <!-- N4 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">4</div>
+              <i class="fa-solid fa-equals nc-icon"></i>
+              <div class="nc-lbl">Consistencia y estándares</div>
+            </div>
+          </div>
+          <!-- N5 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">5</div>
+              <i class="fa-solid fa-eye nc-icon"></i>
+              <div class="nc-lbl">Reconocimiento antes que recuerdo</div>
+            </div>
+          </div>
+          <!-- N6 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">6</div>
+              <i class="fa-solid fa-shield-halved nc-icon"></i>
+              <div class="nc-lbl">Prevención de errores</div>
+            </div>
+          </div>
+          <!-- N7 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">7</div>
+              <i class="fa-solid fa-bolt nc-icon"></i>
+              <div class="nc-lbl">Flexibilidad y eficiencia de uso</div>
+            </div>
+          </div>
+          <!-- N8 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">8</div>
+              <i class="fa-solid fa-wand-magic-sparkles nc-icon"></i>
+              <div class="nc-lbl">Estética y diseño minimalista</div>
+            </div>
+          </div>
+          <!-- N9 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">9</div>
+              <i class="fa-solid fa-life-ring nc-icon"></i>
+              <div class="nc-lbl">Ayuda a los usuarios con errores</div>
+            </div>
+          </div>
+          <!-- N10 -->
+          <div class="col-6 col-md-2d4" style="flex:0 0 20%;max-width:20%">
+            <div class="nc">
+              <div class="nb-num">10</div>
+              <i class="fa-solid fa-book nc-icon"></i>
+              <div class="nc-lbl">Ayuda y documentación</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 3 PRINCIPIOS TOGNAZZINI ══ -->
+    <div class="slide" id="slide-3">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-t me-1"></i>Tognazzini · Referencia</div>
+        <h2 class="t">Los 16 <span class="ct">Principios de Tognazzini</span></h2>
+        <p class="lt mb-3">Bruce "Tog" Tognazzini, cofundador del grupo de Human Interface de Apple. Sus principios son más detallados y técnicos que los de Nielsen.</p>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <div class="tc mb-1"><div class="tb-num">1</div><i class="fa-solid fa-brain tc-icon"></i><div class="tc-lbl">Anticipación — el sistema anticipa necesidades del usuario</div></div>
+            <div class="tc mb-1"><div class="tb-num">2</div><i class="fa-solid fa-hand tc-icon"></i><div class="tc-lbl">Autonomía y Control — el usuario controla la experiencia</div></div>
+            <div class="tc mb-1"><div class="tb-num">3</div><i class="fa-solid fa-palette tc-icon"></i><div class="tc-lbl">Precaución usando colores — no depender solo del color</div></div>
+            <div class="tc mb-1"><div class="tb-num">4</div><i class="fa-solid fa-equals tc-icon"></i><div class="tc-lbl">Consistencia — comportamiento coherente en toda la app</div></div>
+            <div class="tc mb-1"><div class="tb-num">5</div><i class="fa-solid fa-sliders tc-icon"></i><div class="tc-lbl">Uso de valores por defecto — sugerencias inteligentes</div></div>
+            <div class="tc mb-1"><div class="tb-num">6</div><i class="fa-solid fa-gauge-high tc-icon"></i><div class="tc-lbl">Eficacia del usuario — no del sistema</div></div>
+            <div class="tc mb-1"><div class="tb-num">7</div><i class="fa-solid fa-compass tc-icon"></i><div class="tc-lbl">Interfaz explorable — fácil de explorar y retroceder</div></div>
+            <div class="tc mb-1"><div class="tb-num">8</div><i class="fa-solid fa-computer-mouse tc-icon"></i><div class="tc-lbl">Ley de Fitts — tamaño y distancia de los targets</div></div>
+          </div>
+          <div class="col-md-6">
+            <div class="tc mb-1"><div class="tb-num">9</div><i class="fa-solid fa-certificate tc-icon"></i><div class="tc-lbl">Uso de estándares — respetar convenciones establecidas</div></div>
+            <div class="tc mb-1"><div class="tb-num">10</div><i class="fa-solid fa-gauge tc-icon"></i><div class="tc-lbl">Reducción de demoras — tiempos de respuesta mínimos</div></div>
+            <div class="tc mb-1"><div class="tb-num">11</div><i class="fa-solid fa-graduation-cap tc-icon"></i><div class="tc-lbl">Minimizar el aprendizaje — fácil desde el primer uso</div></div>
+            <div class="tc mb-1"><div class="tb-num">12</div><i class="fa-solid fa-lightbulb tc-icon"></i><div class="tc-lbl">Uso adecuado de metáforas — representaciones claras</div></div>
+            <div class="tc mb-1"><div class="tb-num">13</div><i class="fa-solid fa-floppy-disk tc-icon"></i><div class="tc-lbl">Protección del trabajo — no perder datos del usuario</div></div>
+            <div class="tc mb-1"><div class="tb-num">14</div><i class="fa-solid fa-font tc-icon"></i><div class="tc-lbl">Legibilidad — texto legible, contraste adecuado</div></div>
+            <div class="tc mb-1"><div class="tb-num">15</div><i class="fa-solid fa-clock-rotate-left tc-icon"></i><div class="tc-lbl">Seguimiento de las acciones del usuario</div></div>
+            <div class="tc mb-1"><div class="tb-num">16</div><i class="fa-solid fa-map tc-icon"></i><div class="tc-lbl">Navegación visible — el usuario sabe dónde está</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 4 CORRESPONDENCIAS BLOQUE 1 ══ -->
+    <div class="slide" id="slide-4">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-arrows-left-right me-1"></i>Correspondencias · Grupo 1</div>
+        <h2 class="t">Estado, control <span class="cb">y</span> mundo real</h2>
+        <p class="lt mb-3">Las primeras heurísticas de Nielsen tienen correspondencias directas y múltiples en Tognazzini.</p>
+
+        <!-- N1 -->
+        <div class="corrcard">
+          <div class="n-badge">N1</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T15</span><span class="t-badge">T16</span><span class="t-badge">T1</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Visibilidad del estado</strong> se mapea con: <em>T15 Seguimiento de acciones</em> (el sistema refleja lo que hizo el usuario), <em>T16 Navegación visible</em> (el usuario sabe dónde está), <em>T1 Anticipación</em> (el sistema proactivamente informa).</div>
+        </div>
+
+        <!-- N2 -->
+        <div class="corrcard">
+          <div class="n-badge">N2</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T12</span><span class="t-badge">T11</span><span class="t-badge">T4</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Alineación con el mundo real</strong> ↔ <em>T12 Metáforas</em> (usar representaciones familiares), <em>T11 Minimizar aprendizaje</em> (lo conocido no requiere aprender), <em>T4 Consistencia</em> (en lenguaje y representación).</div>
+        </div>
+
+        <!-- N3 -->
+        <div class="corrcard">
+          <div class="n-badge">N3</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T2</span><span class="t-badge">T7</span><span class="t-badge">T13</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Control y libertad del usuario</strong> ↔ <em>T2 Autonomía y Control</em> (el usuario decide), <em>T7 Interfaz explorable</em> (puede ir atrás y explorar sin miedo), <em>T13 Protección del trabajo</em> (no pierde lo hecho al volver atrás).</div>
+        </div>
+
+        <div class="hl pu mt-2">
+          <i class="fa-solid fa-lightbulb me-2"></i>
+          Tognazzini descompone las heurísticas de Nielsen en aspectos más específicos: cada heurística de Nielsen puede tener 2–4 principios correspondientes en Tognazzini.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 5 CORRESPONDENCIAS BLOQUE 2 ══ -->
+    <div class="slide" id="slide-5">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-arrows-left-right me-1"></i>Correspondencias · Grupo 2</div>
+        <h2 class="t">Consistencia, reconocimiento <span class="cb">y</span> prevención</h2>
+
+        <!-- N4 -->
+        <div class="corrcard">
+          <div class="n-badge">N4</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T4</span><span class="t-badge">T9</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Consistencia y estándares</strong> ↔ <em>T4 Consistencia</em> (coherencia interna de la app) + <em>T9 Uso de estándares</em> (coherencia con plataforma y convenciones externas). Tognazzini distingue ambos aspectos explícitamente.</div>
+        </div>
+
+        <!-- N5 -->
+        <div class="corrcard">
+          <div class="n-badge">N5</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T11</span><span class="t-badge">T12</span><span class="t-badge">T5</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Reconocimiento antes que recuerdo</strong> ↔ <em>T11 Minimizar aprendizaje</em>, <em>T12 Metáforas</em> (objetos reconocibles) y <em>T5 Valores por defecto</em> (los defaults eliminan la necesidad de recordar el estado anterior).</div>
+        </div>
+
+        <!-- N6 -->
+        <div class="corrcard">
+          <div class="n-badge">N6</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T1</span><span class="t-badge">T3</span><span class="t-badge">T13</span><span class="t-badge">T5</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Prevención de errores</strong> ↔ <em>T1 Anticipación</em> (predecir y evitar problemas), <em>T3 Precaución con colores</em> (no usar rojo/verde como único indicador), <em>T13 Protección del trabajo</em>, <em>T5 Valores por defecto seguros</em>. Es la heurística de Nielsen con más paralelos en Tognazzini.</div>
+        </div>
+
+        <div class="hl cy mt-2">
+          <i class="fa-solid fa-star me-2"></i>
+          La heurística N6 (Prevención de errores) tiene la mayor cobertura en Tognazzini: 4 principios directamente relacionados.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 6 CORRESPONDENCIAS BLOQUE 3 ══ -->
+    <div class="slide" id="slide-6">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-arrows-left-right me-1"></i>Correspondencias · Grupo 3</div>
+        <h2 class="t">Eficiencia, estética <span class="cb">y</span> recuperación</h2>
+
+        <!-- N7 -->
+        <div class="corrcard">
+          <div class="n-badge">N7</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T6</span><span class="t-badge">T8</span><span class="t-badge">T10</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Flexibilidad y eficiencia de uso</strong> ↔ <em>T6 Eficacia del usuario</em> (priorizar al usuario sobre el sistema), <em>T8 Ley de Fitts</em> (tamaño y posición de targets), <em>T10 Reducción de demoras</em> (tiempos de respuesta rápidos). Tognazzini aporta la dimensión física (Fitts) que Nielsen no menciona.</div>
+        </div>
+
+        <!-- N8 -->
+        <div class="corrcard">
+          <div class="n-badge">N8</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T14</span><span class="t-badge">T3</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Estética y diseño minimalista</strong> ↔ <em>T14 Legibilidad</em> (el texto y el diseño deben ser fáciles de leer) y <em>T3 Precaución con colores</em> (uso coherente del color, sin excesos).</div>
+        </div>
+
+        <!-- N9 -->
+        <div class="corrcard">
+          <div class="n-badge">N9</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T13</span><span class="t-badge">T15</span><span class="t-badge">T7</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Ayuda a los usuarios con errores</strong> ↔ <em>T13 Protección del trabajo</em> (guardar el estado antes del error), <em>T15 Seguimiento de acciones</em> (saber qué llevó al error), <em>T7 Interfaz explorable</em> (poder retroceder sin consecuencias graves).</div>
+        </div>
+
+        <!-- N10 -->
+        <div class="corrcard">
+          <div class="n-badge">N10</div>
+          <div class="arrow-sep"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          <div class="d-flex flex-wrap gap-1 me-2">
+            <span class="t-badge">T11</span><span class="t-badge">T16</span><span class="t-badge">T1</span>
+          </div>
+          <div class="corr-text"><strong style="color:var(--text)">Ayuda y documentación</strong> ↔ <em>T11 Minimizar aprendizaje</em> (si hay que leer mucha doc, la UI falló), <em>T16 Navegación visible</em> (la estructura visible reduce la necesidad de ayuda), <em>T1 Anticipación</em> (la app debería anticipar y guiar).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 7 MAPA COMPLETO ══ -->
+    <div class="slide" id="slide-7">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-table me-1"></i>Mapa completo</div>
+        <h2 class="t">Tabla de <span class="cb">correspondencias</span> consolidada</h2>
+        <p class="lt mb-3">Resumen de todas las relaciones identificadas entre los dos marcos.</p>
+        <div class="table-responsive">
+          <table class="mt">
+            <thead>
+              <tr>
+                <th style="color:var(--n)">Heurística Nielsen</th>
+                <th style="color:var(--t)">Principios Tognazzini correspondientes</th>
+                <th style="color:var(--both)">Tipo de relación</th>
+              </tr>
+            </thead>
+            <tbody style="background:var(--bgc)">
+              <tr><td style="color:var(--n);font-weight:700">N1 Visibilidad del estado</td><td style="color:var(--t)">T1 Anticipación · T15 Seguimiento · T16 Navegación visible</td><td><span style="color:var(--both)">Directa múltiple</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N2 Mundo real</td><td style="color:var(--t)">T11 Mínimo aprendizaje · T12 Metáforas · T4 Consistencia</td><td><span style="color:var(--both)">Directa múltiple</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N3 Control y libertad</td><td style="color:var(--t)">T2 Autonomía y Control · T7 Explorable · T13 Protección</td><td><span style="color:var(--both)">Directa múltiple</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N4 Consistencia</td><td style="color:var(--t)">T4 Consistencia · T9 Estándares</td><td><span style="color:var(--new)">Directa 1:1 + 1</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N5 Reconocimiento</td><td style="color:var(--t)">T11 Aprendizaje · T12 Metáforas · T5 Defaults</td><td><span style="color:var(--both)">Directa múltiple</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N6 Prevención de errores</td><td style="color:var(--t)">T1 Anticipación · T3 Colores · T5 Defaults · T13 Protección</td><td><span style="color:#f87171">Mayor cobertura (4)</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N7 Eficiencia</td><td style="color:var(--t)">T6 Eficacia · T8 Ley de Fitts · T10 Demoras</td><td><span style="color:var(--both)">Directa múltiple</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N8 Estética minimalista</td><td style="color:var(--t)">T14 Legibilidad · T3 Precaución colores</td><td><span style="color:var(--both)">Parcial</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N9 Ayuda con errores</td><td style="color:var(--t)">T13 Protección · T15 Seguimiento · T7 Explorable</td><td><span style="color:var(--both)">Directa múltiple</span></td></tr>
+              <tr><td style="color:var(--n);font-weight:700">N10 Ayuda/documentación</td><td style="color:var(--t)">T11 Aprendizaje · T16 Navegación · T1 Anticipación</td><td><span style="color:var(--both)">Directa múltiple</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl cy mt-2">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          T8 (Ley de Fitts) es el único principio de Tognazzini <strong>sin equivalente directo</strong> en Nielsen: aporta la dimensión física del diseño de targets.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 8 ANÁLISIS COMPARATIVO ══ -->
+    <div class="slide" id="slide-8">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-scale-balanced me-1"></i>Análisis</div>
+        <h2 class="t">¿Qué aporta cada <span class="cb">marco</span>?</h2>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="gc h-100" style="border-left:3px solid var(--n)">
+              <h6 class="cn mb-3"><i class="fa-solid fa-check-circle me-2"></i>Fortalezas de Nielsen</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:9px;">
+                <li style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--n);color:#fff;border-radius:50%;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-top:2px">✓</span><div class="bt"><strong>10 principios</strong>: más fácil de recordar y aplicar en evaluaciones rápidas.</div></li>
+                <li style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--n);color:#fff;border-radius:50%;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-top:2px">✓</span><div class="bt">Ampliamente adoptados como estándar en la industria del UX.</div></li>
+                <li style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--n);color:#fff;border-radius:50%;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-top:2px">✓</span><div class="bt">Buen punto de entrada para <strong>evaluaciones heurísticas</strong> formales.</div></li>
+                <li style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--n);color:#fff;border-radius:50%;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-top:2px">✓</span><div class="bt">Fácilmente verificables en checklist.</div></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100" style="border-left:3px solid var(--t)">
+              <h6 class="ct mb-3"><i class="fa-solid fa-check-circle me-2"></i>Fortalezas de Tognazzini</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:9px;">
+                <li style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--t);color:#0f0f13;border-radius:50%;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-top:2px">✓</span><div class="bt"><strong>16 principios detallados</strong>: mayor granularidad para guiar el diseño.</div></li>
+                <li style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--t);color:#0f0f13;border-radius:50%;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-top:2px">✓</span><div class="bt">Incluye fundamentos <strong>físicos</strong> (Ley de Fitts) y <strong>técnicos</strong> (legibilidad, colores).</div></li>
+                <li style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--t);color:#0f0f13;border-radius:50%;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-top:2px">✓</span><div class="bt">Distingue entre <strong>consistencia interna</strong> (T4) y <strong>estándares externos</strong> (T9).</div></li>
+                <li style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--t);color:#0f0f13;border-radius:50%;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-top:2px">✓</span><div class="bt">Más orientados al <strong>diseño proactivo</strong> que a la evaluación.</div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="hl pu">
+          <i class="fa-solid fa-handshake me-2"></i>
+          <strong>Conclusión:</strong> los dos marcos son complementarios. Nielsen es mejor para <em>evaluar</em>, Tognazzini es mejor para <em>diseñar</em>. Usarlos juntos da una visión más completa.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 9 NUEVOS PRINCIPIOS ══ -->
+    <div class="slide" id="slide-9">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-plus me-1"></i>Propuesta</div>
+        <h2 class="t">¿Qué <span class="cg">agregarías</span> hoy?</h2>
+        <p class="lt mb-3">Ni Nielsen (1994) ni Tognazzini consideraron el contexto actual: dispositivos táctiles, IA, privacidad digital y accesibilidad como estándar.</p>
+
+        <div class="np">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="np-num">N</span>
+            <strong style="color:var(--new);font-size:.9rem">Accesibilidad e Inclusión Universal</strong>
+          </div>
+          <p class="bt">El diseño debe ser usable por personas con discapacidades visuales, motoras o cognitivas (WCAG 2.2). Ni Nielsen ni Tognazzini lo mencionan explícitamente. Hoy es un requisito legal en muchos países (UE, EEUU).</p>
+        </div>
+
+        <div class="np">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="np-num">N</span>
+            <strong style="color:var(--new);font-size:.9rem">Privacidad por diseño y ausencia de Dark Patterns</strong>
+          </div>
+          <p class="bt">La interfaz no debe manipular al usuario para compartir datos o realizar acciones no deseadas (GDPR, 2018). Los dark patterns explotan la psicología del usuario en su contra: algo impensable en 1994 cuando surgieron estas heurísticas.</p>
+        </div>
+
+        <div class="np">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="np-num">N</span>
+            <strong style="color:var(--new);font-size:.9rem">Diseño Responsivo y Multimodal</strong>
+          </div>
+          <p class="bt">La misma información debe ser usable en pantallas táctiles, escritorios, relojes, televisores y asistentes de voz. Las reglas de interacción cambian radicalmente entre modalidades (táctil vs. cursor vs. voz).</p>
+        </div>
+
+        <div class="np">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="np-num">N</span>
+            <strong style="color:var(--new);font-size:.9rem">Transparencia e Interpretabilidad de la IA</strong>
+          </div>
+          <p class="bt">Cuando el sistema usa inteligencia artificial para tomar decisiones (recomendaciones, ordenamiento, precios), el usuario debe poder entender <em>por qué</em> y tener algún nivel de control. La caja negra de la IA es hoy un desafío de usabilidad clave.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 10 NUEVOS PRINCIPIOS 2 ══ -->
+    <div class="slide" id="slide-10">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-plus me-1"></i>Propuesta · Cont.</div>
+        <h2 class="t">Más principios <span class="cg">para hoy</span></h2>
+
+        <div class="np">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="np-num">N</span>
+            <strong style="color:var(--new);font-size:.9rem">Rendimiento Percibido y Estados de Carga</strong>
+          </div>
+          <p class="bt">El usuario debe siempre saber que el sistema está trabajando (skeletons, spinners, progress bars). Una interfaz que no da feedback durante operaciones lentas es percibida como rota. Ni Nielsen ni Tognazzini cuantifican esto para la web actual.</p>
+        </div>
+
+        <div class="np">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="np-num">N</span>
+            <strong style="color:var(--new);font-size:.9rem">Bienestar Digital y Uso Responsable</strong>
+          </div>
+          <p class="bt">Las interfaces no deben diseñarse para maximizar tiempo de pantalla de forma compulsiva. El diseño ético implica ayudar al usuario a usar el producto de forma saludable (modo no disturbar, resúmenes de uso, pausas sugeridas).</p>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="cg mb-2"><i class="fa-solid fa-table me-2"></i>Resumen de nuevos principios</h6>
+              <table class="mt">
+                <thead><tr><th style="color:var(--new)">Principio nuevo</th><th>Cobertura en N/T</th></tr></thead>
+                <tbody style="background:var(--bgc)">
+                  <tr><td style="color:var(--new)">Accesibilidad</td><td class="bt">Ninguno explícito</td></tr>
+                  <tr><td style="color:var(--new)">Privacidad / Dark Patterns</td><td class="bt">Parcial: T13 (protección), N6 (prevención)</td></tr>
+                  <tr><td style="color:var(--new)">Responsivo / Multimodal</td><td class="bt">Ninguno</td></tr>
+                  <tr><td style="color:var(--new)">Transparencia IA</td><td class="bt">Ninguno</td></tr>
+                  <tr><td style="color:var(--new)">Rendimiento percibido</td><td class="bt">Parcial: T10 (demoras), N1 (visibilidad)</td></tr>
+                  <tr><td style="color:var(--new)">Bienestar digital</td><td class="bt">Ninguno</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100">
+              <h6 class="ct mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Por qué faltan en los marcos originales</h6>
+              <p class="bt">Nielsen y Tognazzini escribieron en los <strong>90s</strong>, cuando:</p>
+              <ul style="list-style:none;padding:0;margin-top:8px;display:flex;flex-direction:column;gap:8px">
+                <li class="bt">→ No existía la web móvil (iPhone: 2007)</li>
+                <li class="bt">→ No había regulación de datos (GDPR: 2018)</li>
+                <li class="bt">→ La IA de usuario era inexistente</li>
+                <li class="bt">→ Las apps "adictivas" no eran un fenómeno masivo</li>
+              </ul>
+              <div class="hl gr mt-2">Actualizar los marcos no invalida los originales: los complementa.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 11 RESUMEN VISUAL ══ -->
+    <div class="slide" id="slide-11">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-star me-1"></i>Síntesis</div>
+        <h2 class="t">Síntesis <span class="cb">visual</span> completa</h2>
+        <p class="lt mb-3">Una vista rápida del mapa completo de relaciones.</p>
+        <div style="background:var(--bgp);border-radius:var(--r);border:1px solid var(--border);padding:20px;overflow-x:auto;">
+          <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" style="max-width:760px;width:100%">
+            <defs>
+              <marker id="ar" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#a855f7"/></marker>
+              <marker id="ar2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981"/></marker>
+            </defs>
+
+            <!-- Nielsen column -->
+            <text x="90" y="20" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="11" font-weight="700">NIELSEN</text>
+            <text x="90" y="33" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8">(10 heurísticas)</text>
+
+            <!-- Tognazzini column -->
+            <text x="490" y="20" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="11" font-weight="700">TOGNAZZINI</text>
+            <text x="490" y="33" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="8">(16 principios)</text>
+
+            <!-- Nielsen blocks -->
+            <g>
+              <rect x="20" y="42" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="58" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N1 · Visibilidad</text>
+              <rect x="20" y="70" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="86" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N2 · Mundo real</text>
+              <rect x="20" y="98" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="114" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N3 · Control</text>
+              <rect x="20" y="126" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="142" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N4 · Consistencia</text>
+              <rect x="20" y="154" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="170" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N5 · Reconocimiento</text>
+              <rect x="20" y="182" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="198" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N6 · Prev. errores</text>
+              <rect x="20" y="210" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="226" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N7 · Eficiencia</text>
+              <rect x="20" y="238" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="254" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N8 · Estética</text>
+              <rect x="20" y="266" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="282" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N9 · Ayuda errores</text>
+              <rect x="20" y="294" width="140" height="24" rx="5" fill="#1c1c28" stroke="#f97316" stroke-width="1.2"/>
+              <text x="90" y="310" text-anchor="middle" fill="#f97316" font-family="JetBrains Mono" font-size="8.5" font-weight="600">N10 · Documentación</text>
+            </g>
+
+            <!-- Tognazzini blocks (left column) -->
+            <g>
+              <rect x="370" y="42" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="56" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T1 Anticipación</text>
+              <rect x="370" y="66" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="80" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T2 Autonomía</text>
+              <rect x="370" y="90" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="104" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T3 Colores</text>
+              <rect x="370" y="114" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="128" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T4 Consistencia</text>
+              <rect x="370" y="138" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="152" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T5 Defaults</text>
+              <rect x="370" y="162" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="176" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T6 Eficacia</text>
+              <rect x="370" y="186" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="200" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T7 Explorable</text>
+              <rect x="370" y="210" width="130" height="20" rx="4" fill="#1c1c28" stroke="#f59e0b" stroke-width="1.5"/>
+              <text x="435" y="224" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="7.5" font-weight="700">T8 Ley de Fitts ★</text>
+              <rect x="370" y="234" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="248" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T9 Estándares</text>
+              <rect x="370" y="258" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="272" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T10 Demoras</text>
+              <rect x="370" y="282" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="296" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T11 Aprendizaje</text>
+              <rect x="370" y="306" width="130" height="20" rx="4" fill="#1c1c28" stroke="#06b6d4" stroke-width="1"/>
+              <text x="435" y="320" text-anchor="middle" fill="#06b6d4" font-family="JetBrains Mono" font-size="7.5">T12–T16...</text>
+            </g>
+
+            <!-- connections (simplified) -->
+            <!-- N1 to T15, T16, T1 -->
+            <line x1="160" y1="54" x2="370" y2="52" stroke="rgba(168,85,247,.4)" stroke-width="1" marker-end="url(#ar)"/>
+            <!-- N3 to T2 -->
+            <line x1="160" y1="110" x2="370" y2="76" stroke="rgba(168,85,247,.4)" stroke-width="1" marker-end="url(#ar)"/>
+            <!-- N6 to T1, T3 -->
+            <line x1="160" y1="194" x2="370" y2="52" stroke="rgba(168,85,247,.3)" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#ar)"/>
+            <line x1="160" y1="194" x2="370" y2="100" stroke="rgba(168,85,247,.3)" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#ar)"/>
+            <!-- N7 to T6, T8, T10 -->
+            <line x1="160" y1="222" x2="370" y2="172" stroke="rgba(168,85,247,.4)" stroke-width="1" marker-end="url(#ar)"/>
+            <line x1="160" y1="222" x2="370" y2="220" stroke="rgba(168,85,247,.4)" stroke-width="1" marker-end="url(#ar)"/>
+            <!-- N4 to T4, T9 -->
+            <line x1="160" y1="138" x2="370" y2="124" stroke="rgba(168,85,247,.4)" stroke-width="1" marker-end="url(#ar)"/>
+            <line x1="160" y1="138" x2="370" y2="244" stroke="rgba(168,85,247,.3)" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#ar)"/>
+
+            <!-- New principles box -->
+            <rect x="590" y="42" width="160" height="120" rx="8" fill="#0f180f" stroke="#10b981" stroke-width="1.5"/>
+            <text x="670" y="60" text-anchor="middle" fill="#10b981" font-family="JetBrains Mono" font-size="9" font-weight="700">NUEVOS (propuestos)</text>
+            <text x="670" y="77" text-anchor="middle" fill="#5050a0" font-family="JetBrains Mono" font-size="8">+ Accesibilidad</text>
+            <text x="670" y="92" text-anchor="middle" fill="#5050a0" font-family="JetBrains Mono" font-size="8">+ Privacidad</text>
+            <text x="670" y="107" text-anchor="middle" fill="#5050a0" font-family="JetBrains Mono" font-size="8">+ Responsivo</text>
+            <text x="670" y="122" text-anchor="middle" fill="#5050a0" font-family="JetBrains Mono" font-size="8">+ Transparencia IA</text>
+            <text x="670" y="137" text-anchor="middle" fill="#5050a0" font-family="JetBrains Mono" font-size="8">+ Bienestar digital</text>
+            <text x="670" y="152" text-anchor="middle" fill="#10b981" font-family="JetBrains Mono" font-size="7">no cubiertos por N ni T</text>
+
+            <text x="400" y="345" text-anchor="middle" fill="#444466" font-family="JetBrains Mono" font-size="8">★ T8 (Ley de Fitts) es el único principio de Tognazzini sin equivalente en Nielsen</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 12 QUIZ ══ -->
+    <div class="slide" id="slide-12">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-clipboard-question me-1"></i>Evaluación</div>
+        <h2 class="t">Cuestionario <span class="cn">Nielsen</span> vs <span class="ct">Tognazzini</span></h2>
+        <p class="bt mb-4">Verificá tu comprensión de las correspondencias y diferencias entre los dos marcos.</p>
+        <div id="quiz-section">
+          <div class="gc mb-3">
+            <div class="qcount">Pregunta <span id="q-num">1</span> de 10</div>
+            <div class="qq" id="q-text"></div>
+            <div id="q-options"></div>
+            <div class="qf" id="q-feedback"></div>
+            <div class="text-end mt-3">
+              <button class="nb p" id="btn-nq" onclick="nextQ()" style="display:none">
+                Siguiente <i class="fa-solid fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="rs">
+          <div class="gc text-center mb-3">
+            <h4 class="mb-3">Resultado final</h4>
+            <div class="sr mb-3">
+              <canvas id="dc" width="130" height="130"></canvas>
+              <div class="si"><div class="snum" id="sd">0/10</div><div class="slb">correctas</div></div>
+            </div>
+            <div id="rm" class="mb-3"></div>
+            <div class="mb-3"><canvas id="bc" height="70"></canvas></div>
+            <button class="nb p mt-2" onclick="restart()">
+              <i class="fa-solid fa-rotate-left me-2"></i>Reiniciar cuestionario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sa -->
+
+  <footer>
+    <button class="nb" id="bp" onclick="go(-1)" disabled><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+    <div class="d-flex gap-1 flex-wrap justify-content-center" id="dn"></div>
+    <button class="nb p" id="bn" onclick="go(1)">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+  </footer>
+</div>
+
+<script>
+const TOTAL=12; let cur=1;
+
+const quiz=[
+  {q:"¿Qué principios de Tognazzini se corresponden con la heurística N1 (Visibilidad del estado del sistema) de Nielsen?",opts:["T4 Consistencia · T9 Estándares","T15 Seguimiento de acciones · T16 Navegación visible · T1 Anticipación","T2 Autonomía · T7 Explorable","T11 Aprendizaje · T12 Metáforas"],ok:1,ok_fb:"Correcto. N1 se relaciona con T15 (el sistema registra lo que hizo el usuario), T16 (el usuario sabe dónde está) y T1 (el sistema proactivamente informa su estado).",ko_fb:"Incorrecto. N1 Visibilidad del estado se corresponde con T15 Seguimiento de acciones, T16 Navegación visible y T1 Anticipación."},
+  {q:"¿Cuál es el principio de Tognazzini que NO tiene equivalente directo en las 10 heurísticas de Nielsen?",opts:["T4 Consistencia","T2 Autonomía y Control","T8 Ley de Fitts","T11 Minimizar aprendizaje"],ok:2,ok_fb:"Correcto. T8 (Ley de Fitts) es el único principio de Tognazzini sin equivalente en Nielsen. Aporta la dimensión física del diseño de targets (tamaño y distancia).",ko_fb:"Incorrecto. T8 (Ley de Fitts) es el único principio de Tognazzini sin equivalente en las heurísticas de Nielsen, ya que introduce la dimensión física del apuntado."},
+  {q:"¿Cómo se relacionan N4 (Consistencia y estándares) de Nielsen con los principios de Tognazzini?",opts:["Solo con T4 Consistencia, que es un mapeo 1:1 exacto","Con T4 Consistencia (interna) y T9 Uso de estándares (externos). Tognazzini distingue ambos aspectos","Con T11 Minimizar aprendizaje y T12 Metáforas","Con T14 Legibilidad y T3 Colores"],ok:1,ok_fb:"Correcto. Tognazzini hace una distinción más precisa: T4 trata la coherencia interna de la app, y T9 trata el respeto a convenciones externas (plataforma, industria).",ko_fb:"Incorrecto. N4 se corresponde con tanto T4 (consistencia interna de la app) como T9 (uso de estándares externos de la plataforma), siendo Tognazzini más preciso en esta distinción."},
+  {q:"¿Qué heurística de Nielsen tiene más correspondencias con principios de Tognazzini?",opts:["N1 Visibilidad del estado","N7 Eficiencia de uso","N6 Prevención de errores (T1, T3, T5, T13)","N4 Consistencia y estándares"],ok:2,ok_fb:"Correcto. N6 tiene 4 principios de Tognazzini directamente relacionados: T1 Anticipación, T3 Precaución con colores, T5 Valores por defecto y T13 Protección del trabajo.",ko_fb:"Incorrecto. N6 (Prevención de errores) es la heurística con mayor cobertura en Tognazzini: tiene 4 principios directamente relacionados (T1, T3, T5, T13)."},
+  {q:"¿Con qué principios de Tognazzini se corresponde N7 (Flexibilidad y eficiencia de uso)?",opts:["T4 Consistencia · T9 Estándares · T12 Metáforas","T6 Eficacia del usuario · T8 Ley de Fitts · T10 Reducción de demoras","T1 Anticipación · T2 Autonomía · T7 Explorable","T14 Legibilidad · T3 Colores · T11 Aprendizaje"],ok:1,ok_fb:"Correcto. N7 se corresponde con T6 (eficacia del usuario), T8 (Ley de Fitts, dimensión física) y T10 (reducción de demoras). Tognazzini aporta la Ley de Fitts que Nielsen no menciona.",ko_fb:"Incorrecto. N7 se mapea con T6 Eficacia del usuario, T8 Ley de Fitts (dimensión física del diseño de targets) y T10 Reducción de demoras."},
+  {q:"¿Qué diferencia fundamental hay entre los marcos de Nielsen y Tognazzini en cuanto a su propósito principal?",opts:["Nielsen es para evaluación de interfaces ya construidas; Tognazzini es más orientado a guiar el diseño desde el inicio","Nielsen es para interfaces móviles; Tognazzini es para escritorio","Nielsen fue creado antes que Tognazzini y por eso tiene menos principios","No hay diferencia: son completamente equivalentes"],ok:0,ok_fb:"Correcto. Nielsen (10 heurísticas) es especialmente útil para evaluaciones heurísticas formales de interfaces existentes. Tognazzini (16 principios) es más detallado y útil para guiar el diseño proactivamente.",ko_fb:"Incorrecto. La diferencia clave es que Nielsen es mejor para EVALUAR interfaces ya construidas, mientras que los principios de Tognazzini son más detallados y orientados a guiar el diseño desde el inicio."},
+  {q:"¿Cuál de los nuevos principios propuestos NO estaba cubierto por ninguno de los dos marcos originales?",opts:["Prevención de errores","Transparencia e interpretabilidad de la IA","Consistencia visual","Visibilidad del estado"],ok:1,ok_fb:"Correcto. La Transparencia e Interpretabilidad de la IA es un desafío de usabilidad completamente nuevo, inexistente en los años 90 cuando Nielsen y Tognazzini escribieron sus marcos.",ko_fb:"Incorrecto. La Transparencia e Interpretabilidad de la IA es el principio que no tiene ningún equivalente en Nielsen ni Tognazzini, ya que la IA de usuario no existía cuando se escribieron esos marcos."},
+  {q:"¿Cómo se relacionan N2 (Alineación con el mundo real) con los principios de Tognazzini?",opts:["Con T8 Ley de Fitts y T10 Reducción de demoras","Con T4 Consistencia y T9 Estándares únicamente","Con T12 Metáforas, T11 Minimizar aprendizaje y T4 Consistencia","Con T15 Seguimiento y T16 Navegación visible"],ok:2,ok_fb:"Correcto. N2 se mapea con T12 (metáforas reconocibles del mundo real), T11 (lo familiar no requiere aprendizaje) y T4 (consistencia en lenguaje y representación).",ko_fb:"Incorrecto. N2 Alineación con el mundo real se corresponde con T12 Uso adecuado de metáforas, T11 Minimizar el aprendizaje y T4 Consistencia (en lenguaje y representación)."},
+  {q:"Según el análisis, ¿con qué principios de Tognazzini se relaciona N8 (Estética y diseño minimalista)?",opts:["T2 Autonomía y T7 Explorable","T14 Legibilidad y T3 Precaución usando colores","T6 Eficacia y T10 Reducción de demoras","T1 Anticipación y T15 Seguimiento"],ok:1,ok_fb:"Correcto. N8 se mapea con T14 Legibilidad (el diseño debe facilitar la lectura) y T3 Precaución con colores (uso coherente del color sin excesos visuales).",ko_fb:"Incorrecto. N8 Estética y diseño minimalista se corresponde con T14 Legibilidad y T3 Precaución usando colores."},
+  {q:"¿Por qué se propone agregar 'Accesibilidad e Inclusión Universal' como principio nuevo?",opts:["Porque Nielsen y Tognazzini lo mencionan implícitamente.","Porque es un requisito legal en varios países (como la UE) y ninguno de los marcos originales lo menciona explícitamente.","Porque es un principio solo aplicable a apps móviles.","Porque Tognazzini lo excluyó intencionalmente de su lista."],ok:1,ok_fb:"Correcto. La accesibilidad (WCAG) es hoy un requisito legal y ético que no fue considerado explícitamente por ninguno de los dos marcos, ya que se redactaron en los años 90.",ko_fb:"Incorrecto. La Accesibilidad se propone como principio nuevo porque ninguno de los marcos la menciona explícitamente, y hoy es un requisito legal en muchos países además de un imperativo ético de diseño."}
+];
+
+let qcur=0,qsc=0,qans=[];
+let dc=null,bc=null;
+
+function go(d){
+  document.querySelectorAll('.slide')[cur-1].classList.remove('active');
+  cur=Math.max(1,Math.min(TOTAL,cur+d));
+  const s=document.querySelectorAll('.slide')[cur-1];
+  s.classList.add('active');
+  const a=s.querySelector('.animate__animated');
+  if(a){a.classList.remove('animate__fadeInRight','animate__fadeIn');void a.offsetWidth;a.classList.add(cur===1?'animate__fadeIn':'animate__fadeInRight');}
+  document.getElementById('cs').textContent=cur;
+  document.getElementById('pb').style.width=((cur/TOTAL)*100)+'%';
+  document.getElementById('bp').disabled=cur===1;
+  document.getElementById('bn').disabled=cur===TOTAL;
+  dots();document.getElementById('sa').scrollTop=0;
+}
+function dots(){
+  const n=document.getElementById('dn');n.innerHTML='';
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.createElement('div');
+    const ac=i===cur,vi=i<cur;
+    d.style.cssText=`width:${ac?'18px':'6px'};height:6px;border-radius:99px;background:${ac?'var(--n)':vi?'rgba(249,115,22,.3)':'#1c1c28'};border:1px solid ${ac||vi?'var(--n)':'#2a2a38'};transition:all .3s;cursor:pointer;flex-shrink:0`;
+    d.onclick=()=>{const dif=i-cur;if(dif)go(dif);};
+    n.appendChild(d);
+  }
+}
+function loadQ(){
+  if(qcur>=quiz.length){showRes();return;}
+  const q=quiz[qcur];
+  document.getElementById('q-num').textContent=qcur+1;
+  document.getElementById('q-text').textContent=q.q;
+  const L=['A','B','C','D'];
+  document.getElementById('q-options').innerHTML=q.opts.map((o,i)=>`<div class="qo" onclick="sel(${i})" id="op-${i}"><span class="ol">${L[i]}</span><span>${o}</span></div>`).join('');
+  const fb=document.getElementById('q-feedback');fb.textContent='';fb.className='qf';
+  document.getElementById('btn-nq').style.display='none';
+}
+function sel(idx){
+  const q=quiz[qcur];
+  document.querySelectorAll('.qo').forEach(o=>o.classList.add('disabled'));
+  const fb=document.getElementById('q-feedback');
+  if(idx===q.ok){document.getElementById(`op-${idx}`).classList.add('correct');fb.textContent='✓ '+q.ok_fb;fb.className='qf show ok';qsc++;qans.push(true);}
+  else{document.getElementById(`op-${idx}`).classList.add('wrong');document.getElementById(`op-${q.ok}`).classList.add('correct');fb.textContent='✗ '+q.ko_fb;fb.className='qf show ko';qans.push(false);}
+  document.getElementById('btn-nq').style.display='inline-flex';
+}
+function nextQ(){qcur++;loadQ();}
+function showRes(){
+  document.getElementById('quiz-section').style.display='none';
+  document.getElementById('rs').style.display='block';
+  const tot=quiz.length,pct=Math.round((qsc/tot)*100);
+  document.getElementById('sd').textContent=`${qsc}/${tot}`;
+  let msg='',color='';
+  if(pct>=90){msg='🏆 ¡Excelente! Dominás ambos marcos.';color='var(--n)';}
+  else if(pct>=70){msg='👍 Muy bien. Repasá los puntos fallidos.';color='var(--t)';}
+  else if(pct>=50){msg='🔄 Vas bien encaminado. Revisá las correspondencias.';color='var(--both)';}
+  else{msg='📖 Revisá las correspondencias con atención.';color:'#f87171';}
+  document.getElementById('rm').innerHTML=`<p style="font-size:1rem;font-weight:700;color:${color}">${msg}</p><p class="bt">Obtuviste <strong>${qsc} de ${tot}</strong> correctas (${pct}%).</p>`;
+  if(dc)dc.destroy();
+  dc=new Chart(document.getElementById('dc'),{type:'doughnut',data:{datasets:[{data:[qsc,tot-qsc],backgroundColor:['#f97316','#1c1c28'],borderColor:['#ea6c14','#2a2a38'],borderWidth:2}]},options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  if(bc)bc.destroy();
+  bc=new Chart(document.getElementById('bc'),{type:'bar',data:{labels:qans.map((_,i)=>`P${i+1}`),datasets:[{data:qans.map(a=>a?1:0),backgroundColor:qans.map(a=>a?'rgba(16,185,129,.7)':'rgba(248,113,113,.7)'),borderColor:qans.map(a=>a?'#10b981':'#f87171'),borderWidth:1,borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw===1?'✓ Correcta':'✗ Incorrecta'}}},scales:{y:{display:false,max:1.3},x:{ticks:{color:'#444466',font:{size:10}},grid:{color:'rgba(255,255,255,.03)'}}}}});
+  Swal.fire({title:qsc>=8?'¡Buen trabajo!':'Sigue practicando',html:`<strong>${qsc}/${tot}</strong> correctas · ${pct}%`,icon:qsc>=8?'success':qsc>=5?'warning':'error',background:'#16161e',color:'#f1f0ff',confirmButtonColor:'#f97316',confirmButtonText:'Ver resultados',customClass:{popup:'border border-secondary'}});
+}
+function restart(){qcur=0;qsc=0;qans=[];document.getElementById('quiz-section').style.display='block';document.getElementById('rs').style.display='none';loadQ();}
+
+document.addEventListener('DOMContentLoaded',()=>{dots();loadQ();});
+</script>
+</body>
+</html>
