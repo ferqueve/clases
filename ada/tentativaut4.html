@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TFU UT4 · Truck & Roll | Diseño UI · FIT UCU</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:    #0c0a08;
+    --bgc:   #16130f;
+    --bgp:   #1e1a14;
+    --or:    #f97316;  /* orange */
+    --ye:    #fbbf24;  /* yellow */
+    --re:    #ef4444;  /* red accent */
+    --gr:    #22c55e;  /* green */
+    --sky:   #38bdf8;
+    --text:  #fef3e2;
+    --muted: #5a4a30;
+    --border:rgba(249,115,22,.15);
+    --r:     12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;overflow:hidden;}
+  body::before{content:'';position:fixed;inset:0;
+    background:radial-gradient(ellipse 70% 50% at 95% 5%,rgba(249,115,22,.1) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 60% at 5% 90%,rgba(251,191,36,.07) 0%,transparent 55%);
+    pointer-events:none;z-index:0;}
+  #app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:9px 28px;border-bottom:1px solid var(--border);background:rgba(12,10,8,.96);backdrop-filter:blur(18px);flex-shrink:0;}
+  .brand{font-family:'JetBrains Mono',monospace;font-size:.69rem;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;}
+  .sc{font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--or);font-weight:700;}
+  #pbw{height:3px;background:#1e1a14;flex-shrink:0;}
+  #pb{height:100%;background:linear-gradient(90deg,var(--ye),var(--or));transition:width .4s ease;}
+  #sa{flex:1;overflow-y:auto;padding:24px 42px;}
+  #sa::-webkit-scrollbar{width:4px;}
+  #sa::-webkit-scrollbar-thumb{background:rgba(249,115,22,.2);border-radius:99px;}
+  .slide{display:none;}.slide.active{display:block;}
+
+  .stag{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--or);border:1px solid rgba(249,115,22,.38);border-radius:4px;padding:3px 12px;margin-bottom:13px;}
+  h1.t{font-size:clamp(1.8rem,3.8vw,2.9rem);font-weight:900;line-height:1.1;margin-bottom:10px;}
+  h2.t{font-size:clamp(1.3rem,2.6vw,2rem);font-weight:800;line-height:1.2;margin-bottom:14px;}
+  .co{color:var(--or);}.cy{color:var(--ye);}.cg{color:var(--gr);}.cs{color:var(--sky);}
+  .bt{font-family:'JetBrains Mono',monospace;font-size:.79rem;color:#5a4a30;line-height:1.82;}
+  .lt{font-size:.97rem;color:#a08060;line-height:1.76;}
+
+  .gc{background:var(--bgc);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;position:relative;overflow:hidden;}
+  .gc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ye),var(--or));}
+
+  .hl{border-left:3px solid var(--or);background:rgba(249,115,22,.06);border-radius:0 8px 8px 0;padding:11px 16px;margin:10px 0;font-family:'JetBrains Mono',monospace;font-size:.79rem;color:var(--text);}
+  .hl.ye{border-left-color:var(--ye);background:rgba(251,191,36,.06);}
+  .hl.gr{border-left-color:var(--gr);background:rgba(34,197,94,.06);}
+  .hl.sk{border-left-color:var(--sky);background:rgba(56,189,248,.06);}
+  .hl.re{border-left-color:var(--re);background:rgba(239,68,68,.06);}
+
+  /* PHONE FRAME */
+  .phone{background:#0c0a08;border:2.5px solid #3a3020;border-radius:28px;overflow:hidden;position:relative;box-shadow:0 12px 40px rgba(0,0,0,.6);}
+  .phone-bar{background:#1a1510;height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:.65rem;font-family:'JetBrains Mono',monospace;color:#5a4a30;}
+  .phone-notch{width:60px;height:10px;background:#0c0a08;border-radius:0 0 8px 8px;position:absolute;top:0;left:50%;transform:translateX(-50%);}
+  .screen{padding:10px;}
+
+  /* UI COMPONENTS */
+  .ui-topbar{background:#1e1a14;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .ui-card{background:#1e1a14;border:1px solid rgba(249,115,22,.2);border-radius:8px;padding:10px;margin-bottom:6px;}
+  .ui-btn{border-radius:8px;padding:9px 14px;font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .ui-btn.primary{background:var(--or);color:#0c0a08;}
+  .ui-btn.secondary{background:#2a2018;border:1px solid rgba(249,115,22,.3);color:var(--or);}
+  .ui-badge{border-radius:99px;padding:2px 8px;font-size:.65rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+  .ui-badge.new{background:var(--re);color:#fff;}
+  .ui-badge.ok{background:var(--gr);color:#0c0a08;}
+  .ui-badge.prep{background:var(--ye);color:#0c0a08;}
+
+  /* STEP INDICATOR */
+  .step-ind{display:flex;align-items:center;gap:0;margin-bottom:12px;justify-content:center;}
+  .step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+  .step-dot.active{background:var(--or);color:#0c0a08;}
+  .step-dot.done{background:var(--gr);color:#0c0a08;}
+  .step-dot.pending{background:#2a2018;border:1px solid #3a3020;color:var(--muted);}
+  .step-line{flex:1;height:2px;background:#2a2018;max-width:30px;}
+  .step-line.done{background:var(--gr);}
+
+  /* DECISION TABLE */
+  .dt{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;}
+  .dt th{background:#1e1a14;padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:.74rem;font-weight:700;}
+  .dt td{padding:8px 12px;border-top:1px solid rgba(249,115,22,.08);font-family:'JetBrains Mono',monospace;font-size:.75rem;color:#5a4a30;vertical-align:top;}
+  .dt tr:hover td{background:rgba(249,115,22,.03);}
+
+  /* SUPUESTO */
+  .sup{background:var(--bgp);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:10px 14px;margin-bottom:7px;display:flex;gap:10px;align-items:flex-start;}
+  .sup-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--ye);color:#0c0a08;font-weight:800;font-size:.72rem;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+
+  /* PUC card */
+  .puc{border-radius:10px;padding:16px 20px;border:2px solid var(--or);background:rgba(249,115,22,.07);margin-bottom:10px;}
+  .puc.p2{border-color:var(--sky);background:rgba(56,189,248,.07);}
+
+  /* NAV */
+  footer{display:flex;align-items:center;justify-content:space-between;padding:9px 28px;border-top:1px solid var(--border);background:rgba(12,10,8,.96);backdrop-filter:blur(18px);flex-shrink:0;}
+  .nb{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 20px;font-family:'Nunito',sans-serif;font-weight:800;font-size:.87rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;}
+  .nb:hover{background:rgba(249,115,22,.08);border-color:var(--or);color:var(--or);}
+  .nb:disabled{opacity:.22;cursor:default;pointer-events:none;}
+  .nb.p{background:var(--or);color:#0c0a08;border-color:var(--or);}
+  .nb.p:hover{background:#ea6c14;}
+
+  /* QUIZ */
+  .qo{background:var(--bgp);border:1px solid var(--border);border-radius:8px;padding:12px 16px;cursor:pointer;transition:all .2s;margin-bottom:8px;display:flex;align-items:center;gap:11px;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+  .qo:hover{border-color:var(--or);background:rgba(249,115,22,.05);}
+  .qo.correct{border-color:var(--gr);background:rgba(34,197,94,.08);}
+  .qo.wrong{border-color:var(--re);background:rgba(239,68,68,.08);}
+  .qo.disabled{pointer-events:none;}
+  .ol{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.73rem;}
+  .qf{border-radius:8px;padding:10px 14px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:.78rem;display:none;}
+  .qf.show{display:block;}
+  .qf.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.35);color:#86efac;}
+  .qf.ko{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);color:#fca5a5;}
+  .qcount{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted);margin-bottom:7px;}
+  .qq{font-size:.92rem;font-weight:700;margin-bottom:14px;line-height:1.5;}
+  #rs{display:none;}
+  .sr{position:relative;width:128px;height:128px;margin:0 auto 16px;}
+  .si{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .snum{font-size:2rem;font-weight:900;color:var(--or);font-family:'JetBrains Mono',monospace;}
+  .slb{font-size:.67rem;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:700px){#sa{padding:14px 12px;}header,footer{padding:9px 12px;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><i class="fa-solid fa-truck me-2"></i>FIT · UCU &nbsp;·&nbsp; UT4 · TFU · Truck &amp; Roll</div>
+    <div class="sc"><span id="cs">1</span> / <span id="ts">13</span></div>
+  </header>
+  <div id="pbw"><div id="pb" style="width:7.69%"></div></div>
+
+  <div id="sa">
+
+    <!-- ══ 1 PORTADA ══ -->
+    <div class="slide active" id="slide-1">
+      <div class="animate__animated animate__fadeIn" style="min-height:60vh;display:flex;flex-direction:column;justify-content:center;position:relative;">
+        <div style="position:absolute;right:-50px;top:-60px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.17) 0%,transparent 68%);pointer-events:none"></div>
+        <div class="stag"><i class="fa-solid fa-truck me-1"></i>UT4 · TFU · Diseño de Interfaz de Usuario</div>
+        <h1 class="t">
+          <span class="co">Truck</span> <span class="cy">&amp;</span> <span class="co">Roll</span><br>
+          <span style="font-size:.48em;font-weight:600;color:#5a4a30">Diseño UI de los 2 PUC más importantes</span>
+        </h1>
+        <p class="lt mt-2" style="max-width:580px;">Resolución del TFU de UT4. Se seleccionan y justifican los 2 PUC más críticos del sistema, se documentan supuestos y se presenta el diseño de interfaz para cada flujo.</p>
+        <div class="d-flex flex-wrap gap-3 mt-3">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.28);border-radius:99px;padding:5px 13px;font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--or)"><i class="fa-solid fa-mobile-screen"></i>App móvil</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.28);border-radius:99px;padding:5px 13px;font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--sky)"><i class="fa-solid fa-tablet-screen-button"></i>Panel operador</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.28);border-radius:99px;padding:5px 13px;font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--gr)"><i class="fa-solid fa-list-check"></i>Nielsen + Tognazzini + Fitts</span>
+        </div>
+        <div class="mt-3 gc" style="max-width:600px;">
+          <p class="bt mb-0"><span class="co">PUC 1:</span> Cliente realiza un pedido &nbsp;·&nbsp; <span class="cs">PUC 2:</span> Operador gestiona pedidos en tiempo real &nbsp;·&nbsp; <span style="color:var(--ye)">+ criterios de diseño aplicados</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 2 SUPUESTOS ══ -->
+    <div class="slide" id="slide-2">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-clipboard me-1"></i>Supuestos documentados</div>
+        <h2 class="t">Supuestos del <span class="co">sistema</span></h2>
+        <p class="lt mb-3">Basados en los entregables de UT1–UT3 y decisiones propias documentadas para este TFU.</p>
+        <div class="sup"><div class="sup-num">1</div><div class="bt"><strong style="color:var(--text)">Truck &amp; Roll</strong> es una app móvil (iOS/Android) que conecta clientes con food trucks, y también provee un panel de gestión para los operadores de los trucks.</div></div>
+        <div class="sup"><div class="sup-num">2</div><div class="bt"><strong style="color:var(--text)">Dos tipos de usuario:</strong> <span class="co">Cliente</span> (busca trucks, ordena, rastrea su pedido) y <span class="cs">Operador de Truck</span> (gestiona el menú, ubicación y cola de pedidos en tiempo real).</div></div>
+        <div class="sup"><div class="sup-num">3</div><div class="bt"><strong style="color:var(--text)">Contexto de uso:</strong> el cliente usa la app en movimiento desde su celular. El operador usa una tablet fija en el truck durante el horario de servicio.</div></div>
+        <div class="sup"><div class="sup-num">4</div><div class="bt"><strong style="color:var(--text)">Plataforma:</strong> los wireframes se diseñan para mobile-first (375 px de ancho). Se aplican tamaños mínimos de 44×44 pt para targets táctiles (Apple HIG).</div></div>
+        <div class="sup"><div class="sup-num">5</div><div class="bt"><strong style="color:var(--text)">Pago:</strong> se asume que el pago se realiza en el momento del retiro (no en la app), para simplificar el flujo y reducir la fricción de onboarding.</div></div>
+        <div class="sup"><div class="sup-num">6</div><div class="bt"><strong style="color:var(--text)">Estado del sistema:</strong> los trucks tienen tres estados posibles: <span class="cg">Abierto</span>, <span class="cy">Ocupado</span> (alta demanda, demoras), <span style="color:var(--re)">Cerrado</span>. Esto se muestra siempre al cliente.</div></div>
+        <div class="hl ye mt-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Los supuestos están basados en el enunciado de UT1_TA0 y en las decisiones tomadas en los TFU anteriores.</div>
+      </div>
+    </div>
+
+    <!-- ══ 3 SELECCIÓN PUCs ══ -->
+    <div class="slide" id="slide-3">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-star me-1"></i>Selección de PUCs</div>
+        <h2 class="t">Los 2 <span class="co">PUC más importantes</span></h2>
+        <p class="lt mb-3">De todos los casos de uso del sistema, seleccionamos los dos que aportan más valor y tienen mayor impacto en la experiencia del usuario.</p>
+
+        <div class="puc mb-3">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <span style="background:var(--or);color:#0c0a08;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;flex-shrink:0">1</span>
+            <h5 class="mb-0 co">Realizar un pedido <span style="font-size:.7em;color:#5a4a30">(Actor: Cliente)</span></h5>
+          </div>
+          <p class="bt mb-2"><strong style="color:var(--text)">¿Por qué es el más importante?</strong> Es el flujo central del producto: sin pedidos no hay negocio. Representa el 80% del uso diario de la app por parte del cliente. Es el PUC con mayor impacto en la satisfacción del usuario y en la retención.</p>
+          <p class="bt"><strong style="color:var(--text)">Flujo:</strong> Descubrir truck → Ver menú → Agregar items → Confirmar pedido → Tracking del estado.</p>
+        </div>
+
+        <div class="puc p2">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <span style="background:var(--sky);color:#0c0a08;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;flex-shrink:0">2</span>
+            <h5 class="mb-0 cs">Gestionar pedidos en tiempo real <span style="font-size:.7em;color:#5a4a30">(Actor: Operador)</span></h5>
+          </div>
+          <p class="bt mb-2"><strong style="color:var(--text)">¿Por qué es el segundo más importante?</strong> Es el corazón operacional del truck. Un operador lento o que comete errores en los pedidos genera mala experiencia y calificaciones bajas. Este PUC afecta directamente la eficiencia del negocio.</p>
+          <p class="bt"><strong style="color:var(--text)">Flujo:</strong> Ver cola de pedidos → Aceptar / rechazar → Preparar → Marcar como listo → Notificar al cliente.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 4 PUC1 FLUJO ══ -->
+    <div class="slide" id="slide-4">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-1 me-1"></i>PUC 1 · Flujo</div>
+        <h2 class="t"><span class="co">PUC 1:</span> Realizar un pedido — Flujo completo</h2>
+        <p class="lt mb-3">El cliente recorre 5 pantallas para completar su pedido. Cada pantalla tiene un objetivo claro y mínima fricción.</p>
+
+        <div class="d-flex align-items-center gap-2 mb-4 flex-wrap">
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:1px solid rgba(249,115,22,.3);border-radius:8px;padding:10px 6px;margin-bottom:6px">
+              <i class="fa-solid fa-map-location-dot fa-lg co mb-1 d-block"></i>
+              <div style="font-size:.7rem;font-weight:700;color:var(--text)">Mapa</div>
+              <div style="font-size:.62rem;color:var(--muted)">Descubrir truck</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right co" style="flex-shrink:0"></i>
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:1px solid rgba(249,115,22,.3);border-radius:8px;padding:10px 6px;margin-bottom:6px">
+              <i class="fa-solid fa-store fa-lg co mb-1 d-block"></i>
+              <div style="font-size:.7rem;font-weight:700;color:var(--text)">Truck</div>
+              <div style="font-size:.62rem;color:var(--muted)">Info y estado</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right co" style="flex-shrink:0"></i>
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:1px solid rgba(249,115,22,.3);border-radius:8px;padding:10px 6px;margin-bottom:6px">
+              <i class="fa-solid fa-utensils fa-lg co mb-1 d-block"></i>
+              <div style="font-size:.7rem;font-weight:700;color:var(--text)">Menú</div>
+              <div style="font-size:.62rem;color:var(--muted)">Elegir items</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right co" style="flex-shrink:0"></i>
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:1px solid rgba(249,115,22,.3);border-radius:8px;padding:10px 6px;margin-bottom:6px">
+              <i class="fa-solid fa-cart-shopping fa-lg co mb-1 d-block"></i>
+              <div style="font-size:.7rem;font-weight:700;color:var(--text)">Carrito</div>
+              <div style="font-size:.62rem;color:var(--muted)">Revisar pedido</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right co" style="flex-shrink:0"></i>
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:2px solid var(--gr);border-radius:8px;padding:10px 6px;margin-bottom:6px">
+              <i class="fa-solid fa-circle-check fa-lg cg mb-1 d-block"></i>
+              <div style="font-size:.7rem;font-weight:700;color:var(--gr)">Confirmado</div>
+              <div style="font-size:.62rem;color:var(--muted)">Tracking</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="co mb-2"><i class="fa-solid fa-shield-halved me-2"></i>Criterios Nielsen aplicados</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:7px">
+                <li class="bt"><span style="color:var(--or);font-weight:700">N1</span> Visibilidad: estado del truck (abierto/ocupado/cerrado) siempre visible.</li>
+                <li class="bt"><span style="color:var(--or);font-weight:700">N3</span> Control: botón "← Volver" siempre accesible para cancelar.</li>
+                <li class="bt"><span style="color:var(--or);font-weight:700">N6</span> Prevención: confirmación antes de enviar el pedido.</li>
+                <li class="bt"><span style="color:var(--or);font-weight:700">N8</span> Minimalismo: solo la info necesaria en cada pantalla.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="cy mb-2"><i class="fa-solid fa-compass me-2"></i>Criterios Tognazzini aplicados</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:7px">
+                <li class="bt"><span style="color:var(--ye);font-weight:700">T8</span> Ley de Fitts: botones CTA grandes (mín. 48×48 dp).</li>
+                <li class="bt"><span style="color:var(--ye);font-weight:700">T1</span> Anticipación: mostrar tiempo de espera estimado antes de confirmar.</li>
+                <li class="bt"><span style="color:var(--ye);font-weight:700">T13</span> Protección: el carrito se guarda aunque el usuario salga de la app.</li>
+                <li class="bt"><span style="color:var(--ye);font-weight:700">T5</span> Defaults: cantidad inicial de cada item = 1 para facilitar pedidos rápidos.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 5 PUC1 WIREFRAMES 1-2 ══ -->
+    <div class="slide" id="slide-5">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-pencil me-1"></i>PUC 1 · Wireframes</div>
+        <h2 class="t"><span class="co">PUC 1</span> — Pantallas 1 y 2: Mapa y Truck</h2>
+        <p class="lt mb-3">El usuario descubre trucks cercanos en el mapa y selecciona uno para ver su estado y menú.</p>
+        <div class="row g-4 justify-content-center">
+
+          <!-- Screen 1: Mapa -->
+          <div class="col-md-5">
+            <p class="bt text-center mb-2" style="color:var(--or)">Pantalla 1 – Mapa / Descubrir</p>
+            <div class="phone" style="max-width:240px;margin:0 auto">
+              <div class="phone-bar"><span>9:41</span><span><i class="fa-solid fa-wifi me-1"></i><i class="fa-solid fa-battery-full"></i></span></div>
+              <div class="screen" style="padding:8px">
+                <!-- Top search bar -->
+                <div style="background:#2a2018;border-radius:8px;padding:7px 10px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+                  <i class="fa-solid fa-magnifying-glass" style="color:#5a4a30;font-size:.8rem"></i>
+                  <span style="font-size:.7rem;color:#5a4a30">Buscar truck o tipo de comida</span>
+                </div>
+                <!-- Map placeholder -->
+                <div style="background:#1a1812;border-radius:8px;height:160px;position:relative;overflow:hidden;margin-bottom:8px;border:1px solid #2a2018">
+                  <!-- Grid lines simulating map -->
+                  <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0">
+                    <line x1="0" y1="50" x2="100%" y2="50" stroke="#2a2018" stroke-width="1"/>
+                    <line x1="0" y1="100" x2="100%" y2="100" stroke="#2a2018" stroke-width="1"/>
+                    <line x1="0" y1="130" x2="100%" y2="130" stroke="#2a2018" stroke-width="1"/>
+                    <line x1="60" y1="0" x2="60" y2="100%" stroke="#2a2018" stroke-width="1"/>
+                    <line x1="130" y1="0" x2="130" y2="100%" stroke="#2a2018" stroke-width="1"/>
+                    <line x1="190" y1="0" x2="190" y2="100%" stroke="#2a2018" stroke-width="1"/>
+                    <!-- Truck markers -->
+                    <circle cx="80" cy="70" r="12" fill="#f97316"/>
+                    <text x="80" y="74" text-anchor="middle" fill="#0c0a08" font-size="10">🚚</text>
+                    <circle cx="150" cy="100" r="12" fill="#22c55e"/>
+                    <text x="150" y="104" text-anchor="middle" fill="#0c0a08" font-size="10">🚚</text>
+                    <circle cx="100" cy="140" r="12" fill="#fbbf24"/>
+                    <text x="100" y="144" text-anchor="middle" fill="#0c0a08" font-size="10">🚚</text>
+                    <!-- User location -->
+                    <circle cx="120" cy="90" r="6" fill="#38bdf8"/>
+                    <circle cx="120" cy="90" r="12" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity=".4"/>
+                  </svg>
+                  <!-- Leyenda -->
+                  <div style="position:absolute;bottom:6px;right:6px;background:rgba(12,10,8,.8);border-radius:6px;padding:4px 7px;font-size:.55rem;color:#a08060;font-family:'JetBrains Mono',monospace">
+                    <span style="color:#f97316">●</span> Occ &nbsp;<span style="color:#22c55e">●</span> Abto &nbsp;<span style="color:#fbbf24">●</span> Tardanza
+                  </div>
+                </div>
+                <!-- Nearby list -->
+                <div style="font-size:.65rem;color:#5a4a30;font-family:'JetBrains Mono',monospace;margin-bottom:5px">TRUCKS CERCANOS</div>
+                <div class="ui-card" style="display:flex;align-items:center;gap:8px;padding:7px 10px">
+                  <span style="font-size:1.1rem">🌮</span>
+                  <div style="flex:1">
+                    <div style="font-size:.72rem;font-weight:700;color:var(--text)">Tacos El Paisano</div>
+                    <div style="font-size:.6rem;color:#5a4a30">250 m · ~15 min</div>
+                  </div>
+                  <span class="ui-badge ok">Abierto</span>
+                </div>
+                <div class="ui-card" style="display:flex;align-items:center;gap:8px;padding:7px 10px">
+                  <span style="font-size:1.1rem">🍔</span>
+                  <div style="flex:1">
+                    <div style="font-size:.72rem;font-weight:700;color:var(--text)">Burger Nomad</div>
+                    <div style="font-size:.6rem;color:#5a4a30">380 m · ~25 min</div>
+                  </div>
+                  <span class="ui-badge prep">Ocupado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 2: Truck detail -->
+          <div class="col-md-5">
+            <p class="bt text-center mb-2" style="color:var(--or)">Pantalla 2 – Detalle del Truck</p>
+            <div class="phone" style="max-width:240px;margin:0 auto">
+              <div class="phone-bar"><span>9:41</span><span><i class="fa-solid fa-wifi me-1"></i><i class="fa-solid fa-battery-full"></i></span></div>
+              <div class="screen" style="padding:8px">
+                <!-- Header truck -->
+                <div style="background:linear-gradient(135deg,#2a1e08,#1e1a14);border-radius:8px;padding:12px;margin-bottom:8px;text-align:center">
+                  <div style="font-size:2rem;margin-bottom:4px">🌮</div>
+                  <div style="font-size:.85rem;font-weight:800;color:var(--text)">Tacos El Paisano</div>
+                  <div style="font-size:.62rem;color:#5a4a30;margin:2px 0">Comida mexicana · 250 m de ti</div>
+                  <span class="ui-badge ok" style="font-size:.65rem">Abierto · ~15 min espera</span>
+                </div>
+                <!-- Ratings -->
+                <div style="display:flex;gap:6px;margin-bottom:8px">
+                  <div style="flex:1;background:#1e1a14;border-radius:6px;padding:6px;text-align:center">
+                    <div style="font-size:.75rem;font-weight:800;color:var(--ye)">4.8 ⭐</div>
+                    <div style="font-size:.58rem;color:#5a4a30">Calificación</div>
+                  </div>
+                  <div style="flex:1;background:#1e1a14;border-radius:6px;padding:6px;text-align:center">
+                    <div style="font-size:.75rem;font-weight:800;color:var(--or)">15 min</div>
+                    <div style="font-size:.58rem;color:#5a4a30">Espera est.</div>
+                  </div>
+                  <div style="flex:1;background:#1e1a14;border-radius:6px;padding:6px;text-align:center">
+                    <div style="font-size:.75rem;font-weight:800;color:var(--text)">8</div>
+                    <div style="font-size:.58rem;color:#5a4a30">Items menú</div>
+                  </div>
+                </div>
+                <!-- Menu preview -->
+                <div style="font-size:.62rem;color:#5a4a30;font-family:'JetBrains Mono',monospace;margin-bottom:5px">POPULARES</div>
+                <div style="background:#1e1a14;border-radius:6px;padding:7px 10px;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+                  <span style="font-size:.9rem">🌮</span>
+                  <div style="flex:1"><div style="font-size:.7rem;font-weight:700;color:var(--text)">Taco Pastor x3</div><div style="font-size:.6rem;color:#5a4a30">Con cilantro y limón</div></div>
+                  <div style="font-size:.72rem;font-weight:800;color:var(--ye)">$250</div>
+                </div>
+                <div style="background:#1e1a14;border-radius:6px;padding:7px 10px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+                  <span style="font-size:.9rem">🥤</span>
+                  <div style="flex:1"><div style="font-size:.7rem;font-weight:700;color:var(--text)">Aguas Frescas</div><div style="font-size:.6rem;color:#5a4a30">Jamaica / Tamarindo</div></div>
+                  <div style="font-size:.72rem;font-weight:800;color:var(--ye)">$120</div>
+                </div>
+                <!-- CTA -->
+                <div class="ui-btn primary" style="font-size:.78rem;border-radius:10px">
+                  <i class="fa-solid fa-utensils"></i> Ver menú completo
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 6 PUC1 WIREFRAMES 3-4 ══ -->
+    <div class="slide" id="slide-6">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-pencil me-1"></i>PUC 1 · Wireframes</div>
+        <h2 class="t"><span class="co">PUC 1</span> — Pantallas 3 y 4: Menú y Carrito</h2>
+        <p class="lt mb-3">El cliente selecciona los items de su pedido y revisa el resumen antes de confirmar.</p>
+        <div class="row g-4 justify-content-center">
+
+          <!-- Screen 3: Menu -->
+          <div class="col-md-5">
+            <p class="bt text-center mb-2" style="color:var(--or)">Pantalla 3 – Menú</p>
+            <div class="phone" style="max-width:240px;margin:0 auto">
+              <div class="phone-bar"><span>9:41</span><span><i class="fa-solid fa-wifi me-1"></i><i class="fa-solid fa-battery-full"></i></span></div>
+              <div class="screen" style="padding:8px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <span style="color:#5a4a30;font-size:.8rem"><i class="fa-solid fa-arrow-left"></i></span>
+                  <span style="font-size:.8rem;font-weight:800;color:var(--text);flex:1">Menú · Tacos El Paisano</span>
+                  <span style="position:relative"><i class="fa-solid fa-cart-shopping" style="color:var(--or);font-size:.9rem"></i><span style="position:absolute;top:-6px;right:-6px;background:var(--re);border-radius:50%;width:14px;height:14px;font-size:.55rem;font-weight:800;display:flex;align-items:center;justify-content:center">2</span></span>
+                </div>
+                <!-- Categories -->
+                <div style="display:flex;gap:5px;margin-bottom:8px;overflow-x:auto">
+                  <span style="background:var(--or);color:#0c0a08;border-radius:99px;padding:3px 10px;font-size:.62rem;font-weight:700;white-space:nowrap">Tacos</span>
+                  <span style="background:#2a2018;color:#5a4a30;border-radius:99px;padding:3px 10px;font-size:.62rem;white-space:nowrap">Bebidas</span>
+                  <span style="background:#2a2018;color:#5a4a30;border-radius:99px;padding:3px 10px;font-size:.62rem;white-space:nowrap">Extras</span>
+                </div>
+                <!-- Items with quantity -->
+                <div style="background:#1e1a14;border-radius:8px;padding:8px;margin-bottom:6px">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                    <span style="font-size:.9rem">🌮</span>
+                    <div style="flex:1"><div style="font-size:.7rem;font-weight:700;color:var(--text)">Taco Pastor x3</div><div style="font-size:.6rem;color:#5a4a30">$250</div></div>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                    <div style="background:#2a2018;border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:var(--text)">−</div>
+                    <span style="font-weight:800;font-size:.85rem;color:var(--text)">2</span>
+                    <div style="background:var(--or);border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#0c0a08">+</div>
+                  </div>
+                </div>
+                <div style="background:#1e1a14;border-radius:8px;padding:8px;margin-bottom:6px">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                    <span style="font-size:.9rem">🌯</span>
+                    <div style="flex:1"><div style="font-size:.7rem;font-weight:700;color:var(--text)">Burrito Supremo</div><div style="font-size:.6rem;color:#5a4a30">$320</div></div>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                    <div style="background:#2a2018;border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#5a4a30">−</div>
+                    <span style="font-weight:800;font-size:.85rem;color:var(--text)">0</span>
+                    <div style="background:var(--or);border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#0c0a08">+</div>
+                  </div>
+                </div>
+                <!-- Floating cart bar -->
+                <div style="background:var(--or);border-radius:10px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+                  <span style="font-size:.7rem;font-weight:800;color:#0c0a08">2 items</span>
+                  <span style="font-size:.7rem;font-weight:800;color:#0c0a08">Ver carrito →</span>
+                  <span style="font-size:.72rem;font-weight:800;color:#0c0a08">$500</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 4: Cart -->
+          <div class="col-md-5">
+            <p class="bt text-center mb-2" style="color:var(--or)">Pantalla 4 – Carrito y Confirmación</p>
+            <div class="phone" style="max-width:240px;margin:0 auto">
+              <div class="phone-bar"><span>9:41</span><span><i class="fa-solid fa-wifi me-1"></i><i class="fa-solid fa-battery-full"></i></span></div>
+              <div class="screen" style="padding:8px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <span style="color:#5a4a30;font-size:.8rem"><i class="fa-solid fa-arrow-left"></i></span>
+                  <span style="font-size:.82rem;font-weight:800;color:var(--text)">Tu pedido</span>
+                </div>
+                <!-- Items summary -->
+                <div style="background:#1e1a14;border-radius:8px;padding:8px;margin-bottom:6px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+                    <span style="font-size:.7rem;color:var(--text)">2× Taco Pastor x3</span>
+                    <span style="font-size:.7rem;font-weight:700;color:var(--ye)">$500</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:.7rem;color:var(--text)">1× Agua Fresca</span>
+                    <span style="font-size:.7rem;font-weight:700;color:var(--ye)">$120</span>
+                  </div>
+                  <div style="border-top:1px solid #2a2018;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between">
+                    <span style="font-size:.75rem;font-weight:800;color:var(--text)">Total</span>
+                    <span style="font-size:.75rem;font-weight:800;color:var(--or)">$620</span>
+                  </div>
+                </div>
+                <!-- Info espera -->
+                <div style="background:#1e2014;border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:7px 10px;margin-bottom:8px;font-size:.65rem;color:#a08030">
+                  <i class="fa-solid fa-clock me-1"></i>Tiempo estimado de retiro: <strong>15 min</strong><br>
+                  <i class="fa-solid fa-info-circle me-1"></i>Pago en el truck al retirar
+                </div>
+                <!-- Note -->
+                <div style="background:#1e1a14;border-radius:8px;padding:7px 10px;margin-bottom:8px">
+                  <div style="font-size:.62rem;color:#5a4a30;margin-bottom:3px">Notas para el chef (opcional)</div>
+                  <div style="font-size:.68rem;color:#3a3020;border:1px solid #2a2018;border-radius:5px;padding:4px 7px;min-height:24px">Sin picante por favor</div>
+                </div>
+                <!-- CTA -->
+                <div class="ui-btn primary" style="font-size:.78rem;border-radius:10px;margin-bottom:5px">
+                  <i class="fa-solid fa-check"></i> Confirmar pedido
+                </div>
+                <div class="ui-btn secondary" style="font-size:.75rem;border-radius:10px">
+                  Seguir agregando items
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 7 PUC1 CONFIRMACIÓN ══ -->
+    <div class="slide" id="slide-7">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-circle-check me-1"></i>PUC 1 · Confirmación</div>
+        <h2 class="t"><span class="co">PUC 1</span> — Pantalla 5: Pedido confirmado y tracking</h2>
+        <p class="lt mb-3">El cliente ve el estado de su pedido en tiempo real. La visibilidad del estado (N1, T15) es clave en esta pantalla.</p>
+        <div class="row g-4 align-items-start justify-content-center">
+          <div class="col-md-5">
+            <p class="bt text-center mb-2" style="color:var(--gr)">Pantalla 5 – Estado del pedido</p>
+            <div class="phone" style="max-width:240px;margin:0 auto">
+              <div class="phone-bar"><span>9:56</span><span><i class="fa-solid fa-wifi me-1"></i><i class="fa-solid fa-battery-full"></i></span></div>
+              <div class="screen" style="padding:8px">
+                <!-- Success header -->
+                <div style="text-align:center;padding:14px 0 10px">
+                  <div style="font-size:2.5rem;margin-bottom:6px">✅</div>
+                  <div style="font-size:.85rem;font-weight:800;color:var(--gr)">¡Pedido confirmado!</div>
+                  <div style="font-size:.65rem;color:#5a4a30">Pedido #TR-4821</div>
+                </div>
+                <!-- Progress steps -->
+                <div style="margin:10px 0">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <div style="width:26px;height:26px;border-radius:50%;background:var(--gr);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0">✓</div>
+                    <div style="flex:1"><div style="font-size:.7rem;font-weight:700;color:var(--gr)">Recibido por el truck</div><div style="font-size:.58rem;color:#5a4a30">9:56 am</div></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <div style="width:26px;height:26px;border-radius:50%;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0">👨‍🍳</div>
+                    <div style="flex:1"><div style="font-size:.7rem;font-weight:700;color:var(--or)">Preparando tu pedido…</div><div style="font-size:.58rem;color:#5a4a30">~13 min restantes</div></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;opacity:.5">
+                    <div style="width:26px;height:26px;border-radius:50%;background:#2a2018;border:1px solid #3a3020;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;color:#5a4a30">🔔</div>
+                    <div style="flex:1"><div style="font-size:.7rem;color:#5a4a30">Listo para retirar</div></div>
+                  </div>
+                </div>
+                <!-- Truck info -->
+                <div style="background:#1e1a14;border-radius:8px;padding:8px;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:1.2rem">🚚</span>
+                  <div><div style="font-size:.7rem;font-weight:700;color:var(--text)">Tacos El Paisano</div><div style="font-size:.62rem;color:#5a4a30">Av. Uruguay 1234, Frente al Banco</div></div>
+                </div>
+                <!-- Nota pago -->
+                <div style="background:#1e1408;border:1px solid rgba(251,191,36,.2);border-radius:7px;padding:6px 10px;font-size:.63rem;color:#a08030;text-align:center">
+                  💰 Pago al retirar en el truck
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc mb-3">
+              <h6 class="co mb-2"><i class="fa-solid fa-lightbulb me-2"></i>Decisiones de diseño en esta pantalla</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px">
+                <li class="bt"><span class="co fw-bold">N1/T15</span> El estado del pedido se actualiza automáticamente. El usuario sabe en todo momento qué está pasando.</li>
+                <li class="bt"><span class="co fw-bold">T1</span> Se muestra el tiempo restante estimado (anticipación) para que el cliente sepa cuándo ir a retirar.</li>
+                <li class="bt"><span class="co fw-bold">N9</span> Si el truck rechaza el pedido, se muestra un mensaje claro con la razón y la opción de volver a pedir.</li>
+                <li class="bt"><span class="co fw-bold">T13</span> El historial del pedido queda guardado y puede consultarse desde "Mis pedidos".</li>
+              </ul>
+            </div>
+            <div class="hl gr">
+              <i class="fa-solid fa-bell me-2"></i>
+              Cuando el pedido está listo, la app envía una <strong>notificación push</strong> al cliente: "¡Tu pedido está listo para retirar! 🌮"
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 8 PUC2 FLUJO ══ -->
+    <div class="slide" id="slide-8">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-2 me-1"></i>PUC 2 · Flujo</div>
+        <h2 class="t"><span class="cs">PUC 2:</span> Gestionar pedidos — Flujo operador</h2>
+        <p class="lt mb-3">El operador usa una <strong>tablet</strong> fija en el truck. Necesita ver y gestionar pedidos con rapidez, con las manos ocupadas y en un entorno ruidoso.</p>
+
+        <div class="d-flex align-items-center gap-2 mb-4 flex-wrap">
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:1px solid rgba(56,189,248,.3);border-radius:8px;padding:10px 6px;">
+              <i class="fa-solid fa-bell fa-lg cs mb-1 d-block"></i>
+              <div style="font-size:.68rem;font-weight:700;color:var(--text)">Nuevo</div>
+              <div style="font-size:.6rem;color:var(--muted)">Pedido entra</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right cs" style="flex-shrink:0"></i>
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:1px solid rgba(56,189,248,.3);border-radius:8px;padding:10px 6px;">
+              <i class="fa-solid fa-eye fa-lg cs mb-1 d-block"></i>
+              <div style="font-size:.68rem;font-weight:700;color:var(--text)">Ver detalle</div>
+              <div style="font-size:.6rem;color:var(--muted)">Items + notas</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right cs" style="flex-shrink:0"></i>
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:1px solid rgba(56,189,248,.3);border-radius:8px;padding:10px 6px;">
+              <i class="fa-solid fa-check fa-lg cg mb-1 d-block"></i>
+              <div style="font-size:.68rem;font-weight:700;color:var(--text)">Aceptar</div>
+              <div style="font-size:.6rem;color:var(--muted)">Confirmar tiempo</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right cs" style="flex-shrink:0"></i>
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:1px solid rgba(56,189,248,.3);border-radius:8px;padding:10px 6px;">
+              <i class="fa-solid fa-fire fa-lg" style="color:var(--or)" ></i><br>
+              <div style="font-size:.68rem;font-weight:700;color:var(--text)">Preparar</div>
+              <div style="font-size:.6rem;color:var(--muted)">En cola</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right cs" style="flex-shrink:0"></i>
+          <div class="text-center" style="flex:1;min-width:90px">
+            <div style="background:var(--bgp);border:2px solid var(--gr);border-radius:8px;padding:10px 6px;">
+              <i class="fa-solid fa-flag-checkered fa-lg cg mb-1 d-block"></i>
+              <div style="font-size:.68rem;font-weight:700;color:var(--gr)">Listo</div>
+              <div style="font-size:.6rem;color:var(--muted)">Notifica cliente</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="cs mb-2"><i class="fa-solid fa-shield-halved me-2"></i>Criterios aplicados — Operador</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:7px">
+                <li class="bt"><span style="color:var(--sky);font-weight:700">N1</span> Estado visual de la cola siempre visible (nuevo/preparando/listo).</li>
+                <li class="bt"><span style="color:var(--sky);font-weight:700">T8 Fitts</span> Botones de acción grandes para usar con dedos, posicionados en bordes/zonas accesibles.</li>
+                <li class="bt"><span style="color:var(--sky);font-weight:700">T10</span> La pantalla responde en &lt;200 ms para no interrumpir el flujo de trabajo.</li>
+                <li class="bt"><span style="color:var(--sky);font-weight:700">N6</span> Confirmación antes de rechazar un pedido (irreversible).</li>
+                <li class="bt"><span style="color:var(--sky);font-weight:700">T3</span> Colores semafóricos para el estado: verde/amarillo/rojo, NO solo texto.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc">
+              <h6 class="cy mb-2"><i class="fa-solid fa-tablet-screen-button me-2"></i>Contexto de uso — Tablet</h6>
+              <p class="bt">El operador trabaja en un entorno hostil para la UI: manos húmedas, ruido, luz solar directa, prisas. Esto impone restricciones de diseño adicionales:</p>
+              <ul style="list-style:none;padding:0;margin-top:8px;display:flex;flex-direction:column;gap:7px">
+                <li class="bt">→ Texto <strong>grande</strong> y con alto contraste (T14 Legibilidad).</li>
+                <li class="bt">→ Targets mínimo <strong>64×64 dp</strong> para dedos ocupados.</li>
+                <li class="bt">→ Notificaciones sonoras y vibración para pedidos nuevos.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 9 PUC2 WIREFRAMES 1-2 ══ -->
+    <div class="slide" id="slide-9">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-pencil me-1"></i>PUC 2 · Wireframes</div>
+        <h2 class="t"><span class="cs">PUC 2</span> — Dashboard y Detalle de pedido</h2>
+        <p class="lt mb-2">Vista de tablet horizontal. La cola de pedidos se muestra en columnas Kanban por estado.</p>
+
+        <!-- Tablet wireframe landscape -->
+        <div style="background:#0c0a08;border:2.5px solid #3a3020;border-radius:14px;padding:12px 16px;max-width:700px;margin:0 auto">
+          <div style="background:#1a1510;border-radius:8px;padding:4px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:.68rem;font-family:'JetBrains Mono',monospace;color:#5a4a30">
+            <span><i class="fa-solid fa-truck me-1"></i>Tacos El Paisano · Panel Operador</span>
+            <span style="color:var(--gr)">● Abierto</span>
+            <span>10:23 · <i class="fa-solid fa-wifi me-1"></i>WiFi</span>
+          </div>
+
+          <!-- Kanban columns -->
+          <div class="row g-2">
+            <!-- Nuevos -->
+            <div class="col-4">
+              <div style="background:#1a1510;border-radius:8px;padding:8px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+                  <span style="font-size:.72rem;font-weight:700;color:var(--re)"><i class="fa-solid fa-bell me-1"></i>Nuevos</span>
+                  <span class="ui-badge new" style="font-size:.6rem">2</span>
+                </div>
+                <div style="background:#2a1a1a;border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:8px;margin-bottom:5px">
+                  <div style="font-size:.65rem;font-weight:800;color:var(--re)">⚡ TR-4821</div>
+                  <div style="font-size:.63rem;color:#a08060;margin:2px 0">2× Taco Pastor · 1× Agua</div>
+                  <div style="font-size:.58rem;color:#5a4a30">Hace 0:45</div>
+                  <div style="display:flex;gap:5px;margin-top:7px">
+                    <div style="flex:1;background:var(--gr);border-radius:6px;padding:5px;font-size:.65rem;font-weight:800;color:#0c0a08;text-align:center">✓ Aceptar</div>
+                    <div style="background:#2a2018;border-radius:6px;padding:5px;font-size:.65rem;color:#5a4a30;text-align:center">✕</div>
+                  </div>
+                </div>
+                <div style="background:#2a1a1a;border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:8px">
+                  <div style="font-size:.65rem;font-weight:800;color:var(--re)">⚡ TR-4822</div>
+                  <div style="font-size:.63rem;color:#a08060;margin:2px 0">1× Burrito · 2× Refresco</div>
+                  <div style="font-size:.58rem;color:#5a4a30">Hace 1:20</div>
+                  <div style="display:flex;gap:5px;margin-top:7px">
+                    <div style="flex:1;background:var(--gr);border-radius:6px;padding:5px;font-size:.65rem;font-weight:800;color:#0c0a08;text-align:center">✓ Aceptar</div>
+                    <div style="background:#2a2018;border-radius:6px;padding:5px;font-size:.65rem;color:#5a4a30;text-align:center">✕</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Preparando -->
+            <div class="col-4">
+              <div style="background:#1a1510;border-radius:8px;padding:8px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+                  <span style="font-size:.72rem;font-weight:700;color:var(--ye)">🔥 Preparando</span>
+                  <span class="ui-badge prep" style="font-size:.6rem">3</span>
+                </div>
+                <div style="background:#1e1808;border:1px solid rgba(251,191,36,.3);border-radius:7px;padding:8px;margin-bottom:5px">
+                  <div style="font-size:.65rem;font-weight:800;color:var(--ye)">TR-4819</div>
+                  <div style="font-size:.63rem;color:#a08060;margin:2px 0">3× Taco Pastor</div>
+                  <div style="display:flex;justify-content:space-between;margin-top:4px">
+                    <span style="font-size:.58rem;color:#5a4a30">~5 min</span>
+                    <div style="background:var(--ye);border-radius:5px;padding:3px 8px;font-size:.6rem;font-weight:800;color:#0c0a08">Listo ✓</div>
+                  </div>
+                </div>
+                <div style="background:#1e1808;border:1px solid rgba(251,191,36,.3);border-radius:7px;padding:8px;margin-bottom:5px">
+                  <div style="font-size:.65rem;font-weight:800;color:var(--ye)">TR-4820</div>
+                  <div style="font-size:.63rem;color:#a08060;margin:2px 0">1× Burrito · 1× Agua</div>
+                  <div style="display:flex;justify-content:space-between;margin-top:4px">
+                    <span style="font-size:.58rem;color:#5a4a30">~8 min</span>
+                    <div style="background:var(--ye);border-radius:5px;padding:3px 8px;font-size:.6rem;font-weight:800;color:#0c0a08">Listo ✓</div>
+                  </div>
+                </div>
+                <div style="background:#1e1808;border:1px solid rgba(251,191,36,.3);border-radius:7px;padding:8px">
+                  <div style="font-size:.65rem;font-weight:800;color:var(--ye)">TR-4818</div>
+                  <div style="font-size:.63rem;color:#a08060;margin:2px 0">2× Taco + nota: sin picante</div>
+                  <div style="display:flex;justify-content:space-between;margin-top:4px">
+                    <span style="font-size:.58rem;color:#5a4a30">~2 min</span>
+                    <div style="background:var(--ye);border-radius:5px;padding:3px 8px;font-size:.6rem;font-weight:800;color:#0c0a08">Listo ✓</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Listos para retirar -->
+            <div class="col-4">
+              <div style="background:#1a1510;border-radius:8px;padding:8px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+                  <span style="font-size:.72rem;font-weight:700;color:var(--gr)">✅ Listo para retirar</span>
+                  <span class="ui-badge ok" style="font-size:.6rem">1</span>
+                </div>
+                <div style="background:#141e14;border:1px solid rgba(34,197,94,.3);border-radius:7px;padding:8px">
+                  <div style="font-size:.65rem;font-weight:800;color:var(--gr)">TR-4817</div>
+                  <div style="font-size:.63rem;color:#a08060;margin:2px 0">1× Burrito Supremo</div>
+                  <div style="font-size:.58rem;color:#22c55e;margin-top:3px">📱 Cliente notificado</div>
+                  <div style="background:#2a2018;border-radius:5px;padding:3px 8px;font-size:.6rem;font-weight:800;color:#5a4a30;text-align:center;margin-top:6px">Entregado ✓</div>
+                </div>
+                <!-- Stats box -->
+                <div style="background:#141414;border:1px solid #2a2018;border-radius:7px;padding:8px;margin-top:6px">
+                  <div style="font-size:.62rem;color:#5a4a30;margin-bottom:4px;font-family:'JetBrains Mono',monospace">HOY</div>
+                  <div style="display:flex;justify-content:space-between">
+                    <div style="text-align:center"><div style="font-size:.85rem;font-weight:800;color:var(--text)">24</div><div style="font-size:.55rem;color:#5a4a30">pedidos</div></div>
+                    <div style="text-align:center"><div style="font-size:.85rem;font-weight:800;color:var(--ye)">$14.8k</div><div style="font-size:.55rem;color:#5a4a30">ventas</div></div>
+                    <div style="text-align:center"><div style="font-size:.85rem;font-weight:800;color:var(--gr)">4.9⭐</div><div style="font-size:.55rem;color:#5a4a30">promedio</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="dlbl bt text-center mt-2" style="color:var(--muted)">Wireframe tablet horizontal · Vista Kanban de la cola de pedidos</p>
+      </div>
+    </div>
+
+    <!-- ══ 10 PUC2 DETALLE PEDIDO ══ -->
+    <div class="slide" id="slide-10">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-file-lines me-1"></i>PUC 2 · Detalle</div>
+        <h2 class="t"><span class="cs">PUC 2</span> — Modal: Detalle del pedido</h2>
+        <p class="lt mb-3">Al tocar un pedido nuevo, el operador ve el detalle completo. Los botones de aceptar/rechazar aplican la Ley de Fitts: grandes, en las esquinas inferiores.</p>
+
+        <div class="row g-4 align-items-start justify-content-center">
+          <div class="col-md-6">
+            <!-- Modal wireframe -->
+            <div style="background:#0c0a08;border:2px solid #3a3020;border-radius:14px;padding:12px;max-width:360px;margin:0 auto">
+              <div style="background:#1a1510;border-radius:10px;padding:14px">
+                <!-- Header -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                  <div>
+                    <div style="font-size:.8rem;font-weight:800;color:var(--re)">⚡ Pedido nuevo · TR-4821</div>
+                    <div style="font-size:.65rem;color:#5a4a30">Hace 0:45 min</div>
+                  </div>
+                  <span class="ui-badge new">NUEVO</span>
+                </div>
+                <!-- Items -->
+                <div style="background:#2a1a14;border-radius:8px;padding:10px;margin-bottom:10px">
+                  <div style="font-size:.7rem;color:#5a4a30;font-family:'JetBrains Mono',monospace;margin-bottom:6px">ITEMS</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+                    <span style="font-size:.75rem;color:var(--text)">2× Taco Pastor x3</span>
+                    <span style="font-size:.75rem;font-weight:700;color:var(--ye)">$500</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+                    <span style="font-size:.75rem;color:var(--text)">1× Agua Fresca Jamaica</span>
+                    <span style="font-size:.75rem;font-weight:700;color:var(--ye)">$120</span>
+                  </div>
+                  <div style="border-top:1px solid #3a2a1a;padding-top:6px;margin-top:4px;display:flex;justify-content:space-between">
+                    <span style="font-size:.78rem;font-weight:800;color:var(--text)">Total</span>
+                    <span style="font-size:.78rem;font-weight:800;color:var(--or)">$620</span>
+                  </div>
+                </div>
+                <!-- Nota -->
+                <div style="background:#1e1808;border:1px solid rgba(251,191,36,.2);border-radius:7px;padding:8px;margin-bottom:12px">
+                  <div style="font-size:.65rem;color:#a08030;font-family:'JetBrains Mono',monospace;margin-bottom:3px">📝 NOTA DEL CLIENTE</div>
+                  <div style="font-size:.72rem;color:var(--ye)">Sin picante por favor</div>
+                </div>
+                <!-- Tiempo estimado -->
+                <div style="background:#141a14;border-radius:7px;padding:8px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                  <i class="fa-solid fa-clock" style="color:var(--gr);font-size:.85rem"></i>
+                  <div>
+                    <div style="font-size:.7rem;color:#5a4a30;font-family:'JetBrains Mono',monospace">TIEMPO ESTIMADO</div>
+                    <div style="font-size:.82rem;font-weight:800;color:var(--gr)">15 min</div>
+                  </div>
+                  <div style="flex:1;text-align:right">
+                    <div style="font-size:.65rem;color:#5a4a30">Ajustar:</div>
+                    <div style="display:inline-flex;gap:4px;margin-top:2px">
+                      <span style="background:#2a2018;border-radius:5px;padding:3px 8px;font-size:.68rem;color:var(--ye)">10</span>
+                      <span style="background:var(--or);border-radius:5px;padding:3px 8px;font-size:.68rem;font-weight:800;color:#0c0a08">15</span>
+                      <span style="background:#2a2018;border-radius:5px;padding:3px 8px;font-size:.68rem;color:var(--ye)">20</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- BIG BUTTONS - Fitts' Law -->
+                <div style="display:flex;gap:10px">
+                  <div style="flex:1;background:#2a1414;border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:14px;text-align:center;cursor:pointer">
+                    <i class="fa-solid fa-times" style="color:var(--re);font-size:1.2rem;display:block;margin-bottom:4px"></i>
+                    <div style="font-size:.75rem;font-weight:800;color:var(--re)">Rechazar</div>
+                  </div>
+                  <div style="flex:2;background:var(--gr);border-radius:10px;padding:14px;text-align:center;cursor:pointer">
+                    <i class="fa-solid fa-check" style="color:#0c0a08;font-size:1.2rem;display:block;margin-bottom:4px"></i>
+                    <div style="font-size:.85rem;font-weight:900;color:#0c0a08">Aceptar pedido</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div class="gc mb-3">
+              <h6 class="cs mb-2"><i class="fa-solid fa-ruler me-2"></i>Aplicación de la Ley de Fitts</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px">
+                <li class="bt"><strong style="color:var(--text)">Botón "Aceptar" (W grande):</strong> ocupa 2/3 del ancho disponible. Es la acción más frecuente → debe ser la más fácil de alcanzar.</li>
+                <li class="bt"><strong style="color:var(--text)">Botón "Rechazar" (W menor + rojo):</strong> más pequeño y visualmente diferenciado para reducir clics accidentales.</li>
+                <li class="bt"><strong style="color:var(--text)">Ambos en la zona inferior:</strong> zona de mayor alcance con el pulgar en tablet (zona "verde" del thumb zone).</li>
+              </ul>
+            </div>
+            <div class="hl sk">
+              <i class="fa-solid fa-volume-high me-2"></i>
+              <strong>Feedback multimodal:</strong> al llegar un pedido nuevo → sonido + vibración + pantalla que destella en rojo. El operador no puede perdérselo aunque esté de espaldas.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 11 CRITERIOS DE DISEÑO ══ -->
+    <div class="slide" id="slide-11">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-list-check me-1"></i>Criterios aplicados</div>
+        <h2 class="t">Criterios de diseño <span class="co">aplicados</span></h2>
+        <p class="lt mb-3">Resumen de cómo se aplicaron los marcos teóricos en ambos PUC.</p>
+        <div class="table-responsive">
+          <table class="dt">
+            <thead><tr>
+              <th style="color:var(--or)">Principio</th>
+              <th style="color:var(--sky)">Marco</th>
+              <th style="color:var(--text)">Aplicación en PUC 1 (Cliente)</th>
+              <th style="color:var(--gr)">Aplicación en PUC 2 (Operador)</th>
+            </tr></thead>
+            <tbody style="background:var(--bgc)">
+              <tr><td style="color:var(--or);font-weight:700">N1 · Visibilidad</td><td class="bt">Nielsen</td><td class="bt">Estado del truck visible en todas las pantallas</td><td class="bt">Columnas Kanban con colores semafóricos</td></tr>
+              <tr><td style="color:var(--or);font-weight:700">N6 · Prevención</td><td class="bt">Nielsen</td><td class="bt">Pantalla de revisión antes de confirmar pedido</td><td class="bt">Confirmación antes de rechazar un pedido</td></tr>
+              <tr><td style="color:var(--or);font-weight:700">N8 · Minimalismo</td><td class="bt">Nielsen</td><td class="bt">Una tarea principal por pantalla</td><td class="bt">Vista Kanban solo con datos clave de cada pedido</td></tr>
+              <tr><td style="color:var(--ye);font-weight:700">T8 · Ley Fitts</td><td class="bt">Tognazzini</td><td class="bt">Botón "Confirmar pedido" ocupa ancho completo</td><td class="bt">Botones Aceptar/Rechazar grandes en zona inferior</td></tr>
+              <tr><td style="color:var(--ye);font-weight:700">T1 · Anticipación</td><td class="bt">Tognazzini</td><td class="bt">Tiempo estimado mostrado antes de confirmar</td><td class="bt">Contador regresivo por pedido en preparación</td></tr>
+              <tr><td style="color:var(--ye);font-weight:700">T3 · Colores</td><td class="bt">Tognazzini</td><td class="bt">Estado del truck: color + texto + ícono (no solo color)</td><td class="bt">Columnas con color + ícono + etiqueta de estado</td></tr>
+              <tr><td style="color:var(--ye);font-weight:700">T13 · Protección</td><td class="bt">Tognazzini</td><td class="bt">Carrito guardado aunque el usuario cierre la app</td><td class="bt">Pedidos no se pierden ante desconexión temporal</td></tr>
+              <tr><td style="color:var(--ye);font-weight:700">T14 · Legibilidad</td><td class="bt">Tognazzini</td><td class="bt">Texto mínimo 16 sp, alto contraste sobre fondo oscuro</td><td class="bt">Texto ≥18 sp en tablet, adecuado para luz solar</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 12 DECISIONES CLAVE ══ -->
+    <div class="slide" id="slide-12">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-star me-1"></i>Cierre</div>
+        <h2 class="t">Decisiones de diseño <span class="co">clave</span></h2>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="gc h-100" style="border-left:3px solid var(--or)">
+              <h6 class="co mb-3"><i class="fa-solid fa-mobile-screen me-2"></i>PUC 1 – Cliente</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:9px">
+                <li class="bt"><strong style="color:var(--text)">Mapa como entrada:</strong> el usuario no teclea una dirección; ve el mapa y elige. Reduce fricción de onboarding.</li>
+                <li class="bt"><strong style="color:var(--text)">Barra flotante del carrito:</strong> visible en la pantalla de menú, permite ver el total sin abandonar la vista. T15 + N1.</li>
+                <li class="bt"><strong style="color:var(--text)">Pago diferido:</strong> sin datos de tarjeta en la app reduce la barrera de primer uso y la ansiedad del usuario.</li>
+                <li class="bt"><strong style="color:var(--text)">Notas al chef opcionales:</strong> campo visible pero no obligatorio. T5 (defaults vacíos).</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gc h-100" style="border-left:3px solid var(--sky)">
+              <h6 class="cs mb-3"><i class="fa-solid fa-tablet-screen-button me-2"></i>PUC 2 – Operador</h6>
+              <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:9px">
+                <li class="bt"><strong style="color:var(--text)">Kanban de pedidos:</strong> el estado es visible de un vistazo. No hay que navegar entre pantallas para ver la cola completa.</li>
+                <li class="bt"><strong style="color:var(--text)">Tiempo ajustable por el operador:</strong> el sistema sugiere 15 min pero el operador puede ajustar. T2 Autonomía.</li>
+                <li class="bt"><strong style="color:var(--text)">Notificación multimodal:</strong> sonido + vibración + flash visual para nuevos pedidos. El operador no necesita mirar la pantalla constantemente.</li>
+                <li class="bt"><strong style="color:var(--text)">Mini-estadísticas del día:</strong> visibles en el panel sin navegar. El operador ve su progreso en tiempo real. T15.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(249,115,22,.13),rgba(251,191,36,.07));border:1px solid rgba(249,115,22,.28);border-radius:14px;padding:18px;text-align:center">
+          <p style="font-size:1.05rem;font-weight:700;color:#fff;margin:0">
+            <i class="fa-solid fa-truck me-2" style="color:var(--or)"></i>
+            El diseño prioriza la <span class="co">velocidad</span> para el operador y la <span class="cy">claridad</span> para el cliente.
+            En un food truck, cada segundo cuenta.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 13 QUIZ ══ -->
+    <div class="slide" id="slide-13">
+      <div class="animate__animated animate__fadeInRight">
+        <div class="stag"><i class="fa-solid fa-clipboard-question me-1"></i>Evaluación</div>
+        <h2 class="t">Cuestionario <span class="co">Truck &amp; Roll UI</span></h2>
+        <p class="bt mb-4">Verificá tu comprensión del diseño de UI propuesto.</p>
+        <div id="quiz-section">
+          <div class="gc mb-3">
+            <div class="qcount">Pregunta <span id="q-num">1</span> de 8</div>
+            <div class="qq" id="q-text"></div>
+            <div id="q-options"></div>
+            <div class="qf" id="q-feedback"></div>
+            <div class="text-end mt-3">
+              <button class="nb p" id="btn-nq" onclick="nextQ()" style="display:none">
+                Siguiente <i class="fa-solid fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="rs">
+          <div class="gc text-center mb-3">
+            <h4 class="mb-3">Resultado final</h4>
+            <div class="sr mb-3">
+              <canvas id="dc" width="128" height="128"></canvas>
+              <div class="si"><div class="snum" id="sd">0/8</div><div class="slb">correctas</div></div>
+            </div>
+            <div id="rm" class="mb-3"></div>
+            <div class="mb-3"><canvas id="bc" height="70"></canvas></div>
+            <button class="nb p mt-2" onclick="restart()">
+              <i class="fa-solid fa-rotate-left me-2"></i>Reiniciar cuestionario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sa -->
+
+  <footer>
+    <button class="nb" id="bp" onclick="go(-1)" disabled><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+    <div class="d-flex gap-1 flex-wrap justify-content-center" id="dn"></div>
+    <button class="nb p" id="bn" onclick="go(1)">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+  </footer>
+</div>
+
+<script>
+const TOTAL=13; let cur=1;
+
+const quiz=[
+  {q:"¿Por qué se eligió 'Realizar un pedido' como el PUC más importante del sistema?",opts:["Porque es el más sencillo de implementar técnicamente.","Porque es el flujo central del producto: sin pedidos no hay negocio, y representa el 80% del uso diario del cliente.","Porque fue el primero definido en UT1.","Porque es el único flujo que involucra al cliente."],ok:1,ok_fb:"Correcto. El PUC de realizar un pedido es el core del negocio: sin él, el sistema no tiene razón de existir. Su correcto diseño impacta directamente en la retención y satisfacción.",ko_fb:"Incorrecto. Se eligió porque es el flujo central: sin pedidos no hay negocio. Representa el 80% del uso diario y tiene el mayor impacto en satisfacción y retención."},
+  {q:"¿Qué principio de Tognazzini justifica que el botón 'Aceptar pedido' del operador sea más grande que el de 'Rechazar'?",opts:["T4 Consistencia","T1 Anticipación","T8 Ley de Fitts: a mayor W (ancho del target), menor MT (tiempo de movimiento)","T11 Minimizar aprendizaje"],ok:2,ok_fb:"Correcto. La Ley de Fitts establece que MT decrece al aumentar W. Hacer el botón Aceptar más grande reduce el tiempo para alcanzarlo, siendo la acción más frecuente.",ko_fb:"Incorrecto. Es la Ley de Fitts (T8): a mayor tamaño del botón (W), menor tiempo de movimiento (MT). El botón más grande es más rápido de alcanzar con el dedo."},
+  {q:"¿Por qué el estado del truck (Abierto/Ocupado/Cerrado) se muestra con color + texto + ícono y no solo con color?",opts:["Para hacer la interfaz más colorida y atractiva.","Por el principio T3 (Precaución usando colores): no se puede depender solo del color porque hay personas con daltonismo o condiciones de baja visibilidad.","Por el principio N8 (Estética minimalista).","Por una preferencia estética del equipo de diseño."],ok:1,ok_fb:"Correcto. T3 de Tognazzini establece que el color nunca debe ser el único indicador de información, porque puede no ser perceptible para personas con daltonismo o en condiciones adversas de iluminación.",ko_fb:"Incorrecto. El principio T3 (Precaución usando colores) establece que no se puede confiar solo en el color como indicador, ya que puede no ser perceptible por todos los usuarios o en todas las condiciones."},
+  {q:"¿Qué heurística de Nielsen justifica mostrar una pantalla de resumen (carrito) antes de confirmar el pedido?",opts:["N1 Visibilidad del estado","N7 Flexibilidad y eficiencia","N6 Prevención de errores: revisar antes de enviar evita pedidos incorrectos","N4 Consistencia y estándares"],ok:2,ok_fb:"Correcto. N6 (Prevención de errores) justifica la pantalla de revisión: es mejor que el usuario pueda verificar su pedido antes de enviarlo que tener que manejarlo después de enviarlo incorrectamente.",ko_fb:"Incorrecto. Es N6 (Prevención de errores): mostrar un resumen antes de confirmar permite que el usuario detecte y corrija errores antes de que sean difíciles de deshacer."},
+  {q:"¿Cuál fue la decisión de diseño más importante para el contexto de uso del operador de truck?",opts:["Usar colores pasteles para no fatigar la vista.","Diseñar para tablet en modo horizontal con vista Kanban, targets grandes y feedback multimodal (sonido+vibración+visual).","Replicar exactamente la interfaz del cliente para mantener consistencia.","Minimizar la cantidad de información visible para no distraer al operador."],ok:1,ok_fb:"Correcto. El operador trabaja con manos húmedas, ruido y prisas. Tablet horizontal, Kanban para visión de conjunto, targets grandes (Fitts) y feedback multimodal son las respuestas correctas a ese contexto.",ko_fb:"Incorrecto. El contexto del operador exige: tablet en horizontal, vista Kanban para visión global, targets grandes (T8 Fitts) y feedback multimodal para no depender solo de la vista."},
+  {q:"¿Qué principio justifica que el carrito del cliente se guarde aunque cierre la app?",opts:["N1 Visibilidad del estado","T5 Uso de valores por defecto","T13 Protección del trabajo de los usuarios: no perder el trabajo del usuario ante interrupciones","N3 Control y libertad"],ok:2,ok_fb:"Correcto. T13 (Protección del trabajo) establece que el sistema no debe hacer que el usuario pierda su trabajo por interrupciones externas como cerrar la app accidentalmente.",ko_fb:"Incorrecto. Es T13 (Protección del trabajo de los usuarios): el sistema debe guardar el estado del usuario para que no pierda su trabajo ante interrupciones involuntarias."},
+  {q:"¿Por qué el primer paso del flujo del cliente es un mapa en lugar de una búsqueda de texto?",opts:["Porque la búsqueda de texto es técnicamente difícil de implementar.","Porque el mapa reduce la fricción: el usuario no necesita saber el nombre del truck, solo ve lo que está cerca. Aplica T11 Minimizar aprendizaje y T5 Defaults.","Porque los usuarios de food trucks siempre saben exactamente qué truck quieren.","Por razones de performance: el mapa carga más rápido que una lista."],ok:1,ok_fb:"Correcto. El mapa elimina la necesidad de que el usuario sepa el nombre del truck. Reduce el aprendizaje requerido (T11) y presenta opciones inmediatas basadas en ubicación (T1 Anticipación).",ko_fb:"Incorrecto. El mapa reduce la fricción: el usuario no necesita saber nada de antemano. Aplica T11 (Minimizar aprendizaje) y T1 (Anticipación), mostrando lo más relevante según la ubicación."},
+  {q:"¿Qué supuesto documentado simplifica más el flujo del cliente y por qué?",opts:["Que el truck siempre está abierto cuando el cliente entra a la app.","Que el pago se realiza en el momento del retiro y no dentro de la app, eliminando el formulario de datos de tarjeta.","Que el cliente siempre tiene conexión a internet estable.","Que el menú del truck nunca cambia durante el día."],ok:1,ok_fb:"Correcto. Eliminar el pago online elimina el paso más sensible y con más fricción de cualquier flujo de e-commerce (datos de tarjeta, seguridad, fallbacks). Esto reduce significativamente la barrera de adopción.",ko_fb:"Incorrecto. El supuesto de pago al retirar es el que más simplifica el flujo: elimina todo el proceso de captura y validación de datos de pago, reduciendo la fricción de onboarding y la ansiedad del usuario."}
+];
+
+let qcur=0,qsc=0,qans=[];
+let dc=null,bc=null;
+
+function go(d){
+  document.querySelectorAll('.slide')[cur-1].classList.remove('active');
+  cur=Math.max(1,Math.min(TOTAL,cur+d));
+  const s=document.querySelectorAll('.slide')[cur-1];
+  s.classList.add('active');
+  const a=s.querySelector('.animate__animated');
+  if(a){a.classList.remove('animate__fadeInRight','animate__fadeIn');void a.offsetWidth;a.classList.add(cur===1?'animate__fadeIn':'animate__fadeInRight');}
+  document.getElementById('cs').textContent=cur;
+  document.getElementById('pb').style.width=((cur/TOTAL)*100)+'%';
+  document.getElementById('bp').disabled=cur===1;
+  document.getElementById('bn').disabled=cur===TOTAL;
+  dots();document.getElementById('sa').scrollTop=0;
+}
+function dots(){
+  const n=document.getElementById('dn');n.innerHTML='';
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.createElement('div');
+    const ac=i===cur,vi=i<cur;
+    d.style.cssText=`width:${ac?'18px':'6px'};height:6px;border-radius:99px;background:${ac?'var(--or)':vi?'rgba(249,115,22,.3)':'#1e1a14'};border:1px solid ${ac||vi?'var(--or)':'#2a2018'};transition:all .3s;cursor:pointer;flex-shrink:0`;
+    d.onclick=()=>{const dif=i-cur;if(dif)go(dif);};
+    n.appendChild(d);
+  }
+}
+function loadQ(){
+  if(qcur>=quiz.length){showRes();return;}
+  const q=quiz[qcur];
+  document.getElementById('q-num').textContent=qcur+1;
+  document.getElementById('q-text').textContent=q.q;
+  const L=['A','B','C','D'];
+  document.getElementById('q-options').innerHTML=q.opts.map((o,i)=>`<div class="qo" onclick="sel(${i})" id="op-${i}"><span class="ol">${L[i]}</span><span>${o}</span></div>`).join('');
+  const fb=document.getElementById('q-feedback');fb.textContent='';fb.className='qf';
+  document.getElementById('btn-nq').style.display='none';
+}
+function sel(idx){
+  const q=quiz[qcur];
+  document.querySelectorAll('.qo').forEach(o=>o.classList.add('disabled'));
+  const fb=document.getElementById('q-feedback');
+  if(idx===q.ok){document.getElementById(`op-${idx}`).classList.add('correct');fb.textContent='✓ '+q.ok_fb;fb.className='qf show ok';qsc++;qans.push(true);}
+  else{document.getElementById(`op-${idx}`).classList.add('wrong');document.getElementById(`op-${q.ok}`).classList.add('correct');fb.textContent='✗ '+q.ko_fb;fb.className='qf show ko';qans.push(false);}
+  document.getElementById('btn-nq').style.display='inline-flex';
+}
+function nextQ(){qcur++;loadQ();}
+function showRes(){
+  document.getElementById('quiz-section').style.display='none';
+  document.getElementById('rs').style.display='block';
+  const tot=quiz.length,pct=Math.round((qsc/tot)*100);
+  document.getElementById('sd').textContent=`${qsc}/${tot}`;
+  let msg='',color='';
+  if(pct>=87){msg='🏆 ¡Excelente! Dominás el diseño propuesto.';color='var(--or)';}
+  else if(pct>=62){msg='👍 Bien. Repasá los principios aplicados.';color='var(--ye)';}
+  else{msg='📖 Revisá los criterios de diseño y los wireframes.';color:'#f87171';}
+  document.getElementById('rm').innerHTML=`<p style="font-size:1rem;font-weight:700;color:${color}">${msg}</p><p class="bt">Obtuviste <strong>${qsc} de ${tot}</strong> correctas (${pct}%).</p>`;
+  if(dc)dc.destroy();
+  dc=new Chart(document.getElementById('dc'),{type:'doughnut',data:{datasets:[{data:[qsc,tot-qsc],backgroundColor:['#f97316','#1e1a14'],borderColor:['#ea6c14','#2a2018'],borderWidth:2}]},options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  if(bc)bc.destroy();
+  bc=new Chart(document.getElementById('bc'),{type:'bar',data:{labels:qans.map((_,i)=>`P${i+1}`),datasets:[{data:qans.map(a=>a?1:0),backgroundColor:qans.map(a=>a?'rgba(34,197,94,.7)':'rgba(239,68,68,.7)'),borderColor:qans.map(a=>a?'#22c55e':'#ef4444'),borderWidth:1,borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw===1?'✓ Correcta':'✗ Incorrecta'}}},scales:{y:{display:false,max:1.3},x:{ticks:{color:'#5a4a30',font:{size:10}},grid:{color:'rgba(255,255,255,.03)'}}}}});
+  Swal.fire({title:qsc>=6?'¡Buen trabajo!':'Sigue practicando',html:`<strong>${qsc}/${tot}</strong> correctas · ${pct}%`,icon:qsc>=6?'success':qsc>=4?'warning':'error',background:'#16130f',color:'#fef3e2',confirmButtonColor:'#f97316',confirmButtonText:'Ver resultados',customClass:{popup:'border border-secondary'}});
+}
+function restart(){qcur=0;qsc=0;qans=[];document.getElementById('quiz-section').style.display='block';document.getElementById('rs').style.display='none';loadQ();}
+
+document.addEventListener('DOMContentLoaded',()=>{dots();loadQ();});
+</script>
+</body>
+</html>
