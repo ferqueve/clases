@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interfaz de Usuario (UI) — Teórico interactivo</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0a1c;
+  --bg2:#140f2a;
+  --card:#181232;
+  --card2:#201740;
+  --line:#322657;
+  --ink:#e9effb;
+  --muted:#94a5c6;
+  --teal:#a78bfa;
+  --teal-dim:rgba(167,139,250,.14);
+  --orange:#22d3ee;
+  --orange-dim:rgba(34,211,238,.14);
+  --ok:#3ddc84;
+  --bad:#ff6b81;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1100px 600px at 85% -10%, rgba(167,139,250,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(34,211,238,.08), transparent 60%),
+    var(--bg);
+  color:var(--ink);
+  font-family:'Sora',system-ui,sans-serif;
+  overflow:hidden;
+}
+code,pre,kbd,.mono,textarea.sql-input{font-family:'Fira Code',monospace}
+
+/* ---------- frame ---------- */
+#progressbar{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--teal),var(--orange));width:0%;z-index:60;transition:width .35s ease}
+header.hud{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;pointer-events:none;
+}
+.hud .brand{display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
+.hud .brand .prompt{
+  background:var(--card);border:1px solid var(--line);border-radius:8px;
+  padding:4px 10px;color:var(--teal);font-family:'Fira Code',monospace;font-size:.8rem;
+}
+.hud .right{display:flex;align-items:center;gap:10px;pointer-events:auto}
+.badge-slide{
+  background:var(--card);border:1px solid var(--line);color:var(--muted);
+  font-family:'Fira Code',monospace;font-size:.8rem;border-radius:8px;padding:4px 12px;
+}
+.badge-score{
+  background:var(--orange-dim);border:1px solid rgba(34,211,238,.4);color:var(--orange);
+  font-family:'Fira Code',monospace;font-size:.8rem;border-radius:8px;padding:4px 12px;
+}
+
+/* ---------- slides ---------- */
+.slide{
+  position:absolute;inset:0;display:none;
+  padding:84px 7vw 96px;overflow-y:auto;
+}
+.slide.active{display:block}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Fira Code',monospace;font-size:.78rem;letter-spacing:.08em;
+  color:var(--teal);background:var(--teal-dim);border:1px solid rgba(167,139,250,.35);
+  border-radius:999px;padding:5px 14px;margin-bottom:14px;text-transform:uppercase;
+}
+.eyebrow.naranja{color:var(--orange);background:var(--orange-dim);border-color:rgba(34,211,238,.4)}
+h1.title{font-weight:800;font-size:clamp(2rem,5vw,3.4rem);line-height:1.1;margin-bottom:.4em}
+h2.stitle{font-weight:800;font-size:clamp(1.5rem,3.4vw,2.3rem);margin-bottom:.5em}
+.lead-x{color:var(--muted);font-size:1.05rem;max-width:62ch}
+.accent{color:var(--teal)}
+.accent-o{color:var(--orange)}
+
+.card-x{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:20px 22px;height:100%;
+}
+.card-x h5{font-weight:700;display:flex;align-items:center;gap:10px}
+.card-x h5 i{color:var(--teal)}
+.card-x p,.card-x li{color:var(--muted);font-size:.95rem;margin-bottom:.3rem}
+.card-x.hl{border-color:rgba(167,139,250,.5);box-shadow:0 0 0 1px rgba(167,139,250,.2) inset}
+.card-x.warn{border-color:rgba(34,211,238,.5)}
+.card-x.warn h5 i{color:var(--orange)}
+
+pre.code{
+  background:#0b0816;border:1px solid var(--line);border-radius:12px;
+  padding:16px 18px;color:#d7e3ff;font-size:.92rem;line-height:1.6;overflow-x:auto;margin:0;
+}
+pre.code .kw{color:var(--teal);font-weight:600}
+pre.code .str{color:var(--orange)}
+pre.code .num{color:#c792ea}
+pre.code .com{color:#5b6b8f;font-style:italic}
+.code-head{
+  display:flex;align-items:center;gap:8px;background:#0b0816;border:1px solid var(--line);
+  border-bottom:none;border-radius:12px 12px 0 0;padding:8px 14px;
+  font-family:'Fira Code',monospace;font-size:.75rem;color:var(--muted);
+}
+.code-head .dot{width:9px;height:9px;border-radius:50%}
+.code-head + pre.code{border-radius:0 0 12px 12px}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:.9rem}
+table.tbl th{
+  background:var(--card2);color:var(--teal);font-family:'Fira Code',monospace;
+  font-weight:600;font-size:.8rem;padding:9px 12px;border:1px solid var(--line);text-align:left;
+}
+table.tbl td{padding:8px 12px;border:1px solid var(--line);color:var(--ink)}
+table.tbl td.mut{color:var(--muted)}
+table.tbl tr.bad td{background:rgba(255,107,129,.08)}
+table.tbl td .pk{color:var(--orange);font-weight:600}
+table.tbl td .fk{color:var(--teal);font-weight:600}
+
+.kbd{
+  background:var(--card);border:1px solid var(--line);border-bottom-width:3px;
+  border-radius:7px;padding:2px 9px;font-family:'Fira Code',monospace;font-size:.8rem;color:var(--ink);
+}
+ul.checks{list-style:none;padding-left:0}
+ul.checks li{padding-left:1.7em;position:relative;margin-bottom:.5rem;color:var(--muted)}
+ul.checks li::before{content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;color:var(--teal);position:absolute;left:0}
+ul.crosses li::before{content:'\f00d';color:var(--bad)}
+
+.big-num{font-family:'Fira Code',monospace;font-weight:600;font-size:2.4rem;color:var(--teal)}
+.pill-time{
+  font-family:'Fira Code',monospace;font-size:.78rem;color:var(--orange);
+  background:var(--orange-dim);border-radius:6px;padding:2px 10px;white-space:nowrap;
+}
+.agenda-row{
+  display:flex;align-items:center;gap:16px;background:var(--card);
+  border:1px solid var(--line);border-radius:12px;padding:12px 18px;margin-bottom:10px;
+}
+.agenda-row .n{font-family:'Fira Code',monospace;color:var(--teal);font-weight:600;min-width:2ch}
+.agenda-row .t{flex:1}
+
+/* relación diagrams */
+.rel-box{
+  background:var(--card2);border:1px solid var(--line);border-radius:10px;
+  padding:10px 16px;font-family:'Fira Code',monospace;font-size:.85rem;text-align:center;
+}
+.rel-arrow{color:var(--orange);font-family:'Fira Code',monospace;font-size:.85rem;text-align:center}
+
+/* ---------- lab ---------- */
+.exercise{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:18px;
+}
+.exercise.done{border-color:rgba(61,220,132,.55);box-shadow:0 0 0 1px rgba(61,220,132,.25) inset}
+.exercise .ex-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.exercise .ex-num{
+  font-family:'Fira Code',monospace;color:var(--orange);font-weight:600;font-size:.85rem;
+}
+.exercise .ex-status{font-size:1.1rem;color:var(--muted)}
+.exercise.done .ex-status{color:var(--ok)}
+.exercise p.enun{color:var(--ink);font-size:.97rem;margin-bottom:10px}
+textarea.sql-input{
+  width:100%;background:#0b0816;border:1px solid var(--line);border-radius:10px;
+  color:#d7e3ff;font-size:.95rem;padding:12px 14px;resize:vertical;min-height:64px;
+  caret-color:var(--teal);
+}
+textarea.sql-input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(167,139,250,.15)}
+textarea.sql-input::placeholder{color:#44557d}
+.btn-verify{
+  background:var(--teal);border:none;color:#150d28;font-weight:700;border-radius:9px;padding:8px 18px;
+}
+.btn-verify:hover{background:#3ee2d2;color:#150d28}
+.btn-hint{
+  background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:9px;padding:8px 14px;
+}
+.btn-hint:hover{border-color:var(--orange);color:var(--orange)}
+
+/* ---------- nav ---------- */
+nav.navbtns{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;
+  background:linear-gradient(transparent, rgba(11,18,32,.92) 40%);
+}
+.btn-nav{
+  background:var(--card);border:1px solid var(--line);color:var(--ink);
+  border-radius:10px;padding:9px 20px;font-weight:600;
+}
+.btn-nav:hover{border-color:var(--teal);color:var(--teal)}
+.btn-nav:disabled{opacity:.35}
+.nav-help{color:var(--muted);font-size:.8rem;font-family:'Fira Code',monospace}
+
+/* scrollbars */
+.slide::-webkit-scrollbar{width:8px}
+.slide::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+
+/* SweetAlert dark fixes */
+.swal2-popup{font-family:'Sora',sans-serif!important}
+.swal-radio-list{display:flex;flex-direction:column;gap:10px;text-align:left}
+.swal-radio-list label{
+  display:flex;gap:10px;align-items:flex-start;background:var(--card2);
+  border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer;color:var(--ink);
+  font-size:.95rem;
+}
+.swal-radio-list label:hover{border-color:var(--teal)}
+.swal-radio-list input{margin-top:4px;accent-color:var(--teal)}
+
+@media (max-width:768px){
+  .slide{padding:78px 5vw 100px}
+  .nav-help{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .animate__animated{animation:none!important}
+}
+
+label.chk{
+  display:flex;gap:10px;align-items:flex-start;background:var(--card2);
+  border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer;
+  color:var(--ink);font-size:.85rem;line-height:1.4;
+}
+label.chk:hover{border-color:var(--teal)}
+label.chk input{margin-top:3px;accent-color:var(--teal);flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div id="progressbar"></div>
+
+<header class="hud">
+  <div class="brand">
+    <span class="prompt">ui&gt;</span>
+    <span class="d-none d-md-inline">Interfaz de Usuario · Teórico interactivo</span>
+  </div>
+  <div class="right">
+    <span class="badge-score" id="scoreBadge" title="Puntos de la clase"><i class="fa-solid fa-star"></i> 0 pts</span>
+    <span class="badge-slide" id="slideBadge">1 / 25</span>
+  </div>
+</header>
+
+<main id="deck">
+
+<!-- 1. PORTADA -->
+<section class="slide">
+  <div class="d-flex flex-column justify-content-center" style="min-height:70vh">
+    <span class="eyebrow"><i class="fa-solid fa-object-group"></i> Diseño de Interfaces · Teórico</span>
+    <h1 class="title">Interfaz de usuario:<br>el <span class="accent">puente</span> entre personas y tecnología</h1>
+    <p class="lead-x">Qué es la UI · Las 4 características de una buena interfaz · Los 7 tipos de interfaces · Ventajas de negocio · Recomendaciones de optimización · Casos destacados · Clínica de UI</p>
+    <div class="mt-4 d-flex gap-3 flex-wrap">
+      <span class="badge-slide"><i class="fa-solid fa-gamepad"></i> 3 mini-quizzes</span>
+      <span class="badge-slide"><i class="fa-solid fa-stethoscope"></i> Ejercicio: Clínica de UI</span>
+    </div>
+    <p class="mt-5 nav-help">Navegá con <span class="kbd">←</span> <span class="kbd">→</span> o los botones de abajo</p>
+  </div>
+</section>
+
+<!-- 2. AGENDA -->
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-list-check"></i> Hoja de ruta</span>
+  <h2 class="stitle">El recorrido de hoy</h2>
+  <div class="row g-4 mt-1">
+    <div class="col-lg-8">
+      <div class="agenda-row"><span class="n">01</span><span class="t">¿Qué es la interfaz de usuario? UI vs UX</span></div>
+      <div class="agenda-row"><span class="n">02</span><span class="t">Las 4 características de una buena UI</span></div>
+      <div class="agenda-row"><span class="n">03</span><span class="t">Los 7 tipos de interfaces, con ejemplos</span></div>
+      <div class="agenda-row"><span class="n">04</span><span class="t">¿Por qué importa? Ventajas para el negocio</span></div>
+      <div class="agenda-row"><span class="n">05</span><span class="t">6 recomendaciones para optimizar un sitio</span></div>
+      <div class="agenda-row"><span class="n">06</span><span class="t">Casos destacados: qué hacen bien los grandes</span></div>
+      <div class="agenda-row"><span class="n">07</span><span class="t"><strong class="accent-o">Clínica de UI:</strong> diagnosticá una landing enferma</span></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-bullseye"></i> Al final vas a poder</h5>
+        <ul class="checks mt-3">
+          <li>Distinguir UI de UX</li>
+          <li>Clasificar cualquier interfaz en su tipo</li>
+          <li>Evaluar una interfaz con criterios concretos</li>
+          <li>Justificar decisiones de diseño ante un cliente</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. QUÉ ES UI -->
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-circle-question"></i> Concepto</span>
+  <h2 class="stitle">¿Qué es la interfaz de usuario?</h2>
+  <p class="lead-x">Es <strong class="accent">todo aquello a través de lo cual una persona controla e interactúa</strong> con un software o dispositivo: pantallas, botones, menús, comandos de voz, gestos, palancas físicas. Si el usuario lo toca, lo ve o le habla para operar el sistema, es UI.</p>
+  <div class="row g-4 mt-2">
+    <div class="col-lg-6">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-right-left"></i> Dos lenguajes en diálogo</h5>
+        <ul class="checks mt-2">
+          <li><strong class="accent">Lenguaje de presentación:</strong> lo que el sistema le comunica a la persona (pantallas, mensajes, sonidos).</li>
+          <li><strong class="accent">Lenguaje de acción:</strong> lo que la persona le indica al sistema (clics, texto, voz, gestos).</li>
+        </ul>
+        <p class="mt-2">Diseñar UI es diseñar esa conversación en ambos sentidos.</p>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x warn">
+        <h5><i class="fa-solid fa-scale-balanced"></i> UI ≠ UX (pero van de la mano)</h5>
+        <p><strong class="accent-o">UI</strong> es el medio concreto: el botón, la pantalla, el menú.<br>
+        <strong class="accent-o">UX</strong> es la experiencia completa: cómo se siente la persona usando el producto, de punta a punta.</p>
+        <p class="mt-2">Metáfora: la UI es el volante, los pedales y el tablero; la UX es qué tan placentero resulta el viaje. Una UI buena no garantiza buena UX, pero una UI mala casi siempre la arruina.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-4">
+    <h5><i class="fa-solid fa-clone"></i> El poder de las convenciones</h5>
+    <p>Windows y macOS son sistemas distintos, pero ambos usan escritorio, ventanas e íconos. Por eso podés cambiar de uno a otro sin volver a aprender desde cero. Las convenciones compartidas son capital cognitivo del usuario: rompelas solo con una muy buena razón.</p>
+  </div>
+</section>
+
+<!-- 4. CARACTERÍSTICAS -->
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-gem"></i> Características</span>
+  <h2 class="stitle">Las 4 características de una buena UI</h2>
+  <div class="row g-4 mt-1">
+    <div class="col-md-6 col-lg-3">
+      <div class="card-x">
+        <div class="big-num"><i class="fa-solid fa-palette"></i></div>
+        <h5 class="mt-2">Atractivo visual</h5>
+        <p>La estética no es decoración: genera confianza y hace que el usuario se sienta cómodo e identificado con el producto.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card-x">
+        <div class="big-num"><i class="fa-solid fa-glasses"></i></div>
+        <h5 class="mt-2">Claridad</h5>
+        <p>La información se transmite de forma directa y sin ambigüedad. Cada pantalla responde: ¿dónde estoy? ¿qué puedo hacer? ¿qué pasa si lo hago?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card-x hl">
+        <div class="big-num"><i class="fa-solid fa-puzzle-piece"></i></div>
+        <h5 class="mt-2">Coherencia</h5>
+        <p>Mismos elementos, mismo comportamiento, en toda la app. Permite que el usuario forme patrones y opere por intuición, sin re-aprender.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card-x">
+        <div class="big-num"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
+        <h5 class="mt-2">Flexibilidad</h5>
+        <p>La interfaz se adapta a distintas necesidades, contextos y niveles de experiencia: atajos para expertos, guía para novatos, accesibilidad para todos.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-4">
+    <h5><i class="fa-solid fa-lightbulb"></i> El equilibrio es el diseño</h5>
+    <p>Las cuatro tiran en direcciones distintas: más flexibilidad puede costar claridad; más atractivo puede costar coherencia. Diseñar es balancearlas para el trabajo concreto que el usuario vino a hacer.</p>
+  </div>
+  <div class="text-center mt-4">
+    <button class="btn btn-verify btn-lg" onclick="quizCaract()"><i class="fa-solid fa-gamepad"></i> Mini-quiz Características</button>
+  </div>
+</section>
+
+<!-- 5. TIPOS OVERVIEW -->
+<section class="slide">
+  <span class="eyebrow naranja"><i class="fa-solid fa-shapes"></i> Tipos de interfaces</span>
+  <h2 class="stitle">Los 7 tipos de interfaz de usuario</h2>
+  <p class="lead-x">Un mapa rápido antes de recorrerlos uno por uno. Fijate que conviven: tu celular tiene al menos cuatro de estos al mismo tiempo.</p>
+  <div class="row g-4 mt-2">
+    <div class="col-md-6 col-lg-3"><div class="card-x text-center"><h5 class="justify-content-center"><i class="fa-solid fa-comments"></i></h5><h5 class="justify-content-center">Lenguaje natural</h5><p>Le escribís o hablás como a una persona</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="card-x text-center"><h5 class="justify-content-center"><i class="fa-solid fa-clipboard-question"></i></h5><h5 class="justify-content-center">Preguntas y respuestas</h5><p>El sistema pregunta, vos elegís</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="card-x text-center hl"><h5 class="justify-content-center"><i class="fa-solid fa-window-restore"></i></h5><h5 class="justify-content-center">Gráfica (GUI)</h5><p>Íconos, ventanas y menús — la dominante</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="card-x text-center"><h5 class="justify-content-center"><i class="fa-solid fa-vr-cardboard"></i></h5><h5 class="justify-content-center">Realidad virtual</h5><p>Inmersión total en un entorno digital</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="card-x text-center"><h5 class="justify-content-center"><i class="fa-solid fa-mobile-screen"></i></h5><h5 class="justify-content-center">Realidad aumentada</h5><p>Capas digitales sobre el mundo real</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="card-x text-center"><h5 class="justify-content-center"><i class="fa-solid fa-sliders"></i></h5><h5 class="justify-content-center">Tangible</h5><p>Objetos y controles físicos</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="card-x text-center"><h5 class="justify-content-center"><i class="fa-solid fa-microphone"></i></h5><h5 class="justify-content-center">Por voz</h5><p>Comandos hablados como canal principal</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="card-x text-center" style="border-style:dashed"><h5 class="justify-content-center"><i class="fa-solid fa-circle-question accent-o"></i></h5><h5 class="justify-content-center">¿La próxima?</h5><p>Gestos, interfaces cerebro-computadora… el campo sigue abierto</p></div></div>
+  </div>
+</section>
+
+<!-- 6. TIPOS CONVERSACIONALES -->
+<section class="slide">
+  <span class="eyebrow naranja"><i class="fa-solid fa-comments"></i> Tipos · 1, 2 y 7</span>
+  <h2 class="stitle">Las interfaces conversacionales</h2>
+  <div class="row g-4 mt-1">
+    <div class="col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-comments"></i> Lenguaje natural</h5>
+        <p>El usuario se expresa con sus propias palabras, escritas o habladas, y el sistema interpreta la <strong>intención</strong>. No exige aprender comandos: el sueño del usuario no especializado.</p>
+        <p class="mt-2"><strong class="accent">Ejemplos:</strong> chatbots de atención al cliente, asistentes tipo Alexa, los modelos de IA conversacional actuales.</p>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-clipboard-question"></i> Preguntas y respuestas</h5>
+        <p>El sistema lleva la iniciativa: muestra una pregunta con opciones y, según la respuesta, sigue un camino preprogramado. Simple, predecible, a prueba de errores.</p>
+        <p class="mt-2"><strong class="accent">Ejemplos:</strong> el asistente de instalación de un software ("¿dónde instalar?"), un cajero automático, los wizards de configuración paso a paso.</p>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-microphone"></i> Por voz</h5>
+        <p>La voz como canal principal de entrada y salida. Clave en contextos de manos ocupadas (cocinar, manejar) y un enorme aporte de <strong>accesibilidad</strong> para personas con discapacidad visual.</p>
+        <p class="mt-2"><strong class="accent">Ejemplos:</strong> Siri, Alexa, Google Assistant; los sistemas de los autos.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-4 warn">
+    <h5><i class="fa-solid fa-magnifying-glass"></i> Para discutir en clase</h5>
+    <p>¿Cuál es la diferencia entre "lenguaje natural" y "por voz"? Pista: una define <em>cómo se interpreta</em> (libre vs. estructurado) y la otra define <em>el canal</em> (audio). Alexa es las dos cosas a la vez.</p>
+  </div>
+</section>
+
+<!-- 7. GUI -->
+<section class="slide">
+  <span class="eyebrow naranja"><i class="fa-solid fa-window-restore"></i> Tipos · 3</span>
+  <h2 class="stitle">La GUI: interfaz gráfica de usuario</h2>
+  <p class="lead-x">La que domina el mundo desde los 90: reemplazó los comandos de texto por <strong class="accent">íconos, ventanas y menús</strong> que muestran visualmente las acciones disponibles. Escritorios, sitios web y apps móviles son todas GUI.</p>
+  <div class="row g-4 mt-2">
+    <div class="col-md-6 col-lg-3">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-keyboard"></i> Controles de entrada</h5>
+        <p>Por donde el usuario mete información: campos de texto, checkboxes, botones, selectores de fecha, sliders.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-compass"></i> Componentes de navegación</h5>
+        <p>Por donde el usuario se mueve: menús, breadcrumbs, buscadores, paginación, tabs.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-circle-info"></i> Componentes informativos</h5>
+        <p>Por donde el sistema habla: notificaciones, barras de progreso, tooltips, mensajes de error y de éxito.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-box"></i> Contenedores</h5>
+        <p>Lo que organiza todo: ventanas, paneles, tarjetas, acordeones, modales.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-4">
+    <h5><i class="fa-solid fa-graduation-cap"></i> Conexión con lo que ya hicimos</h5>
+    <p>Cuando armamos páginas con Bootstrap, cada componente que usamos (navbar, card, form, modal, toast) cae exactamente en una de estas cuatro familias. Clasificarlos es entender para qué sirve cada pieza.</p>
+  </div>
+</section>
+
+<!-- 8. INMERSIVAS Y TANGIBLE -->
+<section class="slide">
+  <span class="eyebrow naranja"><i class="fa-solid fa-vr-cardboard"></i> Tipos · 4, 5 y 6</span>
+  <h2 class="stitle">Más allá de la pantalla</h2>
+  <div class="row g-4 mt-1">
+    <div class="col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-vr-cardboard"></i> Realidad virtual (VR)</h5>
+        <p>Sumerge al usuario en un entorno 100% digital, con libertad de movimiento que un mouse no puede dar. Cascos, guantes y mandos como hardware de entrada.</p>
+        <p class="mt-2"><strong class="accent">Dónde se ve:</strong> videojuegos, simuladores de entrenamiento (cirugía, aviación), las apuestas por el metaverso.</p>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-mobile-screen"></i> Realidad aumentada (AR)</h5>
+        <p>Superpone elementos digitales <strong>sobre el entorno real</strong>, generalmente a través de la cámara del celular o gafas especiales.</p>
+        <p class="mt-2"><strong class="accent">Dónde se ve:</strong> el fenómeno Pokémon GO, probarte lentes o muebles desde una app, los head-up displays que llegan a los autos.</p>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-sliders"></i> Tangible</h5>
+        <p>La interacción pasa por <strong>objetos físicos</strong>: palancas, perillas, sensores, superficies. Parece antiguo, pero es tecnología digital de primera línea con cuerpo físico.</p>
+        <p class="mt-2"><strong class="accent">Dónde se ve:</strong> mesas de mezcla tipo Reactable de los DJ, paneles de maquinaria pesada, controladores MIDI.</p>
+      </div>
+    </div>
+  </div>
+  <div class="text-center mt-4">
+    <button class="btn btn-verify btn-lg" onclick="quizTipos()"><i class="fa-solid fa-gamepad"></i> Mini-quiz: ¿qué tipo es?</button>
+  </div>
+</section>
+
+<!-- 9. VENTAJAS -->
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-chart-line"></i> Negocio</span>
+  <h2 class="stitle">¿Por qué invertir en la UI? Ventajas concretas</h2>
+  <div class="row g-4 mt-1 align-items-start">
+    <div class="col-lg-7">
+      <div class="row g-3">
+        <div class="col-md-6"><div class="card-x h-auto"><h5><i class="fa-solid fa-coins"></i> Menos costos</h5><p>Una interfaz intuitiva reduce capacitación, soporte y tickets de atención al cliente.</p></div></div>
+        <div class="col-md-6"><div class="card-x h-auto"><h5><i class="fa-solid fa-heart"></i> Más fidelidad</h5><p>Usuarios cómodos vuelven, se comprometen con la marca y la recomiendan boca a boca.</p></div></div>
+        <div class="col-md-6"><div class="card-x h-auto"><h5><i class="fa-solid fa-user-plus"></i> Más adquisición</h5><p>La experiencia satisfactoria se traduce en reputación, credibilidad y nuevos clientes.</p></div></div>
+        <div class="col-md-6"><div class="card-x h-auto"><h5><i class="fa-solid fa-magnifying-glass-chart"></i> Mejor posicionamiento</h5><p>Velocidad, usabilidad móvil y permanencia en el sitio son señales que el SEO premia.</p></div></div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card-x hl text-center">
+        <div class="big-num">×4</div>
+        <h5 class="justify-content-center mt-2">en conversiones</h5>
+        <p>Es la diferencia que se reporta entre sitios con experiencia de usuario superior y sitios con experiencias pobres o confusas. La UI no es un gasto estético: es una palanca de negocio.</p>
+      </div>
+      <div class="card-x warn h-auto mt-3">
+        <h5><i class="fa-solid fa-stopwatch"></i> La paciencia es corta</h5>
+        <p>La mayoría de los usuarios abandona una página que tarda más de unos ~3 segundos en cargar, y la gran mayoría abandona una app que no responde rápido. La performance <strong>es</strong> parte de la UI.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. RECOMENDACIONES -->
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-screwdriver-wrench"></i> Optimización</span>
+  <h2 class="stitle">6 recomendaciones para optimizar tu sitio</h2>
+  <div class="row g-4 mt-1">
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><span class="big-num" style="font-size:1.4rem">1</span> Diseño adecuado</h5><p>Navegación simple, carga rápida, espacios en blanco que dirigen la mirada. Menos es más: el espacio vacío no es desperdicio, es jerarquía.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x hl"><h5><span class="big-num" style="font-size:1.4rem">2</span> CTAs claros</h5><p>El llamado a la acción es el paso siguiente que le pedís al usuario. Color, tipografía y posición deben hacerlo inconfundible.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><span class="big-num" style="font-size:1.4rem">3</span> Conocer al cliente</h5><p>Diseñar desde los datos: analítica web, recorridos reales, dispositivos que usan. La mayoría de las búsquedas hoy es móvil.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><span class="big-num" style="font-size:1.4rem">4</span> Omnicanalidad</h5><p>Experiencia fluida y consistente en todos los canales y dispositivos: el usuario empieza en el celular y termina en la notebook.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><span class="big-num" style="font-size:1.4rem">5</span> Formularios breves</h5><p>Cada campo extra cuesta conversiones. Pedí lo mínimo indispensable y usá elementos gráficos fáciles de responder.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><span class="big-num" style="font-size:1.4rem">6</span> Apoyo al usuario</h5><p>Detectá los puntos de fricción del recorrido y ofrecé ayuda durante y después de la visita. Cuidar al usuario construye confianza.</p></div></div>
+  </div>
+  <div class="text-center mt-4">
+    <button class="btn btn-verify btn-lg" onclick="quizReco()"><i class="fa-solid fa-gamepad"></i> Mini-quiz Recomendaciones</button>
+  </div>
+</section>
+
+<!-- 11. CASOS -->
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-star"></i> Casos destacados</span>
+  <h2 class="stitle">Qué hacen bien los grandes</h2>
+  <p class="lead-x">Seis interfaces para estudiar con ojo de diseñador. La pregunta no es "¿es linda?" sino <strong class="accent">"¿qué decisión de diseño sirve a qué objetivo?"</strong></p>
+  <div class="row g-4 mt-2">
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><i class="fa-brands fa-airbnb"></i> Airbnb</h5><p>Reservar arranca con solo tres datos (destino, fechas, huéspedes) y la interfaz va guiando el resto. Diseñada para generar confianza entre desconocidos: prioriza la conversación con el anfitrión, no solo la transacción.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><i class="fa-brands fa-dropbox"></i> Dropbox</h5><p>Se apoya en una metáfora que todos reconocen: carpetas y archivos. Arrastrar y soltar funciona como el usuario espera. Ilustraciones y tono amable hacen que una herramienta técnica se sienta cercana.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><i class="fa-brands fa-amazon"></i> Amazon</h5><p>Todo orbita alrededor de la barra de búsqueda: el gesto que todo el mundo sabe hacer. Sobre eso, personalización del contenido según tu historial para acercarte a la próxima compra.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><i class="fa-solid fa-shoe-prints"></i> Nike</h5><p>El producto es el protagonista visual. Detalles que reducen la incertidumbre de comprar ropa online: referencias de talle de los modelos de las fotos y sugerencias de combinación.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><i class="fa-solid fa-glasses"></i> Ray-Ban</h5><p>Con cientos de modelos, el desafío es no abrumar: filtros potentes (forma, color, uso, tipo de cara) y prueba virtual con la cámara. Herramientas que dan seguridad en la elección.</p></div></div>
+    <div class="col-md-6 col-lg-4"><div class="card-x"><h5><i class="fa-solid fa-building-columns"></i> Wickret</h5><p>Una landing de banco digital donde las microinteracciones (elementos que reaccionan al puntero) transmiten la personalidad de la marca: joven, dinámica — sin sacrificar velocidad de carga.</p></div></div>
+  </div>
+</section>
+
+<!-- 12. CLÍNICA DE UI: INTRO -->
+<section class="slide">
+  <span class="eyebrow naranja"><i class="fa-solid fa-stethoscope"></i> Ejercicio semi-práctico</span>
+  <h2 class="stitle">Clínica de UI: llega un paciente grave</h2>
+  <p class="lead-x">El gimnasio <strong>"MúsculoMax"</strong> nos trae su landing: tienen visitas pero nadie se anota. En la próxima slide vas a ver la página <strong class="accent">renderizada de verdad</strong> (no es una captura). Tu trabajo:</p>
+  <div class="row g-4 mt-2">
+    <div class="col-md-4">
+      <div class="card-x text-center">
+        <div class="big-num">1</div>
+        <h5 class="justify-content-center mt-2">Observá</h5>
+        <p>Recorré la landing con ojo clínico. Pensá en las 4 características y las 6 recomendaciones que acabamos de ver.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-x text-center hl">
+        <div class="big-num">2</div>
+        <h5 class="justify-content-center mt-2">Diagnosticá</h5>
+        <p>Marcá en la checklist los problemas que <strong>realmente</strong> tiene la página. Ojo: hay opciones distractoras que no corresponden.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-x text-center">
+        <div class="big-num">3</div>
+        <h5 class="justify-content-center mt-2">Compará</h5>
+        <p>Al verificar tu diagnóstico podés alternar a la <strong class="accent-o">versión mejorada</strong> y discutir qué cambió y por qué.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x warn mt-4">
+    <h5><i class="fa-solid fa-trophy"></i> Puntaje</h5>
+    <p>Diagnóstico perfecto: <strong class="accent-o">20 puntos</strong> (10 si usás la pista). Se acepta verificar varias veces, pero solo el primer acierto suma.</p>
+  </div>
+  <div class="text-center mt-4">
+    <button class="btn btn-verify btn-lg" onclick="nextSlide()"><i class="fa-solid fa-user-doctor"></i> Pasar al consultorio</button>
+  </div>
+</section>
+
+<!-- 13. CLÍNICA DE UI: EJERCICIO -->
+<section class="slide">
+  <span class="eyebrow naranja"><i class="fa-solid fa-stethoscope"></i> Ejercicio semi-práctico</span>
+  <h2 class="stitle">El paciente: landing de "MúsculoMax" <span class="nav-help" id="estado-mock">· versión original</span></h2>
+
+  <div class="row g-4 mt-1">
+    <div class="col-lg-7">
+      <!-- MOCKUP MALO -->
+      <div id="mock-malo" style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;color:#111">
+        <div style="background:#888;color:#eee;padding:6px 10px;font-size:.7rem;font-family:'Fira Code',monospace">🔒 www.musculomax-gym-fitness-uy.com</div>
+        <div style="background:#ff0000;padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;font-size:.62rem;font-weight:bold;color:#fff">
+          <span>INICIO</span><span>NOSOTROS</span><span>HISTORIA</span><span>MISIÓN</span><span>VISIÓN</span><span>VALORES</span><span>MÁQUINAS</span><span>CLASES</span><span>PROFES</span><span>GALERÍA</span><span>BLOG</span><span>PRENSA</span><span>FAQ</span><span>CONTACTO</span>
+        </div>
+        <div style="padding:14px 16px;background:#ffff99">
+          <div style="font-size:1.05rem;font-weight:900;color:#ff00ff;text-shadow:1px 1px #00f">¡¡¡BIENVENIDO AL MEJOR GIMNASIO DE TODO EL PAÍS Y LA REGIÓN!!!</div>
+          <p style="font-size:.66rem;line-height:1.25;margin:8px 0 0;text-align:justify">SOMOS UN GIMNASIO CON MÁS DE 25 AÑOS DE TRAYECTORIA EN EL RUBRO DEL FITNESS Y LA MUSCULACIÓN DEPORTIVA CON LAS MEJORES MÁQUINAS IMPORTADAS Y LOS MEJORES PROFESORES RECIBIDOS TODOS CON TÍTULO HABILITANTE ADEMÁS CONTAMOS CON CLASES DE SPINNING AEROBOX ZUMBA CROSSFIT FUNCIONAL PILATES YOGA STRETCHING GAP RITMOS LATINOS Y MUCHO MÁS EN NUESTRAS TRES AMPLIAS SEDES TOTALMENTE CLIMATIZADAS CON ESTACIONAMIENTO SIN COSTO PARA SOCIOS PREMIUM Y VESTUARIOS RENOVADOS RECIENTEMENTE CONSULTE NUESTRAS PROMOCIONES VIGENTES QUE CAMBIAN TODOS LOS MESES NO SE QUEDE AFUERA EL VERANO YA LLEGA Y SU CUERPO LO SABE.</p>
+        </div>
+        <div style="padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button style="background:#0a0;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:.7rem">Ver clases</button>
+          <button style="background:#fff;color:#00c;border:3px dashed #00c;padding:6px 14px;font-size:.7rem;font-style:italic">VER MÁQUINAS</button>
+          <button style="background:#000;color:#ff0;border:1px solid #ff0;padding:10px 8px;font-size:.6rem;text-transform:uppercase;letter-spacing:2px">galeria de fotos</button>
+        </div>
+        <div style="padding:12px 16px;background:#f2f2f2">
+          <div style="font-size:.72rem;font-weight:bold;margin-bottom:6px">Suscribite al newsletter:</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.62rem">
+            <input placeholder="Nombre" style="padding:4px"><input placeholder="Apellido" style="padding:4px">
+            <input placeholder="Cédula" style="padding:4px"><input placeholder="Fecha de nacimiento" style="padding:4px">
+            <input placeholder="Dirección" style="padding:4px"><input placeholder="Ciudad" style="padding:4px">
+            <input placeholder="Teléfono fijo" style="padding:4px"><input placeholder="Celular" style="padding:4px">
+            <input placeholder="Email" style="padding:4px"><input placeholder="Ocupación" style="padding:4px">
+          </div>
+        </div>
+        <div style="padding:8px 16px;font-size:.62rem;background:#fff">
+          ¿Querés anotarte al gimnasio? <a href="#" onclick="return false" style="color:#99c">hacé clic acá</a>
+        </div>
+      </div>
+
+      <!-- MOCKUP MEJORADO -->
+      <div id="mock-bueno" style="display:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fafafa;color:#1a1a1a">
+        <div style="background:#e8e8e8;color:#666;padding:6px 10px;font-size:.7rem;font-family:'Fira Code',monospace">🔒 www.musculomax.uy</div>
+        <div style="background:#fff;padding:10px 18px;display:flex;gap:18px;align-items:center;font-size:.72rem;border-bottom:1px solid #eee">
+          <strong style="font-size:.85rem">💪 MúsculoMax</strong>
+          <span style="color:#555">Clases</span><span style="color:#555">Sedes</span><span style="color:#555">Precios</span><span style="color:#555">Contacto</span>
+          <button style="margin-left:auto;background:#e63946;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:.72rem;font-weight:700">Probá una clase gratis</button>
+        </div>
+        <div style="padding:26px 18px 20px;background:linear-gradient(135deg,#fff 60%,#ffe9eb)">
+          <div style="font-size:1.15rem;font-weight:800;max-width:30ch;line-height:1.25">Entrená a tu ritmo, con profes que te acompañan</div>
+          <p style="font-size:.72rem;color:#555;margin:8px 0 14px;max-width:48ch">Más de 10 clases distintas en 3 sedes climatizadas. Sin matrícula este mes.</p>
+          <button style="background:#e63946;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:.8rem;font-weight:700">Probá una clase gratis →</button>
+        </div>
+        <div style="padding:14px 18px;background:#fff;border-top:1px solid #eee">
+          <div style="font-size:.72rem;font-weight:700;margin-bottom:6px">Recibí las promos del mes</div>
+          <div style="display:flex;gap:6px">
+            <input placeholder="Tu email" style="padding:7px;font-size:.7rem;flex:1;border:1px solid #ddd;border-radius:8px">
+            <button style="background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:.7rem">Suscribirme</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-hint" id="btn-toggle" onclick="toggleMock()"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver versión mejorada</button>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="exercise" id="ex1">
+        <div class="ex-head"><span class="ex-num">DIAGNÓSTICO · marcá lo que corresponda</span><span class="ex-status"><i class="fa-regular fa-circle"></i></span></div>
+        <div class="d-flex flex-column gap-2 mt-2" id="checklist">
+          <label class="chk"><input type="checkbox" value="a"> El CTA principal (anotarse) está escondido como un link al final</label>
+          <label class="chk"><input type="checkbox" value="b"> Los botones son inconsistentes entre sí (colores, bordes, formas distintas)</label>
+          <label class="chk"><input type="checkbox" value="c"> Le falta incorporar realidad aumentada</label>
+          <label class="chk"><input type="checkbox" value="d"> El formulario pide demasiados datos para su objetivo (un newsletter)</label>
+          <label class="chk"><input type="checkbox" value="e"> Texto saturado, todo en mayúsculas y sin espacios en blanco</label>
+          <label class="chk"><input type="checkbox" value="f"> Debería reemplazar el menú por una interfaz de voz</label>
+          <label class="chk"><input type="checkbox" value="g"> El menú de navegación tiene demasiadas opciones</label>
+          <label class="chk"><input type="checkbox" value="h"> Le faltan más colores y tipografías para ser más atractiva</label>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-verify" onclick="checkClinica()"><i class="fa-solid fa-check"></i> Verificar diagnóstico</button>
+          <button class="btn btn-hint" onclick="hintClinica()"><i class="fa-regular fa-lightbulb"></i> Pista</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14. CIERRE -->
+<section class="slide">
+  <div class="d-flex flex-column justify-content-center" style="min-height:70vh">
+    <span class="eyebrow"><i class="fa-solid fa-flag-checkered"></i> Cierre</span>
+    <h2 class="stitle">Lo que te llevás de hoy</h2>
+    <div class="row g-4 mt-1">
+      <div class="col-md-6">
+        <ul class="checks">
+          <li>UI es el medio; UX es la experiencia completa. Se diseñan juntas.</li>
+          <li>Atractivo, claridad, coherencia y flexibilidad: las 4 en equilibrio.</li>
+          <li>Hay 7 tipos de interfaz y conviven en un mismo dispositivo.</li>
+          <li>Una buena UI es palanca de negocio: conversiones, fidelidad, costos.</li>
+          <li>Evaluar una interfaz es buscar la decisión de diseño detrás de cada elemento.</li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <div class="card-x hl">
+          <h5><i class="fa-solid fa-house-laptop"></i> Tarea sugerida</h5>
+          <p>Elegí un sitio que uses todos los días y hacele la "Clínica de UI": identificá su CTA principal, clasificá 5 componentes en las 4 familias de la GUI, y encontrá una violación de coherencia o claridad. Traelo para discutir la próxima clase.</p>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-5">
+      <button class="btn btn-verify btn-lg" onclick="showFinalScore()"><i class="fa-solid fa-trophy"></i> Ver mi puntaje final</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="navbtns">
+  <button class="btn-nav" id="btnPrev" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+  <span class="nav-help"><span class="kbd">←</span> <span class="kbd">→</span> navegar · <span class="kbd">Inicio</span>/<span class="kbd">Fin</span> saltar</span>
+  <button class="btn-nav" id="btnNext" onclick="nextSlide()">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+/* ================= NAVEGACIÓN ================= */
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+const swalBase = { background:'#181232', color:'#e9effb', confirmButtonColor:'#a78bfa', cancelButtonColor:'#322657' };
+
+function showSlide(i, dir = 1){
+  if(i < 0 || i >= slides.length) return;
+  slides[current].classList.remove('active');
+  current = i;
+  const s = slides[current];
+  s.classList.add('active');
+  s.scrollTop = 0;
+  s.classList.remove('animate__animated','animate__fadeInRight','animate__fadeInLeft');
+  void s.offsetWidth;
+  s.classList.add('animate__animated', dir >= 0 ? 'animate__fadeInRight' : 'animate__fadeInLeft');
+  document.getElementById('slideBadge').textContent = (current+1) + ' / ' + slides.length;
+  document.getElementById('progressbar').style.width = ((current+1)/slides.length*100) + '%';
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').disabled = current === slides.length-1;
+}
+function nextSlide(){ showSlide(current+1, 1); }
+function prevSlide(){ showSlide(current-1, -1); }
+
+document.addEventListener('keydown', e => {
+  if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if(Swal.isVisible()) return;
+  if(e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+  if(e.key === 'ArrowLeft'  || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+  if(e.key === 'Home'){ e.preventDefault(); showSlide(0,-1); }
+  if(e.key === 'End'){ e.preventDefault(); showSlide(slides.length-1,1); }
+});
+
+/* ================= PUNTAJE ================= */
+let score = 0;
+function addPoints(p){
+  score += p;
+  const b = document.getElementById('scoreBadge');
+  b.innerHTML = '<i class="fa-solid fa-star"></i> ' + score + ' pts';
+  b.classList.remove('animate__animated','animate__bounce');
+  void b.offsetWidth;
+  b.classList.add('animate__animated','animate__bounce');
+}
+
+/* ================= QUIZZES ================= */
+function runQuiz(title, question, options, correctIndex, explanation, points = 10){
+  const inputs = options.map((o,i) => `<label><input type="radio" name="qz" value="${i}"><span>${o}</span></label>`).join('');
+  Swal.fire({
+    ...swalBase, title,
+    html: `<p style="text-align:left;margin-bottom:14px">${question}</p><div class="swal-radio-list">${inputs}</div>`,
+    confirmButtonText: 'Responder', showCancelButton: true, cancelButtonText: 'Cancelar',
+    showClass: { popup: 'animate__animated animate__zoomIn animate__faster' },
+    hideClass: { popup: 'animate__animated animate__zoomOut animate__faster' },
+    preConfirm: () => {
+      const sel = document.querySelector('input[name="qz"]:checked');
+      if(!sel){ Swal.showValidationMessage('Elegí una opción'); return false; }
+      return parseInt(sel.value);
+    }
+  }).then(res => {
+    if(!res.isConfirmed) return;
+    if(res.value === correctIndex){
+      addPoints(points);
+      Swal.fire({ ...swalBase, icon:'success', title:'¡Correcto! +' + points + ' pts',
+        html:`<p style="text-align:left">${explanation}</p>`, showClass:{popup:'animate__animated animate__tada'} });
+    } else {
+      Swal.fire({ ...swalBase, icon:'error', title:'No es esa…',
+        html:`<p style="text-align:left">La respuesta correcta era: <strong style="color:#a78bfa">${options[correctIndex]}</strong></p><p style="text-align:left">${explanation}</p>`,
+        showClass:{popup:'animate__animated animate__shakeX'} });
+    }
+  });
+}
+
+function quizCaract(){
+  runQuiz('Mini-quiz · Características',
+    'En una app, la pantalla de "Perfil" usa un ícono de disquete para guardar, pero la de "Configuración" usa un botón de texto "APLICAR" en otro color y posición. ¿Qué característica está fallando?',
+    ['Atractivo visual','Claridad','Coherencia','Flexibilidad'],
+    2,
+    'Es un problema de <strong>coherencia</strong>: la misma acción (guardar) se presenta de formas distintas, así el usuario no puede formar un patrón y debe re-aprender en cada pantalla.');
+}
+function quizTipos(){
+  runQuiz('Mini-quiz · ¿Qué tipo de interfaz es?',
+    'Un cajero de autoservicio del supermercado muestra en pantalla: "¿Desea factura con RUT?" con dos botones grandes: SÍ / NO. Según la respuesta, sigue un camino predefinido. ¿Qué tipo de interfaz predomina?',
+    ['Lenguaje natural','Preguntas y respuestas','Tangible','Por voz'],
+    1,
+    'Es <strong>preguntas y respuestas</strong>: el sistema lleva la iniciativa con opciones cerradas y caminos preprogramados. (La pantalla táctil además la hace GUI: los tipos conviven.)');
+}
+function quizReco(){
+  runQuiz('Mini-quiz · Recomendaciones',
+    'La landing de un curso online pide 9 campos (nombre, apellido, cédula, dirección…) solo para descargar un PDF gratuito, y la conversión es bajísima. ¿Qué recomendación están violando?',
+    ['Falta de omnicanalidad','Formularios demasiado largos','CTA poco visible','No conocen el recorrido del cliente'],
+    1,
+    'Cada campo extra es fricción y cuesta conversiones. Para un PDF gratuito alcanza con el email — el resto de los datos se puede pedir más adelante, cuando la relación lo justifique.');
+}
+
+/* ================= CLÍNICA DE UI ================= */
+const CORRECTAS = new Set(['a','b','d','e','g']);
+let clinicaDone = false, clinicaHinted = false;
+
+function toggleMock(){
+  const malo = document.getElementById('mock-malo');
+  const bueno = document.getElementById('mock-bueno');
+  const btn = document.getElementById('btn-toggle');
+  const estado = document.getElementById('estado-mock');
+  const showingBad = malo.style.display !== 'none';
+  malo.style.display = showingBad ? 'none' : 'block';
+  bueno.style.display = showingBad ? 'block' : 'none';
+  btn.innerHTML = showingBad
+    ? '<i class="fa-solid fa-virus"></i> Volver a la versión original'
+    : '<i class="fa-solid fa-wand-magic-sparkles"></i> Ver versión mejorada';
+  estado.textContent = showingBad ? '· versión mejorada' : '· versión original';
+}
+
+function checkClinica(){
+  const marcadas = new Set([...document.querySelectorAll('#checklist input:checked')].map(i => i.value));
+  if(marcadas.size === 0){
+    Swal.fire({ ...swalBase, icon:'question', title:'Diagnóstico vacío', text:'Marcá al menos un problema antes de verificar.' });
+    return;
+  }
+  const aciertos = [...marcadas].filter(v => CORRECTAS.has(v)).length;
+  const falsos = [...marcadas].filter(v => !CORRECTAS.has(v)).length;
+  const faltan = CORRECTAS.size - aciertos;
+
+  if(falsos === 0 && faltan === 0){
+    const first = !clinicaDone;
+    clinicaDone = true;
+    const card = document.getElementById('ex1');
+    card.classList.add('done');
+    card.querySelector('.ex-status').innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+    let pts = 0;
+    if(first){ pts = clinicaHinted ? 10 : 20; addPoints(pts); }
+    Swal.fire({ ...swalBase, icon:'success',
+      title: first ? '¡Diagnóstico perfecto! +' + pts + ' pts' : '¡Diagnóstico perfecto!',
+      html: `<p style="text-align:left">Identificaste los 5 problemas reales sin caer en los distractores: CTA escondido, botones inconsistentes, formulario excesivo, texto saturado y menú sobrecargado.</p>
+             <p style="text-align:left">Ahora tocá <strong style="color:#22d3ee">"Ver versión mejorada"</strong> y comparemos: ¿qué decisión resuelve cada problema?</p>`,
+      showClass:{popup:'animate__animated animate__tada'} });
+  } else {
+    let detalle = `<p style="text-align:left">Acertaste <strong style="color:#a78bfa">${aciertos} de ${CORRECTAS.size}</strong> problemas reales`;
+    if(falsos > 0) detalle += ` y marcaste <strong style="color:#ff6b81">${falsos}</strong> que no corresponde${falsos>1?'n':''}`;
+    detalle += '.</p><p style="text-align:left">Releé las opciones con las 4 características y las 6 recomendaciones en mente. Ojo con los distractores: ¿agregar tecnología o más decoración arregla un problema de diseño?</p>';
+    Swal.fire({ ...swalBase, icon:'error', title:'El diagnóstico no cierra todavía', html: detalle,
+      showClass:{popup:'animate__animated animate__shakeX'} });
+  }
+}
+
+function hintClinica(){
+  clinicaHinted = true;
+  Swal.fire({ ...swalBase, icon:'info', title:'Pista clínica',
+    html:`<p style="text-align:left">Son <strong>5 problemas reales</strong>. Buscalos en: la jerarquía del llamado a la acción, la consistencia entre botones, el largo del formulario versus su objetivo, la densidad del texto y la cantidad de opciones del menú.</p>
+          <p style="text-align:left">Los distractores proponen <em>agregar</em> cosas (tecnología, colores). Una landing enferma casi nunca se cura agregando.</p>
+          <p style="text-align:left;color:#94a5c6;font-size:.85rem">Usar la pista reduce el puntaje del ejercicio a 10 pts.</p>` });
+}
+
+/* ================= PUNTAJE FINAL ================= */
+function showFinalScore(){
+  const max = 3*10 + 20;
+  let msg, icon;
+  if(score >= 40){ msg = '¡Ojo clínico de diseñador! Dominaste el teórico completo.'; icon = 'success'; }
+  else if(score >= 25){ msg = 'Muy buen trabajo. Repasá las slides de los puntos que fallaste.'; icon = 'success'; }
+  else if(score > 0){ msg = 'Buen comienzo: los quizzes y la Clínica de UI se pueden reintentar.'; icon = 'info'; }
+  else { msg = 'Todavía no sumaste puntos: los quizzes y la Clínica de UI te esperan.'; icon = 'info'; }
+  Swal.fire({ ...swalBase, icon, title: score + ' / ' + max + ' puntos',
+    html:`<p style="margin-top:8px">${msg}</p>`,
+    confirmButtonText:'Cerrar', showClass:{popup:'animate__animated animate__zoomIn'} });
+}
+
+/* ================= INIT ================= */
+slides[0].classList.add('active','animate__animated','animate__fadeIn');
+document.getElementById('slideBadge').textContent = '1 / ' + slides.length;
+document.getElementById('progressbar').style.width = (1/slides.length*100) + '%';
+document.getElementById('btnPrev').disabled = true;
+</script>
+</body>
+</html>
