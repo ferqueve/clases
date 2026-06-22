@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Las 10 Heurísticas de Nielsen — Usabilidad</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink:#0d1117;
+    --panel:#141b24;
+    --panel-2:#1b2530;
+    --line:#2a3744;
+    --paper:#e8e6df;
+    --signal:#ff5d3b;       /* naranja señal */
+    --signal-dim:#c9472d;
+    --beacon:#3fd0c9;       /* faro cian */
+    --beacon-dim:#268f8a;
+    --gold:#f5b942;
+    --muted:#8a98a6;
+    --good:#3fd07a;
+    --bad:#ff5d6c;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter',system-ui,sans-serif;
+    overflow:hidden;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  /* ===== Estructura de slides ===== */
+  .deck{height:100vh;width:100vw;position:relative;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:clamp(1.5rem,4vw,4rem) clamp(1.5rem,6vw,7rem);
+    overflow-y:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{margin:auto;width:100%;max-width:1100px;}
+
+  /* ===== Barra superior ===== */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:30;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:.6rem 1.4rem;
+    background:rgba(13,17,23,.82);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    font-size:.8rem;
+  }
+  .topbar .brand{font-family:'Space Grotesk';font-weight:700;letter-spacing:.04em;}
+  .topbar .brand .dot{color:var(--signal);}
+  .progress-track{flex:1;margin:0 1.4rem;height:4px;background:var(--panel-2);border-radius:99px;overflow:hidden;max-width:520px;}
+  .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--signal),var(--gold));transition:width .4s cubic-bezier(.4,0,.2,1);}
+  .counter{font-family:'JetBrains Mono';color:var(--muted);white-space:nowrap;}
+
+  /* ===== Navegación ===== */
+  .nav-arrows{position:fixed;bottom:1.4rem;right:1.4rem;z-index:30;display:flex;gap:.5rem;}
+  .nav-arrows button{
+    width:46px;height:46px;border-radius:12px;
+    border:1px solid var(--line);background:var(--panel);color:var(--paper);
+    cursor:pointer;font-size:1rem;transition:.18s;
+  }
+  .nav-arrows button:hover:not(:disabled){background:var(--signal);border-color:var(--signal);transform:translateY(-2px);}
+  .nav-arrows button:disabled{opacity:.3;cursor:not-allowed;}
+  .hint{position:fixed;bottom:1.7rem;left:1.4rem;z-index:30;color:var(--muted);font-size:.74rem;font-family:'JetBrains Mono';}
+  .hint kbd{background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.7rem;}
+
+  /* ===== Portada ===== */
+  .cover{text-align:left;}
+  .cover .eyebrow{font-family:'JetBrains Mono';color:var(--beacon);letter-spacing:.22em;text-transform:uppercase;font-size:.8rem;margin-bottom:1.4rem;}
+  .cover h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(2.4rem,7vw,5.4rem);line-height:.98;margin:0 0 1.2rem;letter-spacing:-.02em;}
+  .cover h1 .hl{color:var(--signal);}
+  .cover p{color:var(--muted);font-size:clamp(1rem,2vw,1.3rem);max-width:640px;}
+  .beacon-ring{
+    position:absolute;top:50%;right:-6vw;transform:translateY(-50%);
+    width:46vh;height:46vh;border-radius:50%;
+    border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    opacity:.5;
+  }
+  .beacon-ring::before,.beacon-ring::after{
+    content:'';position:absolute;border-radius:50%;border:2px solid var(--beacon);
+    animation:pulse 3.4s infinite ease-out;
+  }
+  .beacon-ring::before{width:60%;height:60%;}
+  .beacon-ring::after{width:100%;height:100%;animation-delay:1.2s;}
+  @keyframes pulse{0%{transform:scale(.6);opacity:.9;}100%{transform:scale(1.25);opacity:0;}}
+
+  /* ===== Heurística ===== */
+  .heur-head{display:flex;align-items:flex-start;gap:1.4rem;margin-bottom:1.6rem;}
+  .heur-num{
+    font-family:'Space Grotesk';font-weight:700;
+    font-size:clamp(2.6rem,6vw,4.4rem);line-height:1;
+    color:var(--signal);
+    min-width:auto;
+  }
+  .heur-num small{display:block;font-size:.7rem;letter-spacing:.2em;color:var(--muted);font-family:'JetBrains Mono';margin-top:.4rem;}
+  .heur-title{font-family:'Space Grotesk';font-weight:600;font-size:clamp(1.4rem,3.4vw,2.4rem);line-height:1.08;letter-spacing:-.01em;}
+  .heur-icon{margin-left:auto;font-size:clamp(2rem,5vw,3.4rem);color:var(--beacon);opacity:.85;}
+  .lead{font-size:clamp(1rem,1.9vw,1.22rem);line-height:1.6;color:#cfd6dd;max-width:780px;}
+  .lead .em{color:var(--gold);font-weight:600;}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.3rem 1.5rem;}
+  .panel.signal{border-left:4px solid var(--signal);}
+  .panel.beacon{border-left:4px solid var(--beacon);}
+  .panel h5{font-family:'Space Grotesk';font-weight:600;font-size:.95rem;letter-spacing:.02em;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem;}
+  .panel h5 i{color:var(--signal);}
+  .panel.beacon h5 i{color:var(--beacon);}
+  .tips{list-style:none;padding:0;margin:0;}
+  .tips li{position:relative;padding-left:1.5rem;margin-bottom:.6rem;font-size:.92rem;color:#cfd6dd;line-height:1.45;}
+  .tips li::before{content:'\f0a9';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;left:0;top:.1rem;color:var(--signal);font-size:.78rem;}
+
+  .real-example{
+    background:linear-gradient(135deg,var(--panel-2),var(--panel));
+    border:1px dashed var(--beacon-dim);border-radius:14px;
+    padding:1.1rem 1.3rem;font-size:.92rem;color:#cdd5dd;
+  }
+  .real-example .tag{font-family:'JetBrains Mono';font-size:.7rem;color:var(--beacon);text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:.4rem;}
+
+  /* ===== Caso práctico ===== */
+  .case-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(245,185,66,.12);color:var(--gold);border:1px solid var(--gold);border-radius:99px;padding:.3rem .9rem;font-family:'JetBrains Mono';font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:1.2rem;}
+  .scenario{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.4rem 1.6rem;margin-bottom:1.4rem;}
+  .scenario .label{font-family:'JetBrains Mono';font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+  .scenario p{font-size:1.05rem;line-height:1.55;margin:.5rem 0 0;color:#e2e7ec;}
+  .options{display:grid;gap:.7rem;grid-template-columns:1fr;}
+  @media(min-width:720px){.options{grid-template-columns:1fr 1fr;}}
+  .opt{
+    text-align:left;width:100%;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--paper);
+    border-radius:12px;padding:.85rem 1.1rem;cursor:pointer;font-size:.92rem;
+    transition:.15s;display:flex;gap:.7rem;align-items:flex-start;
+  }
+  .opt:hover{border-color:var(--signal);background:#222e3a;}
+  .opt .k{font-family:'JetBrains Mono';font-weight:700;color:var(--signal);}
+  .opt.correct{border-color:var(--good);background:rgba(63,208,122,.12);}
+  .opt.wrong{border-color:var(--bad);background:rgba(255,93,108,.1);}
+  .opt:disabled{cursor:default;}
+
+  /* ===== Mock UI para demos ===== */
+  .mock{background:#fff;color:#222;border-radius:10px;padding:1rem;font-size:.85rem;box-shadow:0 10px 40px rgba(0,0,0,.4);}
+  .mock-bad{border:2px solid var(--bad);}
+  .mock-good{border:2px solid var(--good);}
+
+  .grid-2{display:grid;gap:1.2rem;grid-template-columns:1fr;}
+  @media(min-width:860px){.grid-2{grid-template-columns:1fr 1fr;}}
+  .grid-3{display:grid;gap:.9rem;grid-template-columns:1fr;}
+  @media(min-width:860px){.grid-3{grid-template-columns:1fr 1fr 1fr;}}
+
+  /* ===== Slide índice ===== */
+  .index-grid{display:grid;gap:.7rem;grid-template-columns:1fr;}
+  @media(min-width:720px){.index-grid{grid-template-columns:1fr 1fr;}}
+  .index-item{display:flex;gap:.9rem;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.7rem 1rem;font-size:.92rem;}
+  .index-item .n{font-family:'JetBrains Mono';font-weight:700;color:var(--signal);}
+
+  .section-tag{font-family:'JetBrains Mono';font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--beacon);margin-bottom:.8rem;}
+
+  /* cierre */
+  .end-big{font-family:'Space Grotesk';font-weight:700;font-size:clamp(2rem,6vw,4rem);line-height:1;letter-spacing:-.02em;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px;}
+
+  .swal2-popup{font-family:'Inter',sans-serif !important;}
+</style>
+</head>
+<body>
+
+<!-- ===== Barra superior ===== -->
+<div class="topbar">
+  <span class="brand">NN/g <span class="dot">·</span> Heurísticas</span>
+  <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+  <span class="counter"><span id="cur">01</span> / <span id="total">00</span></span>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- 0 · PORTADA -->
+  <section class="slide active">
+    <div class="beacon-ring"><i class="fa-solid fa-tower-observation" style="font-size:3.2rem;color:var(--beacon);"></i></div>
+    <div class="slide-inner cover">
+      <div class="eyebrow">Jakob Nielsen · 1994 — rev. 2024</div>
+      <h1>Las <span class="hl">10 heurísticas</span><br>de usabilidad</h1>
+      <p>Diez reglas generales para diagnosticar interfaces. No son recetas exactas: son faros que orientan el diseño de interacción. Las recorremos una a una, con casos para detectar problemas reales.</p>
+      <div class="mono" style="margin-top:2rem;color:var(--muted);font-size:.8rem;">
+        <i class="fa-regular fa-keyboard"></i> Usá <kbd style="background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 7px;">←</kbd> <kbd style="background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 7px;">→</kbd> para navegar
+      </div>
+    </div>
+  </section>
+
+  <!-- 1 · ÍNDICE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="section-tag">El recorrido</div>
+      <h2 class="display" style="font-weight:600;font-size:clamp(1.6rem,4vw,2.6rem);margin-bottom:1.6rem;">¿Qué vamos a ver?</h2>
+      <div class="index-grid">
+        <div class="index-item"><span class="n">01</span> Visibilidad del estado del sistema</div>
+        <div class="index-item"><span class="n">02</span> Correspondencia con el mundo real</div>
+        <div class="index-item"><span class="n">03</span> Control y libertad del usuario</div>
+        <div class="index-item"><span class="n">04</span> Coherencia y estándares</div>
+        <div class="index-item"><span class="n">05</span> Prevención de errores</div>
+        <div class="index-item"><span class="n">06</span> Reconocimiento, no recuerdo</div>
+        <div class="index-item"><span class="n">07</span> Flexibilidad y eficiencia</div>
+        <div class="index-item"><span class="n">08</span> Diseño estético y minimalista</div>
+        <div class="index-item"><span class="n">09</span> Recuperarse de los errores</div>
+        <div class="index-item"><span class="n">10</span> Ayuda y documentación</div>
+      </div>
+      <p style="color:var(--muted);margin-top:1.4rem;font-size:.9rem;"><i class="fa-solid fa-flask"></i> Intercaladas vas a encontrar <strong style="color:var(--gold);">quizzes</strong> y <strong style="color:var(--beacon);">casos prácticos</strong> para resolver.</p>
+    </div>
+  </section>
+
+  <!-- 2 · H1 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">01<small>VISIBILIDAD</small></div>
+        <div class="heur-title">Visibilidad del estado del sistema</div>
+        <i class="fa-solid fa-signal heur-icon"></i>
+      </div>
+      <p class="lead">El diseño debe mantener al usuario <span class="em">informado de lo que ocurre</span> mediante retroalimentación adecuada y en un tiempo razonable. Saber el estado del sistema permite entender el resultado de acciones previas y decidir el próximo paso. Lo predecible genera confianza.</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>Comunicá el estado: ninguna acción con consecuencias debe ocurrir sin avisar.</li>
+            <li>Da feedback lo antes posible, idealmente inmediato.</li>
+            <li>Construí confianza con comunicación abierta y continua.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-location-dot"></i> Caso del mundo real</span>
+          El indicador <strong>"Estás aquí"</strong> en el mapa de un shopping muestra dónde estás parado, para que entiendas hacia dónde ir. En lo digital: barras de progreso, "guardando…", el spinner de un envío.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · CASO PRÁCTICO H1 -->
+  <section class="slide" data-case="0">
+    <div class="slide-inner">
+      <div class="case-badge"><i class="fa-solid fa-flask"></i> Caso práctico</div>
+      <div class="scenario">
+        <span class="label">Escenario</span>
+        <p>Un usuario completa un formulario de compra y presiona <strong>"Pagar"</strong>. El botón no cambia, no aparece ningún mensaje y la página parece congelada por 6 segundos. El usuario, nervioso, hace clic dos veces más.</p>
+      </div>
+      <p style="color:var(--muted);margin-bottom:.9rem;font-size:.92rem;">¿Qué heurística se está violando principalmente?</p>
+      <div class="options" id="case0-opts">
+        <button class="opt" onclick="answerCase(this,'case0',true)"><span class="k">A</span><span>Visibilidad del estado del sistema — no hay feedback de que el pago se está procesando.</span></button>
+        <button class="opt" onclick="answerCase(this,'case0',false)"><span class="k">B</span><span>Ayuda y documentación — falta un manual del proceso de pago.</span></button>
+        <button class="opt" onclick="answerCase(this,'case0',false)"><span class="k">C</span><span>Diseño estético — el botón es poco atractivo.</span></button>
+        <button class="opt" onclick="answerCase(this,'case0',false)"><span class="k">D</span><span>Flexibilidad — falta un atajo de teclado para pagar.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · H2 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">02<small>MUNDO REAL</small></div>
+        <div class="heur-title">Correspondencia entre el sistema y el mundo real</div>
+        <i class="fa-solid fa-earth-americas heur-icon"></i>
+      </div>
+      <p class="lead">El diseño debe <span class="em">hablar el idioma del usuario</span>: palabras, frases y conceptos familiares en vez de jerga interna. Seguí las convenciones del mundo real y presentá la información de forma natural y lógica (<em>mapeo natural</em>).</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>El usuario debe entender el significado sin buscar definiciones.</li>
+            <li>Nunca asumas que tu vocabulario coincide con el suyo.</li>
+            <li>La investigación con usuarios revela su terminología y modelos mentales.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-fire-burner"></i> Caso del mundo real</span>
+          Cuando los <strong>controles de una anafe</strong> coinciden con la disposición de las hornallas, sabés al instante qué perilla mueve cada fuego. La interfaz mapea directamente la realidad.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · H3 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">03<small>CONTROL</small></div>
+        <div class="heur-title">Control y libertad del usuario</div>
+        <i class="fa-solid fa-door-open heur-icon"></i>
+      </div>
+      <p class="lead">Los usuarios se equivocan. Necesitan una <span class="em">"salida de emergencia"</span> bien señalizada para abandonar una acción no deseada sin procesos largos. Poder deshacer y salir fácilmente genera libertad y confianza.</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>Soportá <strong>deshacer</strong> y <strong>rehacer</strong>.</li>
+            <li>Mostrá una forma clara de salir: un botón "Cancelar".</li>
+            <li>La salida debe ser visible y fácil de encontrar.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-person-running"></i> Caso del mundo real</span>
+          Los espacios digitales necesitan <strong>salidas de emergencia rápidas</strong>, igual que un edificio. El "Ctrl+Z", el "Deshacer envío" de Gmail o cerrar un modal con la X.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · QUIZ 1 (H1-H3) -->
+  <section class="slide" data-quiz="0">
+    <div class="slide-inner">
+      <div class="case-badge" style="color:var(--signal);border-color:var(--signal);background:rgba(255,93,59,.12);"><i class="fa-solid fa-circle-question"></i> Quiz · Heurísticas 1 a 3</div>
+      <h2 class="display" style="font-weight:600;font-size:clamp(1.4rem,3.6vw,2.2rem);margin-bottom:.6rem;">Repaso rápido</h2>
+      <p style="color:var(--muted);font-size:.95rem;margin-bottom:1.4rem;">Tres preguntas para fijar lo visto hasta acá. Tomate tu tiempo.</p>
+      <button class="btn btn-lg px-4" style="background:var(--signal);border:none;color:#fff;font-weight:600;border-radius:12px;" onclick="startQuiz(0)">
+        <i class="fa-solid fa-play"></i> Comenzar quiz
+      </button>
+      <div id="quiz0-result" class="mono" style="margin-top:1.4rem;color:var(--muted);"></div>
+    </div>
+  </section>
+
+  <!-- 7 · H4 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">04<small>COHERENCIA</small></div>
+        <div class="heur-title">Coherencia y estándares</div>
+        <i class="fa-solid fa-layer-group heur-icon"></i>
+      </div>
+      <p class="lead">El usuario no debería preguntarse si distintas palabras o acciones significan lo mismo. Seguí las convenciones de la plataforma y del sector. La <span class="em">Ley de Jakob</span>: la gente pasa la mayor parte del tiempo en <em>otros</em> productos, y eso moldea sus expectativas.</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>Cuidá la coherencia <strong>interna</strong> (dentro de tu producto).</li>
+            <li>Cuidá la coherencia <strong>externa</strong> (convenciones del sector).</li>
+            <li>Ambas mejoran la facilidad de aprendizaje.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-hotel"></i> Caso del mundo real</span>
+          El <strong>mostrador de recepción</strong> está siempre en la entrada del hotel. Esa coherencia satisface lo que el huésped ya espera encontrar.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · H5 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">05<small>PREVENCIÓN</small></div>
+        <div class="heur-title">Prevención de errores</div>
+        <i class="fa-solid fa-shield-halved heur-icon"></i>
+      </div>
+      <p class="lead">Los buenos mensajes de error importan, pero el mejor diseño <span class="em">previene el problema desde el inicio</span>. Eliminá condiciones propensas a error, o pedí confirmación antes de acciones críticas. Existen <em>descuidos</em> (inconscientes) y <em>equivocaciones</em> (modelo mental erróneo).</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>Priorizá: primero los errores costosos, luego las frustraciones menores.</li>
+            <li>Usá restricciones útiles y valores por defecto adecuados.</li>
+            <li>Reducí la carga de memoria, ofrecé deshacer y alertá al usuario.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-mountain"></i> Caso del mundo real</span>
+          Las <strong>barandillas de seguridad</strong> evitan la caída antes de que ocurra. En lo digital: deshabilitar el botón "Enviar" hasta que el campo sea válido.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · CASO PRÁCTICO H4-H5 -->
+  <section class="slide" data-case="1">
+    <div class="slide-inner">
+      <div class="case-badge"><i class="fa-solid fa-flask"></i> Caso práctico</div>
+      <div class="scenario">
+        <span class="label">Escenario</span>
+        <p>Una app de viajes pide la fecha de nacimiento con un campo de texto libre. Un usuario escribe <strong>"15/03/1990"</strong>, otro <strong>"March 15 1990"</strong> y otro <strong>"1990-03-15"</strong>. La mitad de los registros fallan al guardarse.</p>
+      </div>
+      <p style="color:var(--muted);margin-bottom:.9rem;font-size:.92rem;">¿Cuál es la mejor solución según las heurísticas?</p>
+      <div class="options" id="case1-opts">
+        <button class="opt" onclick="answerCase(this,'case1',false)"><span class="k">A</span><span>Agregar un manual extenso explicando el formato de fecha correcto.</span></button>
+        <button class="opt" onclick="answerCase(this,'case1',true)"><span class="k">B</span><span>Usar un selector de fecha (date picker) que restrinja la entrada — prevención de errores.</span></button>
+        <button class="opt" onclick="answerCase(this,'case1',false)"><span class="k">C</span><span>Mostrar el error solo después de enviar todo el formulario.</span></button>
+        <button class="opt" onclick="answerCase(this,'case1',false)"><span class="k">D</span><span>Permitir cualquier formato y corregirlo manualmente en el back-end.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 · H6 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">06<small>RECONOCER</small></div>
+        <div class="heur-title">Reconocimiento en lugar de recuerdo</div>
+        <i class="fa-solid fa-eye heur-icon"></i>
+      </div>
+      <p class="lead">Minimizá la carga de memoria haciendo <span class="em">visibles</span> elementos, acciones y opciones. El usuario no debería tener que recordar información de una pantalla a otra. La memoria a corto plazo es limitada.</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>Permití reconocer la información, no obligar a recordarla.</li>
+            <li>Ofrecé ayuda contextual en lugar de tutoriales para memorizar.</li>
+            <li>Reducí lo que el usuario debe recordar.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-brain"></i> Caso del mundo real</span>
+          Es más fácil responder <strong>"¿Lisboa es la capital de Portugal?"</strong> (reconocer) que <strong>"¿Cuál es la capital de Portugal?"</strong> (recordar). Por eso los menús muestran opciones en vez de pedir comandos de memoria.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 · H7 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">07<small>FLEXIBILIDAD</small></div>
+        <div class="heur-title">Flexibilidad y eficiencia de uso</div>
+        <i class="fa-solid fa-gauge-high heur-icon"></i>
+      </div>
+      <p class="lead">Los <span class="em">atajos</span> —ocultos para el novato— aceleran al usuario experto. El diseño sirve tanto a principiantes como a avanzados, y permite personalizar las acciones frecuentes. Procesos flexibles, varios caminos posibles.</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>Proporcioná aceleradores: atajos de teclado, gestos táctiles.</li>
+            <li>Ofrecé personalización adaptando contenido y funciones.</li>
+            <li>Permití que el usuario elija cómo quiere que funcione el producto.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-map-location-dot"></i> Caso del mundo real</span>
+          Los <strong>mapas marcan rutas habituales</strong>, pero el local que conoce la zona toma atajos. En software: el menú para todos, el atajo de teclado para el experto.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 · QUIZ 2 (H4-H7) -->
+  <section class="slide" data-quiz="1">
+    <div class="slide-inner">
+      <div class="case-badge" style="color:var(--signal);border-color:var(--signal);background:rgba(255,93,59,.12);"><i class="fa-solid fa-circle-question"></i> Quiz · Heurísticas 4 a 7</div>
+      <h2 class="display" style="font-weight:600;font-size:clamp(1.4rem,3.6vw,2.2rem);margin-bottom:.6rem;">Segundo control</h2>
+      <p style="color:var(--muted);font-size:.95rem;margin-bottom:1.4rem;">¿Distinguís coherencia de prevención? ¿Reconocer de recordar? Probemos.</p>
+      <button class="btn btn-lg px-4" style="background:var(--signal);border:none;color:#fff;font-weight:600;border-radius:12px;" onclick="startQuiz(1)">
+        <i class="fa-solid fa-play"></i> Comenzar quiz
+      </button>
+      <div id="quiz1-result" class="mono" style="margin-top:1.4rem;color:var(--muted);"></div>
+    </div>
+  </section>
+
+  <!-- 13 · H8 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">08<small>MINIMALISMO</small></div>
+        <div class="heur-title">Diseño estético y minimalista</div>
+        <i class="fa-solid fa-feather heur-icon"></i>
+      </div>
+      <p class="lead">Las interfaces no deben contener información irrelevante o poco frecuente. <span class="em">Cada unidad extra compite</span> con la información relevante y le quita visibilidad. No es "diseño plano": es enfocar contenido y diseño visual en lo esencial.</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>Mantené contenido y diseño visual centrados en lo esencial.</li>
+            <li>No dejes que elementos innecesarios distraigan.</li>
+            <li>Priorizá contenido y funciones según los objetivos principales.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-mug-hot"></i> Caso del mundo real</span>
+          Una <strong>tetera ornamentada</strong> puede tener un asa incómoda o un pico difícil de lavar: la decoración excesiva termina interfiriendo con el uso.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 · H9 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">09<small>RECUPERACIÓN</small></div>
+        <div class="heur-title">Reconocer, diagnosticar y recuperarse de los errores</div>
+        <i class="fa-solid fa-triangle-exclamation heur-icon"></i>
+      </div>
+      <p class="lead">Los mensajes de error deben estar en <span class="em">lenguaje sencillo</span> (sin códigos), indicar con precisión el problema y sugerir una solución constructiva. Y deben ser visualmente reconocibles.</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>Usá señales visuales tradicionales: texto rojo en negrita.</li>
+            <li>Explicá qué salió mal en lenguaje claro, sin jerga técnica.</li>
+            <li>Ofrecé una solución, como un atajo que resuelva el error.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-ban"></i> Caso del mundo real</span>
+          La señal de <strong>"contramano"</strong> avisa al conductor que va en sentido equivocado y le pide detenerse. En software: <em>"La contraseña debe tener al menos 8 caracteres"</em>, no <em>"Error 0x004"</em>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 · CASO PRÁCTICO H8-H9 (mock comparativo) -->
+  <section class="slide" data-case="2">
+    <div class="slide-inner">
+      <div class="case-badge"><i class="fa-solid fa-flask"></i> Caso práctico · mensajes de error</div>
+      <p style="color:var(--muted);margin-bottom:1rem;font-size:.95rem;">Dos sistemas devuelven el mismo error de login. ¿Cuál respeta la heurística 9?</p>
+      <div class="grid-2" style="margin-bottom:1.4rem;">
+        <div class="mock mock-bad">
+          <div style="font-family:'JetBrains Mono';color:#b00;font-weight:700;">SYSTEM ERROR</div>
+          <div style="margin-top:.4rem;font-family:'JetBrains Mono';font-size:.78rem;">code: AUTH_ERR_0x19F<br>stack: nullPointer at auth.js:204</div>
+          <div style="margin-top:.5rem;color:#666;font-size:.78rem;">Mensaje A</div>
+        </div>
+        <div class="mock mock-good">
+          <div style="color:#b00;font-weight:700;"><i class="fa-solid fa-circle-exclamation"></i> No pudimos iniciar sesión</div>
+          <div style="margin-top:.4rem;font-size:.82rem;">El email o la contraseña no coinciden. Revisá los datos o <u>recuperá tu contraseña</u>.</div>
+          <div style="margin-top:.5rem;color:#666;font-size:.78rem;">Mensaje B</div>
+        </div>
+      </div>
+      <div class="options" id="case2-opts">
+        <button class="opt" onclick="answerCase(this,'case2',false)"><span class="k">A</span><span>El mensaje A — muestra el código exacto para que el usuario lo reporte.</span></button>
+        <button class="opt" onclick="answerCase(this,'case2',true)"><span class="k">B</span><span>El mensaje B — lenguaje claro, explica el problema y ofrece una solución.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 · H10 -->
+  <section class="slide" data-heur>
+    <div class="slide-inner">
+      <div class="heur-head">
+        <div class="heur-num">10<small>AYUDA</small></div>
+        <div class="heur-title">Ayuda y documentación</div>
+        <i class="fa-solid fa-circle-info heur-icon"></i>
+      </div>
+      <p class="lead">Lo ideal es que el sistema <span class="em">no necesite explicación</span>. Pero cuando hace falta, la documentación debe ser fácil de buscar, enfocada en la tarea del usuario, concisa y con pasos concretos.</p>
+      <div class="grid-2" style="margin-top:1.6rem;">
+        <div class="panel signal">
+          <h5><i class="fa-solid fa-lightbulb"></i> Consejos</h5>
+          <ul class="tips">
+            <li>La documentación debe ser fácil de consultar y buscar.</li>
+            <li>Presentala en contexto, justo cuando el usuario la necesita.</li>
+            <li>Enumerá los pasos concretos a seguir.</li>
+          </ul>
+        </div>
+        <div class="real-example">
+          <span class="tag"><i class="fa-solid fa-circle-question"></i> Caso del mundo real</span>
+          Los <strong>quioscos de información</strong> de los aeropuertos son reconocibles y resuelven el problema en contexto, al instante. En software: el tooltip "¿Qué es esto?" justo al lado del campo.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17 · CASO INTEGRADOR (múltiple) -->
+  <section class="slide" data-case="3">
+    <div class="slide-inner">
+      <div class="case-badge" style="color:var(--gold);border-color:var(--gold);"><i class="fa-solid fa-puzzle-piece"></i> Caso integrador</div>
+      <div class="scenario">
+        <span class="label">Escenario</span>
+        <p>Una app borra una nota apenas tocás el ícono de papelera: sin confirmación, sin "deshacer", sin aviso. Y el ícono es una <strong>flor</strong> que nadie asocia con "borrar".</p>
+      </div>
+      <p style="color:var(--muted);margin-bottom:.9rem;font-size:.92rem;">Acá se violan <strong>varias</strong> heurísticas. ¿Cuál NO está implicada?</p>
+      <div class="options" id="case3-opts">
+        <button class="opt" onclick="answerCase(this,'case3',false)"><span class="k">A</span><span>Prevención de errores — borra sin confirmar una acción destructiva.</span></button>
+        <button class="opt" onclick="answerCase(this,'case3',false)"><span class="k">B</span><span>Control y libertad — no hay forma de deshacer.</span></button>
+        <button class="opt" onclick="answerCase(this,'case3',false)"><span class="k">C</span><span>Mundo real — una flor no representa "borrar".</span></button>
+        <button class="opt" onclick="answerCase(this,'case3',true)"><span class="k">D</span><span>Flexibilidad y eficiencia — faltan atajos para usuarios expertos.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 18 · QUIZ FINAL -->
+  <section class="slide" data-quiz="2">
+    <div class="slide-inner">
+      <div class="case-badge" style="color:var(--gold);border-color:var(--gold);background:rgba(245,185,66,.12);"><i class="fa-solid fa-trophy"></i> Quiz final · las 10</div>
+      <h2 class="display" style="font-weight:600;font-size:clamp(1.4rem,3.6vw,2.2rem);margin-bottom:.6rem;">Examen relámpago</h2>
+      <p style="color:var(--muted);font-size:.95rem;margin-bottom:1.4rem;">Cuatro preguntas que cruzan todas las heurísticas. A ver cómo te va.</p>
+      <button class="btn btn-lg px-4" style="background:var(--gold);border:none;color:#1a1a1a;font-weight:700;border-radius:12px;" onclick="startQuiz(2)">
+        <i class="fa-solid fa-play"></i> Comenzar examen
+      </button>
+      <div id="quiz2-result" class="mono" style="margin-top:1.4rem;color:var(--muted);"></div>
+    </div>
+  </section>
+
+  <!-- 19 · CIERRE -->
+  <section class="slide">
+    <div class="slide-inner" style="text-align:center;">
+      <i class="fa-solid fa-tower-observation" style="font-size:3rem;color:var(--beacon);margin-bottom:1.2rem;"></i>
+      <div class="end-big">10 faros,<br><span style="color:var(--signal);">un solo norte:</span> el usuario.</div>
+      <p style="color:var(--muted);max-width:560px;margin:1.4rem auto 0;font-size:1.05rem;">Recordá: son heurísticas, no leyes. Sirven para <strong style="color:var(--paper);">diagnosticar y argumentar</strong> decisiones de diseño, no para aplicarse mecánicamente. La próxima vez que uses una interfaz, intentá detectar cuál se respeta y cuál se rompe.</p>
+      <div class="mono" style="margin-top:2rem;color:var(--muted);font-size:.78rem;">Basado en Nielsen Norman Group · 10 Usability Heuristics (1994, rev. 2024)</div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Navegación -->
+<div class="hint"><kbd>←</kbd> <kbd>→</kbd> navegar · <kbd>Inicio</kbd> volver</div>
+<div class="nav-arrows">
+  <button id="prevBtn" onclick="go(-1)"><i class="fa-solid fa-arrow-left"></i></button>
+  <button id="nextBtn" onclick="go(1)"><i class="fa-solid fa-arrow-right"></i></button>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+/* ===== Navegación de slides ===== */
+const slides=[...document.querySelectorAll('.slide')];
+let idx=0;
+const total=slides.length;
+document.getElementById('total').textContent=String(total).padStart(2,'0');
+
+function render(){
+  slides.forEach((s,i)=>{
+    s.classList.toggle('active',i===idx);
+    if(i===idx){
+      const inner=s.querySelector('.slide-inner');
+      if(inner){inner.classList.remove('animate__animated','animate__fadeInUp');void inner.offsetWidth;inner.classList.add('animate__animated','animate__fadeInUp');}
+    }
+  });
+  document.getElementById('cur').textContent=String(idx+1).padStart(2,'0');
+  document.getElementById('progress').style.width=((idx)/(total-1)*100)+'%';
+  document.getElementById('prevBtn').disabled=idx===0;
+  document.getElementById('nextBtn').disabled=idx===total-1;
+}
+function go(d){const n=idx+d;if(n>=0&&n<total){idx=n;render();}}
+document.addEventListener('keydown',e=>{
+  if(Swal.isVisible())return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'){go(1);}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){go(-1);}
+  if(e.key==='Home'){idx=0;render();}
+  if(e.key==='End'){idx=total-1;render();}
+});
+render();
+
+/* ===== Casos prácticos (selección directa en slide) ===== */
+const caseExplain={
+  case0:'El sistema no comunica que está procesando. Sin feedback, el usuario duda y repite la acción (¡pagando dos veces!). Una simple animación "Procesando pago…" lo resuelve.',
+  case1:'Restringir la entrada con un date picker elimina la condición propensa a error de raíz. Es prevención, no corrección posterior.',
+  case2:'El mensaje B usa lenguaje claro, identifica el problema y ofrece una salida ("recuperá tu contraseña"). El A expone jerga técnica inútil para el usuario.',
+  case3:'Se violan prevención de errores (sin confirmar), control y libertad (sin deshacer) y correspondencia con el mundo real (ícono de flor). La flexibilidad no es el problema central acá.'
+};
+function answerCase(btn,key,correct){
+  const wrap=document.getElementById(key+'-opts');
+  [...wrap.querySelectorAll('.opt')].forEach(b=>b.disabled=true);
+  if(correct){
+    btn.classList.add('correct');
+    Swal.fire({icon:'success',title:'¡Correcto!',text:caseExplain[key],confirmButtonColor:'#3fd07a',background:'#141b24',color:'#e8e6df'});
+  }else{
+    btn.classList.add('wrong');
+    [...wrap.querySelectorAll('.opt')].forEach(b=>{if(b.getAttribute('onclick').includes('true'))b.classList.add('correct');});
+    Swal.fire({icon:'error',title:'No es la mejor opción',text:caseExplain[key],confirmButtonColor:'#ff5d3b',background:'#141b24',color:'#e8e6df'});
+  }
+}
+
+/* ===== Quizzes con SweetAlert2 ===== */
+const quizzes=[
+  // Quiz 0 — H1 a H3
+  [
+    {q:'Una barra de progreso durante una descarga es un ejemplo claro de…',
+     opts:['Visibilidad del estado del sistema','Ayuda y documentación','Flexibilidad de uso'],ans:0,
+     why:'Mantiene al usuario informado de lo que ocurre y cuánto falta.'},
+    {q:'El botón "Cancelar" en un proceso de varios pasos responde a la heurística de…',
+     opts:['Diseño minimalista','Control y libertad del usuario','Prevención de errores'],ans:1,
+     why:'Es la "salida de emergencia" que permite abandonar una acción no deseada.'},
+    {q:'Que el ícono de "guardar" sea un disquete apela a…',
+     opts:['Correspondencia con el mundo real / convenciones','Visibilidad del estado','Reconocimiento'],ans:0,
+     why:'Usa una metáfora del mundo real ya convencional para "guardar".'}
+  ],
+  // Quiz 1 — H4 a H7
+  [
+    {q:'Que "Aceptar" esté siempre a la derecha y "Cancelar" a la izquierda en toda la app es…',
+     opts:['Coherencia y estándares','Ayuda y documentación','Flexibilidad'],ans:0,
+     why:'Coherencia interna: el usuario no tiene que reaprender en cada pantalla.'},
+    {q:'Deshabilitar "Enviar" hasta que el formulario sea válido es un ejemplo de…',
+     opts:['Reconocimiento','Prevención de errores','Minimalismo'],ans:1,
+     why:'Elimina la condición propensa a error antes de que el usuario falle.'},
+    {q:'Un menú desplegable con opciones visibles, en vez de pedir un comando de memoria, aplica…',
+     opts:['Reconocimiento en lugar de recuerdo','Control y libertad','Visibilidad del estado'],ans:0,
+     why:'El usuario reconoce la opción en pantalla sin tener que recordarla.'},
+    {q:'Ctrl+C / Ctrl+V para usuarios expertos, además del menú clic-derecho, es…',
+     opts:['Coherencia','Flexibilidad y eficiencia de uso','Prevención de errores'],ans:1,
+     why:'Aceleradores ocultos que agilizan al experto sin estorbar al novato.'}
+  ],
+  // Quiz 2 — final
+  [
+    {q:'"Error 0x80004005" sin más explicación viola sobre todo…',
+     opts:['Ayudar a recuperarse de errores (lenguaje claro)','Flexibilidad','Minimalismo'],ans:0,
+     why:'Sin lenguaje sencillo ni solución, el usuario no sabe qué hacer.'},
+    {q:'Una pantalla saturada de banners, pop-ups y texto irrelevante incumple…',
+     opts:['Diseño estético y minimalista','Coherencia','Visibilidad'],ans:0,
+     why:'Cada elemento extra compite con la información relevante y la oscurece.'},
+    {q:'Un tooltip de ayuda que aparece justo al lado del campo que confunde es…',
+     opts:['Ayuda y documentación en contexto','Prevención de errores','Reconocimiento'],ans:0,
+     why:'Documentación enfocada en la tarea, presentada justo cuando se necesita.'},
+    {q:'Las heurísticas de Nielsen se llaman así porque…',
+     opts:['Son reglas generales, no directrices exactas','Las inventó una máquina','Son leyes obligatorias del diseño'],ans:0,
+     why:'Son reglas amplias para diagnosticar y argumentar, no recetas rígidas.'}
+  ]
+];
+const quizDone=[false,false,false];
+
+async function startQuiz(qi){
+  const set=quizzes[qi];
+  let score=0;
+  for(let i=0;i<set.length;i++){
+    const item=set[i];
+    const inputOptions={};
+    item.opts.forEach((o,k)=>inputOptions[k]=o);
+    const {value}=await Swal.fire({
+      title:`Pregunta ${i+1} de ${set.length}`,
+      html:`<div style="font-size:1.02rem;line-height:1.5;margin-bottom:.4rem;">${item.q}</div>`,
+      input:'radio',
+      inputOptions,
+      inputValidator:v=>(v===undefined||v==='')?'Elegí una opción':undefined,
+      confirmButtonText:'Responder',
+      confirmButtonColor:'#ff5d3b',
+      background:'#141b24',color:'#e8e6df',
+      allowOutsideClick:false,
+      showClass:{popup:'animate__animated animate__fadeInUp animate__faster'}
+    });
+    const chosen=Number(value);
+    if(chosen===item.ans){
+      score++;
+      await Swal.fire({icon:'success',title:'¡Bien!',text:item.why,confirmButtonColor:'#3fd07a',background:'#141b24',color:'#e8e6df',timer:2600,timerProgressBar:true});
+    }else{
+      await Swal.fire({icon:'error',title:'Casi',html:`<p style="margin-bottom:.5rem;">La respuesta correcta era:<br><strong>${item.opts[item.ans]}</strong></p><p style="color:#8a98a6;font-size:.9rem;">${item.why}</p>`,confirmButtonColor:'#ff5d3b',background:'#141b24',color:'#e8e6df'});
+    }
+  }
+  const pct=Math.round(score/set.length*100);
+  let icon='success',title='¡Excelente!';
+  if(pct<50){icon='warning';title='A repasar';}
+  else if(pct<80){icon='info';title='¡Bien encaminado!';}
+  await Swal.fire({
+    icon,title,
+    html:`<div style="font-family:'JetBrains Mono';font-size:2.4rem;color:#f5b942;">${score}/${set.length}</div><p style="color:#8a98a6;">${pct}% de aciertos</p>`,
+    confirmButtonText:'Seguir',confirmButtonColor:'#3fd0c9',background:'#141b24',color:'#e8e6df'
+  });
+  quizDone[qi]=true;
+  document.getElementById('quiz'+qi+'-result').innerHTML=`<i class="fa-solid fa-circle-check" style="color:#3fd07a;"></i> Completado · ${score}/${set.length} (${pct}%)`;
+}
+</script>
+</body>
+</html>

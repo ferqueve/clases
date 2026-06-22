@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Principios de Diseño de Interacción — Bruce Tognazzini</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#10100f;
+    --bg-2:#181815;
+    --panel:#1d1d1a;
+    --panel-2:#252521;
+    --line:#33332d;
+    --paper:#ece6da;
+    --blueprint:#5b8bd4;     /* azul plano técnico */
+    --blueprint-dim:#3a5f96;
+    --amber:#e0a43c;          /* ámbar dial */
+    --amber-dim:#a87a26;
+    --coral:#e36a52;          /* coral acción */
+    --ink-soft:#b3aea2;
+    --good:#6cbf7d;
+    --bad:#e36a6a;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{background:var(--bg);color:var(--paper);font-family:'Inter',system-ui,sans-serif;overflow:hidden;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .serif{font-family:'Fraunces',serif;}
+
+  .deck{height:100vh;width:100vw;position:relative;}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:clamp(1.4rem,4vw,3.8rem) clamp(1.4rem,6vw,7rem);overflow-y:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{margin:auto;width:100%;max-width:1080px;}
+
+  /* topbar */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:.6rem 1.4rem;background:rgba(16,16,15,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);font-size:.8rem;}
+  .topbar .brand{font-family:'Fraunces';font-weight:600;letter-spacing:.01em;}
+  .topbar .brand .mk{color:var(--amber);}
+  .progress-track{flex:1;margin:0 1.4rem;height:3px;background:var(--panel-2);border-radius:99px;overflow:hidden;max-width:520px;}
+  .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--blueprint),var(--amber));transition:width .4s cubic-bezier(.4,0,.2,1);}
+  .counter{font-family:'JetBrains Mono';color:var(--ink-soft);white-space:nowrap;}
+
+  /* nav */
+  .nav-arrows{position:fixed;bottom:1.3rem;right:1.3rem;z-index:30;display:flex;gap:.5rem;}
+  .nav-arrows button{width:46px;height:46px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--paper);cursor:pointer;font-size:1rem;transition:.18s;}
+  .nav-arrows button:hover:not(:disabled){background:var(--blueprint);border-color:var(--blueprint);transform:translateY(-2px);}
+  .nav-arrows button:disabled{opacity:.3;cursor:not-allowed;}
+  .hint{position:fixed;bottom:1.6rem;left:1.4rem;z-index:30;color:var(--ink-soft);font-size:.74rem;font-family:'JetBrains Mono';}
+  .hint kbd{background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.7rem;}
+
+  /* cover */
+  .cover .eyebrow{font-family:'JetBrains Mono';color:var(--blueprint);letter-spacing:.2em;text-transform:uppercase;font-size:.78rem;margin-bottom:1.3rem;}
+  .cover h1{font-family:'Fraunces';font-weight:600;font-size:clamp(2.4rem,7vw,5rem);line-height:1.02;margin:0 0 1.1rem;letter-spacing:-.01em;}
+  .cover h1 .hl{color:var(--amber);font-style:italic;}
+  .cover p{color:var(--ink-soft);font-size:clamp(1rem,2vw,1.25rem);max-width:660px;line-height:1.55;}
+  .author-chip{display:inline-flex;align-items:center;gap:.7rem;margin-top:1.8rem;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:.5rem 1.1rem;font-size:.85rem;}
+  .author-chip i{color:var(--amber);}
+  .blueprint-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:46px 46px;opacity:.12;pointer-events:none;}
+
+  /* section divider */
+  .divider .kicker{font-family:'JetBrains Mono';color:var(--blueprint);letter-spacing:.18em;text-transform:uppercase;font-size:.8rem;margin-bottom:1rem;}
+  .divider h2{font-family:'Fraunces';font-weight:600;font-size:clamp(2rem,5.5vw,3.6rem);line-height:1.05;letter-spacing:-.01em;}
+  .divider p{color:var(--ink-soft);max-width:600px;margin-top:1rem;font-size:1.05rem;line-height:1.55;}
+  .divider .secnum{font-family:'Fraunces';font-size:clamp(4rem,12vw,9rem);font-weight:700;color:var(--panel-2);line-height:.8;margin-bottom:.4rem;}
+
+  /* principle slide */
+  .p-head{display:flex;align-items:center;gap:1rem;margin-bottom:.4rem;}
+  .p-cat{font-family:'JetBrains Mono';font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);}
+  .p-icon{font-size:1.5rem;color:var(--blueprint);}
+  .p-title{font-family:'Fraunces';font-weight:600;font-size:clamp(1.5rem,3.6vw,2.5rem);line-height:1.08;letter-spacing:-.01em;margin-bottom:1.2rem;}
+  .lead{font-size:clamp(1rem,1.9vw,1.18rem);line-height:1.6;color:#d8d2c6;max-width:800px;}
+  .lead .em{color:var(--amber);font-weight:600;}
+
+  .principle-list{display:grid;gap:.8rem;margin-top:1.4rem;}
+  .pl-item{display:flex;gap:.9rem;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--blueprint);border-radius:12px;padding:.9rem 1.1rem;}
+  .pl-item i{color:var(--blueprint);margin-top:.2rem;}
+  .pl-item .t{font-size:.95rem;line-height:1.45;color:#d8d2c6;}
+  .pl-item .t b{color:var(--paper);}
+
+  .case-box{background:linear-gradient(135deg,var(--panel-2),var(--panel));border:1px dashed var(--amber-dim);border-radius:14px;padding:1.1rem 1.3rem;margin-top:1.3rem;font-size:.92rem;color:#d2ccc0;line-height:1.5;}
+  .case-box .tag{font-family:'JetBrains Mono';font-size:.7rem;color:var(--amber);text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:.45rem;}
+
+  .grid-2{display:grid;gap:1.1rem;grid-template-columns:1fr;}
+  @media(min-width:860px){.grid-2{grid-template-columns:1fr 1fr;}}
+
+  /* quiz launcher */
+  .quiz-badge{display:inline-flex;align-items:center;gap:.5rem;border-radius:99px;padding:.32rem .9rem;font-family:'JetBrains Mono';font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;margin-bottom:1.1rem;background:rgba(91,139,212,.14);color:var(--blueprint);border:1px solid var(--blueprint);}
+  .btn-quiz{border:none;border-radius:11px;font-weight:600;padding:.7rem 1.5rem;font-size:1rem;}
+  .btn-blue{background:var(--blueprint);color:#fff;}
+  .btn-amber{background:var(--amber);color:#1a1a1a;}
+
+  /* practical exercise */
+  .ex-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(227,106,82,.14);color:var(--coral);border:1px solid var(--coral);border-radius:99px;padding:.32rem .9rem;font-family:'JetBrains Mono';font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;margin-bottom:1.1rem;}
+  .scenario{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem;}
+  .scenario .label{font-family:'JetBrains Mono';font-size:.7rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.1em;}
+  .scenario p{font-size:1.02rem;line-height:1.5;margin:.5rem 0 0;color:#e2ddd2;}
+  .options{display:grid;gap:.7rem;grid-template-columns:1fr;}
+  @media(min-width:720px){.options{grid-template-columns:1fr 1fr;}}
+  .opt{text-align:left;width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--paper);border-radius:11px;padding:.8rem 1rem;cursor:pointer;font-size:.9rem;transition:.15s;display:flex;gap:.65rem;align-items:flex-start;}
+  .opt:hover{border-color:var(--coral);background:#2c2c27;}
+  .opt .k{font-family:'JetBrains Mono';font-weight:700;color:var(--coral);}
+  .opt.correct{border-color:var(--good);background:rgba(108,191,125,.13);}
+  .opt.wrong{border-color:var(--bad);background:rgba(227,106,106,.1);}
+  .opt:disabled{cursor:default;}
+
+  .reflect{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem;}
+  .reflect textarea{width:100%;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;color:var(--paper);padding:.8rem;font-size:.95rem;resize:vertical;min-height:90px;font-family:'Inter';}
+  .reflect textarea:focus{outline:none;border-color:var(--blueprint);}
+
+  .end-big{font-family:'Fraunces';font-weight:600;font-size:clamp(2rem,6vw,3.8rem);line-height:1.05;letter-spacing:-.01em;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px;}
+  .swal2-popup{font-family:'Inter',sans-serif !important;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">asktog <span class="mk">·</span> Principles of Interaction Design</span>
+  <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+  <span class="counter"><span id="cur">01</span> / <span id="total">00</span></span>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- 0 · PORTADA -->
+  <section class="slide active">
+    <div class="blueprint-grid"></div>
+    <div class="slide-inner cover">
+      <div class="eyebrow">Bruce "Tog" Tognazzini · asktog.com</div>
+      <h1>Primeros principios del<br><span class="hl">diseño de interacción</span></h1>
+      <p>El diseñador de la primera interfaz de Apple (1978) destila décadas de práctica en un conjunto de principios. No son tendencias: son los cimientos sobre los que una interfaz se vuelve clara, predecible y respetuosa del trabajo del usuario.</p>
+      <div class="author-chip"><i class="fa-solid fa-drafting-compass"></i> 19 categorías de principios · agrupadas en 5 bloques temáticos</div>
+    </div>
+  </section>
+
+  <!-- 1 · MAPA -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-cat">El recorrido</div>
+      <h2 class="serif" style="font-weight:600;font-size:clamp(1.6rem,4vw,2.6rem);margin:.4rem 0 1.4rem;">Cómo está organizado</h2>
+      <div class="principle-list" style="grid-template-columns:1fr;">
+        <div class="pl-item"><i class="fa-solid fa-1"></i><div class="t"><b>Respeto al usuario</b> — Autonomía, eficiencia, proteger el trabajo, explorar sin miedo.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-2"></i><div class="t"><b>Claridad y descubrimiento</b> — Descubribilidad, navegación visible, anticipación, estado.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-3"></i><div class="t"><b>Coherencia y modelos mentales</b> — Consistencia, metáforas, objetos de interfaz, valores por defecto.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-4"></i><div class="t"><b>Percepción y rendimiento</b> — Ley de Fitts, legibilidad, color, latencia, estética.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-5"></i><div class="t"><b>Aprendizaje y simplicidad</b> — Capacidad de aprendizaje, simplicidad real vs. ilusoria.</div></div>
+      </div>
+      <p style="color:var(--ink-soft);margin-top:1.2rem;font-size:.9rem;"><i class="fa-solid fa-flask"></i> Hay <strong style="color:var(--blueprint);">quizzes</strong> entre bloques y <strong style="color:var(--coral);">ejercicios prácticos</strong> al final.</p>
+    </div>
+  </section>
+
+  <!-- ============ BLOQUE 1 ============ -->
+  <section class="slide">
+    <div class="slide-inner divider">
+      <div class="secnum">01</div>
+      <div class="kicker">Bloque 1</div>
+      <h2 class="serif">El usuario manda<br>(con barandas)</h2>
+      <p>La computadora, la interfaz y la tarea le "pertenecen" al usuario. Le damos control, lo protegemos de perder su trabajo y lo dejamos explorar sin castigo.</p>
+    </div>
+  </section>
+
+  <!-- AUTONOMÍA -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-hand-pointer p-icon"></i><span class="p-cat">Autonomía</span></div>
+      <div class="p-title">El entorno le pertenece al usuario, pero la autonomía no es ausencia de reglas</div>
+      <p class="lead">Dale margen de maniobra: la gente aprende rápido y siente dominio cuando tiene el control. Pero <span class="em">nadie se siente libre sin límites</span> — un entorno ni restrictivo ni infinito, explorable pero no peligroso.</p>
+      <div class="principle-list">
+        <div class="pl-item"><i class="fa-solid fa-sliders"></i><div class="t">Dejá que el usuario decida, aun decisiones poco eficientes (su escritorio, su teclado, su desorden).</div></div>
+        <div class="pl-item"><i class="fa-solid fa-shield-halved"></i><div class="t">Ejercé un control <b>responsable</b>: no tanta libertad como para que se haga daño, pero sin micro-controlar (fuentes ilegibles, umbrales arbitrarios sin ajuste).</div></div>
+        <div class="pl-item"><i class="fa-solid fa-gauge"></i><div class="t">Usá <b>mecanismos de estado</b> actualizados, a la vista y <b>precisos</b>. "5 minutos" que en realidad son una hora rompe la autonomía.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROTEGER EL TRABAJO -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-floppy-disk p-icon"></i><span class="p-cat">Proteger el trabajo del usuario</span></div>
+      <div class="p-title">Asegurá que el usuario nunca pierda su trabajo</div>
+      <p class="lead">Principio <span class="em">casi absoluto</span>. El usuario no debería perder lo hecho por un error propio, una caída de red, ni nada salvo lo verdaderamente inevitable. Guardado continuo, deshacer disponible siempre.</p>
+      <div class="case-box">
+        <span class="tag"><i class="fa-solid fa-store"></i> La metáfora de Harrods</span>
+        Imaginá llenar un formulario de 4 páginas en una tienda y que el empleado, al ver un espacio en tu número de teléfono, lo rompa entero y te dé uno en blanco. Absurdo en la vida real — pero los formularios web borran los 8 campos por un error en uno solo. <strong>Eso es no respetar el trabajo del usuario.</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- EFICIENCIA + EXPLORABLES -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="grid-2">
+        <div>
+          <div class="p-head"><i class="fa-solid fa-bolt p-icon"></i><span class="p-cat">Eficiencia del usuario</span></div>
+          <div class="p-title" style="font-size:clamp(1.3rem,3vw,1.9rem);">Mirá la productividad del usuario, no la de la máquina</div>
+          <p class="lead" style="font-size:1rem;">Las personas cuestan más que las máquinas. Obligar a escribir un teléfono sin espacios ahorra una línea de código y genera errores costosos. Mantené al usuario ocupado; cada espera cuesta dinero.</p>
+        </div>
+        <div>
+          <div class="p-head"><i class="fa-solid fa-route p-icon"></i><span class="p-cat">Interfaces explorables</span></div>
+          <div class="p-title" style="font-size:clamp(1.3rem,3vw,1.9rem);">Caminos señalizados + tracción a las 4 ruedas</div>
+          <p class="lead" style="font-size:1rem;">Ofrecé la vía más simple sin obligar a un único camino. Acciones <b>reversibles</b>, "Deshacer" siempre, una salida clara. "Un usuario perfecto es un usuario lento": sin deshacer, la gente trabaja con miedo y rinde menos.</p>
+        </div>
+      </div>
+      <div class="case-box">
+        <span class="tag"><i class="fa-solid fa-cart-shopping"></i> Caso e-commerce (NN/g)</span>
+        Cuando es fácil quitar artículos del carrito, los usuarios agregan más ("total, después lo saco"). La tasa de eliminación no sube… pero compran más. Dificultar el "Deshacer" para forzar ventas es contraproducente.
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ 1 -->
+  <section class="slide" data-quiz="0">
+    <div class="slide-inner">
+      <div class="quiz-badge"><i class="fa-solid fa-circle-question"></i> Quiz · Bloque 1</div>
+      <h2 class="serif" style="font-weight:600;font-size:clamp(1.4rem,3.6vw,2.2rem);margin-bottom:.5rem;">Respeto al usuario</h2>
+      <p style="color:var(--ink-soft);font-size:.95rem;margin-bottom:1.3rem;">Tres preguntas sobre autonomía, protección del trabajo y exploración.</p>
+      <button class="btn btn-quiz btn-blue" onclick="startQuiz(0)"><i class="fa-solid fa-play"></i> Comenzar</button>
+      <div id="quiz0-result" class="mono" style="margin-top:1.3rem;color:var(--ink-soft);"></div>
+    </div>
+  </section>
+
+  <!-- ============ BLOQUE 2 ============ -->
+  <section class="slide">
+    <div class="slide-inner divider">
+      <div class="secnum">02</div>
+      <div class="kicker">Bloque 2</div>
+      <h2 class="serif">Si no se ve,<br>no existe</h2>
+      <p>Una interfaz eficaz revela sus posibilidades. Anticipa lo que el usuario va a necesitar, mantiene la navegación visible y recuerda dónde estaba.</p>
+    </div>
+  </section>
+
+  <!-- DESCUBRIBILIDAD -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-magnifying-glass p-icon"></i><span class="p-cat">Descubribilidad</span></div>
+      <div class="p-title">Si el usuario no puede encontrarlo, no existe</div>
+      <p class="lead">Todo intento de <span class="em">ocultar la complejidad la aumenta</span>. El software funcional puede parecer un Porsche, pero no un Porsche sin volante, freno ni acelerador. Controles necesarios: visibles y accesibles siempre.</p>
+      <div class="principle-list">
+        <div class="pl-item"><i class="fa-solid fa-eye-slash"></i><div class="t">Si ocultás complejidad, hacelo solo en la <b>sala de exposición</b> (modo demo), no en el trabajo real del usuario.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-wand-magic-sparkles"></i><div class="t">No existe excepción de "elegancia". Ocultar funciones para fingir simplicidad te vuelve blanco fácil de la competencia.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-bell"></i><div class="t"><b>Descubrimiento activo</b>: ofrecé la función cuando haga falta ("¿Sabías que…?"), repetí espaciado, y dejá de avisar cuando ya se adoptó.</div></div>
+      </div>
+      <div class="case-box">
+        <span class="tag"><i class="fa-solid fa-basket-shopping"></i> Caso GroceryIQ</span>
+        Tenía sincronización entre dispositivos <strong>5 años antes</strong> que la competencia, pero escondida en el submenú "Más…". Cuando salió un rival "¡con Sync!", la gente migró — sin saber que ya la tenían. Un recordatorio de descubrimiento activo habría retenido a esos clientes.
+      </div>
+    </div>
+  </section>
+
+  <!-- NAVEGACIÓN VISIBLE + ANTICIPACIÓN -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="grid-2">
+        <div>
+          <div class="p-head"><i class="fa-solid fa-compass p-icon"></i><span class="p-cat">Navegación visible</span></div>
+          <div class="p-title" style="font-size:clamp(1.3rem,3vw,1.9rem);">Hacé visible la navegación</div>
+          <p class="lead" style="font-size:1rem;">La gente no quiere construir mapas mentales y se pierde si la obligás. Encabezado y menús constantes generan la ilusión de "estar siempre en el mismo lugar". Reforzá con migas de pan y resaltado del ítem actual.</p>
+        </div>
+        <div>
+          <div class="p-head"><i class="fa-solid fa-lightbulb p-icon"></i><span class="p-cat">Anticipación</span></div>
+          <div class="p-title" style="font-size:clamp(1.3rem,3vw,1.9rem);">Traé todo lo necesario a cada paso</div>
+          <p class="lead" style="font-size:1rem;">No hagas que el usuario abandone la pantalla para buscar información o herramientas. Anticipá sus necesidades. La penalización por no hacerlo suele ser inmediata: el usuario público rara vez vuelve.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTADO -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-database p-icon"></i><span class="p-cat">Estado (State)</span></div>
+      <div class="p-title">En entornos sin estado, somos responsables de rastrearlo</div>
+      <p class="lead">El navegador es "sin estado", así que el sistema debe <span class="em">recordar</span>: si es la primera vez del usuario, dónde quedó en su sesión anterior, qué le interesó, dónde está ahora. Y debe poder cerrar sesión y retomar exactamente donde estaba.</p>
+      <div class="principle-list">
+        <div class="pl-item"><i class="fa-solid fa-cart-arrow-down"></i><div class="t">Amazon es casi un "sistema de seguimiento que además hace otras cosas": sus recomendaciones nacen de entender todo tu historial.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-lock"></i><div class="t">El estado se guarda <b>cifrado</b> en el servidor. Sé claro en tu política de privacidad sobre qué guardás y por qué beneficia al usuario.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ 2 -->
+  <section class="slide" data-quiz="1">
+    <div class="slide-inner">
+      <div class="quiz-badge"><i class="fa-solid fa-circle-question"></i> Quiz · Bloque 2</div>
+      <h2 class="serif" style="font-weight:600;font-size:clamp(1.4rem,3.6vw,2.2rem);margin-bottom:.5rem;">Claridad y descubrimiento</h2>
+      <p style="color:var(--ink-soft);font-size:.95rem;margin-bottom:1.3rem;">Descubribilidad, navegación, anticipación y estado.</p>
+      <button class="btn btn-quiz btn-blue" onclick="startQuiz(1)"><i class="fa-solid fa-play"></i> Comenzar</button>
+      <div id="quiz1-result" class="mono" style="margin-top:1.3rem;color:var(--ink-soft);"></div>
+    </div>
+  </section>
+
+  <!-- ============ BLOQUE 3 ============ -->
+  <section class="slide">
+    <div class="slide-inner divider">
+      <div class="secnum">03</div>
+      <div class="kicker">Bloque 3</div>
+      <h2 class="serif">Coincidir con lo<br>que el usuario espera</h2>
+      <p>Consistencia, metáforas, objetos predecibles y valores por defecto inteligentes. Todo apunta al mismo lugar: el modelo mental del usuario.</p>
+    </div>
+  </section>
+
+  <!-- CONSISTENCIA -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-layer-group p-icon"></i><span class="p-cat">Consistencia</span></div>
+      <div class="p-title">"La coherencia más importante es con las expectativas del usuario" — Buxton</div>
+      <p class="lead">No importa cuán lógico sea tu argumento: si el usuario <span class="em">espera otra cosa</span>, perdés la batalla. Cuatro matices clave:</p>
+      <div class="principle-list">
+        <div class="pl-item"><i class="fa-solid fa-ranking-star"></i><div class="t"><b>Niveles:</b> la fidelidad importa más cuanto más bajo el nivel. Lo peor: cambiar la interpretación de una acción habitual (mover el botón "siguiente" que estuvo 30 años en un lugar).</div></div>
+        <div class="pl-item"><i class="fa-solid fa-shuffle"></i><div class="t"><b>Inconsistencia inducida:</b> lo que se comporta distinto debe <b>verse</b> distinto. Si tu papelera destruye al instante, que no parezca papelera.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-arrow-trend-up"></i><div class="t"><b>Continuidad &gt; consistencia:</b> con el tiempo buscá un hilo conductor entre versiones, sin atarte al pasado ni clonar el producto anterior.</div></div>
+      </div>
+      <div class="case-box">
+        <span class="tag"><i class="fa-solid fa-floppy-disk"></i> Caso Xerox Star: arrastrar = ¿mover o copiar?</span>
+        La regla "elegante" (arrastrar siempre mueve) borraba el documento al imprimirlo. La regla final — mover dentro del mismo volumen, copiar entre volúmenes — nadie sabe qué es un "volumen lógico", pero <strong>coincide con lo que el usuario espera</strong>: hacer algo rutinario no te hace perder tu trabajo.
+      </div>
+    </div>
+  </section>
+
+  <!-- METÁFORAS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-shapes p-icon"></i><span class="p-cat">Metáforas</span></div>
+      <div class="p-title">Elegí metáforas que comuniquen el modelo conceptual al instante</div>
+      <p class="lead">Una buena metáfora conecta con experiencias previas y deja entrever capacidades y límites del sistema. Pero <span class="em">si una metáfora te frena, abandonala</span> — no copies servilmente el objeto real.</p>
+      <div class="grid-2">
+        <div class="case-box" style="margin-top:1rem;">
+          <span class="tag"><i class="fa-solid fa-layer-group"></i> HyperCard</span>
+          20 páginas de texto preciso del inventor: nadie entendió las 3 capas. Una sola ilustración de Kristee Kreitman: todos lo captaron al instante. Una imagen apela a la percepción.
+        </div>
+        <div class="case-box" style="margin-top:1rem;">
+          <span class="tag"><i class="fa-solid fa-satellite-dish"></i> DP Maps → AR</span>
+          La metáfora del mapa fallaba en zonas boscosas (todos los árboles iguales desde el espacio). Solución: tirar la metáfora y dar "visión mágica" AR — mirás al cielo y ves el satélite. Otras gafas, otro problema.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OBJETOS + DEFAULTS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="grid-2">
+        <div>
+          <div class="p-head"><i class="fa-solid fa-cubes p-icon"></i><span class="p-cat">Objetos de interfaz humana</span></div>
+          <div class="p-title" style="font-size:clamp(1.3rem,3vw,1.9rem);">Comprensibles, coherentes y estables</div>
+          <p class="lead" style="font-size:1rem;">Forma estándar de manipularse (los botones se pulsan, los sliders se arrastran) y comportamiento estándar. Si querés un comportamiento distinto, usá un objeto distinto: no rompas las expectativas de la papelera para todos los demás.</p>
+        </div>
+        <div>
+          <div class="p-head"><i class="fa-solid fa-rotate-left p-icon"></i><span class="p-cat">Valores predeterminados</span></div>
+          <div class="p-title" style="font-size:clamp(1.3rem,3vw,1.9rem);">Inteligentes, fáciles de borrar y bien nombrados</div>
+          <p class="lead" style="font-size:1rem;">Al entrar a un campo, seleccioná el valor para borrarlo de un tecleo. No pongas default si no hay ganador claro. Cambiá "Predeterminado" por "Restaurar configuración inicial". El vocabulario y lo visual deben comunicar el <b>alcance</b> de la reversión.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ 3 -->
+  <section class="slide" data-quiz="2">
+    <div class="slide-inner">
+      <div class="quiz-badge"><i class="fa-solid fa-circle-question"></i> Quiz · Bloque 3</div>
+      <h2 class="serif" style="font-weight:600;font-size:clamp(1.4rem,3.6vw,2.2rem);margin-bottom:.5rem;">Coherencia y modelos mentales</h2>
+      <p style="color:var(--ink-soft);font-size:.95rem;margin-bottom:1.3rem;">Consistencia, metáforas, objetos y defaults.</p>
+      <button class="btn btn-quiz btn-blue" onclick="startQuiz(2)"><i class="fa-solid fa-play"></i> Comenzar</button>
+      <div id="quiz2-result" class="mono" style="margin-top:1.3rem;color:var(--ink-soft);"></div>
+    </div>
+  </section>
+
+  <!-- ============ BLOQUE 4 ============ -->
+  <section class="slide">
+    <div class="slide-inner divider">
+      <div class="secnum">04</div>
+      <div class="kicker">Bloque 4</div>
+      <h2 class="serif">Percepción,<br>física y velocidad</h2>
+      <p>Cómo se mueve el cuerpo hacia un objetivo, cómo lee el ojo, cómo el color comunica y cómo la espera mata la productividad.</p>
+    </div>
+  </section>
+
+  <!-- LEY DE FITTS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-crosshairs p-icon"></i><span class="p-cat">Ley de Fitts</span></div>
+      <div class="p-title">El tiempo para alcanzar un objetivo depende de su distancia y su tamaño</div>
+      <p class="lead">Objetos <span class="em">grandes y cercanos</span> para funciones importantes; pequeños para las que preferís que no se usen. Las 4 esquinas y los bordes son los puntos más rápidos de la pantalla por su "fijación" (target infinito).</p>
+      <div class="principle-list">
+        <div class="pl-item"><i class="fa-solid fa-border-all"></i><div class="t">Una barra que llega hasta el borde es mucho más rápida que una con 1px de margen no clicable (¡puede ralentizar 20–30%!).</div></div>
+        <div class="pl-item"><i class="fa-solid fa-list-ol"></i><div class="t"><b>Fitts múltiple:</b> reducí también la <b>cantidad</b> de objetivos, no solo su distancia y tamaño. El menú Inicio de Windows estaba al revés.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-mobile-screen"></i><div class="t">Vale para mouse, dedo o lo que sea. Fitts trabajaba en cabinas de avión en los 40. En táctil se pierde la fijación de bordes salvo pantalla empotrada.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEGIBILIDAD -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-font p-icon"></i><span class="p-cat">Legibilidad</span></div>
+      <div class="p-title">El texto que se lee necesita alto contraste</div>
+      <p class="lead">Negro sobre blanco o amarillo pálido; evitá fondos grises. Cuerpos suficientemente grandes para pantallas reales.</p>
+      <div class="principle-list">
+        <div class="pl-item"><i class="fa-solid fa-text-height"></i><div class="t">Caracteres <b>grandes para los datos</b> (lo que el usuario ingresa o consulta), no para las etiquetas. Los números no tienen redundancia: hay que poder leer cada carácter.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-quote-left"></i><div class="t">Palabra clave <b>primero</b> en menús y botones: los expertos leen solo lo justo para diferenciar.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-glasses"></i><div class="t">Probá con tu población <b>de mayor edad</b>: la presbicia afecta a casi todos pasados los 45. Tus ojos jóvenes no sirven para decidir.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-wand-sparkles"></i><div class="t">Relación inversa entre "belleza" y legibilidad: el anti-aliasing suaviza bordes que el ojo necesita nítidos en cuerpos chicos.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLOR + LATENCIA + ESTÉTICA -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="grid-2">
+        <div>
+          <div class="p-head"><i class="fa-solid fa-palette p-icon"></i><span class="p-cat">Color</span></div>
+          <div class="p-title" style="font-size:clamp(1.2rem,2.8vw,1.7rem);">Color con señal secundaria</div>
+          <p class="lead" style="font-size:.98rem;">~10% de los hombres tiene algún daltonismo. Si usás color para informar, sumá una <b>señal secundaria</b> clara. Pero no elimines el color: para quien sí lo ve, es una dimensión comunicativa vital.</p>
+        </div>
+        <div>
+          <div class="p-head"><i class="fa-solid fa-hourglass-half p-icon"></i><span class="p-cat">Reducción de latencia</span></div>
+          <div class="p-title" style="font-size:clamp(1.2rem,2.8vw,1.7rem);">La espera mata</div>
+          <p class="lead" style="font-size:.98rem;">Confirmá cada pulsación con feedback en <b>&lt;50 ms</b>. Detectá multi-clics (la gente repite cuando algo tarda, y lo empeora). Usá multihilo para mandar la latencia al fondo. Y hacelo rápido desde el inicio: sé implacable cortando lo inútil.</p>
+        </div>
+      </div>
+      <div class="case-box">
+        <span class="tag"><i class="fa-solid fa-paintbrush"></i> Estética</span>
+        El diseño visual lo manejan diseñadores formados. <strong>La moda nunca por encima de la usabilidad.</strong> Tras un cambio estético, probá con usuarios y compará: facilidad de aprendizaje, satisfacción y productividad deben mejorar o al menos mantenerse.
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ 4 -->
+  <section class="slide" data-quiz="3">
+    <div class="slide-inner">
+      <div class="quiz-badge"><i class="fa-solid fa-circle-question"></i> Quiz · Bloque 4</div>
+      <h2 class="serif" style="font-weight:600;font-size:clamp(1.4rem,3.6vw,2.2rem);margin-bottom:.5rem;">Percepción y rendimiento</h2>
+      <p style="color:var(--ink-soft);font-size:.95rem;margin-bottom:1.3rem;">Fitts, legibilidad, color, latencia y estética.</p>
+      <button class="btn btn-quiz btn-blue" onclick="startQuiz(3)"><i class="fa-solid fa-play"></i> Comenzar</button>
+      <div id="quiz3-result" class="mono" style="margin-top:1.3rem;color:var(--ink-soft);"></div>
+    </div>
+  </section>
+
+  <!-- ============ BLOQUE 5 ============ -->
+  <section class="slide">
+    <div class="slide-inner divider">
+      <div class="secnum">05</div>
+      <div class="kicker">Bloque 5</div>
+      <h2 class="serif">Simplicidad real,<br>no ilusoria</h2>
+      <p>La verdadera simplicidad simplifica las cosas; no esconde la complejidad. Y aprender a usar algo es una curva que se puede aplanar, no negar.</p>
+    </div>
+  </section>
+
+  <!-- APRENDIZAJE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-graduation-cap p-icon"></i><span class="p-cat">Capacidad de aprendizaje</span></div>
+      <div class="p-title">Facilidad de aprender y facilidad de usar no son enemigas</div>
+      <p class="lead">Es un mito que aprender fácil sacrifique usabilidad. Primero decidí cuál pesa más según la <span class="em">frecuencia de uso</span>: ¿se usa una vez (priorizá aprendizaje) o todos los días (priorizá usabilidad)?</p>
+      <div class="principle-list">
+        <div class="pl-item"><i class="fa-solid fa-user-tie"></i><div class="t">¿Quién compra? Si quien usa a diario también decide la compra, la fama de "fácil de aprender" puede cerrar la venta. Atendé ambas con decisión.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-chart-line"></i><div class="t">No evalúes <b>solo</b> la curva inicial. Tests de 20–60 min no dicen nada de la productividad a largo plazo. Para apps de uso frecuente, contratá temporales y medí 1–2 semanas.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIMPLICIDAD -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="p-head"><i class="fa-solid fa-feather p-icon"></i><span class="p-cat">Simplicidad</span></div>
+      <div class="p-title">Evitá la "ilusión de simplicidad"</div>
+      <p class="lead">La simplicidad real se logra <span class="em">simplificando</span>, no ocultando la complejidad. Está bien que el producto luzca simple en la vidriera — pero hacelo con un "modo distribuidor", no en la casa del usuario que intenta trabajar.</p>
+      <div class="principle-list">
+        <div class="pl-item"><i class="fa-solid fa-stairs"></i><div class="t"><b>Revelación progresiva:</b> ocultá funciones avanzadas durante el aprendizaje y revelalas cuando el usuario las necesite y sepa usarlas. ≠ esconder controles necesarios en lugares recónditos.</div></div>
+        <div class="pl-item"><i class="fa-solid fa-ban"></i><div class="t">No "simplifiques" eliminando capacidades necesarias. (En iPad no se podía poner una alarma de calendario a 90 min: ¿en qué sentido es más simple crear un segundo evento falso?)</div></div>
+        <div class="pl-item"><i class="fa-solid fa-scale-balanced"></i><div class="t">Equilibrá facilidad de instalación vs. de uso. A veces conviene una config inicial más compleja (un experto en la casa) si simplifica enormemente el uso diario (modelo Nest).</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ 5 -->
+  <section class="slide" data-quiz="4">
+    <div class="slide-inner">
+      <div class="quiz-badge"><i class="fa-solid fa-circle-question"></i> Quiz · Bloque 5</div>
+      <h2 class="serif" style="font-weight:600;font-size:clamp(1.4rem,3.6vw,2.2rem);margin-bottom:.5rem;">Aprendizaje y simplicidad</h2>
+      <p style="color:var(--ink-soft);font-size:.95rem;margin-bottom:1.3rem;">Curvas de aprendizaje y simplicidad real vs. ilusoria.</p>
+      <button class="btn btn-quiz btn-blue" onclick="startQuiz(4)"><i class="fa-solid fa-play"></i> Comenzar</button>
+      <div id="quiz4-result" class="mono" style="margin-top:1.3rem;color:var(--ink-soft);"></div>
+    </div>
+  </section>
+
+  <!-- ============ EJERCICIOS PRÁCTICOS ============ -->
+  <section class="slide">
+    <div class="slide-inner divider">
+      <div class="secnum" style="color:var(--coral);opacity:.35;">EJ</div>
+      <div class="kicker" style="color:var(--coral);">Aplicación práctica</div>
+      <h2 class="serif">Ahora te toca a vos<br>diagnosticar</h2>
+      <p>Cinco situaciones reales. En cada una, identificá qué principio de Tognazzini se está violando o cómo aplicarlo. Hay dos formatos: elección y reflexión abierta.</p>
+    </div>
+  </section>
+
+  <!-- EJ 1 -->
+  <section class="slide" data-ex="0">
+    <div class="slide-inner">
+      <div class="ex-badge"><i class="fa-solid fa-flask"></i> Ejercicio 1 · diagnóstico</div>
+      <div class="scenario">
+        <span class="label">Situación</span>
+        <p>Una app de reserva de vuelos borra <strong>todos</strong> los campos del formulario (origen, destino, fechas, pasajeros) cada vez que el usuario comete un error de formato en uno solo. Tras tres intentos, el usuario abandona.</p>
+      </div>
+      <p style="color:var(--ink-soft);margin-bottom:.9rem;font-size:.92rem;">¿Qué principio se viola con más fuerza?</p>
+      <div class="options" id="ex0-opts">
+        <button class="opt" onclick="answerEx(this,'ex0',true)"><span class="k">A</span><span>Proteger el trabajo del usuario — borra esfuerzo ya invertido.</span></button>
+        <button class="opt" onclick="answerEx(this,'ex0',false)"><span class="k">B</span><span>Ley de Fitts — los campos son demasiado pequeños.</span></button>
+        <button class="opt" onclick="answerEx(this,'ex0',false)"><span class="k">C</span><span>Color — falta contraste en los mensajes.</span></button>
+        <button class="opt" onclick="answerEx(this,'ex0',false)"><span class="k">D</span><span>Metáforas — el formulario no imita un objeto real.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- EJ 2 -->
+  <section class="slide" data-ex="1">
+    <div class="slide-inner">
+      <div class="ex-badge"><i class="fa-solid fa-flask"></i> Ejercicio 2 · diagnóstico</div>
+      <div class="scenario">
+        <span class="label">Situación</span>
+        <p>Un editor de fotos esconde la barra de herramientas y el botón "Exportar". Solo aparecen si tocás exactamente el centro de la imagen. En la demo de la tienda se ve limpísimo, pero los usuarios escriben al soporte preguntando "¿cómo guardo?".</p>
+      </div>
+      <p style="color:var(--ink-soft);margin-bottom:.9rem;font-size:.92rem;">¿Cuál es el diagnóstico correcto?</p>
+      <div class="options" id="ex1-opts">
+        <button class="opt" onclick="answerEx(this,'ex1',false)"><span class="k">A</span><span>Está bien: prioriza la estética minimalista por sobre todo.</span></button>
+        <button class="opt" onclick="answerEx(this,'ex1',true)"><span class="k">B</span><span>Viola descubribilidad: oculta controles necesarios y crea "ilusión de simplicidad" para el comprador, no para el usuario.</span></button>
+        <button class="opt" onclick="answerEx(this,'ex1',false)"><span class="k">C</span><span>Viola la Ley de Fitts y nada más.</span></button>
+        <button class="opt" onclick="answerEx(this,'ex1',false)"><span class="k">D</span><span>Es un problema de latencia: las herramientas tardan en aparecer.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- EJ 3 -->
+  <section class="slide" data-ex="2">
+    <div class="slide-inner">
+      <div class="ex-badge"><i class="fa-solid fa-flask"></i> Ejercicio 3 · diagnóstico</div>
+      <div class="scenario">
+        <span class="label">Situación</span>
+        <p>Un sistema de gestión rediseña su interfaz por moda. El botón "Guardar", que estuvo arriba a la derecha durante años, ahora está abajo a la izquierda y se ve idéntico al resto. Los usuarios veteranos creen que el sistema "se rompió" y reportan fallos inexistentes.</p>
+      </div>
+      <p style="color:var(--ink-soft);margin-bottom:.9rem;font-size:.92rem;">¿Qué dos principios están en juego?</p>
+      <div class="options" id="ex2-opts">
+        <button class="opt" onclick="answerEx(this,'ex2',true)"><span class="k">A</span><span>Consistencia con expectativas + inconsistencia inducida (lo que cambió debería verse cambiado).</span></button>
+        <button class="opt" onclick="answerEx(this,'ex2',false)"><span class="k">B</span><span>Legibilidad + color.</span></button>
+        <button class="opt" onclick="answerEx(this,'ex2',false)"><span class="k">C</span><span>Anticipación + estado.</span></button>
+        <button class="opt" onclick="answerEx(this,'ex2',false)"><span class="k">D</span><span>Ley de Fitts + latencia.</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- EJ 4 — reflexión abierta -->
+  <section class="slide" data-ex="3">
+    <div class="slide-inner">
+      <div class="ex-badge"><i class="fa-solid fa-pen-fancy"></i> Ejercicio 4 · diseño</div>
+      <div class="scenario">
+        <span class="label">Desafío de rediseño</span>
+        <p>Tenés que diseñar la pantalla de un cajero automático. Escribí <strong>tres decisiones</strong> de diseño, citando qué principio de Tognazzini aplica cada una. (Pistas: botones, esquinas, deshacer, feedback, alto contraste…)</p>
+      </div>
+      <div class="reflect">
+        <textarea id="ex3-text" placeholder="1) Botones grandes en los bordes de la pantalla → Ley de Fitts...&#10;2) ...&#10;3) ..."></textarea>
+        <div style="display:flex;gap:.6rem;margin-top:.8rem;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-quiz btn-coral" style="background:var(--coral);color:#fff;" onclick="checkReflect('ex3')"><i class="fa-solid fa-check"></i> Ver una propuesta modelo</button>
+          <span id="ex3-status" class="mono" style="color:var(--ink-soft);font-size:.8rem;"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EJ 5 — reflexión abierta -->
+  <section class="slide" data-ex="4">
+    <div class="slide-inner">
+      <div class="ex-badge"><i class="fa-solid fa-pen-fancy"></i> Ejercicio 5 · auditoría</div>
+      <div class="scenario">
+        <span class="label">Auditoría rápida</span>
+        <p>Elegí una app que uses todos los días. Identificá <strong>una cosa que hace bien</strong> y <strong>una que hace mal</strong>, nombrando el principio de Tognazzini en cada caso. Pensá en: ¿te deja deshacer? ¿recuerda dónde estabas? ¿los controles se ven? ¿la moda le ganó a la usabilidad?</p>
+      </div>
+      <div class="reflect">
+        <textarea id="ex4-text" placeholder="App: ___&#10;Hace bien: ___ (principio: ___)&#10;Hace mal: ___ (principio: ___)"></textarea>
+        <div style="display:flex;gap:.6rem;margin-top:.8rem;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-quiz btn-coral" style="background:var(--coral);color:#fff;" onclick="checkReflect('ex4')"><i class="fa-solid fa-check"></i> Marcar como completado</button>
+          <span id="ex4-status" class="mono" style="color:var(--ink-soft);font-size:.8rem;"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CIERRE -->
+  <section class="slide">
+    <div class="slide-inner" style="text-align:center;">
+      <i class="fa-solid fa-drafting-compass" style="font-size:2.6rem;color:var(--blueprint);margin-bottom:1.1rem;"></i>
+      <div class="end-big">El sistema hace el máximo trabajo<br><span style="color:var(--amber);font-style:italic;">pidiendo el mínimo</span> al usuario.</div>
+      <p style="color:var(--ink-soft);max-width:600px;margin:1.3rem auto 0;font-size:1.05rem;line-height:1.55;">Que algo aparezca en la web o en un móvil no cambia los principios — los vuelve <strong style="color:var(--paper);">más</strong> importantes. La próxima vez que diseñes una pantalla, preguntate: ¿el usuario tiene el control? ¿puede deshacer? ¿lo encuentra todo? ¿pierde su trabajo?</p>
+      <div class="mono" style="margin-top:1.8rem;color:var(--ink-soft);font-size:.78rem;">Basado en "First Principles of Interaction Design" · Bruce Tognazzini · asktog.com</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="hint"><kbd>←</kbd> <kbd>→</kbd> navegar · <kbd>Inicio</kbd> volver</div>
+<div class="nav-arrows">
+  <button id="prevBtn" onclick="go(-1)"><i class="fa-solid fa-arrow-left"></i></button>
+  <button id="nextBtn" onclick="go(1)"><i class="fa-solid fa-arrow-right"></i></button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+/* ===== Navegación ===== */
+const slides=[...document.querySelectorAll('.slide')];
+let idx=0;const total=slides.length;
+document.getElementById('total').textContent=String(total).padStart(2,'0');
+function render(){
+  slides.forEach((s,i)=>{
+    s.classList.toggle('active',i===idx);
+    if(i===idx){const inner=s.querySelector('.slide-inner');if(inner){inner.classList.remove('animate__animated','animate__fadeInUp');void inner.offsetWidth;inner.classList.add('animate__animated','animate__fadeInUp');}}
+  });
+  document.getElementById('cur').textContent=String(idx+1).padStart(2,'0');
+  document.getElementById('progress').style.width=(idx/(total-1)*100)+'%';
+  document.getElementById('prevBtn').disabled=idx===0;
+  document.getElementById('nextBtn').disabled=idx===total-1;
+}
+function go(d){const n=idx+d;if(n>=0&&n<total){idx=n;render();}}
+document.addEventListener('keydown',e=>{
+  if(Swal.isVisible())return;
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='textarea'||tag==='input')return;
+  if(e.key==='ArrowRight'||e.key==='PageDown')go(1);
+  if(e.key==='ArrowLeft'||e.key==='PageUp')go(-1);
+  if(e.key==='Home'){idx=0;render();}
+  if(e.key==='End'){idx=total-1;render();}
+});
+render();
+
+/* ===== Ejercicios de diagnóstico ===== */
+const exExplain={
+  ex0:'Proteger el trabajo del usuario es un principio casi absoluto. Borrar campos válidos por un error en otro destruye esfuerzo y expulsa al usuario. La metáfora de Harrods de Tognazzini ilustra exactamente esto.',
+  ex1:'Es la "ilusión de simplicidad": se oculta funcionalidad para impresionar al comprador en la vidriera, a costa del usuario real. Tognazzini: "si el usuario no puede encontrarlo, no existe".',
+  ex2:'Cambiar la interpretación/ubicación de una acción habitual es lo peor que se puede hacer (consistencia con expectativas). Y si rediseñás, lo que cambió debe verse cambiado (inconsistencia inducida), o el usuario cree que algo se rompió.'
+};
+function answerEx(btn,key,correct){
+  const wrap=document.getElementById(key+'-opts');
+  [...wrap.querySelectorAll('.opt')].forEach(b=>b.disabled=true);
+  if(correct){
+    btn.classList.add('correct');
+    Swal.fire({icon:'success',title:'¡Correcto!',text:exExplain[key],confirmButtonColor:'#6cbf7d',background:'#1d1d1a',color:'#ece6da'});
+  }else{
+    btn.classList.add('wrong');
+    [...wrap.querySelectorAll('.opt')].forEach(b=>{if(b.getAttribute('onclick').includes('true'))b.classList.add('correct');});
+    Swal.fire({icon:'error',title:'No es la mejor opción',text:exExplain[key],confirmButtonColor:'#e36a52',background:'#1d1d1a',color:'#ece6da'});
+  }
+}
+
+/* ===== Ejercicios de reflexión ===== */
+const reflectModel={
+  ex3:'<div style="text-align:left;font-size:.92rem;line-height:1.5;">Propuesta modelo:<br><br><b>1.</b> Botones físicos/grandes alineados al borde de la pantalla → <b>Ley de Fitts</b> (esquinas y bordes = objetivo infinito, más rápidos).<br><b>2.</b> Confirmación clara antes de retirar dinero, con opción "Cancelar" en cada paso → <b>interfaces explorables / siempre dejar una salida</b>.<br><b>3.</b> Texto de montos en cuerpo grande y alto contraste (negro sobre claro) → <b>legibilidad</b> (los datos numéricos no tienen redundancia).<br><br>Extra: feedback inmediato al pulsar (&lt;50 ms) → <b>reducción de latencia</b>.</div>',
+  ex4:''
+};
+function checkReflect(key){
+  const txt=document.getElementById(key+'-text').value.trim();
+  if(txt.length<15){
+    Swal.fire({icon:'info',title:'Escribí un poco más',text:'Desarrollá tu respuesta antes de continuar — la idea es que apliques los principios con tus palabras.',confirmButtonColor:'#5b8bd4',background:'#1d1d1a',color:'#ece6da'});
+    return;
+  }
+  document.getElementById(key+'-status').innerHTML='<i class="fa-solid fa-circle-check" style="color:#6cbf7d;"></i> Completado';
+  if(key==='ex3'){
+    Swal.fire({icon:'success',title:'¡Bien!',html:reflectModel.ex3,confirmButtonColor:'#6cbf7d',background:'#1d1d1a',color:'#ece6da',width:600});
+  }else{
+    Swal.fire({icon:'success',title:'Auditoría registrada',text:'No hay una única respuesta correcta: lo valioso es que conectaste el uso diario con principios concretos. ¡Ese es el músculo del diseñador!',confirmButtonColor:'#6cbf7d',background:'#1d1d1a',color:'#ece6da'});
+  }
+}
+
+/* ===== Quizzes ===== */
+const quizzes=[
+  // Bloque 1
+  [
+    {q:'Según Tognazzini, "un usuario perfecto es un usuario lento". ¿Qué quiere decir?',
+     opts:['Sin "Deshacer", la gente trabaja con miedo y rinde menos','Hay que entrenar a los usuarios para ir despacio','La velocidad no importa en el diseño'],ans:0,
+     why:'Sin red de seguridad (deshacer / reversibilidad) el usuario evita errores yendo lentísimo, y la productividad cae.'},
+    {q:'La autonomía del usuario implica que…',
+     opts:['No hay ninguna regla ni control','Hay libertad dentro de límites razonables, con control responsable','El desarrollador decide todo por el usuario'],ans:1,
+     why:'Ni restrictivo ni infinito: un entorno explorable pero no peligroso. El desarrollador ejerce el control necesario, no más.'},
+    {q:'El caso del carrito de e-commerce (NN/g) demuestra que…',
+     opts:['Dificultar el "Deshacer" vende más','Facilitar quitar artículos hace que la gente agregue (y compre) más','Los carritos deberían eliminarse solos'],ans:1,
+     why:'Con eliminación fácil, agregan más ("después lo saco") y terminan comprando más. La tasa de eliminación no sube.'}
+  ],
+  // Bloque 2
+  [
+    {q:'"Si el usuario no puede encontrarlo, no existe" se refiere a…',
+     opts:['Descubribilidad','Latencia','Color'],ans:0,
+     why:'Ocultar controles para fingir simplicidad hace que el usuario migre a la competencia creyendo que la función no está.'},
+    {q:'El caso GroceryIQ enseña que…',
+     opts:['La sincronización es imposible en móviles','Tener una función no basta: si está escondida, el usuario la ignora','Hay que copiar a la competencia'],ans:1,
+     why:'Tenía Sync 5 años antes, pero enterrada en "Más…". El descubrimiento activo habría evitado perder clientes.'},
+    {q:'En un entorno "sin estado" como el navegador, el diseñador debe…',
+     opts:['Ignorar dónde quedó el usuario','Asumir la responsabilidad de rastrear el estado','Pedirle al usuario que recuerde todo'],ans:1,
+     why:'El sistema debe saber si es la primera vez, dónde quedó, qué le interesó — y dejarlo retomar donde estaba.'}
+  ],
+  // Bloque 3
+  [
+    {q:'¿Cuál es, según Buxton, la coherencia más importante?',
+     opts:['Con la plataforma','Con las expectativas del usuario','Con la marca'],ans:1,
+     why:'Si el usuario espera que algo funcione de cierta forma, pelear contra esa expectativa es una batalla casi imposible.'},
+    {q:'"Inconsistencia inducida" significa que…',
+     opts:['Hay que ser inconsistente siempre','Lo que se comporta distinto debe verse distinto','La consistencia no importa'],ans:1,
+     why:'Si tu papelera destruye al instante, que no parezca papelera. Lo que cambió de comportamiento debe verse cambiado.'},
+    {q:'Sobre las metáforas, Tognazzini dice que…',
+     opts:['Hay que copiar el objeto real al pie de la letra','Si una metáfora te frena, hay que abandonarla','Nunca se deben usar metáforas'],ans:1,
+     why:'DP Maps tiró la metáfora del mapa por una "visión mágica" AR. La metáfora empodera; si limita, se descarta.'},
+    {q:'¿Por qué reemplazar la palabra "Predeterminado"?',
+     opts:['Porque es muy larga','Porque los usuarios rara vez saben qué hará en esa situación','Por moda gráfica'],ans:1,
+     why:'Mejor "Restaurar configuración inicial" u otro término que comunique el alcance real de la reversión.'}
+  ],
+  // Bloque 4
+  [
+    {q:'Según la Ley de Fitts, los puntos más rápidos de la pantalla son…',
+     opts:['El centro','Las cuatro esquinas y los bordes','Los menús desplegables'],ans:1,
+     why:'Las esquinas y bordes tienen "fijación": son objetivos prácticamente infinitos, imposibles de pasar de largo.'},
+    {q:'Para legibilidad, ¿qué texto debe ser más grande?',
+     opts:['Las etiquetas e instrucciones','Los datos que el usuario ingresa o consulta','Todo por igual'],ans:1,
+     why:'Las etiquetas se aprenden por contexto; los datos (sobre todo números, sin redundancia) necesitan leerse carácter a carácter.'},
+    {q:'Si usás color para transmitir información, debés…',
+     opts:['Agregar una señal secundaria clara','Eliminar todos los colores','Usar solo escala de grises'],ans:0,
+     why:'~10% de los hombres tiene daltonismo. La señal secundaria les da la info; eliminar el color no ayuda a nadie.'},
+    {q:'¿En cuánto tiempo debe confirmarse una pulsación de botón?',
+     opts:['Menos de 50 milisegundos','En 2 segundos','Cuando termine de cargar'],ans:0,
+     why:'Feedback en <50 ms. Sin él, la gente repite el clic y todo se vuelve más lento aún.'}
+  ],
+  // Bloque 5
+  [
+    {q:'¿Cómo decidís si priorizar facilidad de aprendizaje o de uso?',
+     opts:['Siempre aprendizaje','Según la frecuencia de uso del producto','Siempre usabilidad'],ans:1,
+     why:'Uso único → aprendizaje. Uso diario y prolongado → usabilidad. Y después atendé ambas con decisión.'},
+    {q:'La "revelación progresiva" se diferencia de la "ilusión de simplicidad" en que…',
+     opts:['Son lo mismo','Revela funciones cuando se necesitan, sin esconder controles esenciales','Oculta los controles básicos'],ans:1,
+     why:'Progresiva = aplanar la curva mostrando lo avanzado a su tiempo. Ilusión = esconder lo necesario para impresionar al comprador.'},
+    {q:'La verdadera simplicidad se logra…',
+     opts:['Ocultando la complejidad','Simplificando las cosas de verdad','Eliminando funciones necesarias'],ans:1,
+     why:'Esconder complejidad solo la traslada. Simplificar de verdad la reduce. El "modo distribuidor" va en la vidriera, no en la casa.'}
+  ]
+];
+const quizDone=[false,false,false,false,false];
+async function startQuiz(qi){
+  const set=quizzes[qi];let score=0;
+  for(let i=0;i<set.length;i++){
+    const item=set[i];const inputOptions={};
+    item.opts.forEach((o,k)=>inputOptions[k]=o);
+    const {value}=await Swal.fire({
+      title:`Pregunta ${i+1} de ${set.length}`,
+      html:`<div style="font-size:1.02rem;line-height:1.5;margin-bottom:.4rem;">${item.q}</div>`,
+      input:'radio',inputOptions,
+      inputValidator:v=>(v===undefined||v==='')?'Elegí una opción':undefined,
+      confirmButtonText:'Responder',confirmButtonColor:'#5b8bd4',
+      background:'#1d1d1a',color:'#ece6da',allowOutsideClick:false,
+      showClass:{popup:'animate__animated animate__fadeInUp animate__faster'}
+    });
+    if(Number(value)===item.ans){
+      score++;
+      await Swal.fire({icon:'success',title:'¡Bien!',text:item.why,confirmButtonColor:'#6cbf7d',background:'#1d1d1a',color:'#ece6da',timer:2800,timerProgressBar:true});
+    }else{
+      await Swal.fire({icon:'error',title:'Casi',html:`<p style="margin-bottom:.5rem;">Respuesta correcta:<br><strong>${item.opts[item.ans]}</strong></p><p style="color:#b3aea2;font-size:.9rem;">${item.why}</p>`,confirmButtonColor:'#e36a52',background:'#1d1d1a',color:'#ece6da'});
+    }
+  }
+  const pct=Math.round(score/set.length*100);
+  let icon='success',title='¡Excelente!';
+  if(pct<50){icon='warning';title='A repasar el bloque';}
+  else if(pct<80){icon='info';title='¡Bien encaminado!';}
+  await Swal.fire({icon,title,html:`<div style="font-family:'JetBrains Mono';font-size:2.4rem;color:#e0a43c;">${score}/${set.length}</div><p style="color:#b3aea2;">${pct}% de aciertos</p>`,confirmButtonText:'Seguir',confirmButtonColor:'#5b8bd4',background:'#1d1d1a',color:'#ece6da'});
+  quizDone[qi]=true;
+  document.getElementById('quiz'+qi+'-result').innerHTML=`<i class="fa-solid fa-circle-check" style="color:#6cbf7d;"></i> Completado · ${score}/${set.length} (${pct}%)`;
+}
+</script>
+</body>
+</html>
