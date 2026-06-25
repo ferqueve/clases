@@ -1,0 +1,15 @@
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\bin\Debug\net8.0\pruebarider.exe
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\bin\Debug\net8.0\pruebarider.deps.json
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\bin\Debug\net8.0\pruebarider.runtimeconfig.json
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\bin\Debug\net8.0\pruebarider.dll
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\bin\Debug\net8.0\pruebarider.pdb
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\pruebarider.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\pruebarider.AssemblyInfoInputs.cache
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\pruebarider.AssemblyInfo.cs
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\pruebarider.csproj.CoreCompileInputs.cache
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\pruebarider.sourcelink.json
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\pruebarider.dll
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\refint\pruebarider.dll
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\pruebarider.pdb
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\pruebarider.genruntimeconfig.cache
+C:\Users\ADMIN\Desktop\clases\poo2\pruebarider\pruebarider\obj\Debug\net8.0\ref\pruebarider.dll
