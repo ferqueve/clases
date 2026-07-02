@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El próximo capítulo · Análisis y Diseño de Aplicaciones II</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a; --card:#141b2e; --card2:#1e2740; --line:#2a3452;
+  --ink:#e5e9f5; --muted:#94a3c6; --dim:#647394;
+  --teal:#38bdf8; --orange:#fb7185; --purple:#a78bfa;
+  --ok:#4ade80; --bad:#f87171; --warn:#fbbf24;
+  --grad:linear-gradient(135deg,#38bdf8 0%, #a78bfa 55%, #fb7185 100%);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Sora',-apple-system,sans-serif;overflow-x:hidden}
+body{background:
+  radial-gradient(circle at 10% -10%, rgba(56,189,248,.10), transparent 40%),
+  radial-gradient(circle at 90% 110%, rgba(251,113,133,.08), transparent 45%),
+  var(--bg);
+  min-height:100vh}
+.mono{font-family:'Fira Code',monospace}
+
+/* HEADER */
+header{position:fixed;top:0;left:0;right:0;background:rgba(10,14,26,.85);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);z-index:100;padding:10px 22px;display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Fira Code',monospace;font-weight:600}
+.logo .glyph{width:28px;height:28px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#0a0e1a;font-size:.85rem}
+.logo .path{color:var(--muted);font-size:.9rem}
+.logo .path b{color:var(--teal);font-weight:600}
+.logo .prompt{color:var(--orange);font-weight:600}
+.logo .cursor{display:inline-block;width:8px;height:14px;background:var(--orange);vertical-align:-2px;margin-left:3px;animation:blink 1.1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.header-right{margin-left:auto;display:flex;gap:10px;align-items:center;font-family:'Fira Code',monospace;font-size:.8rem}
+.badge-slide{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--muted)}
+.badge-slide.score{color:var(--warn);border-color:rgba(251,191,36,.4)}
+.progress-track{position:fixed;top:52px;left:0;right:0;height:2px;background:var(--card);z-index:99}
+.progress-fill{height:100%;background:var(--grad);transition:width .35s ease}
+
+/* SLIDES */
+#deck{padding:100px 32px 100px;max-width:1300px;margin:0 auto}
+.slide{display:none;min-height:auto;padding:20px 0 30px}
+.slide.active{display:block}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:'Fira Code',monospace;font-size:.78rem;
+  text-transform:uppercase;letter-spacing:.1em;color:var(--teal);
+  background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.3);border-radius:999px;padding:5px 12px;margin-bottom:14px}
+.eyebrow.coral{color:var(--orange);background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.3)}
+.eyebrow.purple{color:var(--purple);background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.3)}
+.title{font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(2rem,5.5vw,4rem);line-height:1.03;letter-spacing:-.02em;margin:0 0 22px}
+.stitle{font-family:'Sora',sans-serif;font-weight:700;font-size:clamp(1.5rem,3.5vw,2.4rem);line-height:1.15;margin:0 0 18px}
+.accent{color:var(--teal)}
+.accent-o{color:var(--orange)}
+.accent-p{color:var(--purple)}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead-x{color:var(--muted);font-size:1.05rem;line-height:1.6;max-width:900px}
+.big-num{display:inline-block;font-family:'Fira Code',monospace;font-weight:700;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  font-size:2.4rem;line-height:1;margin-right:.5rem;vertical-align:-.35rem}
+
+.card-x{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;height:100%;transition:all .25s}
+.card-x:hover{border-color:var(--teal);transform:translateY(-2px)}
+.card-x h5{font-weight:600;margin:0 0 10px;color:var(--ink);display:flex;align-items:center;gap:9px}
+.card-x h5 i{color:var(--teal)}
+.card-x p{color:var(--muted);margin:0;line-height:1.55;font-size:.95rem}
+.card-x.hl{border-color:rgba(56,189,248,.4);background:linear-gradient(180deg,#1a2340,var(--card))}
+.card-x.hl h5 i{color:var(--orange)}
+.card-x.warn{border-color:rgba(251,113,133,.35);background:linear-gradient(180deg,#2a1a24,var(--card))}
+.card-x.warn h5 i{color:var(--orange)}
+.card-x.purple{border-color:rgba(167,139,250,.35)}
+.card-x.purple h5 i{color:var(--purple)}
+
+.checks{list-style:none;padding:0;margin:0}
+.checks li{position:relative;padding-left:26px;margin-bottom:9px;color:var(--muted);line-height:1.5;font-size:.92rem}
+.checks li::before{content:"";position:absolute;left:0;top:6px;width:16px;height:16px;border-radius:50%;
+  background:rgba(74,222,128,.12);border:1px solid var(--ok);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%234ade80' d='M9 16.2l-3.5-3.5-1.4 1.4L9 19l11-11-1.4-1.4z'/></svg>");
+  background-repeat:no-repeat;background-position:center;background-size:12px}
+.checks.crosses li::before{border-color:var(--bad);background:rgba(248,113,113,.12);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23f87171' d='M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z'/></svg>")}
+.checks li strong{color:var(--ink);font-weight:600}
+.checks li b{color:var(--teal);font-weight:600}
+
+.nav-help{color:var(--dim);font-family:'Fira Code',monospace;font-size:.78rem}
+.kbd{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-size:.72rem;color:var(--ink)}
+
+.navbtns{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;
+  background:rgba(20,27,46,.9);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:14px;padding:10px 14px;z-index:100}
+.btn-nav{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 16px;
+  font-family:'Sora',sans-serif;font-weight:500;cursor:pointer;transition:all .2s;font-size:.9rem}
+.btn-nav:hover:not(:disabled){border-color:var(--teal);color:var(--teal)}
+.btn-nav:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary-c{background:var(--grad);border:none;color:#0a0e1a;font-weight:600;padding:10px 22px;border-radius:10px;font-family:'Sora',sans-serif;cursor:pointer;transition:transform .2s;font-size:.92rem}
+.btn-primary-c:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(56,189,248,.35)}
+
+/* attribute grid */
+.attr-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;position:relative;overflow:hidden;height:100%;transition:all .25s}
+.attr-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);opacity:.7}
+.attr-card:hover{transform:translateY(-3px);border-color:var(--teal)}
+.attr-card .icn{width:44px;height:44px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.15rem;color:var(--teal);margin-bottom:10px}
+.attr-card .name{font-weight:600;color:var(--ink);margin-bottom:4px;font-size:1rem}
+.attr-card .en{color:var(--dim);font-family:'Fira Code',monospace;font-size:.72rem;margin-bottom:8px}
+.attr-card .desc{color:var(--muted);font-size:.85rem;line-height:1.5;margin:0}
+.attr-card.c-avail .icn{color:#38bdf8}
+.attr-card.c-perf .icn{color:#fbbf24}
+.attr-card.c-sec .icn{color:#fb7185}
+.attr-card.c-safe .icn{color:#4ade80}
+.attr-card.c-mod .icn{color:#a78bfa}
+.attr-card.c-dep .icn{color:#f472b6}
+
+/* scenario diagram */
+.scn-piece{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-family:'Fira Code',monospace;font-size:.8rem;color:var(--muted);position:relative}
+.scn-piece .lbl{color:var(--teal);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px}
+.scn-piece .val{color:var(--ink)}
+
+/* select for the final exercise */
+.dx-select{width:100%;background:#0a0e1a;border:1px solid var(--line);border-radius:8px;color:var(--ink);
+  font-size:.85rem;padding:8px 10px;font-family:'Sora',sans-serif}
+.dx-select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+.dx-select.ok{border-color:var(--ok);box-shadow:0 0 0 1px rgba(74,222,128,.3)}
+.dx-select.bad{border-color:var(--bad);box-shadow:0 0 0 1px rgba(248,113,113,.3)}
+.case-row{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.case-row.done{border-color:rgba(74,222,128,.5);box-shadow:0 0 0 1px rgba(74,222,128,.2) inset}
+.case-row .clabel{font-family:'Fira Code',monospace;color:var(--orange);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.case-row .cquote{color:var(--ink);font-size:.95rem;line-height:1.5;margin:8px 0 10px;font-style:italic}
+
+/* SweetAlert theming */
+.swal2-popup{border-radius:16px !important;border:1px solid var(--line) !important;font-family:'Sora',sans-serif !important}
+.swal2-popup .swal2-title{color:var(--ink) !important;font-weight:600 !important}
+.swal2-popup .swal2-html-container{color:var(--muted) !important}
+.swal2-popup .swal2-styled.swal2-confirm{background:var(--grad) !important;color:#0a0e1a !important;font-weight:600 !important;border-radius:10px !important;box-shadow:none !important}
+.swal2-popup .swal2-styled.swal2-cancel{background:transparent !important;border:1px solid var(--line) !important;color:var(--ink) !important;border-radius:10px !important}
+.swal-radio-list{display:flex;flex-direction:column;gap:8px}
+.swal-radio-list label{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--card2);border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:all .2s;text-align:left}
+.swal-radio-list label:hover{border-color:var(--teal)}
+.swal-radio-list input[type=radio]{margin-top:3px;accent-color:#38bdf8}
+.swal-radio-list span{color:var(--ink);font-size:.9rem;line-height:1.4}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="glyph"><i class="fa-solid fa-compass-drafting"></i></div>
+    <div class="path">~/andis<b>/ada-ii</b> <span class="prompt">arch&gt;</span><span class="cursor"></span></div>
+  </div>
+  <div class="header-right">
+    <span class="badge-slide" id="slideBadge">1 / 1</span>
+    <span class="badge-slide score" id="scoreBadge"><i class="fa-solid fa-star"></i> 0 pts</span>
+  </div>
+</header>
+<div class="progress-track"><div class="progress-fill" id="progressbar" style="width:0"></div></div>
+
+<main id="deck">
+
+<section class="slide">
+  <div class="d-flex flex-column justify-content-center" style="min-height:75vh">
+    <span class="eyebrow"><i class="fa-solid fa-flag"></i> Cierre de ADA I · Preámbulo de ADA II</span>
+    <h1 class="title">El próximo <span class="grad-text">capítulo</span>:<br>construir para que dure</h1>
+    <p class="lead-x">Cerramos ADA I habiendo aprendido a modelar el problema, capturar historias, priorizar y diseñar clases. En ADA II el foco cambia: <strong class="accent">¿cómo se garantiza que un sistema resista el mundo real?</strong> Bienvenidos a la arquitectura.</p>
+    <div class="mt-4 d-flex gap-3 flex-wrap">
+      <span class="badge-slide"><i class="fa-solid fa-bolt"></i> Atributos de calidad</span>
+      <span class="badge-slide"><i class="fa-solid fa-scroll"></i> Requerimientos arquitectónicamente significativos</span>
+      <span class="badge-slide"><i class="fa-solid fa-scale-balanced"></i> Trade-offs</span>
+    </div>
+    <p class="mt-5 nav-help">Navegá con <span class="kbd">←</span> <span class="kbd">→</span> o los botones abajo · Este preámbulo dura ~15 minutos</p>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-arrows-turn-to-dots"></i> Cambio de nivel</span>
+  <h2 class="stitle">De <em>qué hace</em> a <em>cómo aguanta</em></h2>
+  <p class="lead-x">Todo lo que trabajaron este semestre sigue vigente — ADA II se apoya en ello. Lo que cambia es <strong class="accent">la pregunta que hacemos al diseño</strong>.</p>
+  <div class="row g-4 mt-2">
+    <div class="col-lg-6">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-check-double"></i> Lo que dominan de ADA I</h5>
+        <ul class="checks mt-2">
+          <li>Elicitación de requisitos y stakeholders.</li>
+          <li>Business Events, BUCs y PUCs.</li>
+          <li>Priorización con Wiegers.</li>
+          <li>Modelado UML: clases, secuencia, actividades, casos de uso.</li>
+          <li>Análisis del <strong>qué</strong> y del <strong>quién</strong>.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-building-shield"></i> Lo que suma ADA II</h5>
+        <ul class="checks mt-2">
+          <li><strong>Atributos de calidad:</strong> disponibilidad, rendimiento, seguridad, protección, modificabilidad, desplegabilidad.</li>
+          <li><strong>Requisitos no funcionales</strong> tratados como <em>primera clase</em>.</li>
+          <li><strong>Decisiones arquitectónicas</strong> que se compran con trade-offs.</li>
+          <li>Estilos y patrones arquitectónicos.</li>
+          <li>Diseño del <strong>cómo</strong>, en el sentido estructural.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-4">
+    <h5><i class="fa-solid fa-quote-left"></i> La frase que van a escuchar en el primer día</h5>
+    <p><em>"Un requisito funcional dice <strong class="accent">qué</strong> hace el sistema. Un atributo de calidad dice <strong class="accent-o">qué tan bien</strong> lo hace. Y la arquitectura es lo que hace posible el <strong>tan bien</strong>."</em></p>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow purple"><i class="fa-solid fa-lightbulb"></i> La gran pregunta</span>
+  <h2 class="stitle">¿Qué pasa cuando el sistema <em>se hace real</em>?</h2>
+  <p class="lead-x">Un diseño hermoso en el pizarrón puede colapsar el primer día en producción. ADA II se ocupa de <strong class="accent">esa distancia</strong>: entre lo que funciona en un test y lo que sobrevive en el mundo.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-md-6 col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-users"></i> Cuando llegan miles</h5>
+        <p>Diez usuarios funcionaba. Mil rompió la base de datos. Diez mil quemó el servidor. ¿Cómo diseñar para que <strong>escale antes</strong> de que reviente?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-plug-circle-xmark"></i> Cuando algo falla</h5>
+        <p>Se cae un disco, se pierde la conexión, un servicio externo tarda 30 s en responder. ¿El sistema <strong>degrada con gracia</strong> o simplemente muere?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-user-secret"></i> Cuando llegan los malos</h5>
+        <p>Alguien intenta acceder a datos ajenos, inyectar SQL, robar sesiones. ¿La arquitectura <strong>protege</strong> lo que debe proteger?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-code-branch"></i> Cuando cambia el negocio</h5>
+        <p>Aparece un requisito nuevo que no estaba previsto. ¿Se toca un archivo o quince? ¿Cuánto <strong>cuesta el cambio</strong>?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-rocket"></i> Cuando hay que publicar</h5>
+        <p>El equipo quiere sacar una versión por semana. ¿Puede el sistema <strong>desplegarse</strong> sin apagar todo un fin de semana?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-triangle-exclamation"></i> Cuando la vida está en juego</h5>
+        <p>Un software de un avión, de una UCI, de un tren. ¿Cómo se garantiza que <strong>no causa daño</strong> físico ante fallos?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-compass"></i> El concepto central de la unidad</span>
+  <h2 class="stitle">Los <span class="accent">impulsores</span> (drivers) de la arquitectura</h2>
+  <p class="lead-x">De todos los requisitos que capturaste, <strong class="accent">unos pocos</strong> serán los que <em>obliguen</em> a decisiones arquitectónicas concretas. Esos son los drivers. El resto son requisitos como cualquier otro.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-8">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-diagram-project"></i> ¿Qué es un driver arquitectural?</h5>
+        <p>Un driver es cualquier <strong class="accent">necesidad relevante</strong> que hace que el arquitecto tenga que <em>elegir</em> entre alternativas de diseño incompatibles. Puede ser:</p>
+        <ul class="checks mt-2">
+          <li>Un <strong>objetivo de negocio</strong> (ganar mercado en 6 meses, cumplir una regulación).</li>
+          <li>Un <strong>requisito funcional principal</strong> (el corazón del producto).</li>
+          <li>Una <strong>restricción</strong> (usar tecnología X, correr en cloud Y).</li>
+          <li>Y sobre todo: <strong class="accent-o">atributos de calidad</strong> con metas cuantificables.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-x warn">
+        <h5><i class="fa-solid fa-eye"></i> El truco de identificarlos</h5>
+        <p>Si al ignorar un requisito la arquitectura queda igual, <strong>no era un driver</strong>. Si al ignorarlo cambia todo, <strong class="accent-o">era el driver</strong> — y probablemente arquitectónicamente significativo.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-4">
+    <h5><i class="fa-solid fa-quote-left"></i> Bass, Clements & Kazman</h5>
+    <p>De <em>Software Architecture in Practice</em>, el libro que los va a acompañar en ADA II: <em>"El arquitecto debe identificar y priorizar los drivers antes de tomar cualquier decisión de diseño. Todo lo demás son consecuencias."</em></p>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-scroll"></i> Requerimientos arquitectónicamente significativos</span>
+  <h2 class="stitle">RAS: los requisitos que <em>mueven</em> la arquitectura</h2>
+  <p class="lead-x">Un <strong class="accent">Requerimiento Arquitectónicamente Significativo</strong> (RAS, o <em>ASR</em> en inglés) es un requisito cuyo cumplimiento tiene un impacto profundo y mensurable en la estructura del sistema. No son todos los requisitos — son los que valen su peso en decisiones.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-7">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-magnifying-glass"></i> ¿Cómo se identifican?</h5>
+        <p>Un requisito es RAS si al menos una de estas afirmaciones es verdadera:</p>
+        <ul class="checks mt-2">
+          <li>Se puede <strong>cuantificar</strong> con un valor objetivo (99.95% de uptime, &lt; 200 ms de respuesta, cero pérdida de datos).</li>
+          <li>Restringe o influye <strong>fuertemente</strong> en la elección de estilo, patrón o tecnología.</li>
+          <li>Es <strong>difícil o costoso</strong> de agregar más tarde ("no se puede parchar").</li>
+          <li>Está ligado a un <strong>objetivo de negocio crítico</strong>.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-list-check"></i> Ejemplos rápidos</h5>
+        <p class="mono" style="color:var(--muted);font-size:.85rem;line-height:1.7">
+          ✔ "99.9% uptime durante horario comercial" → <strong class="accent">RAS</strong> (disponibilidad).<br>
+          ✔ "Respuesta &lt; 300 ms para el 95% de las consultas" → <strong class="accent">RAS</strong> (rendimiento).<br>
+          ✔ "Cifrar datos personales en reposo" → <strong class="accent">RAS</strong> (seguridad).<br>
+          ✘ "El botón debe ser azul" → <strong style="color:var(--bad)">no es RAS</strong>.<br>
+          ✘ "Permitir editar el perfil" → <strong style="color:var(--bad)">funcional común</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="text-center mt-4">
+    <button class="btn-primary-c" onclick="quizRAS()"><i class="fa-solid fa-gamepad"></i> Mini-quiz · Identificar un RAS</button>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-layer-group"></i> Panorama</span>
+  <h2 class="stitle">Los seis atributos de calidad que van a estudiar</h2>
+  <p class="lead-x">Existen decenas, pero seis son <strong class="accent">el núcleo</strong> que aparece en todo proyecto profesional. Vamos a recorrerlos uno por uno.</p>
+  <div class="row g-3 mt-3">
+    <div class="col-md-6 col-lg-4">
+      <div class="attr-card c-avail">
+        <div class="icn"><i class="fa-solid fa-heart-pulse"></i></div>
+        <div class="name">Disponibilidad</div>
+        <div class="en">Availability</div>
+        <p class="desc">¿Qué porcentaje del tiempo está el sistema listo para servir? Y cuando falla, ¿cuánto tarda en volver?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="attr-card c-perf">
+        <div class="icn"><i class="fa-solid fa-gauge-high"></i></div>
+        <div class="name">Rendimiento</div>
+        <div class="en">Performance</div>
+        <p class="desc">¿Con qué latencia responde? ¿Cuánto throughput soporta? ¿Cómo se comporta al crecer la carga?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="attr-card c-sec">
+        <div class="icn"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="name">Seguridad</div>
+        <div class="en">Security</div>
+        <p class="desc">¿Cómo protege los datos y las operaciones frente a acciones maliciosas de un actor con intención?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="attr-card c-safe">
+        <div class="icn"><i class="fa-solid fa-shield-heart"></i></div>
+        <div class="name">Protección</div>
+        <div class="en">Safety</div>
+        <p class="desc">¿Cómo evita que fallos del sistema causen daño a personas, bienes o al entorno? Distinta de Security.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="attr-card c-mod">
+        <div class="icn"><i class="fa-solid fa-wrench"></i></div>
+        <div class="name">Modificabilidad</div>
+        <div class="en">Modifiability</div>
+        <p class="desc">¿Cuánto cuesta cambiar el sistema? ¿En cuántos lugares hay que tocar para agregar una funcionalidad?</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="attr-card c-dep">
+        <div class="icn"><i class="fa-solid fa-rocket"></i></div>
+        <div class="name">Desplegabilidad</div>
+        <div class="en">Deployability</div>
+        <p class="desc">¿Con qué frecuencia y qué riesgo puedo publicar una versión nueva? ¿Se puede automatizar todo el pipeline?</p>
+      </div>
+    </div>
+  </div>
+  <p class="text-center mt-3 nav-help">A cada uno le vamos a dedicar una diapositiva. Empezamos por Disponibilidad.</p>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-heart-pulse"></i> Atributo 1 · Availability</span>
+  <h2 class="stitle">Disponibilidad: <span class="accent">estar cuando te necesitan</span></h2>
+  <p class="lead-x">Se mide en <strong class="accent">porcentaje de tiempo</strong> que el sistema es capaz de servir su función. Los famosos "nueves" (99.9%, 99.99%…) son el idioma de este atributo.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-clock"></i> Lo que se mide</h5>
+        <ul class="checks mt-2">
+          <li><strong>Uptime</strong> vs downtime: proporción del tiempo operativo.</li>
+          <li><strong>MTBF</strong>: tiempo medio entre fallos.</li>
+          <li><strong>MTTR</strong>: tiempo medio de recuperación tras un fallo.</li>
+          <li><strong>Modo degradado</strong>: seguir funcionando parcialmente cuando algo falla.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-calculator"></i> ¿Qué es un "nueve"?</h5>
+        <p class="mono" style="color:var(--muted);font-size:.83rem;line-height:1.9">
+          <b style="color:var(--teal)">99%</b>  → 3.65 días caído al año<br>
+          <b style="color:var(--teal)">99.9%</b>  → 8.76 horas<br>
+          <b style="color:var(--teal)">99.99%</b>  → 52.6 minutos<br>
+          <b style="color:var(--teal)">99.999%</b>  → 5.26 minutos ("los cinco nueves")<br>
+          <b style="color:var(--teal)">99.9999%</b> → 31.5 segundos
+        </p>
+        <p class="mt-2" style="color:var(--muted);font-size:.85rem">Cada nueve extra <strong class="accent-o">multiplica</strong> el costo. La pregunta arquitectónica: ¿cuál nueve necesita <em>este</em> negocio?</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-3 warn">
+    <h5><i class="fa-solid fa-tools"></i> Tácticas típicas para conseguir disponibilidad</h5>
+    <p><strong>Redundancia</strong> (dos servidores donde alcanzaría uno) · <strong>Failover</strong> automático (cuando cae A, entra B) · <strong>Load balancing</strong> · <strong>Circuit breakers</strong> · <strong>Health checks</strong> · <strong>Graceful degradation</strong>. Cada una impone estructura al sistema.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-gauge-high"></i> Atributo 2 · Performance</span>
+  <h2 class="stitle">Rendimiento: <span class="accent">responder a tiempo</span></h2>
+  <p class="lead-x">Habla de <strong>cuánto</strong> y <strong>en cuánto tiempo</strong>. Un sistema puede estar 100% disponible y ser <em>inaceptablemente lento</em>: para el usuario, es equivalente a estar caído.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-stopwatch"></i> Métricas clave</h5>
+        <ul class="checks mt-2">
+          <li><strong>Latencia:</strong> tiempo entre pedido y respuesta.</li>
+          <li><strong>Throughput:</strong> operaciones completadas por segundo.</li>
+          <li><strong>Percentiles</strong> (p50, p95, p99): no basta el promedio.</li>
+          <li><strong>Utilización de recursos:</strong> CPU, memoria, red, disco.</li>
+          <li><strong>Escalabilidad:</strong> qué pasa al crecer la carga.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-triangle-exclamation"></i> El error común</h5>
+        <p>Reportar "tiempo promedio de respuesta = 200 ms" y dormir tranquilo. Pero el <strong class="accent-o">1% de usuarios</strong> puede estar esperando 15 segundos, y esos son los que abren tickets. La arquitectura piensa en <strong>colas de peor caso</strong>, no en promedios.</p>
+        <p class="mt-2 mono" style="font-size:.82rem;color:var(--muted)">p50 = 200 ms · p95 = 800 ms · p99 = 3.2 s → hay un problema oculto</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-3">
+    <h5><i class="fa-solid fa-tools"></i> Tácticas que enseña ADA II</h5>
+    <p><strong>Caching</strong> multinivel · <strong>Async messaging</strong> · <strong>Load balancing</strong> con estrategia · <strong>Sharding</strong> · <strong>Índices</strong> y modelado eficiente de datos · <strong>CDN</strong> · <strong>Denormalización estratégica</strong>. Todas estas decisiones se toman <em>antes</em> de escribir código, no después.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow coral"><i class="fa-solid fa-user-shield"></i> Atributo 3 · Security</span>
+  <h2 class="stitle">Seguridad: <span class="accent-o">defender de actores hostiles</span></h2>
+  <p class="lead-x">Security cubre las amenazas donde <strong class="accent-o">alguien intenta activamente</strong> hacer algo que no debería: acceder a datos ajenos, alterar registros, negar el servicio, suplantar identidad.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-shield"></i> Los tres pilares · CIA</h5>
+        <ul class="checks mt-2">
+          <li><strong>Confidencialidad</strong>: solo los autorizados leen la información.</li>
+          <li><strong>Integridad</strong>: los datos no se alteran sin autorización.</li>
+          <li><strong>Disponibilidad</strong>: quien tiene derecho, puede usar el sistema (sí, hay overlap con Availability).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x warn">
+        <h5><i class="fa-solid fa-list-check"></i> Preguntas de diseño</h5>
+        <ul class="checks mt-2">
+          <li>¿Cómo <strong>autenticamos</strong>? (contraseña, MFA, OAuth, SSO)</li>
+          <li>¿Cómo <strong>autorizamos</strong>? (roles, permisos, políticas)</li>
+          <li>¿Qué datos <strong>ciframos</strong> — en tránsito y en reposo?</li>
+          <li>¿Cómo <strong>auditamos</strong> quién hizo qué?</li>
+          <li>¿Cómo detectamos <strong>intrusiones</strong>?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-3 hl">
+    <h5><i class="fa-solid fa-quote-left"></i> Regla que se van a repetir todo el semestre</h5>
+    <p>La seguridad <strong class="accent-o">no se agrega al final</strong>. Un sistema diseñado sin seguridad y "asegurado" después queda con agujeros estructurales. Se piensa desde el día uno — en la arquitectura, no en el código.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-shield-heart"></i> Atributo 4 · Safety</span>
+  <h2 class="stitle">Protección: <span class="accent">evitar daño</span> ante fallos</h2>
+  <p class="lead-x">Safety y Security se traducen igual al español pero son <strong class="accent">completamente distintos</strong>. Confundirlos es uno de los primeros errores conceptuales que los profesores van a corregir.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6">
+      <div class="card-x warn">
+        <h5><i class="fa-solid fa-user-secret"></i> Security · adversario intencional</h5>
+        <p>Alguien <em>quiere</em> vulnerar el sistema. La amenaza tiene intención, motivación y capacidad. Ejemplo: un atacante intenta escalar privilegios.</p>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-shield-heart"></i> Safety · daño accidental</h5>
+        <p>No hay adversario. Hay <em>consecuencias físicas</em> potencialmente graves si el sistema falla. Ejemplo: un bug en el software del marcapasos.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-3">
+    <h5><i class="fa-solid fa-book-medical"></i> Dominios donde Safety es un driver crítico</h5>
+    <div class="row g-3 mt-2">
+      <div class="col-md-4"><p class="mono" style="color:var(--muted);font-size:.85rem;line-height:1.6">✈ <strong style="color:var(--ink)">Aviónica</strong><br>Sistemas de vuelo, control de tráfico aéreo.</p></div>
+      <div class="col-md-4"><p class="mono" style="color:var(--muted);font-size:.85rem;line-height:1.6">🚗 <strong style="color:var(--ink)">Automotriz</strong><br>Frenos ABS, dirección eléctrica, ADAS.</p></div>
+      <div class="col-md-4"><p class="mono" style="color:var(--muted);font-size:.85rem;line-height:1.6">🏥 <strong style="color:var(--ink)">Salud</strong><br>Marcapasos, respiradores, imagenología.</p></div>
+      <div class="col-md-4"><p class="mono" style="color:var(--muted);font-size:.85rem;line-height:1.6">🚄 <strong style="color:var(--ink)">Transporte</strong><br>Trenes, metros, sistemas ferroviarios.</p></div>
+      <div class="col-md-4"><p class="mono" style="color:var(--muted);font-size:.85rem;line-height:1.6">⚛ <strong style="color:var(--ink)">Energía</strong><br>Plantas nucleares, redes eléctricas.</p></div>
+      <div class="col-md-4"><p class="mono" style="color:var(--muted);font-size:.85rem;line-height:1.6">🏭 <strong style="color:var(--ink)">Industria</strong><br>Robótica, procesos químicos, minería.</p></div>
+    </div>
+  </div>
+  <p class="text-center mt-3 nav-help">Regulaciones típicas: ISO 26262 (auto), DO-178C (aviónica), IEC 62304 (medical), IEC 61508 (industrial). Todas guían decisiones arquitectónicas concretas.</p>
+</section>
+
+<section class="slide">
+  <span class="eyebrow purple"><i class="fa-solid fa-wrench"></i> Atributo 5 · Modifiability</span>
+  <h2 class="stitle">Modificabilidad: <span class="accent-p">el costo del cambio</span></h2>
+  <p class="lead-x">Todo software cambia. Modifiability mide <strong class="accent-p">cuánto cuesta</strong> ese cambio: en dinero, en tiempo, en riesgo. Es donde se conectan directamente con lo que aprendieron en Programación II.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6">
+      <div class="card-x purple">
+        <h5><i class="fa-solid fa-magnifying-glass"></i> Preguntas de modificabilidad</h5>
+        <ul class="checks mt-2">
+          <li>Si agregamos una <strong>funcionalidad nueva</strong>, ¿cuántos módulos hay que tocar?</li>
+          <li>Si cambia una <strong>regla de negocio</strong>, ¿está en un solo lugar?</li>
+          <li>Si migramos de <strong>tecnología X a Y</strong>, ¿es un refactor o una reescritura?</li>
+          <li>Si sale un integrante del equipo, ¿cuánto tiempo lleva que otro entienda su código?</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-link"></i> Conecta con todo lo de PII</h5>
+        <p>Los principios que vieron en PII —<strong class="accent-p">bajo acoplamiento, alta cohesión, SRP, OCP, DRY, Encapsulate What Changes</strong>— existen sobre todo <em>para servir a la modificabilidad</em>.</p>
+        <p class="mt-2">En ADA II van a ver <strong>cómo se materializan a nivel arquitectónico</strong>: cuándo elegir microservicios, cuándo modularidad, cuándo eventos, cuándo capas. No son "modas": son formas concretas de comprar modificabilidad.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-3">
+    <h5><i class="fa-solid fa-scale-unbalanced"></i> El trade-off que aparece siempre</h5>
+    <p>Modificabilidad casi siempre <strong class="accent-o">compite con rendimiento</strong>. Un sistema muy modular tiene más overhead. Un sistema muy acoplado corre más rápido pero se paraliza al cambiar. Decidir el balance es <em>arquitectura</em>.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow coral"><i class="fa-solid fa-rocket"></i> Atributo 6 · Deployability</span>
+  <h2 class="stitle">Desplegabilidad: <span class="accent-o">soltar versión sin miedo</span></h2>
+  <p class="lead-x">La capacidad de <strong class="accent-o">llevar un cambio a producción</strong> con velocidad, previsibilidad y bajo riesgo. En 2026, es tan crítico como los otros cinco — y para muchas empresas <em>el</em> factor competitivo.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-timeline"></i> Lo que se mide</h5>
+        <ul class="checks mt-2">
+          <li><strong>Frecuencia de despliegues</strong>: ¿una vez al mes? ¿al día? ¿decenas por día?</li>
+          <li><strong>Lead time</strong>: desde commit hasta producción.</li>
+          <li><strong>Tasa de fallo</strong> de despliegues.</li>
+          <li><strong>Tiempo medio de recuperación</strong> ante despliegue defectuoso.</li>
+          <li><strong>Automatización</strong> del pipeline (CI/CD).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-boxes-stacked"></i> Estrategias arquitectónicas</h5>
+        <ul class="checks mt-2">
+          <li><strong>Blue/Green deployment</strong>: dos entornos, se alterna.</li>
+          <li><strong>Canary releases</strong>: la versión nueva primero al 5%, después al 50%, después a todos.</li>
+          <li><strong>Feature flags</strong>: separar deploy de release.</li>
+          <li><strong>Rollback automático</strong> ante métricas anómalas.</li>
+          <li><strong>Contenedores + orquestación</strong> (Docker, Kubernetes).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-3 warn">
+    <h5><i class="fa-solid fa-book"></i> El libro de referencia moderno</h5>
+    <p><em>Fundamentals of Software Architecture</em> de <strong>Mark Richards y Neal Ford</strong> — segunda lectura obligatoria de ADA II — dedica capítulos enteros a estos temas. Si les gusta el enfoque práctico y actualizado, este libro se convierte en su preferido.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-diagram-project"></i> La herramienta central</span>
+  <h2 class="stitle">El <span class="accent">escenario general de calidad</span></h2>
+  <p class="lead-x">Bass, Clements & Kazman proponen una plantilla en <strong class="accent">seis partes</strong> para especificar cualquier atributo de calidad de forma <em>concreta y verificable</em>. Es LA herramienta que van a usar todo el semestre.</p>
+  <svg viewBox="0 0 1160 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Escenario general de calidad" style="width:100%;max-width:1120px;display:block;margin:24px auto 0">
+    <defs>
+      <marker id="arrScn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+      </marker>
+      <linearGradient id="gradScn" x1="0" x2="1">
+        <stop offset="0" stop-color="#38bdf8"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#fb7185"/>
+      </linearGradient>
+    </defs>
+    <g font-family="Fira Code, monospace">
+      <!-- Row 1 -->
+      <rect x="20" y="20" width="200" height="90" rx="12" fill="#1e2740" stroke="#38bdf8"/>
+      <text x="120" y="42" fill="#38bdf8" font-size="10" font-weight="700" text-anchor="middle">① FUENTE</text>
+      <text x="120" y="66" fill="#e5e9f5" font-size="12" text-anchor="middle">del estímulo</text>
+      <text x="120" y="88" fill="#94a3c6" font-size="9" text-anchor="middle">quién lo genera</text>
+      <line x1="220" y1="65" x2="260" y2="65" stroke="url(#gradScn)" stroke-width="2.5" marker-end="url(#arrScn)"/>
+
+      <rect x="260" y="20" width="200" height="90" rx="12" fill="#1e2740" stroke="#a78bfa"/>
+      <text x="360" y="42" fill="#a78bfa" font-size="10" font-weight="700" text-anchor="middle">② ESTÍMULO</text>
+      <text x="360" y="66" fill="#e5e9f5" font-size="12" text-anchor="middle">stimulus</text>
+      <text x="360" y="88" fill="#94a3c6" font-size="9" text-anchor="middle">qué llega al sistema</text>
+      <line x1="460" y1="65" x2="500" y2="65" stroke="url(#gradScn)" stroke-width="2.5" marker-end="url(#arrScn)"/>
+
+      <rect x="500" y="20" width="200" height="90" rx="12" fill="#1e2740" stroke="#a78bfa"/>
+      <text x="600" y="42" fill="#a78bfa" font-size="10" font-weight="700" text-anchor="middle">③ ENTORNO</text>
+      <text x="600" y="66" fill="#e5e9f5" font-size="12" text-anchor="middle">environment</text>
+      <text x="600" y="88" fill="#94a3c6" font-size="9" text-anchor="middle">condiciones al ocurrir</text>
+      <line x1="700" y1="65" x2="740" y2="65" stroke="url(#gradScn)" stroke-width="2.5" marker-end="url(#arrScn)"/>
+
+      <rect x="740" y="20" width="200" height="90" rx="12" fill="#1e2740" stroke="#fb7185"/>
+      <text x="840" y="42" fill="#fb7185" font-size="10" font-weight="700" text-anchor="middle">④ ARTEFACTO</text>
+      <text x="840" y="66" fill="#e5e9f5" font-size="12" text-anchor="middle">artifact</text>
+      <text x="840" y="88" fill="#94a3c6" font-size="9" text-anchor="middle">qué parte afectada</text>
+
+      <!-- vertical arrow -->
+      <line x1="840" y1="110" x2="840" y2="140" stroke="url(#gradScn)" stroke-width="2.5" marker-end="url(#arrScn)"/>
+
+      <!-- Row 2 -->
+      <rect x="740" y="140" width="200" height="90" rx="12" fill="#1e2740" stroke="#fb7185"/>
+      <text x="840" y="162" fill="#fb7185" font-size="10" font-weight="700" text-anchor="middle">⑤ RESPUESTA</text>
+      <text x="840" y="186" fill="#e5e9f5" font-size="12" text-anchor="middle">response</text>
+      <text x="840" y="208" fill="#94a3c6" font-size="9" text-anchor="middle">qué hace el sistema</text>
+
+      <line x1="740" y1="185" x2="700" y2="185" stroke="url(#gradScn)" stroke-width="2.5" marker-end="url(#arrScn)"/>
+      <rect x="500" y="140" width="200" height="90" rx="12" fill="#141b2e" stroke="#38bdf8" stroke-width="2.5"/>
+      <text x="600" y="162" fill="#38bdf8" font-size="10" font-weight="700" text-anchor="middle">⑥ MEDIDA</text>
+      <text x="600" y="186" fill="#e5e9f5" font-size="12" text-anchor="middle" font-weight="600">response measure</text>
+      <text x="600" y="208" fill="#94a3c6" font-size="9" text-anchor="middle">cómo se verifica</text>
+
+      <!-- annotation on measure -->
+      <text x="600" y="248" fill="#94a3c6" font-size="9" text-anchor="middle" font-style="italic">← esta es la parte que hace verificable al RAS</text>
+    </g>
+  </svg>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-lightbulb"></i> Ejemplo aplicado</span>
+  <h2 class="stitle">Un escenario de <span class="accent">disponibilidad</span>, paso a paso</h2>
+  <p class="lead-x">Imaginemos un sistema de banca electrónica. Escribamos un RAS de disponibilidad en formato de escenario general:</p>
+  <div class="row g-3 mt-3">
+    <div class="col-md-4">
+      <div class="scn-piece">
+        <div class="lbl">① Fuente</div>
+        <div class="val">Fallo de hardware.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="scn-piece">
+        <div class="lbl">② Estímulo</div>
+        <div class="val">Cae uno de los servidores del cluster de aplicación.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="scn-piece">
+        <div class="lbl">③ Entorno</div>
+        <div class="val">Operación normal en horario comercial.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="scn-piece">
+        <div class="lbl">④ Artefacto</div>
+        <div class="val">Servicio de consulta de saldos.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="scn-piece">
+        <div class="lbl">⑤ Respuesta</div>
+        <div class="val">El load balancer detecta el fallo, redirige tráfico al servidor sano y notifica al equipo de operaciones.</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="scn-piece" style="border-color:var(--teal);background:#0e1b2e">
+        <div class="lbl" style="color:var(--teal)">⑥ Medida</div>
+        <div class="val"><strong style="color:var(--teal)">Ningún usuario percibe interrupción &gt; 3 s. Cero transacciones perdidas.</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-key"></i> Lo que se logró</h5>
+        <p>Un requisito que empezó como <em>"el sistema debe estar disponible"</em> (vago, no verificable) se convirtió en <strong class="accent">una especificación que un tester puede validar</strong>. Y que un arquitecto puede diseñar para cumplir.</p>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-repeat"></i> El proceso completo</h5>
+        <p>ADA II les va a pedir escribir escenarios así para <strong class="accent">cada atributo de calidad relevante</strong> del sistema que analizan. Y a partir de esos escenarios se toman las decisiones de arquitectura.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow purple"><i class="fa-solid fa-scale-unbalanced"></i> La verdad incómoda</span>
+  <h2 class="stitle">Ningún atributo se optimiza <em>gratis</em></h2>
+  <p class="lead-x">Todo atributo <strong class="accent-p">compite con otros</strong>. Optimizar uno cuesta en otros. Diseñar arquitectura es, en gran medida, <em>elegir qué sacrificar</em>.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-md-6">
+      <div class="card-x warn">
+        <h5><i class="fa-solid fa-arrows-left-right"></i> Rendimiento vs Modificabilidad</h5>
+        <p>Un sistema muy modular introduce llamadas, capas y overhead. Un sistema optimizado suele acoplar componentes. <strong class="accent-o">No podés maximizar los dos a la vez</strong> — decidís cuál importa más.</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card-x warn">
+        <h5><i class="fa-solid fa-arrows-left-right"></i> Seguridad vs Rendimiento</h5>
+        <p>Cifrar todo agrega latencia. Validar cada request cuesta CPU. Auditar consume disco. Un sistema paranoico es <strong class="accent-o">más lento por diseño</strong>.</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card-x warn">
+        <h5><i class="fa-solid fa-arrows-left-right"></i> Disponibilidad vs Costo</h5>
+        <p>Cada "nueve" adicional <strong class="accent-o">multiplica</strong> la infraestructura: redundancia, replicación, monitoreo, personal 24/7. El negocio decide dónde parar.</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card-x warn">
+        <h5><i class="fa-solid fa-arrows-left-right"></i> Desplegabilidad vs Consistencia</h5>
+        <p>Poder desplegar rápido implica no bloquear largas migraciones de datos. Consistencia estricta suele requerir "ventanas de mantenimiento" — <strong class="accent-o">hostiles a la desplegabilidad</strong>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-3 hl">
+    <h5><i class="fa-solid fa-star"></i> La habilidad clave que van a desarrollar</h5>
+    <p><strong class="accent">Reconocer qué atributos priorizar según el negocio, y hacer explícitos los sacrificios.</strong> Un arquitecto experimentado <em>no</em> dice "hago todo bien"; dice "priorizo estos, sacrifico estos otros, y acá está el porqué".</p>
+  </div>
+  <div class="text-center mt-4">
+    <button class="btn-primary-c" onclick="quizTradeoff()"><i class="fa-solid fa-gamepad"></i> Mini-quiz · Reconocer un trade-off</button>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow coral"><i class="fa-solid fa-magnifying-glass"></i> Ejercicio final</span>
+  <h2 class="stitle">Detective de atributos <span class="nav-help" id="dx-progress"></span></h2>
+  <p class="lead-x">Cuatro requisitos redactados como los podría escribir un cliente. Identifiquen <strong class="accent-o">a qué atributo de calidad corresponde principalmente cada uno</strong>. Es un adelanto de lo que van a hacer en el primer taller de ADA II.</p>
+
+  <div class="case-row" id="cx1">
+    <div class="d-flex align-items-center justify-content-between">
+      <span class="clabel">Caso 1</span>
+      <span class="ex-status"><i class="fa-regular fa-circle" style="color:var(--muted)"></i></span>
+    </div>
+    <p class="cquote">"El sistema debe permitir a los administradores agregar tipos nuevos de reportes sin necesidad de tocar el código de los módulos existentes."</p>
+    <select class="dx-select" id="dx1">
+      <option value="">— elegí el atributo dominante —</option>
+      <option value="avail">Disponibilidad</option>
+      <option value="perf">Rendimiento</option>
+      <option value="sec">Seguridad</option>
+      <option value="safe">Protección (Safety)</option>
+      <option value="mod">Modificabilidad</option>
+      <option value="dep">Desplegabilidad</option>
+    </select>
+  </div>
+
+  <div class="case-row" id="cx2">
+    <div class="d-flex align-items-center justify-content-between">
+      <span class="clabel">Caso 2</span>
+      <span class="ex-status"><i class="fa-regular fa-circle" style="color:var(--muted)"></i></span>
+    </div>
+    <p class="cquote">"Los intentos de acceso con credenciales incorrectas deben bloquear la cuenta tras 5 intentos fallidos en 10 minutos y notificar al usuario."</p>
+    <select class="dx-select" id="dx2">
+      <option value="">— elegí el atributo dominante —</option>
+      <option value="avail">Disponibilidad</option>
+      <option value="perf">Rendimiento</option>
+      <option value="sec">Seguridad</option>
+      <option value="safe">Protección (Safety)</option>
+      <option value="mod">Modificabilidad</option>
+      <option value="dep">Desplegabilidad</option>
+    </select>
+  </div>
+
+  <div class="case-row" id="cx3">
+    <div class="d-flex align-items-center justify-content-between">
+      <span class="clabel">Caso 3</span>
+      <span class="ex-status"><i class="fa-regular fa-circle" style="color:var(--muted)"></i></span>
+    </div>
+    <p class="cquote">"Si el sensor de temperatura del reactor falla, el sistema debe detener automáticamente la reacción en menos de 500 ms y activar los circuitos de refrigeración de emergencia."</p>
+    <select class="dx-select" id="dx3">
+      <option value="">— elegí el atributo dominante —</option>
+      <option value="avail">Disponibilidad</option>
+      <option value="perf">Rendimiento</option>
+      <option value="sec">Seguridad</option>
+      <option value="safe">Protección (Safety)</option>
+      <option value="mod">Modificabilidad</option>
+      <option value="dep">Desplegabilidad</option>
+    </select>
+  </div>
+
+  <div class="case-row" id="cx4">
+    <div class="d-flex align-items-center justify-content-between">
+      <span class="clabel">Caso 4</span>
+      <span class="ex-status"><i class="fa-regular fa-circle" style="color:var(--muted)"></i></span>
+    </div>
+    <p class="cquote">"El equipo debe poder liberar una versión nueva a producción al menos dos veces por semana, con la capacidad de revertir en menos de 5 minutos si aparecen errores."</p>
+    <select class="dx-select" id="dx4">
+      <option value="">— elegí el atributo dominante —</option>
+      <option value="avail">Disponibilidad</option>
+      <option value="perf">Rendimiento</option>
+      <option value="sec">Seguridad</option>
+      <option value="safe">Protección (Safety)</option>
+      <option value="mod">Modificabilidad</option>
+      <option value="dep">Desplegabilidad</option>
+    </select>
+  </div>
+
+  <div class="d-flex gap-2 mt-2">
+    <button class="btn-primary-c" onclick="checkDetective()"><i class="fa-solid fa-check"></i> Verificar respuestas</button>
+    <button class="btn-nav" onclick="nextSlide()">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+</section>
+
+<section class="slide">
+  <span class="eyebrow"><i class="fa-solid fa-book"></i> Para el semestre que viene</span>
+  <h2 class="stitle">Los tres libros que los acompañan</h2>
+  <p class="lead-x">Toda la unidad 5.2.1 se apoya en tres textos. Vale la pena tenerlos identificados desde ahora.</p>
+  <div class="row g-4 mt-3">
+    <div class="col-md-4">
+      <div class="card-x hl">
+        <h5><i class="fa-solid fa-1"></i> Bass, Clements &amp; Kazman</h5>
+        <p><strong class="accent">Software Architecture in Practice</strong> (4ª edición). El libro de referencia — el que aporta la plantilla de escenario general y los capítulos sobre cada atributo.</p>
+        <ul class="checks mt-2">
+          <li>Cap. 3: Understanding Quality Attributes.</li>
+          <li>Cap. 19: Architecturally Significant Requirements.</li>
+          <li>Secciones 4.1 (Availability), 5.1 (Deployability), 8.1 (Modifiability), 9.1 (Performance), 10.1 (Safety), 11.1 (Security).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-2"></i> Richards &amp; Ford</h5>
+        <p><strong class="accent">Fundamentals of Software Architecture</strong>. El enfoque moderno y pragmático — muy accesible como primera lectura.</p>
+        <ul class="checks mt-2">
+          <li>Cap. 4: Architecture Characteristics Defined.</li>
+          <li>Cap. 5: Identifying Architecture Characteristics.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-x">
+        <h5><i class="fa-solid fa-3"></i> Karl Wiegers</h5>
+        <p><strong class="accent">Software Requirements</strong>. El vínculo con lo que ya conocen de ADA I.</p>
+        <ul class="checks mt-2">
+          <li>Cap. 11: Non-functional Requirements.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card-x mt-4 warn">
+    <h5><i class="fa-brands fa-github"></i> Y siempre a mano</h5>
+    <p>El repositorio de conceptos del curso, con toda la teoría organizada: <span class="mono">github.com/ucudal/ANDIS_Conceptos</span>. Es la fuente oficial que los profesores mantienen.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="d-flex flex-column justify-content-center" style="min-height:70vh">
+    <span class="eyebrow"><i class="fa-solid fa-flag-checkered"></i> Cierre de ADA I</span>
+    <h2 class="stitle">Este semestre <span class="grad-text">se completa</span> allá</h2>
+    <p class="lead-x">Todo lo que hicieron en ADA I —analizar, modelar, priorizar, capturar historias— es <strong class="accent">la materia prima</strong> con la que van a trabajar en ADA II. Nada se pierde. Se le suman capas.</p>
+    <div class="row g-4 mt-3">
+      <div class="col-md-6">
+        <div class="card-x hl">
+          <h5><i class="fa-solid fa-map-signs"></i> Lo que se llevan</h5>
+          <ul class="checks mt-2">
+            <li>La diferencia entre <strong>requisitos funcionales</strong> y <strong>atributos de calidad</strong>.</li>
+            <li>Los seis atributos clave: disponibilidad, rendimiento, seguridad, protección, modificabilidad, desplegabilidad.</li>
+            <li>La idea de que <strong class="accent">no todo requisito es igual</strong> — los <em>arquitectónicamente significativos</em> mueven la aguja.</li>
+            <li>La plantilla del <strong>escenario general de calidad</strong>: 6 partes, verificables.</li>
+            <li>Y la lección más importante: los atributos <strong>compiten entre sí</strong>. Arquitectura es elegir bien.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-x">
+          <h5><i class="fa-solid fa-heart"></i> Un mensaje final</h5>
+          <p>Los mejores arquitectos no son los que memorizan más patrones. Son los que <strong class="accent">saben qué pregunta hacer</strong>. Cada vez que en un proyecto vean una decisión difícil, pregúntense: <em>"¿qué atributo de calidad está en juego? ¿qué sacrificamos si vamos por A? ¿y por B?"</em></p>
+          <p class="mt-2">Con eso ya empezaron ADA II.</p>
+        </div>
+        <div class="text-center mt-3">
+          <button class="btn-primary-c" onclick="showFinalScore()"><i class="fa-solid fa-trophy"></i> Ver mi puntaje</button>
+        </div>
+      </div>
+    </div>
+    <p class="text-center mt-4 nav-help">Nos vemos el próximo semestre 🚀 · Gracias por este ADA I.</p>
+  </div>
+</section>
+
+</main>
+
+<nav class="navbtns">
+  <button class="btn-nav" id="btnPrev" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+  <span class="nav-help"><span class="kbd">←</span> <span class="kbd">→</span> navegar · <span class="kbd">Inicio</span>/<span class="kbd">Fin</span> saltar</span>
+  <button class="btn-nav" id="btnNext" onclick="nextSlide()">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+const swalBase = { background:'#141b2e', color:'#e5e9f5', confirmButtonColor:'#38bdf8', cancelButtonColor:'#2a3452' };
+
+function showSlide(i, dir = 1){
+  if(i < 0 || i >= slides.length) return;
+  slides[current].classList.remove('active');
+  current = i;
+  const s = slides[current];
+  s.classList.add('active');
+  s.scrollTop = 0;
+  s.classList.remove('animate__animated','animate__fadeInRight','animate__fadeInLeft');
+  void s.offsetWidth;
+  s.classList.add('animate__animated', dir >= 0 ? 'animate__fadeInRight' : 'animate__fadeInLeft');
+  document.getElementById('slideBadge').textContent = (current+1) + ' / ' + slides.length;
+  document.getElementById('progressbar').style.width = ((current+1)/slides.length*100) + '%';
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').disabled = current === slides.length-1;
+}
+function nextSlide(){ showSlide(current+1, 1); }
+function prevSlide(){ showSlide(current-1, -1); }
+
+document.addEventListener('keydown', e => {
+  if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if(Swal.isVisible()) return;
+  if(e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+  if(e.key === 'ArrowLeft'  || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+  if(e.key === 'Home'){ e.preventDefault(); showSlide(0,-1); }
+  if(e.key === 'End'){ e.preventDefault(); showSlide(slides.length-1,1); }
+});
+
+let score = 0;
+function addPoints(p){
+  score += p;
+  const b = document.getElementById('scoreBadge');
+  b.innerHTML = '<i class="fa-solid fa-star"></i> ' + score + ' pts';
+  b.classList.remove('animate__animated','animate__bounce');
+  void b.offsetWidth;
+  b.classList.add('animate__animated','animate__bounce');
+}
+
+function runQuiz(title, question, options, correctIndex, explanation, points = 10){
+  const inputs = options.map((o,i) => `<label><input type="radio" name="qz" value="${i}"><span>${o}</span></label>`).join('');
+  Swal.fire({
+    ...swalBase, title,
+    html: `<p style="text-align:left;margin-bottom:14px;color:#e5e9f5">${question}</p><div class="swal-radio-list">${inputs}</div>`,
+    confirmButtonText: 'Responder', showCancelButton: true, cancelButtonText: 'Cancelar',
+    showClass: { popup: 'animate__animated animate__zoomIn animate__faster' },
+    hideClass: { popup: 'animate__animated animate__zoomOut animate__faster' },
+    preConfirm: () => {
+      const sel = document.querySelector('input[name="qz"]:checked');
+      if(!sel){ Swal.showValidationMessage('Elegí una opción'); return false; }
+      return parseInt(sel.value);
+    }
+  }).then(res => {
+    if(!res.isConfirmed) return;
+    if(res.value === correctIndex){
+      addPoints(points);
+      Swal.fire({ ...swalBase, icon:'success', title:'¡Correcto! +' + points + ' pts',
+        html:`<p style="text-align:left">${explanation}</p>`, showClass:{popup:'animate__animated animate__tada'} });
+    } else {
+      Swal.fire({ ...swalBase, icon:'error', title:'No es esa…',
+        html:`<p style="text-align:left">La respuesta correcta era: <strong style="color:#38bdf8">${options[correctIndex]}</strong></p><p style="text-align:left">${explanation}</p>`,
+        showClass:{popup:'animate__animated animate__shakeX'} });
+    }
+  });
+}
+
+function quizRAS(){
+  runQuiz('Mini-quiz · ¿Cuál es un RAS?',
+    '¿Cuál de estos requisitos calificaría claramente como <strong>Arquitectónicamente Significativo</strong>?',
+    ['"El logo debe estar en la esquina superior izquierda de todas las pantallas."',
+     '"El sistema debe permitir crear, editar y eliminar productos."',
+     '"El 99% de las consultas de saldo deben responder en menos de 400 ms."',
+     '"El botón Guardar debe cambiar de color al hacer hover."'],
+    2,
+    'Opción C: es <strong>cuantificable</strong> (percentil 99, 400 ms), tiene <strong>impacto estructural</strong> (obliga a decidir sobre caching, índices, réplicas, distribución) y es <strong>difícil de agregar después</strong>. Las otras son requisitos funcionales o de UI que no mueven la arquitectura.');
+}
+
+function quizTradeoff(){
+  runQuiz('Mini-quiz · Reconocer el trade-off',
+    'Un equipo decide implementar el sistema como <strong>una arquitectura de microservicios muy granulares</strong>, con muchas llamadas HTTP entre servicios. ¿Qué atributo se ve MÁS BENEFICIADO y cuál MÁS PERJUDICADO por esta elección?',
+    ['Beneficia rendimiento; perjudica seguridad.',
+     'Beneficia modificabilidad y desplegabilidad; perjudica rendimiento.',
+     'Beneficia protección (safety); perjudica disponibilidad.',
+     'Beneficia todo por igual: los microservicios no tienen desventajas.'],
+    1,
+    '<strong>Modificabilidad y desplegabilidad</strong> ganan porque cada servicio se cambia y despliega en forma independiente. <strong>Rendimiento</strong> pierde: las llamadas HTTP entre servicios agregan latencia respecto a llamadas dentro del mismo proceso. Este trade-off es un ejemplo clásico que van a discutir mil veces en ADA II.');
+}
+
+/* Detective de atributos */
+const cases = {
+  1: { correct:'mod', reason:'Es Modificabilidad. La expresión "sin necesidad de tocar el código existente" apunta directamente al Open/Closed Principle a nivel arquitectónico. La estructura debe permitir extender sin modificar.' },
+  2: { correct:'sec', reason:'Es Seguridad. Hay un adversario intencional (alguien intentando adivinar contraseñas) y las medidas descritas (bloqueo tras intentos fallidos, notificación) son controles clásicos de defensa.' },
+  3: { correct:'safe', reason:'Es Protección (Safety). No hay adversario — hay un fallo del sensor. La consecuencia potencial es un daño físico (reactor). El sistema debe responder para evitar daño al entorno y a personas.' },
+  4: { correct:'dep', reason:'Es Desplegabilidad. Frecuencia de release + capacidad de rollback rápido son las métricas centrales de este atributo. Aparece implícito el pipeline CI/CD, blue/green deployments, o similares.' }
+};
+
+let detectiveDone = false;
+function checkDetective(){
+  let ok = 0, total = 0;
+  for(const n in cases){
+    const sel = document.getElementById('dx'+n);
+    if(!sel) continue;
+    total++;
+    if(!sel.value) continue;
+    if(sel.value === cases[n].correct){
+      sel.classList.add('ok'); sel.classList.remove('bad');
+      const row = document.getElementById('cx'+n);
+      row.classList.add('done');
+      row.querySelector('.ex-status').innerHTML = '<i class="fa-solid fa-circle-check" style="color:#4ade80"></i>';
+      ok++;
+    } else {
+      sel.classList.add('bad'); sel.classList.remove('ok');
+    }
+  }
+  document.getElementById('dx-progress').textContent = '· aciertos: ' + ok + ' / ' + total;
+
+  if(ok === total && !detectiveDone){
+    detectiveDone = true;
+    addPoints(40);
+    let detail = '';
+    for(const n in cases) detail += `<p style="text-align:left;margin-bottom:8px"><strong style="color:#38bdf8">Caso ${n}:</strong> ${cases[n].reason}</p>`;
+    Swal.fire({ ...swalBase, icon:'success', title:'¡4/4! +40 pts',
+      html:detail, width:'660px', showClass:{popup:'animate__animated animate__tada'} });
+  } else {
+    let detail = `<p style="text-align:left;margin-bottom:10px">Resultado: <strong style="color:#38bdf8">${ok} / ${total}</strong>. Los aciertos quedan en verde; los errores en rojo. Revisá los atributos y reintentá.</p>`;
+    for(const n in cases){
+      const sel = document.getElementById('dx'+n);
+      if(sel && sel.value === cases[n].correct){
+        detail += `<p style="text-align:left;margin-bottom:6px"><strong style="color:#38bdf8">Caso ${n}:</strong> ${cases[n].reason}</p>`;
+      }
+    }
+    Swal.fire({ ...swalBase, icon:'info', title:'Casi…', html:detail, width:'660px' });
+  }
+}
+
+function showFinalScore(){
+  const max = 2*10 + 40;
+  let msg, icon;
+  if(score >= 50){ msg = '🏆 Listos para arrancar ADA II con todo'; icon = 'success'; }
+  else if(score >= 30){ msg = '⭐ Muy buena base. El semestre que viene la afinamos.'; icon = 'success'; }
+  else if(score >= 10){ msg = '📈 Buen comienzo. Los conceptos toman forma con la práctica.'; icon = 'info'; }
+  else { msg = '🎓 Nos vemos en ADA II para meternos en profundidad'; icon = 'info'; }
+  Swal.fire({ ...swalBase, icon, title: score + ' / ' + max + ' pts',
+    html:`<p style="margin-top:8px;color:#e5e9f5">${msg}</p><p style="margin-top:12px;color:#94a3c6;font-size:.9rem">Gracias por este semestre. ¡Buen descanso y nos reencontramos!</p>`,
+    confirmButtonText:'Cerrar', showClass:{popup:'animate__animated animate__zoomIn'} });
+}
+
+slides[0].classList.add('active','animate__animated','animate__fadeIn');
+document.getElementById('slideBadge').textContent = '1 / ' + slides.length;
+document.getElementById('progressbar').style.width = (1/slides.length*100) + '%';
+document.getElementById('btnPrev').disabled = true;
+</script>
+</body>
+</html>
