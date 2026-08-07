@@ -63,6 +63,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 .feedback.hint{color:var(--gold)}
 .tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
 .tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+.crayon-note{background:rgba(240,180,41,.1); border:2px dashed rgba(240,180,41,.5); border-radius:14px; padding:18px 22px; max-width:820px; margin-top:20px; font-size:1.02rem; color:var(--mist);}
 #nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
 #nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
 #dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
@@ -88,7 +89,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 
 <div id="progress-track"><div id="progress-fill"></div></div>
 <div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Lab · Virtualización con Proxmox VE</div>
-<div id="hud"><span class="badge-score" id="score-counter"><i class="fa-solid fa-star"></i> 0 pts</span><span class="badge-slide" id="slide-counter">1 / 10</span></div>
+<div id="hud"><span class="badge-score" id="score-counter"><i class="fa-solid fa-star"></i> 0 pts</span><span class="badge-slide" id="slide-counter">1 / 13</span></div>
 
 <!-- 1 -->
 <section class="slide active" data-idx="0">
@@ -104,6 +105,42 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 
 <!-- 2 -->
 <section class="slide" data-idx="1">
+  <div class="eyebrow">Antes de tocar comandos</div>
+  <h2 class="slide-h">¿Qué es una máquina virtual (VM)?</h2>
+  <p class="lead" style="max-width:760px">Una VM es una computadora simulada por software: tiene su propio "CPU" virtual, su propia RAM, su propio disco y su propia placa de red — pero todo corre como un programa dentro de una máquina física real. El sistema operativo instalado adentro no distingue si está en hardware real o virtualizado.</p>
+  <div class="grid-3" style="margin-top:20px">
+    <div class="card"><h3><i class="fa-solid fa-lock"></i>Aislamiento</h3><p>Cada VM está separada de las demás, aunque compartan el mismo hardware físico por debajo.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-microchip"></i>Recursos asignados</h3><p>La cantidad de CPU/RAM/disco que le damos es exactamente la que definimos — eso es, otra vez, un "flavor".</p></div>
+    <div class="card"><h3><i class="fa-solid fa-copy"></i>Portabilidad</h3><p>Una VM se puede copiar, clonar o mover como si fuera un archivo, porque en el fondo lo es: un disco virtual + una configuración.</p></div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-idx="2">
+  <div class="eyebrow">La pieza que hace todo esto posible</div>
+  <h2 class="slide-h">¿Qué es un hipervisor?</h2>
+  <p class="lead" style="max-width:760px">El hipervisor es el software que crea y administra máquinas virtuales, repartiendo el hardware físico real entre ellas. Hay dos tipos:</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-server"></i>Tipo 1 — Bare-metal</h3><p>Se instala directamente sobre el hardware, sin sistema operativo debajo. Ejemplos: <strong style="color:var(--mist)">Proxmox VE</strong>, VMware ESXi. Más eficiente — es lo que vamos a usar hoy.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-desktop"></i>Tipo 2 — Hosted</h3><p>Se instala como un programa más, arriba de un sistema operativo ya existente. Ejemplos: VirtualBox, VMware Workstation. Más simple de instalar, algo menos eficiente.</p></div>
+  </div>
+  <div class="crayon-note" style="margin-top:20px">Proxmox VE <u>es</u> el hipervisor — no es "un programa que instalás en Windows". Cuando lo instalamos, se convierte en el sistema operativo completo de ese servidor.</div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-idx="3">
+  <div class="eyebrow">Las tres siglas que vamos a usar todo el laboratorio</div>
+  <h2 class="slide-h">QEMU, KVM y qm: quién hace qué</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-gears"></i>QEMU</h3><p>El emulador de hardware: es el programa que efectivamente "dibuja" el CPU, la placa de red y el disco virtual que ve cada VM.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-microchip"></i>KVM</h3><p>Un módulo del kernel de Linux que le da a QEMU acceso directo al hardware real (aceleración por hardware), para que la VM corra casi a la velocidad de una máquina física.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-terminal"></i>qm</h3><p>El comando de Proxmox que usamos <strong style="color:var(--mist)">nosotros</strong>. Traduce "qm create", "qm start", etc. en lo que QEMU/KVM necesitan por detrás.</p></div>
+  </div>
+  <div class="crayon-note" style="margin-top:20px">Analogía: QEMU/KVM es el motor del auto. <span class="mono">qm</span> es el volante y los pedales. Nosotros manejamos con <span class="mono">qm</span> — no necesitamos saber armar el motor para conducir.</div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-idx="4">
   <div class="eyebrow">Antes de empezar</div>
   <h2 class="slide-h">Requisitos del laboratorio</h2>
   <div class="grid-3">
@@ -115,7 +152,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 </section>
 
 <!-- 3 -->
-<section class="slide" data-idx="2">
+<section class="slide" data-idx="5">
   <div class="eyebrow">Paso 1</div>
   <h2 class="slide-h">Instalación</h2>
   <p class="lead">El instalador de Proxmox es gráfico y guiado: booteás desde el ISO, elegís el disco de destino, configurás red e hostname, y listo — queda un hipervisor Debian con la interfaz web ya activa.</p>
@@ -131,7 +168,7 @@ pvesh get /nodes</code></pre>
 </section>
 
 <!-- 4 -->
-<section class="slide" data-idx="3">
+<section class="slide" data-idx="6">
   <div class="eyebrow">Paso 2</div>
   <h2 class="slide-h">Primeros pasos en la interfaz web</h2>
   <div class="grid-3">
@@ -143,7 +180,7 @@ pvesh get /nodes</code></pre>
 </section>
 
 <!-- 5 -->
-<section class="slide" data-idx="4">
+<section class="slide" data-idx="7">
   <div class="eyebrow">El concepto central de hoy</div>
   <h2 class="slide-h">Armando "flavors" propios</h2>
   <p class="lead" style="max-width:760px">Proxmox no trae un catálogo cerrado de flavors como AWS o Azure — <strong style="color:var(--mist)">nosotros los definimos</strong> como plantillas de VM con un perfil fijo de vCPU/RAM/disco. Vamos a crear tres: small, medium y large.</p>
@@ -162,10 +199,13 @@ pvesh get /nodes</code></pre>
 # Instalar el SO en la 9000 y luego convertirla en plantilla:
 qm template 9000</code></pre>
   </div>
+  <div class="crayon-note" style="margin-top:16px">
+    Desglosando el comando: <span class="mono">9000</span> es el ID que le ponemos a esta VM (número libre a elección). <span class="mono">--memory 1024</span> = 1GB de RAM. <span class="mono">--cores 1</span> = 1 vCPU. <span class="mono">--scsi0 local-lvm:8</span> = un disco de 8GB. <span class="mono">--ide2 ...iso,media=cdrom</span> = "insertamos" el CD virtual con el instalador de Ubuntu, igual que insertarías un pendrive booteable en una PC física.
+  </div>
 </section>
 
 <!-- 6 -->
-<section class="slide" data-idx="5">
+<section class="slide" data-idx="8">
   <div class="eyebrow">Ejercicio 1</div>
   <h2 class="slide-h">Clonar la plantilla con un flavor propio</h2>
   <div class="exercise" id="ex1">
@@ -180,7 +220,7 @@ qm template 9000</code></pre>
 </section>
 
 <!-- 7 -->
-<section class="slide" data-idx="6">
+<section class="slide" data-idx="9">
   <div class="eyebrow">Ejercicio 2</div>
   <h2 class="slide-h">Sacar un snapshot antes de experimentar</h2>
   <p class="lead">Antes de tocar la configuración de una VM en producción, siempre conviene un punto de restauración rápido.</p>
@@ -196,7 +236,7 @@ qm template 9000</code></pre>
 </section>
 
 <!-- 8 -->
-<section class="slide" data-idx="7">
+<section class="slide" data-idx="10">
   <div class="eyebrow">Paso 3 · Clustering</div>
   <h2 class="slide-h">Sumando un segundo nodo</h2>
   <p class="lead">Un cluster de Proxmox permite mover VMs entre servidores físicos. Se arma uniendo un nodo nuevo al cluster existente.</p>
@@ -214,7 +254,7 @@ pvecm status</code></pre>
 </section>
 
 <!-- 9 -->
-<section class="slide" data-idx="8">
+<section class="slide" data-idx="11">
   <div class="eyebrow">Ejercicio 3</div>
   <h2 class="slide-h">Migración en vivo</h2>
   <p class="lead">Con el cluster armado, podemos mover una VM corriendo de un nodo a otro sin apagarla.</p>
@@ -230,7 +270,7 @@ pvecm status</code></pre>
 </section>
 
 <!-- 10 -->
-<section class="slide" data-idx="9">
+<section class="slide" data-idx="12">
   <div class="eyebrow">Entregable del laboratorio</div>
   <h2 class="slide-h">Checklist para aprobar</h2>
   <ul class="checklist">
