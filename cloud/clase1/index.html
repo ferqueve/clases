@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 1 — Generalidades de Cloud Computing</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#38BDF8;
+  --gold:#F0B429;
+  --ground:#0B1120;
+  --ground2:#111a33;
+  --mist:#E2E8F0;
+  --mist-dim:#8DA0BE;
+  --line:rgba(226,232,240,.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Inter',sans-serif; background:var(--ground); color:var(--mist);
+  overflow:hidden; height:100vh;
+}
+code, .mono{font-family:'JetBrains Mono',monospace}
+
+/* ---- horizon backdrop: ground below, sky/cloud drift above ---- */
+#horizon{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sky-layer{position:absolute; inset:0; background:
+  radial-gradient(ellipse at 20% -10%, rgba(56,189,248,.14), transparent 55%),
+  radial-gradient(ellipse at 80% 0%, rgba(240,180,41,.08), transparent 50%),
+  var(--ground);}
+.ground-line{position:absolute; left:0; right:0; bottom:0; height:38%;
+  background:linear-gradient(180deg, transparent 0%, rgba(56,189,248,.05) 40%, var(--ground2) 100%);
+  border-top:1px solid var(--line);}
+.cloud-drift{position:absolute; border-radius:50%; filter:blur(30px); opacity:.16; background:var(--sky);
+  animation:drift linear infinite;}
+@keyframes drift{ from{transform:translateX(-10vw)} to{transform:translateX(110vw)} }
+.node{position:absolute; width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:.5;}
+.node::after{content:'';position:absolute; top:2px; left:5px; width:60px; height:1px; background:linear-gradient(90deg, var(--gold), transparent); opacity:.4;}
+
+/* ---- HUD ---- */
+#progress-track{position:fixed; top:0; left:0; right:0; height:4px; background:var(--line); z-index:50;}
+#progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--sky),var(--gold)); transition:width .4s ease;}
+#hud{position:fixed; top:16px; right:20px; z-index:50; display:flex; gap:14px; align-items:center; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim);}
+#hud .badge-slide{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.35); color:var(--sky); padding:4px 10px; border-radius:20px;}
+#course-tag{position:fixed; top:16px; left:20px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); letter-spacing:.06em;}
+#course-tag strong{color:var(--sky)}
+
+/* ---- slides ---- */
+.slide{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center;
+  padding:90px 8vw 70px; opacity:0; pointer-events:none; transition:opacity .35s ease;}
+.slide.active{opacity:1; pointer-events:auto;}
+.eyebrow{font-family:'JetBrains Mono',monospace; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; font-size:.85rem; margin-bottom:14px;}
+h1.title{font-size:3.4rem; font-weight:800; line-height:1.05; margin:0 0 20px; letter-spacing:-.02em;}
+h1.title .accent{color:var(--sky)}
+h2.slide-h{font-size:2.1rem; font-weight:800; margin:0 0 26px; letter-spacing:-.01em;}
+p.lead{font-size:1.15rem; color:var(--mist-dim); max-width:640px; line-height:1.6;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:22px; max-width:1000px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1100px;}
+.card{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:24px;}
+.card h3{font-size:1.05rem; margin:0 0 10px; display:flex; align-items:center; gap:10px;}
+.card h3 i{color:var(--sky)}
+.card p{color:var(--mist-dim); font-size:.92rem; line-height:1.55; margin:0;}
+.vs-wrap{display:flex; gap:0; max-width:900px; border-radius:16px; overflow:hidden; border:1px solid var(--line);}
+.vs-col{flex:1; padding:28px;}
+.vs-col.onprem{background:rgba(240,180,41,.06); border-right:1px solid var(--line);}
+.vs-col.cloud{background:rgba(56,189,248,.06);}
+.vs-col h4{font-family:'JetBrains Mono',monospace; font-size:.95rem; margin-bottom:14px;}
+.vs-col.onprem h4{color:var(--gold)}
+.vs-col.cloud h4{color:var(--sky)}
+.vs-col ul{margin:0; padding-left:18px; color:var(--mist-dim); font-size:.92rem; line-height:1.9;}
+.stat{font-family:'JetBrains Mono',monospace; font-weight:800; font-size:2.6rem; color:var(--sky);}
+.stat-label{color:var(--mist-dim); font-size:.85rem;}
+.tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+
+/* nav */
+#nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
+#nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
+#dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
+#dots .dot{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.3s;}
+#dots .dot.active{background:var(--sky); width:22px; border-radius:4px;}
+
+.quiz-btn{background:linear-gradient(135deg,var(--sky),#0ea5e9); border:none; color:#0B1120; font-weight:700; padding:14px 30px; border-radius:10px; font-size:1rem; margin-top:24px; cursor:pointer;}
+.quiz-btn:hover{filter:brightness(1.08)}
+.locked{opacity:.4; filter:grayscale(.6);}
+
+@media (max-width:820px){
+  h1.title{font-size:2.1rem}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .vs-wrap{flex-direction:column}
+  .slide{padding:80px 6vw 90px}
+}
+</style>
+</head>
+<body>
+
+<div id="horizon">
+  <div class="sky-layer"></div>
+  <div class="cloud-drift" style="width:260px;height:100px;top:8%;animation-duration:52s;"></div>
+  <div class="cloud-drift" style="width:180px;height:70px;top:18%;animation-duration:74s;animation-delay:-20s;"></div>
+  <div class="cloud-drift" style="width:320px;height:120px;top:4%;animation-duration:90s;animation-delay:-45s;"></div>
+  <div class="node" style="top:30%;left:15%;"></div>
+  <div class="node" style="top:22%;left:60%;"></div>
+  <div class="node" style="top:38%;left:80%;"></div>
+  <div class="ground-line"></div>
+</div>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Clase 1</div>
+<div id="hud"><span class="badge-slide" id="slide-counter">1 / 9</span></div>
+
+<!-- SLIDE 1 -->
+<section class="slide active" data-idx="0">
+  <div class="eyebrow">Módulo 1 · Generalidades</div>
+  <h1 class="title">Cloud Computing:<br>guardar el mundo <span class="accent">fuera del disco</span></h1>
+  <p class="lead">No es un lugar. Es una forma distinta de pagar, escalar y confiar en infraestructura que no ves ni tocás. Hoy vamos a desarmar el término hasta que deje de sonar a marketing.</p>
+  <div class="tag-row">
+    <span><i class="fa-solid fa-cloud"></i> IaaS · PaaS · SaaS</span>
+    <span><i class="fa-solid fa-network-wired"></i> Redes globales</span>
+    <span><i class="fa-solid fa-scale-balanced"></i> Cloud vs. on-premise</span>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide" data-idx="1">
+  <div class="eyebrow">¿Qué es, realmente?</div>
+  <h2 class="slide-h">Una definición sin humo</h2>
+  <p class="lead" style="max-width:760px">Cloud computing es la entrega de recursos de cómputo —servidores, almacenamiento, bases de datos, redes, software— <strong style="color:var(--mist)">a través de Internet</strong>, con pago por uso, en lugar de comprar y mantener el hardware vos mismo.</p>
+  <div class="grid-3" style="margin-top:26px">
+    <div class="card"><h3><i class="fa-solid fa-server"></i>No es "un" servidor</h3><p>Es un conjunto de centros de datos redundantes que un proveedor opera por vos, en cualquier parte del planeta.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-credit-card"></i>Se paga por uso</h3><p>El modelo económico cambia: de gasto de capital (comprar hardware) a gasto operativo (consumir servicio).</p></div>
+    <div class="card"><h3><i class="fa-solid fa-bolt"></i>Se activa bajo demanda</h3><p>Encendés y apagás recursos en minutos, sin llamar a nadie ni esperar un envío.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide" data-idx="2">
+  <div class="eyebrow">El contraste que importa</div>
+  <h2 class="slide-h">On-premise vs. Cloud</h2>
+  <div class="vs-wrap">
+    <div class="vs-col onprem">
+      <h4><i class="fa-solid fa-warehouse"></i> ON-PREMISE</h4>
+      <ul>
+        <li>Vos comprás y sos dueño del hardware</li>
+        <li>Capacidad fija, decidida con meses de antelación</li>
+        <li>Tu equipo mantiene, actualiza y repara todo</li>
+        <li>Escalar = comprar más fierro</li>
+      </ul>
+    </div>
+    <div class="vs-col cloud">
+      <h4><i class="fa-solid fa-cloud"></i> CLOUD</h4>
+      <ul>
+        <li>El proveedor es dueño; vos alquilás capacidad</li>
+        <li>Capacidad elástica, ajustable en minutos</li>
+        <li>El proveedor mantiene el hardware físico</li>
+        <li>Escalar = un clic o una API</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide" data-idx="3">
+  <div class="eyebrow">Un poco de historia</div>
+  <h2 class="slide-h">Cómo llegamos hasta acá</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-timeline"></i>De mainframes a "utility computing"</h3><p>En los 60-70, empresas compartían tiempo de mainframe. La idea de "cómputo como servicio" es más vieja que Internet mismo.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-rocket"></i>2006: el quiebre real</h3><p>Amazon lanza EC2/S3. Por primera vez, cualquiera con una tarjeta de crédito alquila infraestructura de nivel empresarial por hora.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-chart-line"></i>2010s: explosión de proveedores</h3><p>Azure, Google Cloud y decenas de proveedores regionales compiten. El cloud deja de ser una apuesta y pasa a ser la norma.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-mobile-screen"></i>Hoy: cloud-first, edge, móvil</h3><p>Las apps nuevas nacen pensadas para el cloud, no migradas a él. Es el terreno que vamos a explorar todo el curso.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide" data-idx="4">
+  <div class="eyebrow">El vocabulario base</div>
+  <h2 class="slide-h">5 características esenciales (NIST)</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-hand-pointer"></i>Autoservicio bajo demanda</h3><p>Pedís cómputo sin intervención humana del proveedor.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-globe"></i>Acceso amplio a la red</h3><p>Disponible desde cualquier dispositivo, vía Internet estándar.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-layer-group"></i>Pool de recursos</h3><p>Los recursos físicos se comparten entre múltiples clientes (multi-tenant).</p></div>
+    <div class="card"><h3><i class="fa-solid fa-arrows-left-right-to-line"></i>Elasticidad rápida</h3><p>Escalás hacia arriba o abajo casi instantáneamente, según la carga real.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-gauge"></i>Servicio medido</h3><p>Todo se mide: CPU, storage, transferencia. Pagás exactamente lo que consumís.</p></div>
+    <div class="card" style="background:rgba(240,180,41,.06); border-color:rgba(240,180,41,.3)"><h3><i class="fa-solid fa-lightbulb" style="color:var(--gold)"></i>Para recordar</h3><p style="color:var(--mist)">Si a un servicio le falta una de estas cinco, probablemente no sea "cloud" en sentido estricto — es solo un servidor remoto.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide" data-idx="5">
+  <div class="eyebrow">La era del cloud, en números</div>
+  <h2 class="slide-h">Por qué importa hoy</h2>
+  <div class="grid-3">
+    <div class="card"><div class="stat">24/7</div><div class="stat-label">Disponibilidad esperada por defecto en cualquier producto digital moderno</div></div>
+    <div class="card"><div class="stat">Global</div><div class="stat-label">Un servicio puede atender usuarios en distintos continentes desde el día 1</div></div>
+    <div class="card"><div class="stat">Minutos</div><div class="stat-label">Es lo que hoy toma levantar infraestructura que antes tomaba semanas</div></div>
+  </div>
+  <p class="lead" style="margin-top:24px">La pregunta ya no es "¿migramos al cloud?" sino "¿qué combinación de cloud público, privado e híbrido conviene a esta organización?" — y de eso hablamos en las próximas clases.</p>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" data-idx="6">
+  <div class="eyebrow">En la práctica</div>
+  <h2 class="slide-h">Usos cotidianos del cloud computing</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-play"></i>Streaming</h3><p>Video y música servidos desde centros de datos distribuidos globalmente.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-envelope"></i>Correo y ofimática</h3><p>Gmail, Office 365 — tus documentos viven en la nube, no en tu disco.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-database"></i>Backups y sincronización</h3><p>Fotos, archivos y configuraciones respaldados automáticamente.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-cart-shopping"></i>E-commerce</h3><p>Sitios que escalan en Black Friday sin comprar servidores nuevos cada año.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-brain"></i>IA como servicio</h3><p>Modelos de lenguaje e imagen consumidos vía API, sin entrenar nada localmente.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-gamepad"></i>Gaming y backends móviles</h3><p>Marcadores, partidas guardadas y multijugador en tiempo real, todo cloud-backed.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 8 -->
+<section class="slide" data-idx="7">
+  <div class="eyebrow">Cierre del módulo</div>
+  <h2 class="slide-h">Lo que se lleva de esta clase</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Cloud ≠ "el servidor de otro"</h3><p>Es un modelo de entrega con 5 características esenciales, no solo tercerización.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>El cambio es económico y operativo</h3><p>CapEx → OpEx, capacidad fija → elástica, mantenimiento propio → del proveedor.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>No hay un solo "cloud"</h3><p>Hay modelos de despliegue y de servicio distintos — eso viene en las próximas clases.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Ya está en todos lados</h3><p>Aunque no lo elijas activamente, ya usás cloud computing todos los días.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 9: QUIZ -->
+<section class="slide" data-idx="8">
+  <div class="eyebrow">Autoevaluación</div>
+  <h2 class="slide-h">Control rápido — Generalidades de Cloud</h2>
+  <p class="lead">5 preguntas para cerrar el módulo. Podés repetirlo las veces que quieras.</p>
+  <button class="quiz-btn" onclick="startQuiz()"><i class="fa-solid fa-play"></i> Iniciar control</button>
+</section>
+
+<div id="dots"></div>
+<div id="nav-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> navegar &nbsp;·&nbsp; <kbd>Q</kbd> control</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=>goTo(i));
+  dotsWrap.appendChild(d);
+});
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  document.querySelectorAll('#dots .dot').forEach((d,i)=> d.classList.toggle('active', i===current));
+  document.getElementById('slide-counter').textContent = (current+1)+' / '+total;
+  document.getElementById('progress-fill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function next(){ goTo(current+1); }
+function prev(){ goTo(current-1); }
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+  if(e.key.toLowerCase()==='q') startQuiz();
+});
+render();
+
+const questions = [
+  {q:"¿Cuál de estas NO es una de las 5 características esenciales del cloud según NIST?", opts:["Autoservicio bajo demanda","Elasticidad rápida","Propiedad exclusiva del hardware por el cliente","Servicio medido"], correct:2},
+  {q:"El cambio de modelo económico que trae el cloud se resume como:", opts:["De OpEx a CapEx","De CapEx a OpEx","Elimina todo costo","Solo afecta a grandes empresas"], correct:1},
+  {q:"¿Qué hito de 2006 se considera el quiebre real del cloud computing moderno?", opts:["Lanzamiento de Gmail","Lanzamiento de EC2/S3 de Amazon","Creación de Linux","Primer smartphone"], correct:1},
+  {q:"'Pool de recursos' (resource pooling) significa que:", opts:["Cada cliente tiene su propio datacenter dedicado","Los recursos físicos se comparten entre múltiples clientes","No se puede escalar","Solo aplica a redes"], correct:1},
+  {q:"Un ejemplo cotidiano de cloud computing es:", opts:["Guardar un archivo únicamente en un pendrive","Sincronizar fotos automáticamente entre dispositivos","Apagar la computadora","Instalar software desde un CD"], correct:1}
+];
+
+async function startQuiz(){
+  let score = 0;
+  for(let i=0;i<questions.length;i++){
+    const qq = questions[i];
+    const {value} = await Swal.fire({
+      title: 'Pregunta '+(i+1)+' / '+questions.length,
+      html: '<p style="text-align:left;color:#334155;font-size:1rem">'+qq.q+'</p>',
+      input: 'radio',
+      inputOptions: Object.fromEntries(qq.opts.map((o,idx)=>[idx,o])),
+      confirmButtonText: 'Responder',
+      confirmButtonColor: '#38BDF8',
+      background:'#f8fafc',
+      inputValidator: (v)=> !v && 'Elegí una opción'
+    });
+    if(value !== undefined && parseInt(value) === qq.correct){
+      score++;
+      await Swal.fire({icon:'success', title:'¡Correcto!', timer:900, showConfirmButton:false, background:'#f8fafc'});
+    } else {
+      await Swal.fire({icon:'error', title:'No es esa', text:'La correcta era: '+qq.opts[qq.correct], background:'#f8fafc'});
+    }
+  }
+  Swal.fire({
+    title:'Resultado: '+score+' / '+questions.length,
+    icon: score===questions.length?'success':(score>=3?'info':'warning'),
+    confirmButtonColor:'#38BDF8',
+    background:'#f8fafc',
+    text: score===questions.length ? '¡Perfecto! Dominás las generalidades.' : 'Repasá las tarjetas de la clase y volvé a intentar.'
+  });
+}
+</script>
+</body>
+</html>

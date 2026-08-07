@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 3 — Escalabilidad y Redundancia</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#38BDF8;
+  --gold:#F0B429;
+  --ground:#0B1120;
+  --ground2:#111a33;
+  --mist:#E2E8F0;
+  --mist-dim:#8DA0BE;
+  --line:rgba(226,232,240,.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Inter',sans-serif; background:var(--ground); color:var(--mist);
+  overflow:hidden; height:100vh;
+}
+code, .mono{font-family:'JetBrains Mono',monospace}
+
+/* ---- horizon backdrop: ground below, sky/cloud drift above ---- */
+#horizon{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sky-layer{position:absolute; inset:0; background:
+  radial-gradient(ellipse at 20% -10%, rgba(56,189,248,.14), transparent 55%),
+  radial-gradient(ellipse at 80% 0%, rgba(240,180,41,.08), transparent 50%),
+  var(--ground);}
+.ground-line{position:absolute; left:0; right:0; bottom:0; height:38%;
+  background:linear-gradient(180deg, transparent 0%, rgba(56,189,248,.05) 40%, var(--ground2) 100%);
+  border-top:1px solid var(--line);}
+.cloud-drift{position:absolute; border-radius:50%; filter:blur(30px); opacity:.16; background:var(--sky);
+  animation:drift linear infinite;}
+@keyframes drift{ from{transform:translateX(-10vw)} to{transform:translateX(110vw)} }
+.node{position:absolute; width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:.5;}
+.node::after{content:'';position:absolute; top:2px; left:5px; width:60px; height:1px; background:linear-gradient(90deg, var(--gold), transparent); opacity:.4;}
+
+/* ---- HUD ---- */
+#progress-track{position:fixed; top:0; left:0; right:0; height:4px; background:var(--line); z-index:50;}
+#progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--sky),var(--gold)); transition:width .4s ease;}
+#hud{position:fixed; top:16px; right:20px; z-index:50; display:flex; gap:14px; align-items:center; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim);}
+#hud .badge-slide{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.35); color:var(--sky); padding:4px 10px; border-radius:20px;}
+#course-tag{position:fixed; top:16px; left:20px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); letter-spacing:.06em;}
+#course-tag strong{color:var(--sky)}
+
+/* ---- slides ---- */
+.slide{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center;
+  padding:90px 8vw 70px; opacity:0; pointer-events:none; transition:opacity .35s ease;}
+.slide.active{opacity:1; pointer-events:auto;}
+.eyebrow{font-family:'JetBrains Mono',monospace; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; font-size:.85rem; margin-bottom:14px;}
+h1.title{font-size:3.4rem; font-weight:800; line-height:1.05; margin:0 0 20px; letter-spacing:-.02em;}
+h1.title .accent{color:var(--sky)}
+h2.slide-h{font-size:2.1rem; font-weight:800; margin:0 0 26px; letter-spacing:-.01em;}
+p.lead{font-size:1.15rem; color:var(--mist-dim); max-width:640px; line-height:1.6;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:22px; max-width:1000px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1100px;}
+.card{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:24px;}
+.card h3{font-size:1.05rem; margin:0 0 10px; display:flex; align-items:center; gap:10px;}
+.card h3 i{color:var(--sky)}
+.card p{color:var(--mist-dim); font-size:.92rem; line-height:1.55; margin:0;}
+.vs-wrap{display:flex; gap:0; max-width:900px; border-radius:16px; overflow:hidden; border:1px solid var(--line);}
+.vs-col{flex:1; padding:28px;}
+.vs-col.onprem{background:rgba(240,180,41,.06); border-right:1px solid var(--line);}
+.vs-col.cloud{background:rgba(56,189,248,.06);}
+.vs-col h4{font-family:'JetBrains Mono',monospace; font-size:.95rem; margin-bottom:14px;}
+.vs-col.onprem h4{color:var(--gold)}
+.vs-col.cloud h4{color:var(--sky)}
+.vs-col ul{margin:0; padding-left:18px; color:var(--mist-dim); font-size:.92rem; line-height:1.9;}
+.stat{font-family:'JetBrains Mono',monospace; font-weight:800; font-size:2.6rem; color:var(--sky);}
+.stat-label{color:var(--mist-dim); font-size:.85rem;}
+.tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+
+/* nav */
+#nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
+#nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
+#dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
+#dots .dot{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.3s;}
+#dots .dot.active{background:var(--sky); width:22px; border-radius:4px;}
+
+.quiz-btn{background:linear-gradient(135deg,var(--sky),#0ea5e9); border:none; color:#0B1120; font-weight:700; padding:14px 30px; border-radius:10px; font-size:1rem; margin-top:24px; cursor:pointer;}
+.quiz-btn:hover{filter:brightness(1.08)}
+.locked{opacity:.4; filter:grayscale(.6);}
+
+@media (max-width:820px){
+  h1.title{font-size:2.1rem}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .vs-wrap{flex-direction:column}
+  .slide{padding:80px 6vw 90px}
+}
+</style>
+</head>
+<body>
+
+<div id="horizon">
+  <div class="sky-layer"></div>
+  <div class="cloud-drift" style="width:260px;height:100px;top:8%;animation-duration:52s;"></div>
+  <div class="cloud-drift" style="width:180px;height:70px;top:18%;animation-duration:74s;animation-delay:-20s;"></div>
+  <div class="cloud-drift" style="width:320px;height:120px;top:4%;animation-duration:90s;animation-delay:-45s;"></div>
+  <div class="node" style="top:30%;left:15%;"></div>
+  <div class="node" style="top:22%;left:60%;"></div>
+  <div class="node" style="top:38%;left:80%;"></div>
+  <div class="ground-line"></div>
+</div>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Clase 3</div>
+<div id="hud"><span class="badge-slide" id="slide-counter">1 / 10</span></div>
+
+<!-- SLIDE 1 -->
+<section class="slide active" data-idx="0">
+  <div class="eyebrow">Módulo 3 · Escalabilidad y Redundancia</div>
+  <h1 class="title">Crecer sin caerse:<br>escalar <span class="accent">y no depender de una sola pieza</span></h1>
+  <p class="lead">Hoy vemos las dos ideas que hacen que un servicio cloud aguante tráfico real: escalar cuando hace falta, y no depender nunca de un único punto que pueda fallar.</p>
+  <div class="tag-row">
+    <span><i class="fa-solid fa-arrows-up-down"></i> Escalabilidad vertical/horizontal</span>
+    <span><i class="fa-solid fa-shield-halved"></i> Redundancia</span>
+    <span><i class="fa-solid fa-scale-balanced"></i> Balanceo de carga</span>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide" data-idx="1">
+  <div class="eyebrow">Dos formas de crecer</div>
+  <h2 class="slide-h">Escalabilidad vertical vs. horizontal</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-arrow-up"></i>Vertical (scale up)</h3><p>Agrandar la misma instancia: más CPU, más RAM. Simple, pero tiene un techo físico y casi siempre requiere un reinicio.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-arrows-left-right"></i>Horizontal (scale out)</h3><p>Sumar más instancias en paralelo. No tiene techo práctico y permite tolerar la caída de una sin afectar el servicio.</p></div>
+  </div>
+  <p class="lead" style="margin-top:20px">El cloud favorece lo horizontal: es lo que realmente aprovecha la elasticidad y la redundancia — por eso la mayoría de las arquitecturas modernas están pensadas para sumar instancias, no para agrandar una sola.</p>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide" data-idx="2">
+  <div class="eyebrow">Que lo haga la máquina, no vos</div>
+  <h2 class="slide-h">Auto-scaling</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-gauge-high"></i>Reactivo</h3><p>Suma o quita instancias según una métrica en tiempo real (ej. CPU &gt; 70%).</p></div>
+    <div class="card"><h3><i class="fa-solid fa-calendar-days"></i>Programado</h3><p>Anticipa picos conocidos (Black Friday, horario laboral) escalando antes de que ocurran.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-chart-line"></i>Predictivo</h3><p>Usa históricos y modelos para anticipar demanda futura, no solo reaccionar a la actual.</p></div>
+  </div>
+  <p class="lead" style="margin-top:20px">La regla mental: escalar hacia arriba rápido (para no perder usuarios) y hacia abajo con cautela (para no cortar una sesión activa a mitad de camino).</p>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide" data-idx="3">
+  <div class="eyebrow">La otra mitad del problema</div>
+  <h2 class="slide-h">¿Qué es la redundancia?</h2>
+  <p class="lead" style="max-width:760px">Redundancia es tener <strong style="color:var(--mist)">más de un componente capaz de hacer el mismo trabajo</strong>, para que la falla de uno no tumbe el servicio. Es la respuesta directa al "single point of failure" (SPOF): esa única pieza que, si se cae, se cae todo.</p>
+  <div class="grid-3" style="margin-top:20px">
+    <div class="card"><h3><i class="fa-solid fa-copy"></i>Réplicas de instancia</h3><p>Varias copias del mismo servicio corriendo en paralelo.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-database"></i>Réplicas de datos</h3><p>Bases de datos con copias sincronizadas (master-replica) en distintos nodos.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-building-shield"></i>Redundancia geográfica</h3><p>Duplicar en otra zona o región para sobrevivir a un incidente físico completo.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide" data-idx="4">
+  <div class="eyebrow">Cómo se mide todo esto</div>
+  <h2 class="slide-h">Alta disponibilidad (HA) y SLA</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-percent"></i>99.9% ("tres nueves")</h3><p>≈ 8.7 horas de caída tolerada por año.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-percent"></i>99.99% ("cuatro nueves")</h3><p>≈ 52 minutos de caída tolerada por año.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-file-contract"></i>SLA</h3><p>El compromiso contractual del proveedor sobre disponibilidad — y las penalidades si no lo cumple.</p></div>
+  </div>
+  <p class="lead" style="margin-top:20px">Cada "nueve" adicional cuesta exponencialmente más caro de sostener. Diseñar para alta disponibilidad es, en el fondo, decidir cuánta redundancia estás dispuesto a pagar.</p>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide" data-idx="5">
+  <div class="eyebrow">Repartiendo el tráfico</div>
+  <h2 class="slide-h">Balanceo de carga</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-arrows-rotate"></i>Round robin</h3><p>Reparte pedidos en orden secuencial entre las instancias disponibles.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-signal"></i>Least connections</h3><p>Envía cada pedido a la instancia con menos conexiones activas en ese momento.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-heart-pulse"></i>Health checks</h3><p>El balanceador deja de enviar tráfico a una instancia que no responde bien, sin intervención humana.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" data-idx="6">
+  <div class="eyebrow">Cuando algo falla igual</div>
+  <h2 class="slide-h">Failover y tolerancia a fallos</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-right-left"></i>Failover automático</h3><p>Ante la caída de un nodo, el tráfico se redirige a una réplica sana sin intervención manual.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-clock-rotate-left"></i>RTO / RPO</h3><p>Cuánto tiempo tarda en recuperarse (RTO) y cuántos datos como máximo se pueden perder (RPO) ante un incidente.</p></div>
+  </div>
+  <p class="lead" style="margin-top:20px">Diseñar redundancia sin definir estos dos números es diseñar a ciegas: no sabés si tu plan realmente alcanza para el negocio.</p>
+</section>
+
+<!-- SLIDE 8 -->
+<section class="slide" data-idx="7">
+  <div class="eyebrow">Dónde lo vamos a tocar</div>
+  <h2 class="slide-h">Herramientas para el laboratorio</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-dharmachakra"></i>Docker Swarm</h3><p>Orquestador simple integrado en Docker: pocos comandos, ideal para ver réplicas, escalado y balanceo sin la curva de aprendizaje completa de Kubernetes.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-dharmachakra"></i>k3s (Kubernetes liviano)</h3><p>Kubernetes real pero recortado para laboratorio: mismos conceptos (pods, réplicas, servicios) con menos recursos necesarios.</p></div>
+  </div>
+  <p class="lead" style="margin-top:20px">En el laboratorio vamos a levantar un servicio con 3 réplicas, tirar abajo un nodo a propósito y ver el failover en vivo — la misma lógica que "region/zona" de la Clase 2, pero a nivel de contenedores.</p>
+</section>
+
+<!-- SLIDE 9 -->
+<section class="slide" data-idx="8">
+  <div class="eyebrow">Cierre del módulo</div>
+  <h2 class="slide-h">Lo que se lleva de esta clase</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Escalar horizontal es la norma en cloud</h3><p>Sumar instancias, no agrandar una sola, es lo que da elasticidad real.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Redundancia elimina puntos únicos de falla</h3><p>Réplicas de instancia, de datos y geográficas atacan el mismo problema desde distintos ángulos.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>La disponibilidad se paga</h3><p>Cada "nueve" adicional de SLA implica más infraestructura redundante y más costo.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>RTO/RPO hacen la redundancia medible</h3><p>Sin esos números, no hay forma de saber si el diseño realmente alcanza.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 10: QUIZ -->
+<section class="slide" data-idx="9">
+  <div class="eyebrow">Autoevaluación</div>
+  <h2 class="slide-h">Control rápido — Escalabilidad y Redundancia</h2>
+  <p class="lead">5 preguntas para cerrar el módulo. Podés repetirlo las veces que quieras.</p>
+  <button class="quiz-btn" onclick="startQuiz()"><i class="fa-solid fa-play"></i> Iniciar control</button>
+</section>
+
+<div id="dots"></div>
+<div id="nav-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> navegar &nbsp;·&nbsp; <kbd>Q</kbd> control</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=>goTo(i));
+  dotsWrap.appendChild(d);
+});
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  document.querySelectorAll('#dots .dot').forEach((d,i)=> d.classList.toggle('active', i===current));
+  document.getElementById('slide-counter').textContent = (current+1)+' / '+total;
+  document.getElementById('progress-fill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function next(){ goTo(current+1); }
+function prev(){ goTo(current-1); }
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+  if(e.key.toLowerCase()==='q') startQuiz();
+});
+render();
+
+const questions = [
+  {q:"Escalar horizontalmente (scale out) significa:", opts:["Agrandar los recursos de una misma instancia","Sumar más instancias en paralelo","Apagar instancias sin reemplazo","Cambiar de proveedor cloud"], correct:1},
+  {q:"Un 'single point of failure' (SPOF) es:", opts:["Un componente redundante","Una única pieza cuya caída tumba todo el servicio","Un tipo de balanceador","Un SLA del 99.99%"], correct:1},
+  {q:"Un SLA de 99.99% tolera aproximadamente:", opts:["8.7 horas de caída al año","52 minutos de caída al año","Una semana de caída al año","Cero caídas nunca"], correct:1},
+  {q:"El algoritmo de balanceo 'least connections' envía el tráfico a:", opts:["La instancia con menos conexiones activas","Siempre la primera instancia de la lista","Una instancia al azar","La instancia con más CPU libre"], correct:0},
+  {q:"RPO se refiere a:", opts:["El tiempo de recuperación tras un incidente","La cantidad máxima de datos que se puede perder","El precio del SLA","El nombre del balanceador"], correct:1}
+];
+
+async function startQuiz(){
+  let score = 0;
+  for(let i=0;i<questions.length;i++){
+    const qq = questions[i];
+    const {value} = await Swal.fire({
+      title: 'Pregunta '+(i+1)+' / '+questions.length,
+      html: '<p style="text-align:left;color:#334155;font-size:1rem">'+qq.q+'</p>',
+      input: 'radio',
+      inputOptions: Object.fromEntries(qq.opts.map((o,idx)=>[idx,o])),
+      confirmButtonText: 'Responder',
+      confirmButtonColor: '#38BDF8',
+      background:'#f8fafc',
+      inputValidator: (v)=> !v && 'Elegí una opción'
+    });
+    if(value !== undefined && parseInt(value) === qq.correct){
+      score++;
+      await Swal.fire({icon:'success', title:'¡Correcto!', timer:900, showConfirmButton:false, background:'#f8fafc'});
+    } else {
+      await Swal.fire({icon:'error', title:'No es esa', text:'La correcta era: '+qq.opts[qq.correct], background:'#f8fafc'});
+    }
+  }
+  Swal.fire({
+    title:'Resultado: '+score+' / '+questions.length,
+    icon: score===questions.length?'success':(score>=3?'info':'warning'),
+    confirmButtonColor:'#38BDF8',
+    background:'#f8fafc',
+    text: score===questions.length ? '¡Perfecto! Dominás las generalidades.' : 'Repasá las tarjetas de la clase y volvé a intentar.'
+  });
+}
+</script>
+</body>
+</html>

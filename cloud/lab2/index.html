@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio — Escalabilidad y Redundancia con Docker Swarm</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#38BDF8; --gold:#F0B429; --ground:#0B1120; --ground2:#111a33;
+  --mist:#E2E8F0; --mist-dim:#8DA0BE; --line:rgba(226,232,240,.12); --ok:#34D399; --bad:#F87171;
+}
+*{box-sizing:border-box}
+body{margin:0; font-family:'Inter',sans-serif; background:var(--ground); color:var(--mist); overflow:hidden; height:100vh;}
+code,.mono{font-family:'JetBrains Mono',monospace}
+#horizon{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sky-layer{position:absolute; inset:0; background:
+  radial-gradient(ellipse at 20% -10%, rgba(56,189,248,.14), transparent 55%),
+  radial-gradient(ellipse at 80% 0%, rgba(240,180,41,.08), transparent 50%), var(--ground);}
+.ground-line{position:absolute; left:0; right:0; bottom:0; height:38%;
+  background:linear-gradient(180deg, transparent 0%, rgba(56,189,248,.05) 40%, var(--ground2) 100%);
+  border-top:1px solid var(--line);}
+.cloud-drift{position:absolute; border-radius:50%; filter:blur(30px); opacity:.16; background:var(--sky); animation:drift linear infinite;}
+@keyframes drift{ from{transform:translateX(-10vw)} to{transform:translateX(110vw)} }
+#progress-track{position:fixed; top:0; left:0; right:0; height:4px; background:var(--line); z-index:50;}
+#progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--sky),var(--gold)); transition:width .4s ease;}
+#hud{position:fixed; top:16px; right:20px; z-index:50; display:flex; gap:14px; align-items:center; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim);}
+#hud .badge-slide{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.35); color:var(--sky); padding:4px 10px; border-radius:20px;}
+#hud .badge-score{background:rgba(240,180,41,.1); border:1px solid rgba(240,180,41,.35); color:var(--gold); padding:4px 10px; border-radius:20px;}
+#course-tag{position:fixed; top:16px; left:20px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); letter-spacing:.06em;}
+#course-tag strong{color:var(--sky)}
+.slide{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center; padding:90px 8vw 70px; opacity:0; pointer-events:none; transition:opacity .35s ease; overflow-y:auto;}
+.slide.active{opacity:1; pointer-events:auto;}
+.eyebrow{font-family:'JetBrains Mono',monospace; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; font-size:.85rem; margin-bottom:14px;}
+h1.title{font-size:3.1rem; font-weight:800; line-height:1.08; margin:0 0 20px; letter-spacing:-.02em;}
+h1.title .accent{color:var(--sky)}
+h2.slide-h{font-size:2rem; font-weight:800; margin:0 0 22px; letter-spacing:-.01em;}
+p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:1000px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:1100px;}
+.card{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:22px;}
+.card h3{font-size:1rem; margin:0 0 10px; display:flex; align-items:center; gap:10px;}
+.card h3 i{color:var(--sky)}
+.card p{color:var(--mist-dim); font-size:.9rem; line-height:1.55; margin:0;}
+.term{background:#0d1424; border:1px solid var(--line); border-radius:12px; padding:0; overflow:hidden; max-width:820px; margin-top:16px;}
+.term-bar{background:rgba(255,255,255,.04); padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); border-bottom:1px solid var(--line); display:flex; gap:8px; align-items:center;}
+.term-bar .dot{width:9px;height:9px;border-radius:50%;}
+.term pre{margin:0; padding:16px; font-size:.88rem; overflow-x:auto;}
+.exercise{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:22px; max-width:820px; margin-top:18px;}
+.exercise .prompt{color:var(--mist); font-size:.98rem; margin-bottom:12px;}
+.exercise input{width:100%; background:#0d1424; border:1px solid var(--line); border-radius:8px; padding:10px 14px; color:var(--sky); font-family:'JetBrains Mono',monospace; font-size:.92rem;}
+.exercise .btn-row{display:flex; gap:10px; margin-top:12px;}
+.exercise button{border:none; border-radius:8px; padding:9px 18px; font-weight:600; cursor:pointer; font-size:.88rem;}
+.btn-check{background:linear-gradient(135deg,var(--sky),#0ea5e9); color:#0B1120;}
+.btn-hint{background:rgba(240,180,41,.12); border:1px solid rgba(240,180,41,.35)!important; color:var(--gold);}
+.feedback{margin-top:10px; font-size:.88rem; font-family:'JetBrains Mono',monospace;}
+.feedback.ok{color:var(--ok)}
+.feedback.bad{color:var(--bad)}
+.feedback.hint{color:var(--gold)}
+.tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+#nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
+#nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
+#dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
+#dots .dot{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.3s;}
+#dots .dot.active{background:var(--sky); width:22px; border-radius:4px;}
+.quiz-btn{background:linear-gradient(135deg,var(--sky),#0ea5e9); border:none; color:#0B1120; font-weight:700; padding:14px 30px; border-radius:10px; font-size:1rem; margin-top:24px; cursor:pointer;}
+.checklist li{margin-bottom:8px; color:var(--mist-dim)}
+.checklist li::marker{color:var(--sky)}
+@media (max-width:820px){
+  h1.title{font-size:2rem} .grid-2,.grid-3{grid-template-columns:1fr}
+  .slide{padding:80px 6vw 90px}
+}
+</style>
+</head>
+<body>
+
+<div id="horizon">
+  <div class="sky-layer"></div>
+  <div class="cloud-drift" style="width:260px;height:100px;top:8%;animation-duration:52s;"></div>
+  <div class="cloud-drift" style="width:180px;height:70px;top:18%;animation-duration:74s;animation-delay:-20s;"></div>
+  <div class="ground-line"></div>
+</div>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Lab · Escalabilidad con Docker Swarm</div>
+<div id="hud"><span class="badge-score" id="score-counter"><i class="fa-solid fa-star"></i> 0 pts</span><span class="badge-slide" id="slide-counter">1 / 10</span></div>
+
+<!-- 1 -->
+<section class="slide active" data-idx="0">
+  <div class="eyebrow">Laboratorio práctico</div>
+  <h1 class="title">Réplicas, escalado <span class="accent">y una falla provocada</span></h1>
+  <p class="lead">Vamos a armar un cluster de Docker Swarm, desplegar un servicio con réplicas, escalarlo en caliente y después tirar abajo un nodo a propósito para ver el failover en vivo.</p>
+  <div class="tag-row">
+    <span><i class="fa-solid fa-dharmachakra"></i> Docker Swarm</span>
+    <span><i class="fa-solid fa-terminal"></i> CLI: docker service / node</span>
+    <span><i class="fa-solid fa-heart-pulse"></i> Failover real</span>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-idx="1">
+  <div class="eyebrow">Antes de empezar</div>
+  <h2 class="slide-h">Requisitos del laboratorio</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-server"></i>3 nodos (mínimo)</h3><p>Pueden ser 3 VMs (por ejemplo, sobre el Proxmox del laboratorio anterior) o 3 contenedores Docker-in-Docker.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-network-wired"></i>Red entre nodos</h3><p>Los 3 nodos deben poder verse entre sí por IP, con los puertos 2377, 7946 y 4789 abiertos.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-download"></i>Docker Engine</h3><p>Instalado en los 3 nodos — Swarm es un modo nativo de Docker, no requiere instalar nada extra.</p></div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-idx="2">
+  <div class="eyebrow">Paso 1</div>
+  <h2 class="slide-h">Inicializar el cluster (manager)</h2>
+  <p class="lead">El primer nodo que inicializa el swarm se convierte automáticamente en manager: es quien va a distribuir el trabajo hacia los workers.</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;en el nodo1 (manager)</div>
+    <pre><code class="language-bash">docker swarm init --advertise-addr IP-DEL-NODO1
+
+# El comando devuelve un token para sumar workers, algo como:
+# docker swarm join --token SWMTKN-1-xxxx IP-DEL-NODO1:2377</code></pre>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-idx="3">
+  <div class="eyebrow">Paso 2</div>
+  <h2 class="slide-h">Sumar los workers</h2>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;en el nodo2 y nodo3 (workers)</div>
+    <pre><code class="language-bash">docker swarm join --token SWMTKN-1-xxxx IP-DEL-NODO1:2377</code></pre>
+  </div>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;verificar desde el manager</div>
+    <pre><code class="language-bash">docker node ls</code></pre>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-idx="4">
+  <div class="eyebrow">Paso 3</div>
+  <h2 class="slide-h">Desplegar un servicio con réplicas</h2>
+  <p class="lead" style="max-width:760px">Un <strong style="color:var(--mist)">service</strong> en Swarm es la unidad que gestiona réplicas de un contenedor. Le decimos cuántas copias queremos y Swarm decide en qué nodos las corre.</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;ejemplo (no lo ejecuten todavía, viene como ejercicio)</div>
+    <pre><code class="language-bash">docker service create --name demo --replicas 2 --publish 8080:80 nginx</code></pre>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-idx="5">
+  <div class="eyebrow">Ejercicio 1</div>
+  <h2 class="slide-h">Crear el servicio "web" con 3 réplicas</h2>
+  <div class="exercise" id="ex1">
+    <p class="prompt">Escribí el comando para crear un servicio llamado <span class="mono">web</span>, con imagen <span class="mono">nginx</span>, <span class="mono">3</span> réplicas, publicando el puerto <span class="mono">8080</span> hacia el <span class="mono">80</span> del contenedor.</p>
+    <input type="text" id="ex1-input" placeholder="docker service create ..." autocomplete="off">
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkExercise(1)">Comprobar</button>
+      <button class="btn-hint" onclick="showHint(1)">Pista (-1 pt)</button>
+    </div>
+    <div class="feedback" id="ex1-feedback"></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-idx="6">
+  <div class="eyebrow">Ejercicio 2</div>
+  <h2 class="slide-h">Escalar en caliente</h2>
+  <p class="lead">Sin tocar el contenedor ni reiniciar nada, le pedimos a Swarm más (o menos) réplicas del mismo servicio.</p>
+  <div class="exercise" id="ex2">
+    <p class="prompt">Escribí el comando para escalar el servicio <span class="mono">web</span> a <span class="mono">5</span> réplicas.</p>
+    <input type="text" id="ex2-input" placeholder="docker service scale ..." autocomplete="off">
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkExercise(2)">Comprobar</button>
+      <button class="btn-hint" onclick="showHint(2)">Pista (-1 pt)</button>
+    </div>
+    <div class="feedback" id="ex2-feedback"></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-idx="7">
+  <div class="eyebrow">Paso 4 · La falla provocada</div>
+  <h2 class="slide-h">Tirar abajo un nodo a propósito</h2>
+  <p class="lead">Vamos a poner un worker en modo "drain" (deja de recibir trabajo) para simular una caída controlada y observar cómo Swarm redistribuye las réplicas automáticamente hacia los nodos que siguen sanos.</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;desde el manager</div>
+    <pre><code class="language-bash">docker node update --availability drain nodo3
+
+# Observar cómo se reprograman las réplicas:
+watch docker service ps web</code></pre>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-idx="8">
+  <div class="eyebrow">Ejercicio 3</div>
+  <h2 class="slide-h">Verificar dónde quedaron las réplicas</h2>
+  <div class="exercise" id="ex3">
+    <p class="prompt">Escribí el comando para ver en qué nodos están corriendo (o reprogramándose) las réplicas del servicio <span class="mono">web</span>.</p>
+    <input type="text" id="ex3-input" placeholder="docker service ..." autocomplete="off">
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkExercise(3)">Comprobar</button>
+      <button class="btn-hint" onclick="showHint(3)">Pista (-1 pt)</button>
+    </div>
+    <div class="feedback" id="ex3-feedback"></div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-idx="9">
+  <div class="eyebrow">Entregable del laboratorio</div>
+  <h2 class="slide-h">Checklist para aprobar</h2>
+  <ul class="checklist">
+    <li>Cluster Swarm de 3 nodos armado y verificado con <span class="mono">docker node ls</span></li>
+    <li>Servicio "web" desplegado con 3 réplicas iniciales</li>
+    <li>Servicio escalado a 5 réplicas en caliente</li>
+    <li>Un nodo puesto en modo drain y redistribución observada</li>
+    <li>Captura de <span class="mono">docker service ps web</span> antes y después del drain</li>
+    <li>Breve informe: qué pasó con las réplicas del nodo caído</li>
+  </ul>
+  <button class="quiz-btn" onclick="finishLab()"><i class="fa-solid fa-flag-checkered"></i> Ver puntaje final</button>
+</section>
+
+<div id="dots"></div>
+<div id="nav-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> navegar</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+let score = 0;
+
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=>goTo(i));
+  dotsWrap.appendChild(d);
+});
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  document.querySelectorAll('#dots .dot').forEach((d,i)=> d.classList.toggle('active', i===current));
+  document.getElementById('slide-counter').textContent = (current+1)+' / '+total;
+  document.getElementById('progress-fill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function next(){ goTo(current+1); }
+function prev(){ goTo(current-1); }
+document.addEventListener('keydown', (e)=>{
+  if(document.activeElement.tagName === 'INPUT') return;
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+});
+render();
+
+function updateScore(delta){
+  score = Math.max(0, score+delta);
+  document.getElementById('score-counter').innerHTML = '<i class="fa-solid fa-star"></i> '+score+' pts';
+}
+
+const exercises = {
+  1: {re:/^docker\s+service\s+create\s+--name\s+web\s+--replicas\s+3\s+--publish\s+8080:80\s+nginx$/i, hint:"Formato: docker service create --name <nombre> --replicas <n> --publish <host>:<contenedor> <imagen>", points:10},
+  2: {re:/^docker\s+service\s+scale\s+web=5$/i, hint:"Formato: docker service scale <servicio>=<replicas>", points:10},
+  3: {re:/^docker\s+service\s+ps\s+web$/i, hint:"Formato: docker service ps <servicio>", points:10}
+};
+const hintsUsed = {1:false,2:false,3:false};
+const solved = {1:false,2:false,3:false};
+
+function checkExercise(n){
+  const input = document.getElementById('ex'+n+'-input').value.trim();
+  const fb = document.getElementById('ex'+n+'-feedback');
+  const ex = exercises[n];
+  if(ex.re.test(input)){
+    fb.className = 'feedback ok';
+    fb.textContent = '✓ Correcto. Ese es el comando esperado.';
+    if(!solved[n]){
+      solved[n] = true;
+      updateScore(hintsUsed[n] ? ex.points-3 : ex.points);
+    }
+  } else {
+    fb.className = 'feedback bad';
+    fb.textContent = '✗ Todavía no. Revisá sintaxis, orden de parámetros y flags.';
+  }
+}
+function showHint(n){
+  hintsUsed[n] = true;
+  const fb = document.getElementById('ex'+n+'-feedback');
+  fb.className = 'feedback hint';
+  fb.textContent = '💡 '+exercises[n].hint;
+  updateScore(-1);
+}
+function finishLab(){
+  const maxScore = 30;
+  Swal.fire({
+    title: 'Puntaje del laboratorio: '+score+' / '+maxScore,
+    icon: score>=25?'success':(score>=15?'info':'warning'),
+    confirmButtonColor:'#38BDF8',
+    background:'#f8fafc',
+    text: score>=25 ? '¡Excelente manejo de la CLI de Proxmox!' : 'Repasá los comandos qm/pvecm y volvé a intentar los ejercicios.'
+  });
+}
+</script>
+</body>
+</html>
