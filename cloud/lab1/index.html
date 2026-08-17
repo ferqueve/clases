@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Laboratorio — Virtualización con Proxmox VE</title>
+<title>Laboratorio — Virtualización con VirtualBox</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
@@ -63,7 +63,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 .feedback.hint{color:var(--gold)}
 .tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
 .tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
-.crayon-note{background:rgba(240,180,41,.1); border:2px dashed rgba(240,180,41,.5); border-radius:14px; padding:18px 22px; max-width:820px; margin-top:20px; font-size:1.02rem; color:var(--mist);}
+.crayon-note{background:rgba(240,180,41,.1); border:2px dashed rgba(240,180,41,.5); border-radius:14px; padding:16px 20px; max-width:820px; margin-top:18px; font-size:.98rem; color:var(--mist);}
 #nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
 #nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
 #dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
@@ -88,17 +88,17 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 </div>
 
 <div id="progress-track"><div id="progress-fill"></div></div>
-<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Lab · Virtualización con Proxmox VE</div>
-<div id="hud"><span class="badge-score" id="score-counter"><i class="fa-solid fa-star"></i> 0 pts</span><span class="badge-slide" id="slide-counter">1 / 13</span></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Lab · Virtualización con VirtualBox</div>
+<div id="hud"><span class="badge-score" id="score-counter"><i class="fa-solid fa-star"></i> 0 pts</span><span class="badge-slide" id="slide-counter">1 / 12</span></div>
 
 <!-- 1 -->
 <section class="slide active" data-idx="0">
   <div class="eyebrow">Laboratorio práctico</div>
-  <h1 class="title">Tu propia nube <span class="accent">privada</span>, con las manos</h1>
-  <p class="lead">Vamos a instalar Proxmox VE, crear "flavors" propios (perfiles de VM), clonar plantillas, sacar snapshots y hacer una migración en vivo. Todo con comandos reales, no simulados.</p>
+  <h1 class="title">Tu propia nube <span class="accent">de escritorio</span></h1>
+  <p class="lead">Vamos a crear máquinas virtuales con distintos "flavors" (perfiles de CPU/RAM/disco), sacar snapshots, clonarlas y moverlas entre equipos — todo con VirtualBox y su línea de comandos, sin depender de hardware de servidor.</p>
   <div class="tag-row">
-    <span><i class="fa-solid fa-server"></i> Proxmox VE</span>
-    <span><i class="fa-solid fa-terminal"></i> CLI: qm / pvecm</span>
+    <span><i class="fa-solid fa-desktop"></i> VirtualBox</span>
+    <span><i class="fa-solid fa-terminal"></i> CLI: VBoxManage</span>
     <span><i class="fa-solid fa-microchip"></i> Flavors propios</span>
   </div>
 </section>
@@ -107,110 +107,73 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 <section class="slide" data-idx="1">
   <div class="eyebrow">Antes de tocar comandos</div>
   <h2 class="slide-h">¿Qué es una máquina virtual (VM)?</h2>
-  <p class="lead" style="max-width:760px">Una VM es una computadora simulada por software: tiene su propio "CPU" virtual, su propia RAM, su propio disco y su propia placa de red — pero todo corre como un programa dentro de una máquina física real. El sistema operativo instalado adentro no distingue si está en hardware real o virtualizado.</p>
+  <p class="lead" style="max-width:760px">Una VM es una computadora simulada por software: tiene su propio "CPU" virtual, su propia RAM, su propio disco y su propia placa de red — pero todo corre como un programa dentro de una máquina física real.</p>
   <div class="grid-3" style="margin-top:20px">
     <div class="card"><h3><i class="fa-solid fa-lock"></i>Aislamiento</h3><p>Cada VM está separada de las demás, aunque compartan el mismo hardware físico por debajo.</p></div>
     <div class="card"><h3><i class="fa-solid fa-microchip"></i>Recursos asignados</h3><p>La cantidad de CPU/RAM/disco que le damos es exactamente la que definimos — eso es, otra vez, un "flavor".</p></div>
-    <div class="card"><h3><i class="fa-solid fa-copy"></i>Portabilidad</h3><p>Una VM se puede copiar, clonar o mover como si fuera un archivo, porque en el fondo lo es: un disco virtual + una configuración.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-copy"></i>Portabilidad</h3><p>Una VM se puede copiar, clonar o exportar como si fuera un archivo, porque en el fondo lo es.</p></div>
   </div>
 </section>
 
 <!-- 3 -->
 <section class="slide" data-idx="2">
   <div class="eyebrow">La pieza que hace todo esto posible</div>
-  <h2 class="slide-h">¿Qué es un hipervisor?</h2>
-  <p class="lead" style="max-width:760px">El hipervisor es el software que crea y administra máquinas virtuales, repartiendo el hardware físico real entre ellas. Hay dos tipos:</p>
+  <h2 class="slide-h">Hipervisor Tipo 2: por qué usamos VirtualBox</h2>
+  <p class="lead" style="max-width:760px">A diferencia de un hipervisor Tipo 1 (bare-metal, como Proxmox o ESXi, que reemplaza el sistema operativo del servidor), VirtualBox es <strong style="color:var(--mist)">Tipo 2 (hosted)</strong>: se instala como un programa más, arriba de Windows, macOS o Linux.</p>
   <div class="grid-2" style="margin-top:16px">
-    <div class="card"><h3><i class="fa-solid fa-server"></i>Tipo 1 — Bare-metal</h3><p>Se instala directamente sobre el hardware, sin sistema operativo debajo. Ejemplos: <strong style="color:var(--mist)">Proxmox VE</strong>, VMware ESXi. Más eficiente — es lo que vamos a usar hoy.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-desktop"></i>Tipo 2 — Hosted</h3><p>Se instala como un programa más, arriba de un sistema operativo ya existente. Ejemplos: VirtualBox, VMware Workstation. Más simple de instalar, algo menos eficiente.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-thumbs-up"></i>Por qué lo elegimos para este laboratorio</h3><p>No necesita virtualización anidada, no requiere una máquina dedicada, y corre directo en la notebook de cada estudiante — evita los problemas de compatibilidad que tuvimos con Proxmox.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-scale-balanced"></i>El trade-off</h3><p>Al compartir recursos con el sistema operativo anfitrión, el rendimiento es algo menor que un hipervisor bare-metal — aceptable para un entorno de laboratorio.</p></div>
   </div>
-  <div class="crayon-note" style="margin-top:20px">Proxmox VE <u>es</u> el hipervisor — no es "un programa que instalás en Windows". Cuando lo instalamos, se convierte en el sistema operativo completo de ese servidor.</div>
 </section>
 
 <!-- 4 -->
 <section class="slide" data-idx="3">
-  <div class="eyebrow">Las tres siglas que vamos a usar todo el laboratorio</div>
-  <h2 class="slide-h">QEMU, KVM y qm: quién hace qué</h2>
-  <div class="grid-3">
-    <div class="card"><h3><i class="fa-solid fa-gears"></i>QEMU</h3><p>El emulador de hardware: es el programa que efectivamente "dibuja" el CPU, la placa de red y el disco virtual que ve cada VM.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-microchip"></i>KVM</h3><p>Un módulo del kernel de Linux que le da a QEMU acceso directo al hardware real (aceleración por hardware), para que la VM corra casi a la velocidad de una máquina física.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-terminal"></i>qm</h3><p>El comando de Proxmox que usamos <strong style="color:var(--mist)">nosotros</strong>. Traduce "qm create", "qm start", etc. en lo que QEMU/KVM necesitan por detrás.</p></div>
+  <div class="eyebrow">La CLI que vamos a usar todo el laboratorio</div>
+  <h2 class="slide-h">VBoxManage</h2>
+  <p class="lead" style="max-width:760px">Todo lo que se puede hacer desde la interfaz gráfica de VirtualBox, también se puede hacer (más rápido y repetible) desde la terminal con <span class="mono">VBoxManage</span>.</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;verificar instalación</div>
+    <pre><code class="language-bash">VBoxManage --version
+VBoxManage list vms</code></pre>
   </div>
-  <div class="crayon-note" style="margin-top:20px">Analogía: QEMU/KVM es el motor del auto. <span class="mono">qm</span> es el volante y los pedales. Nosotros manejamos con <span class="mono">qm</span> — no necesitamos saber armar el motor para conducir.</div>
+  <div class="crayon-note">Analogía del laboratorio anterior: si QEMU/KVM es el motor y <span class="mono">qm</span> el volante en Proxmox, acá <span class="mono">VBoxManage</span> cumple el mismo rol de "volante" para VirtualBox.</div>
 </section>
 
-<!-- 2 -->
+<!-- 5 -->
 <section class="slide" data-idx="4">
   <div class="eyebrow">Antes de empezar</div>
   <h2 class="slide-h">Requisitos del laboratorio</h2>
   <div class="grid-3">
-    <div class="card"><h3><i class="fa-solid fa-desktop"></i>Hardware/VM anfitriona</h3><p>Mínimo 4 vCPU, 8GB RAM y 40GB de disco. Puede ser una VM anidada en VirtualBox si no hay hardware físico disponible.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-download"></i>ISO de Proxmox VE</h3><p>Descargar la última versión estable desde el sitio oficial de Proxmox.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-network-wired"></i>Red</h3><p>Una interfaz con salida a internet para descargar plantillas y actualizaciones.</p></div>
-  </div>
-  <p class="lead" style="margin-top:20px">Si van a anidar Proxmox dentro de VirtualBox/VMware, hay que habilitar virtualización anidada (nested virtualization) en la VM anfitriona — si no, las VMs internas no van a bootear.</p>
-</section>
-
-<!-- 3 -->
-<section class="slide" data-idx="5">
-  <div class="eyebrow">Paso 1</div>
-  <h2 class="slide-h">Instalación</h2>
-  <p class="lead">El instalador de Proxmox es gráfico y guiado: booteás desde el ISO, elegís el disco de destino, configurás red e hostname, y listo — queda un hipervisor Debian con la interfaz web ya activa.</p>
-  <div class="term">
-    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;post-instalación</div>
-    <pre><code class="language-bash"># Acceder a la interfaz web (HTTPS, certificado autofirmado)
-https://IP-DEL-SERVIDOR:8006
-
-# Verificar versión y estado desde consola
-pveversion
-pvesh get /nodes</code></pre>
-  </div>
-</section>
-
-<!-- 4 -->
-<section class="slide" data-idx="6">
-  <div class="eyebrow">Paso 2</div>
-  <h2 class="slide-h">Primeros pasos en la interfaz web</h2>
-  <div class="grid-3">
-    <div class="card"><h3><i class="fa-solid fa-sitemap"></i>Datacenter</h3><p>La vista raíz: agrupa todos los nodos, storages y permisos del cluster.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-server"></i>Nodo</h3><p>Cada servidor físico corriendo Proxmox. Al principio van a tener uno solo.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-hard-drive"></i>Storage</h3><p>Dónde se guardan discos de VM, ISOs y backups — local o compartido (NFS, Ceph).</p></div>
-  </div>
-  <p class="lead" style="margin-top:20px">Antes de crear VMs, suban al menos un ISO (ej. Ubuntu Server) al storage local desde <span class="mono">Datacenter → nodo → local → ISO Images → Upload</span>.</p>
-</section>
-
-<!-- 5 -->
-<section class="slide" data-idx="7">
-  <div class="eyebrow">El concepto central de hoy</div>
-  <h2 class="slide-h">Armando "flavors" propios</h2>
-  <p class="lead" style="max-width:760px">Proxmox no trae un catálogo cerrado de flavors como AWS o Azure — <strong style="color:var(--mist)">nosotros los definimos</strong> como plantillas de VM con un perfil fijo de vCPU/RAM/disco. Vamos a crear tres: small, medium y large.</p>
-  <div class="grid-3" style="margin-top:20px">
-    <div class="card"><h3><i class="fa-solid fa-microchip"></i>flavor-small</h3><p>1 vCPU · 1GB RAM · 8GB disco — para servicios livianos.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-microchip"></i>flavor-medium</h3><p>2 vCPU · 2GB RAM · 16GB disco — uso general.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-microchip"></i>flavor-large</h3><p>4 vCPU · 4GB RAM · 32GB disco — cargas más pesadas.</p></div>
-  </div>
-  <div class="term">
-    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;crear la plantilla base (VM ID 9000)</div>
-    <pre><code class="language-bash">qm create 9000 --name plantilla-ubuntu --memory 1024 --cores 1 \
-  --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci \
-  --scsi0 local-lvm:8 --ide2 local:iso/ubuntu-server.iso,media=cdrom \
-  --boot order=ide2 --ostype l26
-
-# Instalar el SO en la 9000 y luego convertirla en plantilla:
-qm template 9000</code></pre>
-  </div>
-  <div class="crayon-note" style="margin-top:16px">
-    Desglosando el comando: <span class="mono">9000</span> es el ID que le ponemos a esta VM (número libre a elección). <span class="mono">--memory 1024</span> = 1GB de RAM. <span class="mono">--cores 1</span> = 1 vCPU. <span class="mono">--scsi0 local-lvm:8</span> = un disco de 8GB. <span class="mono">--ide2 ...iso,media=cdrom</span> = "insertamos" el CD virtual con el instalador de Ubuntu, igual que insertarías un pendrive booteable en una PC física.
+    <div class="card"><h3><i class="fa-solid fa-desktop"></i>VirtualBox instalado</h3><p>Última versión estable, disponible para Windows/macOS/Linux desde el sitio oficial.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-download"></i>ISO de Ubuntu Server</h3><p>La misma que usamos en el laboratorio de NextCloud — la reutilizamos acá.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-hard-drive"></i>Espacio en disco</h3><p>Al menos 30GB libres para poder crear varias VMs de distinto flavor sin quedarse sin espacio.</p></div>
   </div>
 </section>
 
 <!-- 6 -->
-<section class="slide" data-idx="8">
+<section class="slide" data-idx="5">
+  <div class="eyebrow">El concepto central de hoy</div>
+  <h2 class="slide-h">Armando "flavors" con VBoxManage</h2>
+  <p class="lead" style="max-width:760px">Igual que en Proxmox, VirtualBox no trae un catálogo cerrado de flavors — los definimos nosotros al crear la VM, fijando CPU, RAM y disco por línea de comandos.</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;crear una VM con flavor "small"</div>
+    <pre><code class="language-bash">VBoxManage createvm --name "flavor-small" --ostype Ubuntu_64 --register
+VBoxManage modifyvm "flavor-small" --cpus 1 --memory 1024
+VBoxManage createhd --filename ~/VirtualBox\ VMs/flavor-small/disco.vdi --size 8192
+VBoxManage storagectl "flavor-small" --name "SATA" --add sata
+VBoxManage storageattach "flavor-small" --storagectl "SATA" --port 0 --device 0 \
+  --type hdd --medium ~/VirtualBox\ VMs/flavor-small/disco.vdi</code></pre>
+  </div>
+  <div class="crayon-note">Desglosando: <span class="mono">createvm</span> registra la VM. <span class="mono">modifyvm --cpus --memory</span> define el flavor (1 vCPU, 1GB RAM). <span class="mono">createhd</span> crea el disco virtual (8192 = 8GB). Las líneas de <span class="mono">storagectl/storageattach</span> "conectan" ese disco a la VM, igual que enchufarías un disco físico.</div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-idx="6">
   <div class="eyebrow">Ejercicio 1</div>
-  <h2 class="slide-h">Clonar la plantilla con un flavor propio</h2>
+  <h2 class="slide-h">Crear un segundo flavor</h2>
   <div class="exercise" id="ex1">
-    <p class="prompt">Escribí el comando para clonar la plantilla <span class="mono">9000</span> hacia una nueva VM con ID <span class="mono">201</span> y nombre <span class="mono">web-small</span>.</p>
-    <input type="text" id="ex1-input" placeholder="qm clone ..." autocomplete="off">
+    <p class="prompt">Escribí el comando para dejar la VM <span class="mono">flavor-medium</span> con <span class="mono">2</span> vCPU y <span class="mono">2048</span> MB de RAM usando <span class="mono">modifyvm</span> (asumí que la VM ya fue creada con <span class="mono">createvm</span>).</p>
+    <input type="text" id="ex1-input" placeholder="VBoxManage modifyvm ..." autocomplete="off">
     <div class="btn-row">
       <button class="btn-check" onclick="checkExercise(1)">Comprobar</button>
       <button class="btn-hint" onclick="showHint(1)">Pista (-1 pt)</button>
@@ -219,14 +182,14 @@ qm template 9000</code></pre>
   </div>
 </section>
 
-<!-- 7 -->
-<section class="slide" data-idx="9">
+<!-- 8 -->
+<section class="slide" data-idx="7">
   <div class="eyebrow">Ejercicio 2</div>
   <h2 class="slide-h">Sacar un snapshot antes de experimentar</h2>
-  <p class="lead">Antes de tocar la configuración de una VM en producción, siempre conviene un punto de restauración rápido.</p>
+  <p class="lead">Antes de instalar algo riesgoso, conviene un punto de restauración — la misma lógica que en Proxmox.</p>
   <div class="exercise" id="ex2">
-    <p class="prompt">Escribí el comando para crear un snapshot llamado <span class="mono">base</span> de la VM <span class="mono">201</span>.</p>
-    <input type="text" id="ex2-input" placeholder="qm snapshot ..." autocomplete="off">
+    <p class="prompt">Escribí el comando para tomar un snapshot llamado <span class="mono">base</span> de la VM <span class="mono">flavor-small</span>.</p>
+    <input type="text" id="ex2-input" placeholder="VBoxManage snapshot ..." autocomplete="off">
     <div class="btn-row">
       <button class="btn-check" onclick="checkExercise(2)">Comprobar</button>
       <button class="btn-hint" onclick="showHint(2)">Pista (-1 pt)</button>
@@ -235,32 +198,39 @@ qm template 9000</code></pre>
   </div>
 </section>
 
-<!-- 8 -->
-<section class="slide" data-idx="10">
-  <div class="eyebrow">Paso 3 · Clustering</div>
-  <h2 class="slide-h">Sumando un segundo nodo</h2>
-  <p class="lead">Un cluster de Proxmox permite mover VMs entre servidores físicos. Se arma uniendo un nodo nuevo al cluster existente.</p>
+<!-- 9 -->
+<section class="slide" data-idx="8">
+  <div class="eyebrow">Paso siguiente</div>
+  <h2 class="slide-h">Clonar una VM</h2>
+  <p class="lead">En vez de repetir todos los pasos de creación, clonamos una VM ya armada — la forma más rápida de reproducir un flavor.</p>
   <div class="term">
-    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;en el nodo1 (crea el cluster)</div>
-    <pre><code class="language-bash">pvecm create mi-cluster</code></pre>
-  </div>
-  <div class="term">
-    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;en el nodo2 (se une)</div>
-    <pre><code class="language-bash">pvecm add IP-DEL-NODO1
-
-# Verificar el estado del cluster desde cualquier nodo:
-pvecm status</code></pre>
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;clonar</div>
+    <pre><code class="language-bash">VBoxManage clonevm "flavor-small" --name "web-01" --register</code></pre>
   </div>
 </section>
 
-<!-- 9 -->
-<section class="slide" data-idx="11">
+<!-- 10 -->
+<section class="slide" data-idx="9">
+  <div class="eyebrow">Portabilidad: la alternativa a la migración en vivo</div>
+  <h2 class="slide-h">Exportar e importar (OVA)</h2>
+  <p class="lead" style="max-width:760px">VirtualBox no tiene clustering ni migración en vivo como Proxmox — es un hipervisor de escritorio, no de servidor. Lo que sí tiene es <strong style="color:var(--mist)">exportar/importar</strong> una VM completa como un único archivo portable (formato OVA), para llevarla a otra máquina.</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;exportar</div>
+    <pre><code class="language-bash">VBoxManage export "flavor-small" --output flavor-small.ova</code></pre>
+  </div>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;importar (en otra máquina)</div>
+    <pre><code class="language-bash">VBoxManage import flavor-small.ova</code></pre>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-idx="10">
   <div class="eyebrow">Ejercicio 3</div>
-  <h2 class="slide-h">Migración en vivo</h2>
-  <p class="lead">Con el cluster armado, podemos mover una VM corriendo de un nodo a otro sin apagarla.</p>
+  <h2 class="slide-h">Exportar tu VM</h2>
   <div class="exercise" id="ex3">
-    <p class="prompt">Escribí el comando para migrar en caliente (online) la VM <span class="mono">201</span> hacia el nodo <span class="mono">nodo2</span>.</p>
-    <input type="text" id="ex3-input" placeholder="qm migrate ..." autocomplete="off">
+    <p class="prompt">Escribí el comando para exportar la VM <span class="mono">web-01</span> hacia un archivo llamado <span class="mono">web-01.ova</span>.</p>
+    <input type="text" id="ex3-input" placeholder="VBoxManage export ..." autocomplete="off">
     <div class="btn-row">
       <button class="btn-check" onclick="checkExercise(3)">Comprobar</button>
       <button class="btn-hint" onclick="showHint(3)">Pista (-1 pt)</button>
@@ -269,17 +239,17 @@ pvecm status</code></pre>
   </div>
 </section>
 
-<!-- 10 -->
-<section class="slide" data-idx="12">
+<!-- 12 -->
+<section class="slide" data-idx="11">
   <div class="eyebrow">Entregable del laboratorio</div>
   <h2 class="slide-h">Checklist para aprobar</h2>
   <ul class="checklist">
-    <li>Proxmox VE instalado y accesible por interfaz web</li>
-    <li>Plantilla base (9000) creada y convertida con <span class="mono">qm template</span></li>
-    <li>Tres VMs clonadas, una por cada flavor (small/medium/large)</li>
+    <li>VirtualBox instalado y <span class="mono">VBoxManage</span> accesible desde la terminal</li>
+    <li>Dos VMs creadas con flavors distintos (small/medium) vía <span class="mono">VBoxManage</span></li>
     <li>Al menos un snapshot tomado antes de una modificación</li>
-    <li>Cluster de 2 nodos armado y verificado con <span class="mono">pvecm status</span></li>
-    <li>Una migración en vivo ejecutada y documentada con captura de pantalla</li>
+    <li>Una VM clonada a partir de otra</li>
+    <li>Una VM exportada a <span class="mono">.ova</span> y, si es posible, importada en otro equipo</li>
+    <li>Captura de <span class="mono">VBoxManage list vms</span> mostrando todas las VMs creadas</li>
   </ul>
   <button class="quiz-btn" onclick="finishLab()"><i class="fa-solid fa-flag-checkered"></i> Ver puntaje final</button>
 </section>
@@ -327,9 +297,9 @@ function updateScore(delta){
 }
 
 const exercises = {
-  1: {re:/^qm\s+clone\s+9000\s+201\s+--name\s+web-small$/i, hint:"Formato: qm clone <origen> <destino> --name <nombre>", points:10},
-  2: {re:/^qm\s+snapshot\s+201\s+base$/i, hint:"Formato: qm snapshot <vmid> <nombre_snapshot>", points:10},
-  3: {re:/^qm\s+migrate\s+201\s+nodo2\s+--online$/i, hint:"Formato: qm migrate <vmid> <nodo_destino> --online", points:10}
+  1: {re:/^VBoxManage\s+modifyvm\s+"?flavor-medium"?\s+--cpus\s+2\s+--memory\s+2048$/i, hint:'Formato: VBoxManage modifyvm "<nombre>" --cpus <n> --memory <mb>', points:10},
+  2: {re:/^VBoxManage\s+snapshot\s+"?flavor-small"?\s+take\s+base$/i, hint:'Formato: VBoxManage snapshot "<vm>" take <nombre_snapshot>', points:10},
+  3: {re:/^VBoxManage\s+export\s+"?web-01"?\s+--output\s+web-01\.ova$/i, hint:'Formato: VBoxManage export "<vm>" --output <archivo>.ova', points:10}
 };
 const hintsUsed = {1:false,2:false,3:false};
 const solved = {1:false,2:false,3:false};
@@ -347,7 +317,7 @@ function checkExercise(n){
     }
   } else {
     fb.className = 'feedback bad';
-    fb.textContent = '✗ Todavía no. Revisá sintaxis, orden de parámetros y flags.';
+    fb.textContent = '✗ Todavía no. Revisá sintaxis, comillas y orden de parámetros.';
   }
 }
 function showHint(n){
@@ -364,7 +334,7 @@ function finishLab(){
     icon: score>=25?'success':(score>=15?'info':'warning'),
     confirmButtonColor:'#38BDF8',
     background:'#f8fafc',
-    text: score>=25 ? '¡Excelente manejo de la CLI de Proxmox!' : 'Repasá los comandos qm/pvecm y volvé a intentar los ejercicios.'
+    text: score>=25 ? '¡Excelente manejo de VBoxManage!' : 'Repasá los comandos y volvé a intentar los ejercicios.'
   });
 }
 </script>

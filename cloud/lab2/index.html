@@ -107,7 +107,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
   <div class="eyebrow">Antes de empezar</div>
   <h2 class="slide-h">Requisitos del laboratorio</h2>
   <div class="grid-3">
-    <div class="card"><h3><i class="fa-solid fa-server"></i>3 nodos (mínimo)</h3><p>Pueden ser 3 VMs (por ejemplo, sobre el Proxmox del laboratorio anterior) o 3 contenedores Docker-in-Docker.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-server"></i>3 nodos (mínimo)</h3><p>Pueden ser 3 VMs (por ejemplo, clonadas con VirtualBox como en el laboratorio anterior) o 3 contenedores Docker-in-Docker.</p></div>
     <div class="card"><h3><i class="fa-solid fa-network-wired"></i>Red entre nodos</h3><p>Los 3 nodos deben poder verse entre sí por IP, con los puertos 2377, 7946 y 4789 abiertos.</p></div>
     <div class="card"><h3><i class="fa-solid fa-download"></i>Docker Engine</h3><p>Instalado en los 3 nodos — Swarm es un modo nativo de Docker, no requiere instalar nada extra.</p></div>
   </div>
@@ -307,7 +307,7 @@ function finishLab(){
     icon: score>=25?'success':(score>=15?'info':'warning'),
     confirmButtonColor:'#38BDF8',
     background:'#f8fafc',
-    text: score>=25 ? '¡Excelente manejo de la CLI de Proxmox!' : 'Repasá los comandos qm/pvecm y volvé a intentar los ejercicios.'
+    text: score>=25 ? '¡Excelente manejo de la CLI de Docker Swarm!' : 'Repasá los comandos docker service/node y volvé a intentar los ejercicios.'
   });
 }
 </script>
