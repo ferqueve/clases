@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 6 — Virtualización</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#38BDF8;
+  --gold:#F0B429;
+  --ground:#0B1120;
+  --ground2:#111a33;
+  --mist:#E2E8F0;
+  --mist-dim:#8DA0BE;
+  --line:rgba(226,232,240,.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Inter',sans-serif; background:var(--ground); color:var(--mist);
+  overflow:hidden; height:100vh;
+}
+code, .mono{font-family:'JetBrains Mono',monospace}
+
+/* ---- horizon backdrop: ground below, sky/cloud drift above ---- */
+#horizon{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sky-layer{position:absolute; inset:0; background:
+  radial-gradient(ellipse at 20% -10%, rgba(56,189,248,.14), transparent 55%),
+  radial-gradient(ellipse at 80% 0%, rgba(240,180,41,.08), transparent 50%),
+  var(--ground);}
+.ground-line{position:absolute; left:0; right:0; bottom:0; height:38%;
+  background:linear-gradient(180deg, transparent 0%, rgba(56,189,248,.05) 40%, var(--ground2) 100%);
+  border-top:1px solid var(--line);}
+.cloud-drift{position:absolute; border-radius:50%; filter:blur(30px); opacity:.16; background:var(--sky);
+  animation:drift linear infinite;}
+@keyframes drift{ from{transform:translateX(-10vw)} to{transform:translateX(110vw)} }
+.node{position:absolute; width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:.5;}
+.node::after{content:'';position:absolute; top:2px; left:5px; width:60px; height:1px; background:linear-gradient(90deg, var(--gold), transparent); opacity:.4;}
+
+/* ---- HUD ---- */
+#progress-track{position:fixed; top:0; left:0; right:0; height:4px; background:var(--line); z-index:50;}
+#progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--sky),var(--gold)); transition:width .4s ease;}
+#hud{position:fixed; top:16px; right:20px; z-index:50; display:flex; gap:14px; align-items:center; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim);}
+#hud .badge-slide{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.35); color:var(--sky); padding:4px 10px; border-radius:20px;}
+#course-tag{position:fixed; top:16px; left:20px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); letter-spacing:.06em;}
+#course-tag strong{color:var(--sky)}
+
+/* ---- slides ---- */
+.slide{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center;
+  padding:90px 8vw 70px; opacity:0; pointer-events:none; transition:opacity .35s ease;}
+.slide.active{opacity:1; pointer-events:auto;}
+.eyebrow{font-family:'JetBrains Mono',monospace; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; font-size:.85rem; margin-bottom:14px;}
+h1.title{font-size:3.4rem; font-weight:800; line-height:1.05; margin:0 0 20px; letter-spacing:-.02em;}
+h1.title .accent{color:var(--sky)}
+h2.slide-h{font-size:2.1rem; font-weight:800; margin:0 0 26px; letter-spacing:-.01em;}
+p.lead{font-size:1.15rem; color:var(--mist-dim); max-width:640px; line-height:1.6;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:22px; max-width:1000px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1100px;}
+.card{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:24px;}
+.card h3{font-size:1.05rem; margin:0 0 10px; display:flex; align-items:center; gap:10px;}
+.card h3 i{color:var(--sky)}
+.card p{color:var(--mist-dim); font-size:.92rem; line-height:1.55; margin:0;}
+.vs-wrap{display:flex; gap:0; max-width:900px; border-radius:16px; overflow:hidden; border:1px solid var(--line);}
+.vs-col{flex:1; padding:28px;}
+.vs-col.onprem{background:rgba(240,180,41,.06); border-right:1px solid var(--line);}
+.vs-col.cloud{background:rgba(56,189,248,.06);}
+.vs-col h4{font-family:'JetBrains Mono',monospace; font-size:.95rem; margin-bottom:14px;}
+.vs-col.onprem h4{color:var(--gold)}
+.vs-col.cloud h4{color:var(--sky)}
+.vs-col ul{margin:0; padding-left:18px; color:var(--mist-dim); font-size:.92rem; line-height:1.9;}
+.stat{font-family:'JetBrains Mono',monospace; font-weight:800; font-size:2.6rem; color:var(--sky);}
+.stat-label{color:var(--mist-dim); font-size:.85rem;}
+.tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+.resp-table{width:100%; max-width:920px; border-collapse:separate; border-spacing:0; margin-top:8px; font-size:.92rem;}
+.resp-table th{text-align:center; padding:12px 10px; font-family:'JetBrains Mono',monospace; font-size:.8rem; color:var(--mist-dim); border-bottom:1px solid var(--line);}
+.resp-table td{padding:12px 10px; text-align:center; border-bottom:1px solid var(--line); font-weight:600;}
+.resp-table td.layer{text-align:left; color:var(--mist-dim); font-weight:400; font-size:.88rem;}
+.resp-cliente{background:rgba(240,180,41,.14); color:var(--gold);}
+.resp-proveedor{background:rgba(56,189,248,.14); color:var(--sky);}
+.crayon-note{background:rgba(240,180,41,.1); border:2px dashed rgba(240,180,41,.5); border-radius:14px; padding:18px 22px; max-width:820px; margin-top:20px; font-size:1.05rem; color:var(--mist);}
+
+/* nav */
+#nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
+#nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
+#dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
+#dots .dot{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.3s;}
+#dots .dot.active{background:var(--sky); width:22px; border-radius:4px;}
+
+.quiz-btn{background:linear-gradient(135deg,var(--sky),#0ea5e9); border:none; color:#0B1120; font-weight:700; padding:14px 30px; border-radius:10px; font-size:1rem; margin-top:24px; cursor:pointer;}
+.quiz-btn:hover{filter:brightness(1.08)}
+.locked{opacity:.4; filter:grayscale(.6);}
+
+@media (max-width:820px){
+  h1.title{font-size:2.1rem}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .vs-wrap{flex-direction:column}
+  .slide{padding:80px 6vw 90px}
+}
+</style>
+</head>
+<body>
+
+<div id="horizon">
+  <div class="sky-layer"></div>
+  <div class="cloud-drift" style="width:260px;height:100px;top:8%;animation-duration:52s;"></div>
+  <div class="cloud-drift" style="width:180px;height:70px;top:18%;animation-duration:74s;animation-delay:-20s;"></div>
+  <div class="cloud-drift" style="width:320px;height:120px;top:4%;animation-duration:90s;animation-delay:-45s;"></div>
+  <div class="node" style="top:30%;left:15%;"></div>
+  <div class="node" style="top:22%;left:60%;"></div>
+  <div class="node" style="top:38%;left:80%;"></div>
+  <div class="ground-line"></div>
+</div>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Clase 6</div>
+<div id="hud"><span class="badge-slide" id="slide-counter">1 / 9</span></div>
+
+<!-- SLIDE 1 -->
+<section class="slide active" data-idx="0">
+  <div class="eyebrow">Módulo 6 · Virtualización</div>
+  <h1 class="title">La pieza que hace <span class="accent">posible todo lo anterior</span></h1>
+  <p class="lead">Ya usamos virtualización con las manos en el laboratorio de VirtualBox. Hoy le ponemos la teoría completa: tipos, cómo se acelera por hardware, y por qué a veces conviene un contenedor en vez de una VM.</p>
+  <div class="tag-row">
+    <span><i class="fa-solid fa-layer-group"></i> Tipos de virtualización</span>
+    <span><i class="fa-solid fa-microchip"></i> Aceleración por hardware</span>
+    <span><i class="fa-solid fa-box"></i> VMs vs. Contenedores</span>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide" data-idx="1">
+  <div class="eyebrow">Lo que ya vimos en la práctica</div>
+  <h2 class="slide-h">Repaso rápido del laboratorio de VirtualBox</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-desktop"></i>VM</h3><p>Una computadora simulada por software, con su propio CPU/RAM/disco virtual, aislada del resto.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-server"></i>Hipervisor</h3><p>El software que crea y administra VMs — vimos tipo 1 (bare-metal, como Proxmox/ESXi) vs. tipo 2 (hosted, como VirtualBox — el que usamos en el laboratorio).</p></div>
+    <div class="card"><h3><i class="fa-solid fa-gears"></i>QEMU + KVM</h3><p>El motor que emula hardware (QEMU) y lo acelera con soporte del procesador real (KVM) — hoy vemos por qué esto importa tanto.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide" data-idx="2">
+  <div class="eyebrow">No todas las virtualizaciones son iguales</div>
+  <h2 class="slide-h">Tres formas de virtualizar</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-clone"></i>Virtualización completa</h3><p>El hipervisor emula hardware completo. El SO invitado no sabe que está virtualizado — puede correr sin modificaciones (lo que hace VirtualBox o QEMU/KVM).</p></div>
+    <div class="card"><h3><i class="fa-solid fa-handshake"></i>Paravirtualización</h3><p>El SO invitado está al tanto de que corre virtualizado y coopera con el hipervisor mediante drivers especiales — más eficiente, pero requiere un SO modificado.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-box"></i>Virtualización a nivel de SO</h3><p>No hay VMs completas: se aíslan procesos dentro del mismo kernel del host. Esto es, en esencia, un contenedor (Docker).</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide" data-idx="3">
+  <div class="eyebrow">Por qué una VM no es lentísima</div>
+  <h2 class="slide-h">Virtualización asistida por hardware</h2>
+  <p class="lead" style="max-width:760px">Los procesadores modernos incluyen extensiones específicas para virtualización: <strong style="color:var(--mist)">Intel VT-x</strong> y <strong style="color:var(--mist)">AMD-V</strong>. Le permiten al hipervisor ejecutar instrucciones de la VM casi directamente en el CPU real, en vez de traducir cada instrucción por software.</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-bolt"></i>Sin aceleración</h3><p>Cada instrucción se traduce por software — mucho más lento, casi inutilizable para cargas reales.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-bolt-lightning"></i>Con aceleración (KVM)</h3><p>El CPU real ejecuta directamente, con el hipervisor interviniendo solo cuando hace falta — de ahí el rendimiento casi nativo.</p></div>
+  </div>
+  <div class="crayon-note">Justamente por esto elegimos VirtualBox (tipo 2) para el laboratorio en vez de un hipervisor bare-metal: al correr directo sobre el sistema operativo de cada notebook, no depende de virtualización anidada ni de hardware de servidor — mucho más parejo entre las máquinas de todo el grupo.</div>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide" data-idx="4">
+  <div class="eyebrow">Por qué nos importa tanto</div>
+  <h2 class="slide-h">Beneficios de virtualizar</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-layer-group"></i>Consolidación</h3><p>Varias VMs en un solo servidor físico, aprovechando hardware que antes quedaba ocioso.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-lock"></i>Aislamiento</h3><p>Si una VM se cae o es comprometida, las demás siguen funcionando sin verse afectadas.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-camera"></i>Snapshots</h3><p>Punto de restauración instantáneo antes de un cambio riesgoso — lo usamos en el laboratorio.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-copy"></i>Portabilidad</h3><p>Clonar o mover una VM es copiar un archivo, no reinstalar un sistema operativo entero.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-file-export"></i>Exportar / clonar</h3><p>Mover o duplicar una VM completa entre equipos como un archivo portable — lo hicimos con <span class="mono">VBoxManage export</span> y <span class="mono">clonevm</span>.</p></div>
+    <div class="card" style="background:rgba(240,180,41,.06); border-color:rgba(240,180,41,.3)"><h3><i class="fa-solid fa-lightbulb" style="color:var(--gold)"></i>Base de todo lo demás</h3><p style="color:var(--mist)">Elasticidad, escalabilidad y multi-tenancy — todo lo que vimos en clases anteriores— depende de estos beneficios.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide" data-idx="5">
+  <div class="eyebrow">La comparación que más preguntan</div>
+  <h2 class="slide-h">Máquinas virtuales vs. Contenedores</h2>
+  <table class="resp-table">
+    <thead>
+      <tr><th style="text-align:left">Aspecto</th><th>Máquina virtual</th><th>Contenedor</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="layer">Qué virtualiza</td><td>Hardware completo</td><td>Solo el espacio de usuario, comparte el kernel del host</td></tr>
+      <tr><td class="layer">Peso</td><td class="resp-proveedor">GB (incluye SO completo)</td><td class="resp-cliente">MB (solo la app y sus dependencias)</td></tr>
+      <tr><td class="layer">Arranque</td><td class="resp-proveedor">Minutos</td><td class="resp-cliente">Segundos</td></tr>
+      <tr><td class="layer">Aislamiento</td><td class="resp-cliente">Total (kernel propio)</td><td>Más liviano (kernel compartido)</td></tr>
+      <tr><td class="layer">Uso típico</td><td>Distintos SO en un mismo host</td><td>Microservicios, despliegue rápido</td></tr>
+    </tbody>
+  </table>
+  <p class="lead" style="margin-top:16px">Docker Swarm, que usamos en el laboratorio de Escalabilidad, orquesta justamente contenedores — no VMs.</p>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" data-idx="6">
+  <div class="eyebrow">No es "uno mejor que el otro"</div>
+  <h2 class="slide-h">Cuándo usar cada uno</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-desktop"></i>Conviene VM cuando...</h3><p>Necesitás un sistema operativo distinto al del host, aislamiento fuerte por seguridad/compliance, o correr software legado que espera una máquina completa.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-box"></i>Conviene contenedor cuando...</h3><p>Vas a escalar rápido, desplegar frecuentemente, o correr microservicios que comparten el mismo SO base.</p></div>
+  </div>
+  <p class="lead" style="margin-top:16px">En la práctica, muchas arquitecturas combinan ambos: contenedores corriendo <em>dentro</em> de VMs, para sumar el aislamiento fuerte de la VM con la agilidad del contenedor.</p>
+</section>
+
+<!-- SLIDE 8 -->
+<section class="slide" data-idx="7">
+  <div class="eyebrow">Cierre del módulo</div>
+  <h2 class="slide-h">Lo que se lleva de esta clase</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Hay más de una forma de virtualizar</h3><p>Completa, paravirtualización y a nivel de SO resuelven el mismo problema con distintos trade-offs.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>El hardware hace la diferencia de performance</h3><p>VT-x/AMD-V son la razón por la que una VM moderna no se siente lenta.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>VM y contenedor no compiten, se complementan</h3><p>La elección depende de aislamiento necesario vs. velocidad de despliegue.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Todo lo anterior del curso depende de esto</h3><p>Elasticidad, multi-tenancy y escalabilidad son posibles gracias a la virtualización.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 9: QUIZ -->
+<section class="slide" data-idx="8">
+  <div class="eyebrow">Autoevaluación</div>
+  <h2 class="slide-h">Control rápido — Virtualización</h2>
+  <p class="lead">5 preguntas para cerrar el módulo. Podés repetirlo las veces que quieras.</p>
+  <button class="quiz-btn" onclick="startQuiz()"><i class="fa-solid fa-play"></i> Iniciar control</button>
+</section>
+
+<div id="dots"></div>
+<div id="nav-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> navegar &nbsp;·&nbsp; <kbd>Q</kbd> control</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=>goTo(i));
+  dotsWrap.appendChild(d);
+});
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  document.querySelectorAll('#dots .dot').forEach((d,i)=> d.classList.toggle('active', i===current));
+  document.getElementById('slide-counter').textContent = (current+1)+' / '+total;
+  document.getElementById('progress-fill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function next(){ goTo(current+1); }
+function prev(){ goTo(current-1); }
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+  if(e.key.toLowerCase()==='q') startQuiz();
+});
+render();
+
+const questions = [
+  {q:"En la virtualización completa, el sistema operativo invitado:", opts:["Sabe que está virtualizado y coopera con el hipervisor","No sabe que está virtualizado, corre sin modificaciones","No existe, solo hay procesos","Debe reescribirse por completo"], correct:1},
+  {q:"Los contenedores (Docker) son un ejemplo de:", opts:["Virtualización completa","Paravirtualización","Virtualización a nivel de sistema operativo","Virtualización de red"], correct:2},
+  {q:"Intel VT-x y AMD-V son:", opts:["Marcas de hipervisores","Extensiones de CPU para acelerar virtualización","Protocolos de red","Sistemas de archivos"], correct:1},
+  {q:"Comparado con una VM, un contenedor típicamente:", opts:["Pesa más y arranca más lento","Pesa menos y arranca más rápido","Tiene su propio kernel independiente","No puede aislar procesos"], correct:1},
+  {q:"¿Cuál de estas NO es un beneficio típico de la virtualización?", opts:["Consolidación de servidores","Snapshots/rollback","Migración en vivo","Eliminar la necesidad de cualquier hardware físico"], correct:3}
+];
+
+async function startQuiz(){
+  let score = 0;
+  for(let i=0;i<questions.length;i++){
+    const qq = questions[i];
+    const {value} = await Swal.fire({
+      title: 'Pregunta '+(i+1)+' / '+questions.length,
+      html: '<p style="text-align:left;color:#334155;font-size:1rem">'+qq.q+'</p>',
+      input: 'radio',
+      inputOptions: Object.fromEntries(qq.opts.map((o,idx)=>[idx,o])),
+      confirmButtonText: 'Responder',
+      confirmButtonColor: '#38BDF8',
+      background:'#f8fafc',
+      inputValidator: (v)=> !v && 'Elegí una opción'
+    });
+    if(value !== undefined && parseInt(value) === qq.correct){
+      score++;
+      await Swal.fire({icon:'success', title:'¡Correcto!', timer:900, showConfirmButton:false, background:'#f8fafc'});
+    } else {
+      await Swal.fire({icon:'error', title:'No es esa', text:'La correcta era: '+qq.opts[qq.correct], background:'#f8fafc'});
+    }
+  }
+  Swal.fire({
+    title:'Resultado: '+score+' / '+questions.length,
+    icon: score===questions.length?'success':(score>=3?'info':'warning'),
+    confirmButtonColor:'#38BDF8',
+    background:'#f8fafc',
+    text: score===questions.length ? '¡Perfecto! Dominás las generalidades.' : 'Repasá las tarjetas de la clase y volvé a intentar.'
+  });
+}
+</script>
+</body>
+</html>
