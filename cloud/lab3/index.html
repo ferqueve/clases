@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nextcloud — Cloud Computing + Laboratorio en Ubuntu Server</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <style>
+    :root{
+      --nc-blue:#0082c9;
+      --nc-dark:#07111f;
+      --panel:#0d1b2d;
+      --panel2:#12243b;
+      --text:#eef7ff;
+      --muted:#a9bfd3;
+      --accent:#63d5ff;
+      --good:#55e6a5;
+      --warn:#ffd166;
+      --danger:#ff6b7a;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      overflow:hidden;
+      background:var(--nc-dark);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    .presentation{
+      width:100vw;
+      height:100vh;
+      position:relative;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(0,130,201,.22), transparent 30%),
+        linear-gradient(135deg,#07111f 0%,#0b1728 58%,#0d2139 100%);
+    }
+
+    .slide{
+      position:absolute;
+      inset:0;
+      display:none;
+      padding:5.5vh 6vw 8vh;
+      overflow:auto;
+    }
+
+    .slide.active{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .slide h1{font-size:clamp(2.7rem,5vw,5.8rem);font-weight:800;line-height:1.02}
+    .slide h2{font-size:clamp(2.1rem,3.5vw,4rem);font-weight:800;margin-bottom:1.5rem}
+    .slide h3{font-size:clamp(1.25rem,2vw,2rem);font-weight:700}
+    .slide p,.slide li{font-size:clamp(1rem,1.35vw,1.45rem);line-height:1.55}
+    .lead-xl{font-size:clamp(1.25rem,2vw,2rem)!important;color:var(--muted)}
+    .muted{color:var(--muted)}
+    .accent{color:var(--accent)}
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .danger{color:var(--danger)}
+
+    .badge-topic{
+      display:inline-block;
+      padding:.5rem .85rem;
+      border-radius:999px;
+      background:rgba(0,130,201,.18);
+      border:1px solid rgba(99,213,255,.34);
+      color:#aeeaff;
+      font-weight:700;
+      letter-spacing:.03em;
+      margin-bottom:1.25rem;
+    }
+
+    .glass{
+      background:rgba(17,38,61,.72);
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:22px;
+      box-shadow:0 20px 55px rgba(0,0,0,.22);
+      backdrop-filter:blur(14px);
+    }
+
+    .cardx{padding:1.3rem;height:100%}
+    .cardx i{font-size:2rem;color:var(--accent);margin-bottom:.85rem}
+    .cardx p{font-size:1.02rem;color:var(--muted);margin-bottom:0}
+    .big-icon{font-size:clamp(5rem,10vw,10rem);color:var(--accent);filter:drop-shadow(0 0 35px rgba(99,213,255,.28))}
+    .flow-arrow{font-size:2rem;color:var(--muted);align-self:center}
+    .arch-box{
+      padding:1.15rem;
+      border-radius:18px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.08);
+      text-align:center;
+    }
+    .arch-box i{font-size:2.2rem;margin-bottom:.65rem;color:var(--accent)}
+    code{
+      color:#9ff7d7;
+      background:#06101b;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:7px;
+      padding:.1rem .35rem;
+    }
+    pre{
+      background:#050d16;
+      color:#dff7ff;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:1rem 1.15rem;
+      font-size:clamp(.83rem,1.05vw,1.05rem);
+      line-height:1.42;
+      white-space:pre-wrap;
+      overflow:auto;
+      max-height:48vh;
+    }
+
+    .quiz-option{
+      display:block;
+      width:100%;
+      text-align:left;
+      margin:.65rem 0;
+      padding:.9rem 1rem;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.045);
+      color:var(--text);
+      transition:.18s;
+      font-size:1.07rem;
+    }
+    .quiz-option:hover{transform:translateX(5px);background:rgba(0,130,201,.18);border-color:rgba(99,213,255,.35)}
+
+    .lab-step{
+      border-left:4px solid var(--nc-blue);
+      padding:.8rem 1rem;
+      background:rgba(255,255,255,.04);
+      border-radius:0 14px 14px 0;
+      margin:.7rem 0;
+    }
+    .lab-step strong{color:#bcecff}
+
+    .topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:8px;
+      background:rgba(255,255,255,.08);
+      z-index:50;
+    }
+    #progress{
+      height:100%;
+      width:0;
+      background:linear-gradient(90deg,var(--nc-blue),var(--accent));
+      transition:width .25s ease;
+    }
+    .nav-controls{
+      position:fixed;
+      bottom:1.4rem;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:60;
+      display:flex;
+      align-items:center;
+      gap:.7rem;
+      padding:.55rem .7rem;
+      border-radius:999px;
+      background:rgba(3,11,19,.78);
+      border:1px solid rgba(255,255,255,.1);
+      backdrop-filter:blur(10px);
+    }
+    .nav-controls button{
+      width:42px;height:42px;border-radius:50%;
+      border:none;background:#15314d;color:#fff;
+    }
+    .nav-controls button:hover{background:#1d4c73}
+    #counter{min-width:64px;text-align:center;color:var(--muted);font-weight:700}
+    .sound-toggle{position:fixed;right:1.2rem;bottom:1.5rem;z-index:61}
+    .sound-toggle button{
+      border-radius:999px;border:1px solid rgba(255,255,255,.12);
+      background:rgba(3,11,19,.78);color:#fff;padding:.65rem .9rem;
+    }
+
+    .logo-mark{
+      width:92px;height:92px;border-radius:50%;
+      display:grid;place-items:center;background:var(--nc-blue);
+      box-shadow:0 0 55px rgba(0,130,201,.35);
+      font-size:2.9rem;
+    }
+    .compare-table td,.compare-table th{
+      background:transparent!important;color:var(--text)!important;border-color:rgba(255,255,255,.1)!important;
+      font-size:1rem;
+    }
+    .callout{
+      padding:1rem 1.15rem;border-radius:16px;
+      border:1px solid rgba(255,255,255,.09);
+      background:rgba(0,130,201,.09);
+    }
+    .mini{font-size:.92rem!important}
+    .kbd{
+      border:1px solid rgba(255,255,255,.22);
+      background:rgba(255,255,255,.08);
+      padding:.18rem .45rem;border-radius:7px;font-family:monospace;
+    }
+    .source{
+      font-size:.78rem!important;color:#829bb2!important;margin-top:1rem
+    }
+
+    @media(max-width:900px){
+      .slide{padding:5rem 1.2rem 7rem}
+      .slide.active{justify-content:flex-start}
+      .flow-arrow{transform:rotate(90deg);margin:.5rem}
+    }
+  </style>
+</head>
+<body>
+
+<div class="presentation">
+  <div class="topbar"><div id="progress"></div></div>
+
+  <!-- 1 -->
+  <section class="slide active">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-8">
+        <span class="badge-topic">Cloud Computing · Almacenamiento · Colaboración</span>
+        <h1 class="animate__animated animate__fadeInUp">Nextcloud</h1>
+        <p class="lead-xl animate__animated animate__fadeInUp animate__delay-1s">
+          Tu propia plataforma de archivos y colaboración en la nube.
+        </p>
+        <div class="callout mt-4 animate__animated animate__fadeInUp animate__delay-1s">
+          <strong>Objetivo de hoy:</strong> entender qué problema resuelve Nextcloud, cómo se integra en una arquitectura cloud
+          y dejar listo el mapa mental para instalarlo sobre Ubuntu Server.
+        </div>
+      </div>
+      <div class="col-lg-4 text-center">
+        <div class="logo-mark mx-auto animate__animated animate__zoomIn"><i class="fa-solid fa-cloud"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <span class="badge-topic">01 · Punto de partida</span>
+    <h2>Cuando decimos “guardar en la nube”… ¿qué ocurre realmente?</h2>
+    <div class="row g-4 mt-2">
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-laptop"></i><h3>Cliente</h3><p>PC, navegador, móvil o aplicación de escritorio.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-network-wired"></i><h3>Red</h3><p>Transporta las solicitudes mediante HTTP/HTTPS, WebDAV y otros protocolos.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-server"></i><h3>Servidor</h3><p>Autentica, procesa, almacena metadatos y entrega los archivos.</p></div></div>
+    </div>
+    <p class="lead-xl mt-4">La nube no elimina los servidores: cambia <strong>dónde están, quién los administra y cómo accedemos a ellos.</strong></p>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <span class="badge-topic">02 · ¿Qué es Nextcloud?</span>
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <h2>Una nube privada que tú puedes administrar</h2>
+        <p>Nextcloud es una plataforma <strong>open source y autoalojable</strong> para sincronizar, compartir y colaborar con archivos desde interfaces web, móviles y de escritorio.</p>
+        <p>El punto conceptual clave para Cloud Computing es el <strong>control de la infraestructura y de los datos</strong>: la organización decide dónde vive el servicio.</p>
+        <div class="callout"><i class="fa-solid fa-lightbulb me-2"></i>Podemos desplegarlo on-premises, en una VM, VPS o infraestructura de un proveedor cloud.</div>
+        <p class="source">Fuente: Nextcloud — plataforma oficial y Nextcloud Files.</p>
+      </div>
+      <div class="col-lg-5 text-center"><i class="fa-solid fa-cloud-arrow-up big-icon"></i></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <span class="badge-topic">03 · ¿Qué servicios ofrece?</span>
+    <h2>Mucho más que “un Dropbox casero”</h2>
+    <div class="row g-3">
+      <div class="col-md-3"><div class="glass cardx"><i class="fa-solid fa-folder-open"></i><h3>Files</h3><p>Archivos, carpetas, compartir, sincronización y versiones.</p></div></div>
+      <div class="col-md-3"><div class="glass cardx"><i class="fa-solid fa-comments"></i><h3>Talk</h3><p>Chat, llamadas de audio/video y colaboración.</p></div></div>
+      <div class="col-md-3"><div class="glass cardx"><i class="fa-solid fa-calendar-days"></i><h3>Groupware</h3><p>Calendario, contactos y herramientas de productividad.</p></div></div>
+      <div class="col-md-3"><div class="glass cardx"><i class="fa-solid fa-file-pen"></i><h3>Office</h3><p>Edición colaborativa de documentos mediante Nextcloud Office.</p></div></div>
+    </div>
+    <p class="source">Fuentes oficiales: Nextcloud, Nextcloud Groupware y Nextcloud Office.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <span class="badge-topic">04 · Arquitectura</span>
+    <h2>¿Qué componentes hay detrás?</h2>
+    <div class="d-flex flex-column flex-lg-row gap-3 justify-content-center mt-4">
+      <div class="arch-box flex-fill"><i class="fa-solid fa-user"></i><h3>Cliente</h3><p class="mini muted">Browser / Desktop / Mobile</p></div>
+      <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="arch-box flex-fill"><i class="fa-solid fa-globe"></i><h3>Web Server</h3><p class="mini muted">Apache o NGINX</p></div>
+      <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="arch-box flex-fill"><i class="fa-brands fa-php"></i><h3>PHP</h3><p class="mini muted">Ejecuta Nextcloud</p></div>
+      <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="arch-box flex-fill"><i class="fa-solid fa-database"></i><h3>Base de datos</h3><p class="mini muted">MariaDB / MySQL / PostgreSQL…</p></div>
+      <div class="flow-arrow"><i class="fa-solid fa-plus"></i></div>
+      <div class="arch-box flex-fill"><i class="fa-solid fa-hard-drive"></i><h3>Storage</h3><p class="mini muted">Sistema de archivos / almacenamiento externo</p></div>
+    </div>
+    <p class="lead-xl mt-4">El laboratorio nos permitirá ver esta arquitectura funcionando en una sola VM.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <span class="badge-topic">05 · Cloud deployment</span>
+    <h2>¿Dónde encaja en Cloud Computing?</h2>
+    <div class="row g-4">
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-building"></i><h3>On-premises</h3><p>Servidor propio dentro de la organización.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-cubes"></i><h3>IaaS</h3><p>Una VM en AWS, Azure, GCP, DigitalOcean, Hetzner u otro proveedor.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-server"></i><h3>VPS / hosting</h3><p>Servidor virtual administrado total o parcialmente por terceros.</p></div></div>
+    </div>
+    <div class="callout mt-4">
+      <strong>Idea para discutir:</strong> Nextcloud es una aplicación, pero su despliegue nos obliga a pensar en cómputo, red,
+      almacenamiento, seguridad, persistencia, backups y escalabilidad.
+    </div>
+  </section>
+
+  <!-- 7 QUIZ -->
+  <section class="slide">
+    <span class="badge-topic">Quiz 1</span>
+    <h2>¿Cuál es la principal diferencia conceptual?</h2>
+    <p class="lead-xl">¿Qué distingue a un Nextcloud autoalojado de simplemente usar un SaaS de almacenamiento público?</p>
+    <div class="row">
+      <div class="col-lg-8">
+        <button class="quiz-option" onclick="answer(false,'No necesariamente. También un servicio SaaS puede ofrecer muchísimo espacio.')">A) Siempre tiene más almacenamiento.</button>
+        <button class="quiz-option" onclick="answer(true,'Exacto: el administrador controla dónde se despliega, cómo se configura y dónde residen los datos.')">B) Tenemos mayor control de la infraestructura, configuración y datos.</button>
+        <button class="quiz-option" onclick="answer(false,'Nextcloud puede tener aplicaciones cliente y también una interfaz web.')">C) No utiliza navegador.</button>
+        <button class="quiz-option" onclick="answer(false,'Sigue siendo necesario autenticar y proteger el servicio.')">D) No necesita usuarios ni seguridad.</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <span class="badge-topic">06 · Archivos y colaboración</span>
+    <h2>El flujo que percibe el usuario</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="glass cardx">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i>
+          <h3>Subir y organizar</h3>
+          <p>Archivos y carpetas desde web, móvil o cliente de sincronización.</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="glass cardx">
+          <i class="fa-solid fa-share-nodes"></i>
+          <h3>Compartir</h3>
+          <p>Con usuarios, grupos o enlaces; pueden aplicarse controles como contraseña y expiración.</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="glass cardx">
+          <i class="fa-solid fa-rotate-left"></i>
+          <h3>Versionado</h3>
+          <p>La colaboración necesita mecanismos para recuperar estados anteriores y evitar pérdidas accidentales.</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="glass cardx">
+          <i class="fa-solid fa-sync"></i>
+          <h3>Sincronizar</h3>
+          <p>Los clientes mantienen archivos disponibles entre distintos dispositivos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <span class="badge-topic">07 · Protocolos</span>
+    <h2>No todo ocurre “por magia”</h2>
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <h3><i class="fa-solid fa-lock accent me-2"></i>HTTPS</h3>
+        <p>Protege el tráfico entre cliente y servidor cuando configuramos TLS correctamente.</p>
+        <h3><i class="fa-solid fa-folder-tree accent me-2"></i>WebDAV</h3>
+        <p>Permite trabajar con archivos remotos utilizando estándares web y facilita integración con distintos clientes.</p>
+        <h3><i class="fa-solid fa-code accent me-2"></i>APIs e integraciones</h3>
+        <p>Nextcloud se integra con otras herramientas y servicios mediante interfaces programáticas y aplicaciones.</p>
+      </div>
+      <div class="col-lg-5"><div class="glass cardx text-center"><i class="fa-solid fa-diagram-project big-icon"></i><p class="lead-xl mt-3">Cloud = servicios comunicándose por red.</p></div></div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <span class="badge-topic">08 · Seguridad</span>
+    <h2>Controlar el servidor también significa asumir responsabilidades</h2>
+    <div class="row g-3">
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-user-shield"></i><h3>Identidad</h3><p>Usuarios, grupos, contraseñas, MFA y permisos.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-lock"></i><h3>Transporte</h3><p>HTTPS/TLS para evitar enviar credenciales y datos en claro.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-shield-halved"></i><h3>Hardening</h3><p>Actualizaciones, firewall, mínimos privilegios y revisión de configuración.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-database"></i><h3>Datos</h3><p>Proteger tanto la base como el directorio de datos.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-clock-rotate-left"></i><h3>Backup</h3><p>Un servicio cloud sin copia recuperable no está realmente protegido.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-file-waveform"></i><h3>Logs</h3><p>Registrar actividad ayuda a diagnosticar errores e investigar incidentes.</p></div></div>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide">
+    <span class="badge-topic">09 · Persistencia</span>
+    <h2>¿Qué debemos respaldar?</h2>
+    <div class="row g-4 mt-2">
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-folder"></i><h3>Datos</h3><p>Archivos de usuarios y contenido almacenado.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-database"></i><h3>Base de datos</h3><p>Usuarios, metadatos, configuraciones y estado de aplicaciones.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-gears"></i><h3>Configuración</h3><p>Especialmente el directorio de configuración de Nextcloud y del servidor.</p></div></div>
+    </div>
+    <div class="callout mt-4"><strong>Pregunta:</strong> ¿si copio únicamente los archivos de los usuarios, tengo un backup completo de la aplicación? <span class="danger fw-bold">No.</span></div>
+  </section>
+
+  <!-- 12 QUIZ -->
+  <section class="slide">
+    <span class="badge-topic">Quiz 2</span>
+    <h2>Arquitectura: ¿quién guarda qué?</h2>
+    <p class="lead-xl">En una instalación típica, ¿para qué usamos MariaDB?</p>
+    <div class="col-lg-8">
+      <button class="quiz-option" onclick="answer(false,'Los archivos se guardan normalmente en el almacenamiento definido para datos; la base mantiene información estructurada y metadatos.')">A) Para guardar todos los archivos binarios como si fueran BLOB obligatoriamente.</button>
+      <button class="quiz-option" onclick="answer(true,'Correcto: la base de datos mantiene información estructurada necesaria para el funcionamiento de la instancia.')">B) Para almacenar metadatos, configuración y datos estructurados de la aplicación.</button>
+      <button class="quiz-option" onclick="answer(false,'Apache/NGINX cumplen el rol de servidor web.')">C) Para sustituir completamente a Apache.</button>
+      <button class="quiz-option" onclick="answer(false,'La base de datos no reemplaza el sistema operativo ni la red.')">D) Para crear automáticamente una IP pública.</button>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide">
+    <span class="badge-topic">10 · Preparando el laboratorio</span>
+    <h2>Escenario de práctica</h2>
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="lab-step"><strong>SO:</strong> Ubuntu Server 24.04 LTS.</div>
+        <div class="lab-step"><strong>Web server:</strong> Apache.</div>
+        <div class="lab-step"><strong>Runtime:</strong> PHP + módulos requeridos.</div>
+        <div class="lab-step"><strong>Database:</strong> MariaDB.</div>
+        <div class="lab-step"><strong>Aplicación:</strong> Nextcloud Server.</div>
+        <div class="lab-step"><strong>Acceso inicial:</strong> navegador desde otra máquina o desde el host.</div>
+      </div>
+      <div class="col-lg-5">
+        <div class="glass cardx">
+          <i class="fa-brands fa-ubuntu"></i>
+          <h3>Objetivo pedagógico</h3>
+          <p>No instalar “a ciegas”: identificar cada capa, su función y cómo verificar que quedó operativa.</p>
+        </div>
+      </div>
+    </div>
+    <p class="source">La documentación oficial estable incluye un ejemplo de instalación para Ubuntu 24.04 LTS con Apache y MariaDB.</p>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide">
+    <span class="badge-topic">11 · Antes de instalar</span>
+    <h2>Checklist del servidor</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <pre><code># Identidad del servidor
+hostnamectl
+
+# IP
+ip a
+
+# Ruta y gateway
+ip route
+
+# DNS / conectividad
+ping -c 3 1.1.1.1
+ping -c 3 nextcloud.com</code></pre>
+      </div>
+      <div class="col-md-6">
+        <pre><code># Actualizar índices y paquetes
+sudo apt update
+sudo apt upgrade -y
+
+# Espacio disponible
+df -h
+
+# Memoria
+free -h
+
+# Puertos escuchando
+sudo ss -tulpn</code></pre>
+      </div>
+    </div>
+    <p class="muted">Antes de culpar a Nextcloud, debemos saber si el servidor tiene red, DNS, espacio, memoria y paquetes actualizados.</p>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide">
+    <span class="badge-topic">12 · Stack base</span>
+    <h2>Instalar Apache, MariaDB, PHP y módulos</h2>
+    <pre><code>sudo apt update
+
+sudo apt install -y apache2 mariadb-server libapache2-mod-php \
+php-gd php-mysql php-curl php-mbstring php-intl php-gmp \
+php-xml php-imagick php-zip</code></pre>
+    <div class="row g-3 mt-2">
+      <div class="col-md-3"><div class="glass cardx"><h3>Apache</h3><p>Recibe solicitudes HTTP/HTTPS.</p></div></div>
+      <div class="col-md-3"><div class="glass cardx"><h3>PHP</h3><p>Ejecuta el código de Nextcloud.</p></div></div>
+      <div class="col-md-3"><div class="glass cardx"><h3>MariaDB</h3><p>Persistencia estructurada.</p></div></div>
+      <div class="col-md-3"><div class="glass cardx"><h3>Módulos</h3><p>Funciones requeridas por la aplicación.</p></div></div>
+    </div>
+    <p class="source">Comando basado en el ejemplo oficial de instalación de Nextcloud para Ubuntu 24.04 LTS.</p>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide">
+    <span class="badge-topic">13 · Base de datos</span>
+    <h2>Crear una base y un usuario dedicados</h2>
+    <pre><code>sudo mariadb
+
+CREATE DATABASE nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+CREATE USER 'nextcloud'@'localhost'
+IDENTIFIED BY 'CAMBIAR_ESTA_CLAVE';
+
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
+
+FLUSH PRIVILEGES;
+EXIT;</code></pre>
+    <div class="callout mt-3"><i class="fa-solid fa-user-lock me-2"></i><strong>Principio:</strong> la aplicación no necesita utilizar la cuenta administrativa global de MariaDB.</div>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide">
+    <span class="badge-topic">14 · Aplicación</span>
+    <h2>Descargar y ubicar Nextcloud</h2>
+    <p>Para el laboratorio, la idea será obtener la versión indicada por el docente/documentación oficial y desplegarla bajo el directorio servido por Apache.</p>
+    <pre><code># Ejemplo conceptual
+cd /tmp
+# descargar paquete oficial de Nextcloud
+# verificar el paquete si corresponde
+# descomprimir
+# mover a /var/www/nextcloud
+
+sudo chown -R www-data:www-data /var/www/nextcloud</code></pre>
+    <div class="callout"><strong>No memorices URLs o versiones.</strong> En administración de sistemas es mejor verificar la documentación actual que copiar comandos antiguos de Internet.</div>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide">
+    <span class="badge-topic">15 · Apache</span>
+    <h2>Publicar la aplicación</h2>
+    <pre><code>&lt;VirtualHost *:80&gt;
+    ServerName nextcloud.lab
+
+    DocumentRoot /var/www/nextcloud
+
+    &lt;Directory /var/www/nextcloud/&gt;
+        Require all granted
+        AllowOverride All
+        Options FollowSymLinks MultiViews
+    &lt;/Directory&gt;
+&lt;/VirtualHost&gt;</code></pre>
+    <pre><code>sudo a2enmod rewrite headers env dir mime
+sudo a2ensite nextcloud.conf
+sudo apache2ctl configtest
+sudo systemctl reload apache2</code></pre>
+    <p class="muted">En clase conviene revisar qué hace cada módulo y por qué ejecutamos <code>configtest</code> antes de recargar.</p>
+  </section>
+
+  <!-- 19 -->
+  <section class="slide">
+    <span class="badge-topic">16 · Instalación web</span>
+    <h2>El navegador completa el enlace entre capas</h2>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <ol>
+          <li>Abrir la IP o nombre del servidor.</li>
+          <li>Crear la cuenta administrativa de Nextcloud.</li>
+          <li>Definir directorio de datos.</li>
+          <li>Seleccionar MariaDB/MySQL.</li>
+          <li>Ingresar usuario, contraseña, base y host.</li>
+          <li>Finalizar la instalación.</li>
+        </ol>
+      </div>
+      <div class="col-lg-6">
+        <div class="glass cardx">
+          <i class="fa-solid fa-link"></i>
+          <h3>Lo importante</h3>
+          <p>En este punto Nextcloud ya puede comunicarse con la base, escribir en su almacenamiento y responder solicitudes web.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20 QUIZ -->
+  <section class="slide">
+    <span class="badge-topic">Quiz 3</span>
+    <h2>Diagnóstico rápido</h2>
+    <p class="lead-xl">Apache funciona, pero al abrir Nextcloud aparece un error de conexión a la base. ¿Qué revisarías primero?</p>
+    <div class="col-lg-9">
+      <button class="quiz-option" onclick="answer(false,'Cambiar el navegador rara vez resolverá un error de autenticación contra MariaDB.')">A) Instalar otro navegador.</button>
+      <button class="quiz-option" onclick="answer(true,'Correcto. Debemos comprobar servicio, credenciales, nombre de la base, host y permisos del usuario.')">B) Estado de MariaDB, credenciales, base, host y permisos.</button>
+      <button class="quiz-option" onclick="answer(false,'La resolución de pantalla no interviene en la conexión de la aplicación a la base.')">C) La resolución de pantalla del servidor.</button>
+      <button class="quiz-option" onclick="answer(false,'Eso elimina evidencia y no ataca la causa del problema.')">D) Reinstalar Ubuntu inmediatamente.</button>
+    </div>
+  </section>
+
+  <!-- 21 -->
+  <section class="slide">
+    <span class="badge-topic">17 · Operación</span>
+    <h2>Después de instalar empieza la administración</h2>
+    <div class="row g-3">
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-users"></i><h3>Usuarios y grupos</h3><p>Cuotas, permisos y organización.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-arrows-rotate"></i><h3>Actualizaciones</h3><p>Mantener aplicación y sistema operativo soportados.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-terminal"></i><h3>occ</h3><p>CLI administrativa de Nextcloud para múltiples tareas de operación.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-stopwatch"></i><h3>Cron</h3><p>Tareas de fondo que deben ejecutarse correctamente.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-memory"></i><h3>Caché</h3><p>APCu/Redis pueden incorporarse según el escenario y escala.</p></div></div>
+      <div class="col-md-4"><div class="glass cardx"><i class="fa-solid fa-chart-line"></i><h3>Monitoreo</h3><p>Capacidad, rendimiento, errores y disponibilidad.</p></div></div>
+    </div>
+    <p class="source">La documentación oficial incluye occ, tareas de fondo, caching y tuning como tareas normales de administración.</p>
+  </section>
+
+  <!-- 22 -->
+  <section class="slide">
+    <span class="badge-topic">18 · Escalabilidad</span>
+    <h2>La VM del laboratorio no es el final</h2>
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <p>En un entorno real, podemos separar responsabilidades:</p>
+        <ul>
+          <li>Servidor web / PHP.</li>
+          <li>Base de datos dedicada.</li>
+          <li>Redis para locking/caché.</li>
+          <li>Almacenamiento externo u object storage según arquitectura.</li>
+          <li>Proxy inverso o balanceador.</li>
+          <li>Backups externos.</li>
+          <li>Monitoreo y observabilidad.</li>
+        </ul>
+      </div>
+      <div class="col-lg-5 text-center"><i class="fa-solid fa-sitemap big-icon"></i></div>
+    </div>
+    <div class="callout mt-3"><strong>Lección cloud:</strong> primero desplegamos un sistema simple para comprenderlo; luego desacoplamos componentes para crecer.</div>
+  </section>
+
+  <!-- 23 -->
+  <section class="slide">
+    <span class="badge-topic">19 · Laboratorio</span>
+    <h2>Qué deberán poder demostrar</h2>
+    <div class="row g-3">
+      <div class="col-md-6"><div class="lab-step"><strong>1.</strong> La VM tiene IP y conectividad.</div></div>
+      <div class="col-md-6"><div class="lab-step"><strong>2.</strong> Apache responde.</div></div>
+      <div class="col-md-6"><div class="lab-step"><strong>3.</strong> MariaDB está activo.</div></div>
+      <div class="col-md-6"><div class="lab-step"><strong>4.</strong> PHP está disponible.</div></div>
+      <div class="col-md-6"><div class="lab-step"><strong>5.</strong> Nextcloud se instala sin errores.</div></div>
+      <div class="col-md-6"><div class="lab-step"><strong>6.</strong> Se crea usuario y se inicia sesión.</div></div>
+      <div class="col-md-6"><div class="lab-step"><strong>7.</strong> Se sube y comparte un archivo.</div></div>
+      <div class="col-md-6"><div class="lab-step"><strong>8.</strong> Pueden explicar qué componente intervino en cada paso.</div></div>
+    </div>
+  </section>
+
+  <!-- 24 FINAL -->
+  <section class="slide">
+    <span class="badge-topic">Cierre</span>
+    <h2>Del concepto al servidor</h2>
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-7">
+        <p class="lead-xl">Nextcloud nos permite estudiar en una sola práctica varios pilares de Cloud Computing:</p>
+        <p><i class="fa-solid fa-circle-check good me-2"></i>Cómputo</p>
+        <p><i class="fa-solid fa-circle-check good me-2"></i>Red</p>
+        <p><i class="fa-solid fa-circle-check good me-2"></i>Almacenamiento y persistencia</p>
+        <p><i class="fa-solid fa-circle-check good me-2"></i>Base de datos</p>
+        <p><i class="fa-solid fa-circle-check good me-2"></i>Seguridad</p>
+        <p><i class="fa-solid fa-circle-check good me-2"></i>Operación y escalabilidad</p>
+      </div>
+      <div class="col-lg-5 text-center">
+        <i class="fa-solid fa-terminal big-icon"></i>
+        <h3 class="mt-3">Siguiente paso: laboratorio</h3>
+      </div>
+    </div>
+  </section>
+
+  <div class="nav-controls">
+    <button onclick="prevSlide()" title="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+    <span id="counter">1 / 24</span>
+    <button onclick="nextSlide()" title="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+    <button onclick="toggleFullscreen()" title="Pantalla completa"><i class="fa-solid fa-expand"></i></button>
+  </div>
+
+  <div class="sound-toggle">
+    <button onclick="toggleSound()" id="soundBtn" title="Activar/desactivar sonido"><i class="fa-solid fa-volume-high"></i></button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  let current = 0;
+  let soundEnabled = true;
+
+  function beep(type='nav'){
+    if(!soundEnabled) return;
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+
+      if(type === 'ok'){ osc.frequency.value = 740; }
+      else if(type === 'bad'){ osc.frequency.value = 210; }
+      else { osc.frequency.value = 430; }
+
+      gain.gain.setValueAtTime(0.045, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + .12);
+      osc.start();
+      osc.stop(ctx.currentTime + .12);
+    } catch(e){}
+  }
+
+  function showSlide(index){
+    if(index < 0 || index >= slides.length) return;
+    slides[current].classList.remove('active');
+    current = index;
+    slides[current].classList.add('active');
+
+    // Re-dispara animaciones de elementos elegidos
+    slides[current].querySelectorAll('.animate__animated').forEach(el=>{
+      const cls=[...el.classList].filter(c=>c.startsWith('animate__') && c!=='animate__animated' && !c.includes('delay'));
+      el.style.animation='none';
+      el.offsetHeight;
+      el.style.animation='';
+    });
+
+    document.getElementById('counter').textContent = `${current+1} / ${slides.length}`;
+    document.getElementById('progress').style.width = `${((current+1)/slides.length)*100}%`;
+    beep('nav');
+  }
+
+  function nextSlide(){ showSlide(Math.min(current+1,slides.length-1)); }
+  function prevSlide(){ showSlide(Math.max(current-1,0)); }
+
+  function toggleSound(){
+    soundEnabled = !soundEnabled;
+    document.getElementById('soundBtn').innerHTML =
+      soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+  }
+
+  function toggleFullscreen(){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+
+  function answer(correct, message){
+    beep(correct ? 'ok' : 'bad');
+    Swal.fire({
+      icon: correct ? 'success' : 'error',
+      title: correct ? '¡Correcto!' : 'Revisemos la idea',
+      text: message,
+      confirmButtonText: 'Continuar',
+      background:'#0c1c2e',
+      color:'#eef7ff',
+      confirmButtonColor:'#0082c9'
+    });
+  }
+
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();nextSlide();}
+    if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prevSlide();}
+    if(e.key.toLowerCase()==='f') toggleFullscreen();
+    if(e.key.toLowerCase()==='m') toggleSound();
+    if(e.key==='Home') showSlide(0);
+    if(e.key==='End') showSlide(slides.length-1);
+  });
+
+  document.getElementById('progress').style.width = `${(1/slides.length)*100}%`;
+
+  Swal.fire({
+    title:'Presentación lista',
+    html:'Navega con <b>← / →</b> o <b>Espacio</b>.<br><b>F</b>: pantalla completa · <b>M</b>: sonido.',
+    icon:'info',
+    confirmButtonText:'Comenzar',
+    background:'#0c1c2e',
+    color:'#eef7ff',
+    confirmButtonColor:'#0082c9'
+  });
+</script>
+</body>
+</html>

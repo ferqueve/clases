@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio — Ubuntu Server + NextCloud</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#38BDF8; --gold:#F0B429; --ground:#0B1120; --ground2:#111a33;
+  --mist:#E2E8F0; --mist-dim:#8DA0BE; --line:rgba(226,232,240,.12); --ok:#34D399; --bad:#F87171;
+}
+*{box-sizing:border-box}
+body{margin:0; font-family:'Inter',sans-serif; background:var(--ground); color:var(--mist); overflow:hidden; height:100vh;}
+code,.mono{font-family:'JetBrains Mono',monospace}
+#horizon{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sky-layer{position:absolute; inset:0; background:
+  radial-gradient(ellipse at 20% -10%, rgba(56,189,248,.14), transparent 55%),
+  radial-gradient(ellipse at 80% 0%, rgba(240,180,41,.08), transparent 50%), var(--ground);}
+.ground-line{position:absolute; left:0; right:0; bottom:0; height:38%;
+  background:linear-gradient(180deg, transparent 0%, rgba(56,189,248,.05) 40%, var(--ground2) 100%);
+  border-top:1px solid var(--line);}
+.cloud-drift{position:absolute; border-radius:50%; filter:blur(30px); opacity:.16; background:var(--sky); animation:drift linear infinite;}
+@keyframes drift{ from{transform:translateX(-10vw)} to{transform:translateX(110vw)} }
+#progress-track{position:fixed; top:0; left:0; right:0; height:4px; background:var(--line); z-index:50;}
+#progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--sky),var(--gold)); transition:width .4s ease;}
+#hud{position:fixed; top:16px; right:20px; z-index:50; display:flex; gap:14px; align-items:center; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim);}
+#hud .badge-slide{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.35); color:var(--sky); padding:4px 10px; border-radius:20px;}
+#hud .badge-score{background:rgba(240,180,41,.1); border:1px solid rgba(240,180,41,.35); color:var(--gold); padding:4px 10px; border-radius:20px;}
+#hud button{background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--mist-dim); border-radius:20px; padding:4px 10px; cursor:pointer; font-size:.85rem;}
+#course-tag{position:fixed; top:16px; left:20px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); letter-spacing:.06em;}
+#course-tag strong{color:var(--sky)}
+.slide{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center; padding:90px 8vw 70px; opacity:0; pointer-events:none; transition:opacity .35s ease; overflow-y:auto;}
+.slide.active{opacity:1; pointer-events:auto;}
+.eyebrow{font-family:'JetBrains Mono',monospace; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; font-size:.85rem; margin-bottom:14px;}
+h1.title{font-size:3rem; font-weight:800; line-height:1.08; margin:0 0 20px; letter-spacing:-.02em;}
+h1.title .accent{color:var(--sky)}
+h2.slide-h{font-size:1.9rem; font-weight:800; margin:0 0 20px; letter-spacing:-.01em;}
+p.lead{font-size:1.08rem; color:var(--mist-dim); max-width:720px; line-height:1.6;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:1000px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:1100px;}
+.card{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:20px;}
+.card h3{font-size:.98rem; margin:0 0 8px; display:flex; align-items:center; gap:10px;}
+.card h3 i{color:var(--sky)}
+.card p{color:var(--mist-dim); font-size:.88rem; line-height:1.5; margin:0;}
+.term{background:#0d1424; border:1px solid var(--line); border-radius:12px; padding:0; overflow:hidden; max-width:820px; margin-top:14px;}
+.term-bar{background:rgba(255,255,255,.04); padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); border-bottom:1px solid var(--line); display:flex; gap:8px; align-items:center;}
+.term-bar .dot{width:9px;height:9px;border-radius:50%;}
+.term pre{margin:0; padding:14px; font-size:.82rem; overflow-x:auto;}
+.exercise{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:22px; max-width:820px; margin-top:16px;}
+.exercise .prompt{color:var(--mist); font-size:.96rem; margin-bottom:12px;}
+.exercise input{width:100%; background:#0d1424; border:1px solid var(--line); border-radius:8px; padding:10px 14px; color:var(--sky); font-family:'JetBrains Mono',monospace; font-size:.9rem;}
+.exercise .btn-row{display:flex; gap:10px; margin-top:12px;}
+.exercise button{border:none; border-radius:8px; padding:9px 18px; font-weight:600; cursor:pointer; font-size:.86rem;}
+.btn-check{background:linear-gradient(135deg,var(--sky),#0ea5e9); color:#0B1120;}
+.btn-hint{background:rgba(240,180,41,.12); border:1px solid rgba(240,180,41,.35)!important; color:var(--gold);}
+.feedback{margin-top:10px; font-size:.86rem; font-family:'JetBrains Mono',monospace;}
+.feedback.ok{color:var(--ok)}
+.feedback.bad{color:var(--bad)}
+.feedback.hint{color:var(--gold)}
+.tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;}
+.tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+.crayon-note{background:rgba(240,180,41,.1); border:2px dashed rgba(240,180,41,.5); border-radius:14px; padding:16px 20px; max-width:820px; margin-top:16px; font-size:.95rem; color:var(--mist);}
+#nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
+#nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
+#dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:7px;}
+#dots .dot{width:6px; height:6px; border-radius:50%; background:var(--line); transition:.3s;}
+#dots .dot.active{background:var(--sky); width:20px; border-radius:4px;}
+.quiz-btn{background:linear-gradient(135deg,var(--sky),#0ea5e9); border:none; color:#0B1120; font-weight:700; padding:14px 30px; border-radius:10px; font-size:1rem; margin-top:22px; cursor:pointer;}
+.checklist li{margin-bottom:8px; color:var(--mist-dim); font-size:.94rem;}
+.checklist li::marker{color:var(--sky)}
+.phase-badge{display:inline-block; padding:4px 12px; border-radius:20px; font-family:'JetBrains Mono',monospace; font-size:.75rem; margin-bottom:10px;}
+.phase-a{background:rgba(240,180,41,.12); color:var(--gold); border:1px solid rgba(240,180,41,.35);}
+.phase-b{background:rgba(56,189,248,.12); color:var(--sky); border:1px solid rgba(56,189,248,.35);}
+@media (max-width:820px){
+  h1.title{font-size:1.9rem} .grid-2,.grid-3{grid-template-columns:1fr}
+  .slide{padding:80px 6vw 90px}
+}
+</style>
+</head>
+<body>
+
+<div id="horizon">
+  <div class="sky-layer"></div>
+  <div class="cloud-drift" style="width:260px;height:100px;top:8%;animation-duration:52s;"></div>
+  <div class="cloud-drift" style="width:180px;height:70px;top:18%;animation-duration:74s;animation-delay:-20s;"></div>
+  <div class="ground-line"></div>
+</div>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · Lab · Ubuntu Server + NextCloud</div>
+<div id="hud">
+  <button id="sound-toggle" onclick="toggleSound()"><i class="fa-solid fa-volume-high"></i></button>
+  <span class="badge-score" id="score-counter"><i class="fa-solid fa-star"></i> 0 pts</span>
+  <span class="badge-slide" id="slide-counter">1 / 16</span>
+</div>
+
+<!-- 1 -->
+<section class="slide active" data-idx="0">
+  <div class="eyebrow">Laboratorio práctico</div>
+  <h1 class="title">Tu propio <span class="accent">storage en la nube</span>, de punta a punta</h1>
+  <p class="lead">Vamos a instalar un Ubuntu Server desde cero, montar NextCloud arriba, y terminar habilitando un servicio real desde la línea de comandos. Storage y Seguridad, con las manos en el teclado.</p>
+  <div class="tag-row">
+    <span><i class="fa-solid fa-server"></i> Ubuntu Server 20.04/22.04</span>
+    <span><i class="fa-solid fa-cloud"></i> NextCloud</span>
+    <span><i class="fa-solid fa-terminal"></i> occ CLI</span>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-idx="1">
+  <div class="eyebrow">Objetivos del laboratorio</div>
+  <h2 class="slide-h">Qué vamos a lograr hoy</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-1"></i>Instalar Ubuntu Server</h3><p>Una VM limpia en VirtualBox, con red configurada y accesible por SSH.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-2"></i>Montar NextCloud</h3><p>Apache + MariaDB + PHP, y NextCloud corriendo y accesible por navegador.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-3"></i>Habilitar un servicio</h3><p>Activar y configurar una app de NextCloud por CLI, sin usar el mouse.</p></div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-idx="2">
+  <div class="phase-badge phase-a">PARTE A · UBUNTU SERVER</div>
+  <h2 class="slide-h">Descargar la ISO y crear la VM</h2>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;descarga</div>
+    <pre><code class="language-bash"># ISO oficial de Ubuntu Server 20.04 LTS
+https://releases.ubuntu.com/20.04/</code></pre>
+  </div>
+  <div class="grid-3" style="margin-top:14px">
+    <div class="card"><h3><i class="fa-solid fa-box"></i>Nueva VM</h3><p>En VirtualBox: Nueva → nombre, carpeta destino, seleccionar la ISO descargada.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-toggle-off"></i>Omitir instalación desatendida</h3><p>Marcá esa opción para controlar vos mismo cada paso del instalador.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-linux"></i>Tipo/versión</h3><p>Linux → Ubuntu (64-bit). VirtualBox detecta el resto automáticamente.</p></div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-idx="3">
+  <div class="phase-badge phase-a">PARTE A · UBUNTU SERVER</div>
+  <h2 class="slide-h">Hardware y disco</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-microchip"></i>Memoria y CPU</h3><p>Mínimo recomendado: 4GB de RAM y 2 procesadores. Pueden subir si la máquina física lo permite.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-hard-drive"></i>Disco</h3><p>50GB alcanza de sobra para esta prueba — disco virtual dinámico, no reservado por completo.</p></div>
+  </div>
+  <p class="lead" style="margin-top:16px">Terminen el asistente y entren a la configuración de la VM antes de arrancarla, para dejar la red bien definida primero.</p>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-idx="4">
+  <div class="phase-badge phase-a">PARTE A · UBUNTU SERVER</div>
+  <h2 class="slide-h">Configurar la red</h2>
+  <p class="lead">Si están en su red doméstica: Adaptador Puente sobre la tarjeta de red conectada a internet, con Modo Promiscuo en "Permitir todo" — así la VM obtiene una IP real de la red, visible desde el equipo anfitrión.</p>
+  <div class="crayon-note">Adaptador Puente = la VM se comporta como si fuera "otra PC más" conectada al mismo router, con su propia IP. Es distinto del modo NAT, donde la VM queda escondida detrás del equipo anfitrión.</div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-idx="5">
+  <div class="phase-badge phase-a">PARTE A · UBUNTU SERVER</div>
+  <h2 class="slide-h">Instalación guiada</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-download"></i>Instalación mínima</h3><p>No necesitamos paquetes extra para este laboratorio — elegí la opción mínima del instalador.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-network-wired"></i>IP manual</h3><p>Configurá una IP fija dentro del rango de tu red (ej. 192.168.5.90/24), con el gateway correspondiente.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-user"></i>Usuario y contraseña</h3><p>Elegí sus propias credenciales — es importante recordarlas, las van a usar todo el laboratorio.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-key"></i>OpenSSH</h3><p>Marquen instalar OpenSSH al final del instalador, para poder conectarse luego por Putty/SSH.</p></div>
+  </div>
+  <p class="lead" style="margin-top:14px">Para liberar el mouse de la ventana de VirtualBox: <span class="mono">Ctrl derecho</span>.</p>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-idx="6">
+  <div class="phase-badge phase-a">PARTE A · UBUNTU SERVER</div>
+  <h2 class="slide-h">Primer arranque y verificación</h2>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;verificar conectividad</div>
+    <pre><code class="language-bash">ping 8.8.8.8      # ¿hay salida a internet?
+ip a              # ¿qué IP me asignaron?
+# desde el equipo anfitrión:
+ping IP-DE-LA-VM  # ¿se ven entre sí?
+
+sudo apt update && sudo apt-get upgrade -y</code></pre>
+  </div>
+  <p class="lead" style="margin-top:14px">Recuerden quitar la imagen ISO de la lectora virtual tras reiniciar, si no se libera sola.</p>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-idx="7">
+  <div class="phase-badge phase-b">PARTE B · NEXTCLOUD</div>
+  <h2 class="slide-h">Actualizar e instalar dependencias</h2>
+  <p class="lead">A partir de acá trabajamos sobre Ubuntu Server 22.04. NextCloud necesita un servidor web, PHP y una base de datos — vamos a usar Apache + MariaDB.</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;actualizar</div>
+    <pre><code class="language-bash">sudo apt update
+sudo apt upgrade</code></pre>
+  </div>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;dependencias</div>
+    <pre><code class="language-bash">sudo apt install ssh apache2 libapache2-mod-php mariadb-server openssl php-imagick \
+php-common php-curl php-gd php-imap php-intl php-json php-mbstring php-mysql \
+php-xml php-zip unzip -y</code></pre>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-idx="8">
+  <div class="phase-badge phase-b">PARTE B · NEXTCLOUD</div>
+  <h2 class="slide-h">Crear la base de datos</h2>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;entrar a MariaDB</div>
+    <pre><code class="language-bash">sudo mysql -u root -p
+# como todavía no seteamos contraseña de root, la dejamos vacía al pedirla
+# (esto NUNCA debe quedar así en un servidor de producción)</code></pre>
+  </div>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;dentro de MariaDB</div>
+    <pre><code class="language-sql">create database nextcloud;
+create user 'ncuser'@'localhost' identified by 'unaClaveSegura123';
+grant all privileges on nextcloud.* to 'ncuser'@'localhost';
+flush privileges;
+quit</code></pre>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-idx="9">
+  <div class="phase-badge phase-b">PARTE B · NEXTCLOUD</div>
+  <h2 class="slide-h">Descargar e instalar NextCloud</h2>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;descargar y ubicar</div>
+    <pre><code class="language-bash">wget https://download.nextcloud.com/server/releases/nextcloud-24.0.1.zip
+unzip nextcloud-24.0.1.zip
+sudo mv nextcloud /var/www/html</code></pre>
+  </div>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;permisos</div>
+    <pre><code class="language-bash">sudo chown -R www-data:www-data /var/www/html/nextcloud
+sudo chmod -R 755 /var/www/html/nextcloud</code></pre>
+  </div>
+  <div class="crayon-note">Estos dos comandos le dicen al servidor web (usuario <span class="mono">www-data</span>) que es dueño de esos archivos y puede leerlos/escribirlos — sin esto, NextCloud no puede ni arrancar.</div>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-idx="10">
+  <div class="phase-badge phase-b">PARTE B · NEXTCLOUD</div>
+  <h2 class="slide-h">Configurar Apache</h2>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;/etc/apache2/sites-available/nextcloud.conf</div>
+    <pre><code class="language-apache">&lt;VirtualHost *:80&gt;
+DocumentRoot /var/www/html/nextcloud/
+ServerName localhost
+&lt;Directory /var/www/html/nextcloud/&gt;
+Options +FollowSymlinks
+AllowOverride All
+&lt;IfModule mod_dav.c&gt;
+Dav off
+&lt;/IfModule&gt;
+SetEnv HOME /var/www/html/nextcloud
+SetEnv HTTP_HOME /var/www/html/nextcloud
+&lt;/Directory&gt;
+ErrorLog ${APACHE_LOG_DIR}/nextcloud_error.log
+CustomLog ${APACHE_LOG_DIR}/nextcloud_access.log combined
+&lt;/VirtualHost&gt;</code></pre>
+  </div>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;activar sitio y módulos</div>
+    <pre><code class="language-bash">sudo a2ensite nextcloud.conf
+sudo a2enmod rewrite headers env dir mime setenvif
+sudo a2dissite 000-default.conf
+sudo service apache2 restart</code></pre>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-idx="11">
+  <div class="phase-badge phase-b">PARTE B · NEXTCLOUD</div>
+  <h2 class="slide-h">Asistente web y cuenta admin</h2>
+  <p class="lead">Entrando a la IP de la VM desde el navegador, completá el asistente: usuario y contraseña de administrador, y los datos de la base de datos que creaste antes (<span class="mono">nextcloud</span> / <span class="mono">ncuser</span> / <span class="mono">localhost</span>).</p>
+  <div class="grid-3" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-user-shield"></i>Cuenta admin</h3><p>Usuario y contraseña de administrador de NextCloud (distinto del usuario del sistema operativo).</p></div>
+    <div class="card"><h3><i class="fa-solid fa-database"></i>Datos de BD</h3><p>Nombre de la base, usuario, clave y host — los mismos que definiste con MariaDB.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-puzzle-piece"></i>Apps recomendadas</h3><p>Al finalizar, podés instalar las apps sugeridas (Calendar, Contacts, Talk) o dejarlo para el ejercicio siguiente.</p></div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-idx="12">
+  <div class="phase-badge phase-b">PARTE B · NEXTCLOUD</div>
+  <h2 class="slide-h">La herramienta para el ejercicio: occ</h2>
+  <p class="lead" style="max-width:760px"><span class="mono">occ</span> es la CLI de administración de NextCloud — permite gestionar usuarios, apps y configuración sin pasar por el navegador. Se ejecuta como el usuario del servidor web.</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;ejemplo: listar apps instaladas</div>
+    <pre><code class="language-bash">sudo -u www-data php /var/www/html/nextcloud/occ app:list</code></pre>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-idx="13">
+  <div class="eyebrow">Ejercicio práctico</div>
+  <h2 class="slide-h">Habilitar un servicio real por CLI</h2>
+  <p class="lead">Vamos a activar la app de Calendario de NextCloud sin usar el navegador — así se hace en un despliegue real automatizado.</p>
+  <div class="crayon-note">Si <span class="mono">calendar</span> no está disponible en tu instalación (a veces falla si no hay salida a internet hacia la tienda de apps), usá cualquiera de estas alternativas — el ejercicio las acepta igual: <span class="mono">contacts</span>, <span class="mono">tasks</span> o <span class="mono">notes</span>.</div>
+  <div class="exercise" id="ex1">
+    <p class="prompt">Escribí el comando <span class="mono">occ</span> para habilitar la app <span class="mono">calendar</span> (o una de las alternativas de arriba), ejecutado como <span class="mono">www-data</span>, apuntando al occ de <span class="mono">/var/www/html/nextcloud</span>.</p>
+    <input type="text" id="ex1-input" placeholder="sudo -u www-data php ..." autocomplete="off">
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkExercise(1)">Comprobar</button>
+      <button class="btn-hint" onclick="showHint(1)">Pista (-1 pt)</button>
+    </div>
+    <div class="feedback" id="ex1-feedback"></div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-idx="14">
+  <div class="eyebrow">Ejercicio práctico</div>
+  <h2 class="slide-h">Verificar que quedó activa</h2>
+  <div class="exercise" id="ex2">
+    <p class="prompt">Escribí el comando para listar las apps instaladas y confirmar que <span class="mono">calendar</span> aparece como habilitada.</p>
+    <input type="text" id="ex2-input" placeholder="sudo -u www-data php ..." autocomplete="off">
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkExercise(2)">Comprobar</button>
+      <button class="btn-hint" onclick="showHint(2)">Pista (-1 pt)</button>
+    </div>
+    <div class="feedback" id="ex2-feedback"></div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-idx="15">
+  <div class="eyebrow">Entregable del laboratorio</div>
+  <h2 class="slide-h">Checklist para aprobar</h2>
+  <ul class="checklist">
+    <li>Ubuntu Server instalado en VirtualBox, con IP fija y acceso SSH</li>
+    <li>Apache + MariaDB + PHP instalados y actualizados</li>
+    <li>Base de datos y usuario de NextCloud creados en MariaDB</li>
+    <li>NextCloud instalado, con VirtualHost de Apache configurado</li>
+    <li>Cuenta de administrador creada desde el asistente web</li>
+    <li>App "calendar" habilitada y verificada por CLI con <span class="mono">occ</span></li>
+  </ul>
+  <button class="quiz-btn" onclick="finishLab()"><i class="fa-solid fa-flag-checkered"></i> Ver puntaje final</button>
+</section>
+
+<div id="dots"></div>
+<div id="nav-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> navegar</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script>
+/* ---- sound engine (Web Audio API synth, no external files) ---- */
+let soundOn = true;
+let actx = null;
+function ensureCtx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+function beep(freq, duration, type='sine', vol=0.12){
+  if(!soundOn) return;
+  const ctx = ensureCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(); osc.stop(ctx.currentTime + duration);
+}
+function soundClick(){ beep(520, .08, 'triangle', .08); }
+function soundOk(){ beep(660, .09,'sine',.14); setTimeout(()=>beep(880,.12,'sine',.14),90); }
+function soundBad(){ beep(180, .18, 'sawtooth', .1); }
+function soundHint(){ beep(400, .1, 'triangle', .09); }
+function toggleSound(){
+  soundOn = !soundOn;
+  document.getElementById('sound-toggle').innerHTML = soundOn ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+}
+
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+let score = 0;
+
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=>{ soundClick(); goTo(i); });
+  dotsWrap.appendChild(d);
+});
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  document.querySelectorAll('#dots .dot').forEach((d,i)=> d.classList.toggle('active', i===current));
+  document.getElementById('slide-counter').textContent = (current+1)+' / '+total;
+  document.getElementById('progress-fill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function next(){ soundClick(); goTo(current+1); }
+function prev(){ soundClick(); goTo(current-1); }
+document.addEventListener('keydown', (e)=>{
+  if(document.activeElement.tagName === 'INPUT') return;
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+});
+render();
+
+function updateScore(delta){
+  score = Math.max(0, score+delta);
+  document.getElementById('score-counter').innerHTML = '<i class="fa-solid fa-star"></i> '+score+' pts';
+}
+
+const exercises = {
+  1: {re:/^sudo\s+-u\s+www-data\s+php\s+\/var\/www\/html\/nextcloud\/occ\s+app:enable\s+(calendar|contacts|tasks|notes)$/i, hint:"Formato: sudo -u www-data php /var/www/html/nextcloud/occ app:enable <calendar|contacts|tasks|notes>", points:10},
+  2: {re:/^sudo\s+-u\s+www-data\s+php\s+\/var\/www\/html\/nextcloud\/occ\s+app:list$/i, hint:"Formato: sudo -u www-data php /var/www/html/nextcloud/occ app:list", points:10}
+};
+const hintsUsed = {1:false,2:false};
+const solved = {1:false,2:false};
+
+function checkExercise(n){
+  const input = document.getElementById('ex'+n+'-input').value.trim();
+  const fb = document.getElementById('ex'+n+'-feedback');
+  const ex = exercises[n];
+  if(ex.re.test(input)){
+    fb.className = 'feedback ok';
+    fb.textContent = '✓ Correcto. Ese es el comando esperado.';
+    soundOk();
+    if(!solved[n]){
+      solved[n] = true;
+      updateScore(hintsUsed[n] ? ex.points-3 : ex.points);
+    }
+  } else {
+    fb.className = 'feedback bad';
+    fb.textContent = '✗ Todavía no. Revisá sintaxis, ruta del occ y el nombre del subcomando.';
+    soundBad();
+  }
+}
+function showHint(n){
+  hintsUsed[n] = true;
+  const fb = document.getElementById('ex'+n+'-feedback');
+  fb.className = 'feedback hint';
+  fb.textContent = '💡 '+exercises[n].hint;
+  soundHint();
+  updateScore(-1);
+}
+function finishLab(){
+  const maxScore = 20;
+  soundOk();
+  Swal.fire({
+    title: 'Puntaje del laboratorio: '+score+' / '+maxScore,
+    icon: score>=17?'success':(score>=10?'info':'warning'),
+    confirmButtonColor:'#38BDF8',
+    background:'#f8fafc',
+    text: score>=17 ? '¡Excelente! Instalaste todo el stack y activaste un servicio real por CLI.' : 'Repasá los comandos de occ y volvé a intentar los ejercicios.'
+  });
+}
+</script>
+</body>
+</html>
