@@ -145,7 +145,7 @@ VBoxManage list vms</code></pre>
   <h2 class="slide-h">Requisitos del laboratorio</h2>
   <div class="grid-3">
     <div class="card"><h3><i class="fa-solid fa-desktop"></i>VirtualBox instalado</h3><p>Última versión estable, disponible para Windows/macOS/Linux desde el sitio oficial.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-download"></i>ISO de Ubuntu Server</h3><p>La misma que usamos en el laboratorio de NextCloud — la reutilizamos acá.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-download"></i>ISO de Ubuntu Server</h3><p>No la vamos a instalar acá — este laboratorio se queda en la capa de virtualización (VBoxManage). La instalación completa del sistema operativo ya la hicieron en el laboratorio de NextCloud.</p></div>
     <div class="card"><h3><i class="fa-solid fa-hard-drive"></i>Espacio en disco</h3><p>Al menos 30GB libres para poder crear varias VMs de distinto flavor sin quedarse sin espacio.</p></div>
   </div>
 </section>
@@ -156,23 +156,33 @@ VBoxManage list vms</code></pre>
   <h2 class="slide-h">Armando "flavors" con VBoxManage</h2>
   <p class="lead" style="max-width:760px">Igual que en Proxmox, VirtualBox no trae un catálogo cerrado de flavors — los definimos nosotros al crear la VM, fijando CPU, RAM y disco por línea de comandos.</p>
   <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;crear una carpeta de trabajo (una sola vez)</div>
+    <pre><code class="language-bash">mkdir lab-vms
+cd lab-vms</code></pre>
+  </div>
+  <div class="term">
     <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;crear una VM con flavor "small"</div>
     <pre><code class="language-bash">VBoxManage createvm --name "flavor-small" --ostype Ubuntu_64 --register
 VBoxManage modifyvm "flavor-small" --cpus 1 --memory 1024
-VBoxManage createhd --filename ~/VirtualBox\ VMs/flavor-small/disco.vdi --size 8192
+VBoxManage createhd --filename flavor-small.vdi --size 8192
 VBoxManage storagectl "flavor-small" --name "SATA" --add sata
 VBoxManage storageattach "flavor-small" --storagectl "SATA" --port 0 --device 0 \
-  --type hdd --medium ~/VirtualBox\ VMs/flavor-small/disco.vdi</code></pre>
+  --type hdd --medium flavor-small.vdi</code></pre>
   </div>
-  <div class="crayon-note">Desglosando: <span class="mono">createvm</span> registra la VM. <span class="mono">modifyvm --cpus --memory</span> define el flavor (1 vCPU, 1GB RAM). <span class="mono">createhd</span> crea el disco virtual (8192 = 8GB). Las líneas de <span class="mono">storagectl/storageattach</span> "conectan" ese disco a la VM, igual que enchufarías un disco físico.</div>
+  <div class="crayon-note">Desglosando: <span class="mono">createvm</span> registra la VM. <span class="mono">modifyvm --cpus --memory</span> define el flavor (1 vCPU, 1GB RAM). <span class="mono">createhd</span> crea el disco virtual (8192 = 8GB) <strong style="color:var(--mist)">en la carpeta donde estás parado</strong> — por eso creamos <span class="mono">lab-vms</span> primero, en vez de usar rutas con <span class="mono">~</span> o espacios escapados que en Windows no se interpretan igual que en Linux/macOS. Las líneas de <span class="mono">storagectl/storageattach</span> "conectan" ese disco a la VM, igual que enchufarías un disco físico.</div>
 </section>
 
 <!-- 7 -->
 <section class="slide" data-idx="6">
   <div class="eyebrow">Ejercicio 1</div>
   <h2 class="slide-h">Crear un segundo flavor</h2>
+  <p class="lead">Primero registramos la VM vacía (esto sí lo hacemos por ustedes, para no repetir el paso anterior):</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;registrar la VM (ejecutá esto primero)</div>
+    <pre><code class="language-bash">VBoxManage createvm --name "flavor-medium" --ostype Ubuntu_64 --register</code></pre>
+  </div>
   <div class="exercise" id="ex1">
-    <p class="prompt">Escribí el comando para dejar la VM <span class="mono">flavor-medium</span> con <span class="mono">2</span> vCPU y <span class="mono">2048</span> MB de RAM usando <span class="mono">modifyvm</span> (asumí que la VM ya fue creada con <span class="mono">createvm</span>).</p>
+    <p class="prompt">Ahora escribí el comando para dejar esa VM <span class="mono">flavor-medium</span> con <span class="mono">2</span> vCPU y <span class="mono">2048</span> MB de RAM usando <span class="mono">modifyvm</span>.</p>
     <input type="text" id="ex1-input" placeholder="VBoxManage modifyvm ..." autocomplete="off">
     <div class="btn-row">
       <button class="btn-check" onclick="checkExercise(1)">Comprobar</button>
