@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANDIS 2 · Teórico — Protección</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#070b14; --bg-1:#0d1424; --panel:#111a2e; --panel-2:#16223a;
+  --accent:#3ec1ff; --accent-2:#7b6bff; --accent-3:#ffb547; --ok:#3ee6a8; --bad:#ff6b6b;
+  --text:#e8edf7; --text-dim:#8fa0bd; --border:#22304d;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(62,193,255,.10), transparent 60%),
+    radial-gradient(1000px 700px at 110% 10%, rgba(123,107,255,.12), transparent 55%),
+    var(--bg-0);
+  color:var(--text); font-family:'Inter',sans-serif; overflow:hidden;
+}
+.mono{font-family:'JetBrains Mono',monospace}
+.blueprint{
+  position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.35;
+  background-image:linear-gradient(rgba(62,193,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(62,193,255,.06) 1px, transparent 1px);
+  background-size:42px 42px;
+}
+.progress-track{position:fixed; top:0; left:0; width:100%; height:4px; background:rgba(255,255,255,.06); z-index:50;}
+.progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .4s ease; box-shadow:0 0 12px var(--accent);}
+.hud{position:fixed; top:14px; right:18px; z-index:50; background:rgba(17,26,46,.85); border:1px solid var(--border); backdrop-filter:blur(6px); padding:7px 14px; border-radius:999px; font-size:.82rem; color:var(--text-dim); display:flex; align-items:center; gap:8px;}
+.hud .unit-tag{color:var(--accent); font-weight:700}
+.brand{position:fixed; top:14px; left:18px; z-index:50; font-size:.78rem; color:var(--text-dim); display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.brand i{color:var(--accent-3)}
+.slides-container{position:relative; z-index:1; height:100vh; width:100vw;}
+.slide{position:absolute; inset:0; display:none; padding:90px 8vw 110px 8vw; overflow-y:auto;}
+.slide.active{display:block}
+.slide-inner{max-width:1180px; margin:0 auto;}
+.eyebrow{display:inline-flex; align-items:center; gap:8px; font-size:.78rem; text-transform:uppercase; letter-spacing:.12em; color:var(--accent); font-weight:700; margin-bottom:14px;}
+.eyebrow i{font-size:.9rem}
+h1.slide-title{font-size:clamp(1.9rem,3.4vw,3rem); font-weight:800; margin-bottom:.4rem; line-height:1.1;}
+h2.slide-title{font-size:clamp(1.5rem,2.6vw,2.2rem); font-weight:800; margin-bottom:.6rem;}
+.subtitle{color:var(--text-dim); font-size:1.05rem; max-width:820px;}
+.card-panel{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid var(--border); border-radius:16px; padding:26px 28px; box-shadow:0 12px 30px rgba(0,0,0,.35);}
+.card-panel + .card-panel{margin-top:18px}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:.76rem; font-weight:700; background:rgba(62,193,255,.12); color:var(--accent); border:1px solid rgba(62,193,255,.35);}
+.pill.purple{background:rgba(123,107,255,.14); color:#b3a8ff; border-color:rgba(123,107,255,.4)}
+.pill.amber{background:rgba(255,181,71,.14); color:var(--accent-3); border-color:rgba(255,181,71,.4)}
+.pill.ok{background:rgba(62,230,168,.12); color:var(--ok); border-color:rgba(62,230,168,.35)}
+.pill.bad{background:rgba(255,107,107,.12); color:var(--bad); border-color:rgba(255,107,107,.35)}
+.icon-tile{width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:rgba(62,193,255,.12); color:var(--accent); font-size:1.3rem; border:1px solid rgba(62,193,255,.3); flex-shrink:0;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+ul.clean{list-style:none; margin:0; padding:0;}
+ul.clean li{position:relative; padding:6px 0 6px 26px; color:var(--text); font-size:.94rem;}
+ul.clean li::before{content:"\f105"; font-family:"Font Awesome 6 Free"; font-weight:900; color:var(--accent); position:absolute; left:2px; top:8px; font-size:.85rem;}
+.check-btn{border:none; background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#04101f; font-weight:800; padding:10px 22px; border-radius:10px; font-size:.9rem; box-shadow:0 8px 22px rgba(62,193,255,.25); cursor:pointer;}
+.check-btn:hover{filter:brightness(1.08); color:#04101f;}
+.nav-controls{position:fixed; bottom:18px; left:0; right:0; z-index:50; display:flex; justify-content:center; gap:14px; align-items:center;}
+.nav-btn{width:46px; height:46px; border-radius:50%; border:1px solid var(--border); background:rgba(17,26,46,.9); color:var(--text); display:flex; align-items:center; justify-content:center; font-size:1.1rem; backdrop-filter:blur(6px);}
+.nav-btn:hover{border-color:var(--accent); color:var(--accent);}
+.nav-dots{display:flex; gap:6px; align-items:center; background:rgba(17,26,46,.9); border:1px solid var(--border); padding:8px 14px; border-radius:999px;}
+.nav-dots .dot{width:7px; height:7px; border-radius:50%; background:var(--border); cursor:pointer; transition:.2s;}
+.nav-dots .dot.active{background:var(--accent); width:20px; border-radius:4px;}
+.footer-note{position:fixed; bottom:20px; right:22px; z-index:50; font-size:.72rem; color:var(--text-dim); font-family:'JetBrains Mono';}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px}
+
+.sub-item{background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px;}
+.sub-item .sname{font-weight:700; font-size:.94rem; color:var(--accent); margin-bottom:4px; display:flex; align-items:center; gap:8px;}
+.sub-item .sdesc{font-size:.85rem; color:var(--text-dim); margin:0;}
+
+.link-row{display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid rgba(255,255,255,.06);}
+.link-row:last-child{border-bottom:none;}
+.link-row a{color:var(--text); text-decoration:none; font-weight:600;}
+.link-row a:hover{color:var(--accent);}
+.link-row .ext{margin-left:auto; color:var(--text-dim); font-size:.75rem;}
+
+.step-flow{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.step-flow .step{background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:14px 18px; flex:1; min-width:180px; text-align:center;}
+.step-flow .arrow{color:var(--text-dim); font-size:1.2rem;}
+</style>
+</head>
+<body>
+
+<div class="blueprint"></div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="brand"><i class="fa-solid fa-cubes"></i> ANDIS 2 · Teórico</div>
+<div class="hud"><i class="fa-solid fa-layer-group"></i> <span class="unit-tag" id="hudCurrent">1</span>/<span id="hudTotal">0</span></div>
+
+<div class="slides-container" id="slidesContainer"></div>
+
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="nav-dots" id="navDots"></div>
+  <button class="nav-btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+<div class="footer-note">← → para navegar</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script>
+const slidesHTML = [];
+
+// 0. Portada
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center" style="min-height:78vh;">
+  <div class="animate__animated animate__fadeInDown">
+    <span class="eyebrow"><i class="fa-solid fa-shield-heart"></i> Teórico · Unidad 1</span>
+    <h1 class="slide-title">Protección</h1>
+    <p class="subtitle">Safety: cuando el software puede poner en riesgo vidas, propiedad o el medio ambiente — qué lo causa y cómo se diseña para evitarlo.</p>
+  </div>
+</div>
+`);
+
+// 1. Definición
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-circle-question"></i> Definición</span>
+  <h2 class="slide-title">¿Qué es la protección?</h2>
+  <div class="card-panel mt-3">
+    <div class="d-flex gap-3">
+      <div class="icon-tile"><i class="fa-solid fa-hand-holding-heart"></i></div>
+      <p style="font-size:1.05rem; line-height:1.75; margin:0;">
+        La <strong>protección</strong> (safety) es un atributo de calidad de software que define la capacidad de un
+        sistema o componente, en condiciones definidas, de <strong>evitar un estado</strong> en el que se ponga en
+        peligro la <strong>vida humana, la salud, la propiedad o el medio ambiente</strong>.
+      </p>
+    </div>
+  </div>
+  <div class="card-panel mt-3 d-flex gap-3 align-items-center">
+    <div class="icon-tile" style="background:rgba(123,107,255,.14); color:#b3a8ff; border-color:rgba(123,107,255,.4)"><i class="fa-solid fa-book"></i></div>
+    <div class="small" style="color:var(--text-dim)">Una definición similar la describe como la capacidad de un sistema para <strong style="color:var(--text)">evitar desviarse hacia estados</strong> que causen o conduzcan a daños, lesiones o pérdida de vidas a los actores de su entorno.</div>
+  </div>
+</div>
+`);
+
+// 2. Sub-características
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-layer-group"></i> ISO/IEC 25010</span>
+  <h2 class="slide-title">Sub-características de protección</h2>
+  <div class="grid-2 mt-3">
+    <div class="sub-item">
+      <div class="sname"><i class="fa-solid fa-ban"></i>Restricción operativa</div>
+      <p class="sdesc">Capacidad de limitar el funcionamiento a parámetros o estados seguros frente a un peligro operativo.</p>
+    </div>
+    <div class="sub-item">
+      <div class="sname"><i class="fa-solid fa-magnifying-glass"></i>Identificación de riesgos</div>
+      <p class="sdesc">Capacidad de identificar situaciones u operaciones que expongan vida, propiedad o medio ambiente a un riesgo inaceptable.</p>
+    </div>
+    <div class="sub-item">
+      <div class="sname"><i class="fa-solid fa-triangle-exclamation"></i>Protección ante fallos</div>
+      <p class="sdesc">Capacidad de ponerse automáticamente en modo seguro, o volver a una condición segura, en caso de fallo.</p>
+    </div>
+    <div class="sub-item">
+      <div class="sname"><i class="fa-solid fa-bell"></i>Advertencia de peligro</div>
+      <p class="sdesc">Capacidad de alertar riesgos inaceptables con tiempo suficiente para reaccionar y mantener la seguridad.</p>
+    </div>
+  </div>
+  <div class="sub-item mt-0">
+    <div class="sname"><i class="fa-solid fa-puzzle-piece"></i>Integración segura</div>
+    <p class="sdesc">Capacidad de mantener la seguridad durante y después de la integración con uno o varios componentes.</p>
+  </div>
+</div>
+`);
+
+// 3. Causas de estados inseguros
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-bug"></i> Origen del problema</span>
+  <h2 class="slide-title">¿Qué causa un estado inseguro?</h2>
+  <p class="subtitle mb-3">Seis factores que pueden desviar al sistema hacia un estado peligroso.</p>
+  <div class="grid-3">
+    <div class="sub-item"><div class="sname"><i class="fa-solid fa-minus-circle"></i>Omisión</div><p class="sdesc">Un evento que debería ocurrir, no ocurre.</p></div>
+    <div class="sub-item"><div class="sname"><i class="fa-solid fa-plus-circle"></i>Comisión</div><p class="sdesc">Ocurre un evento indeseable — aceptable en algunos estados, indeseable en otros.</p></div>
+    <div class="sub-item"><div class="sname"><i class="fa-solid fa-clock"></i>Tiempo</div><p class="sdesc">Un evento ocurre antes de tiempo (temprano) o después de tiempo (tardío).</p></div>
+    <div class="sub-item"><div class="sname"><i class="fa-solid fa-calculator"></i>Valores del sistema</div><p class="sdesc">Valores incorrectos gruesos (detectables) o sutiles (típicamente indetectables).</p></div>
+    <div class="sub-item"><div class="sname"><i class="fa-solid fa-list-ol"></i>Omisión/comisión de secuencia</div><p class="sdesc">En una secuencia de eventos, falta uno o se inserta uno inesperado.</p></div>
+    <div class="sub-item"><div class="sname"><i class="fa-solid fa-shuffle"></i>Fuera de secuencia</div><p class="sdesc">La secuencia de eventos llega completa, pero en el orden equivocado.</p></div>
+  </div>
+</div>
+`);
+
+// 4. Respuesta del sistema
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-life-ring"></i> Una vez detectado el peligro</span>
+  <h2 class="slide-title">¿Cómo responde el sistema?</h2>
+  <div class="card-panel mt-3">
+    <p style="font-size:1rem; line-height:1.7;">
+      Las respuestas posibles son similares a las de disponibilidad: reconocer el estado inseguro y hacer que el
+      sistema vuelva a ser seguro por alguna de estas tres vías.
+    </p>
+    <div class="step-flow mt-2">
+      <div class="step"><i class="fa-solid fa-arrow-rotate-left mb-2 d-block" style="color:var(--ok)"></i><strong>Continuar / modo seguro</strong><div class="small mt-1" style="color:var(--text-dim)">Recuperarse del estado inseguro o entrar en modo seguro.</div></div>
+      <div class="arrow"><i class="fa-solid fa-grip-lines-vertical"></i></div>
+      <div class="step"><i class="fa-solid fa-power-off mb-2 d-block" style="color:var(--accent-3)"></i><strong>Apagar (fail safe)</strong><div class="small mt-1" style="color:var(--text-dim)">Detener el sistema de forma controlada.</div></div>
+      <div class="arrow"><i class="fa-solid fa-grip-lines-vertical"></i></div>
+      <div class="step"><i class="fa-solid fa-user-gear mb-2 d-block" style="color:var(--accent-2)"></i><strong>Operación manual</strong><div class="small mt-1" style="color:var(--text-dim)">Transicionar a un estado que requiera intervención humana.</div></div>
+    </div>
+  </div>
+  <div class="card-panel mt-3 d-flex gap-3 align-items-center">
+    <div class="icon-tile" style="background:rgba(255,181,71,.14); color:var(--accent-3); border-color:rgba(255,181,71,.4)"><i class="fa-solid fa-file-pen"></i></div>
+    <div class="small" style="color:var(--text-dim)">En todos los casos, el estado inseguro debe ser <strong style="color:var(--text)">registrado e informado</strong>.</div>
+  </div>
+</div>
+`);
+
+// 5. Tácticas, patrones y referencias
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-book-open-reader"></i> Para profundizar</span>
+  <h2 class="slide-title">Tácticas, patrones y referencias</h2>
+  <div class="card-panel mt-3">
+    <span class="pill"><i class="fa-solid fa-compass"></i> Tácticas</span>
+    <div class="link-row mt-2">
+      <i class="fa-solid fa-link" style="color:var(--accent)"></i>
+      <a href="https://github.com/ucudal/ANDIS_Conceptos/blob/main/2_Tecnicas_y_herramientas/2_05_.Tacticas_arquitectura/2_05_03_Tacticas_proteccion.md" target="_blank">Tácticas para la protección</a>
+      <span class="ext">repositorio</span>
+    </div>
+  </div>
+  <div class="card-panel mt-3">
+    <span class="pill purple"><i class="fa-solid fa-shapes"></i> Patrones</span>
+    <div class="link-row mt-2">
+      <i class="fa-solid fa-link" style="color:var(--accent)"></i>
+      <a href="https://www.researchgate.net/publication/4095499_Safety_Tactics_for_Software_Architecture_Design" target="_blank">Wu, W. & Kelly, T. (2004). Safety Tactics for Software Architecture Design</a>
+      <span class="ext">ResearchGate</span>
+    </div>
+  </div>
+  <div class="card-panel mt-3">
+    <span class="pill amber"><i class="fa-solid fa-graduation-cap"></i> Referencias adicionales</span>
+    <div class="link-row mt-2">
+      <i class="fa-solid fa-link" style="color:var(--accent)"></i>
+      <a href="https://www.sciencedirect.com/science/article/pii/S1474667017513695" target="_blank">Ovstedal, E. (1991). Using Fault Tree Analysis in Developing Reliable Software</a>
+      <span class="ext">ScienceDirect</span>
+    </div>
+  </div>
+</div>
+`);
+
+// 6. Quiz
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:70vh;">
+  <span class="eyebrow"><i class="fa-solid fa-brain"></i> Chequeo de comprensión</span>
+  <h2 class="slide-title">5 preguntas sobre protección</h2>
+  <p class="subtitle mb-4">Definición, sub-características, causas de estados inseguros y respuestas del sistema.</p>
+  <button class="check-btn" onclick="lanzarQuiz()"><i class="fa-solid fa-play me-2"></i>Iniciar quiz</button>
+</div>
+`);
+
+// 7. Cierre
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:78vh;">
+  <div class="icon-tile mb-3" style="width:72px;height:72px;font-size:2rem;"><i class="fa-solid fa-check"></i></div>
+  <span class="eyebrow"><i class="fa-solid fa-flag-checkered"></i> Repaso completo</span>
+  <h2 class="slide-title">Protección: diseñar para que el fallo no lastime</h2>
+  <p class="subtitle mb-4" style="max-width:640px;">Reconocer, contener y comunicar el estado inseguro — ese es el ciclo. Por hoy llegamos hasta acá; seguimos con Seguridad en la próxima.</p>
+</div>
+`);
+
+/* ============ MOTOR DE NAVEGACIÓN ============ */
+const container = document.getElementById('slidesContainer');
+slidesHTML.forEach((html, i)=>{
+  const div = document.createElement('div');
+  div.className = 'slide' + (i===0 ? ' active' : '');
+  div.id = 'slide'+i;
+  div.innerHTML = html;
+  container.appendChild(div);
+});
+
+let current = 0;
+const total = slidesHTML.length;
+document.getElementById('hudTotal').textContent = total;
+
+const dotsWrap = document.getElementById('navDots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = ()=>goTo(i);
+  dotsWrap.appendChild(d);
+}
+
+function updateUI(){
+  document.querySelectorAll('.slide').forEach((s,i)=>{ s.classList.toggle('active', i===current); });
+  document.querySelectorAll('.nav-dots .dot').forEach((d,i)=>{ d.classList.toggle('active', i===current); });
+  document.getElementById('hudCurrent').textContent = current+1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+  const active = document.getElementById('slide'+current);
+  active.scrollTop = 0;
+  const animTarget = active.querySelector('.slide-inner');
+  if(animTarget){
+    animTarget.classList.remove('animate__fadeIn');
+    void animTarget.offsetWidth;
+    animTarget.classList.add('animate__animated','animate__fadeIn');
+  }
+}
+function goTo(i){ if(i<0||i>=total) return; current = i; updateUI(); }
+document.getElementById('prevBtn').onclick = ()=>goTo(current-1);
+document.getElementById('nextBtn').onclick = ()=>goTo(current+1);
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+updateUI();
+
+/* ============ QUIZ — posiciones y longitudes de respuesta variadas ============ */
+const preguntas = [
+  {
+    texto:'¿Qué define la protección (safety) como atributo de calidad?',
+    opciones:{
+      a:'La capacidad de evitar un estado que ponga en peligro vidas, propiedad o el medio ambiente',
+      b:'La velocidad con la que el sistema responde a una solicitud',
+      c:'La cantidad de usuarios concurrentes que el sistema puede soportar',
+      d:'La facilidad para instalar el sistema en un nuevo entorno'
+    },
+    correcta:'a'
+  },
+  {
+    texto:'¿Cuál de estas NO es una sub-característica de protección según ISO/IEC 25010?',
+    opciones:{
+      a:'Restricción operativa',
+      b:'Escalabilidad',
+      c:'Advertencia de peligro',
+      d:'Integración segura'
+    },
+    correcta:'b'
+  },
+  {
+    texto:'Un evento ocurre, pero antes del momento en que debía ocurrir. ¿Qué tipo de causa de estado inseguro es esta?',
+    opciones:{
+      a:'Comisión',
+      b:'Fuera de secuencia',
+      c:'Tiempo (temprano)',
+      d:'Omisión'
+    },
+    correcta:'c'
+  },
+  {
+    texto:'¿Qué caracteriza a un "valor incorrecto sutil" frente a uno "grueso"?',
+    opciones:{
+      a:'Es típicamente indetectable, a diferencia del grueso que sí se detecta',
+      b:'Solo ocurre en sistemas sin redundancia de hardware',
+      c:'Siempre proviene de un error de comisión, nunca de omisión',
+      d:'Se detecta automáticamente mediante advertencia de peligro'
+    },
+    correcta:'a'
+  },
+  {
+    texto:'Además de reconocer y resolver un estado inseguro, ¿qué otra acción exige el texto?',
+    opciones:{
+      a:'Reiniciar automáticamente todos los componentes del sistema',
+      b:'Registrar e informar el estado inseguro',
+      c:'Desconectar permanentemente el componente afectado',
+      d:'Notificar exclusivamente al usuario final del sistema'
+    },
+    correcta:'b'
+  }
+];
+let idxPregunta = 0, aciertos = 0;
+
+function lanzarQuiz(){ idxPregunta = 0; aciertos = 0; mostrarPregunta(); }
+function mostrarPregunta(){
+  if(idxPregunta >= preguntas.length){
+    Swal.fire({
+      title:'Resultado',
+      html:`Acertaste <b>${aciertos}/${preguntas.length}</b>.`,
+      icon: aciertos===preguntas.length ? 'success' : 'info',
+      background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff'
+    });
+    return;
+  }
+  const p = preguntas[idxPregunta];
+  Swal.fire({
+    title: p.texto,
+    input:'radio',
+    inputOptions: p.opciones,
+    background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff',
+    confirmButtonText:'Responder',
+    inputValidator: (value)=> !value && 'Elegí una opción'
+  }).then(res=>{
+    if(!res.isConfirmed) return;
+    const ok = res.value === p.correcta;
+    if(ok) aciertos++;
+    Swal.fire({
+      title: ok ? '¡Correcto!' : 'No es así',
+      html: `La respuesta correcta era: <b>${p.opciones[p.correcta]}</b>`,
+      icon: ok ? 'success' : 'error',
+      background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff'
+    }).then(()=>{ idxPregunta++; mostrarPregunta(); });
+  });
+}
+</script>
+</body>
+</html>
