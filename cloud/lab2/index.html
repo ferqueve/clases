@@ -88,7 +88,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 
 <div id="progress-track"><div id="progress-fill"></div></div>
 <div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Lab · Escalabilidad con Docker Swarm</div>
-<div id="hud"><span class="badge-score" id="score-counter"><i class="fa-solid fa-star"></i> 0 pts</span><span class="badge-slide" id="slide-counter">1 / 10</span></div>
+<div id="hud"><span class="badge-score" id="score-counter"><i class="fa-solid fa-star"></i> 0 pts</span><span class="badge-slide" id="slide-counter">1 / 11</span></div>
 
 <!-- 1 -->
 <section class="slide active" data-idx="0">
@@ -107,14 +107,32 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
   <div class="eyebrow">Antes de empezar</div>
   <h2 class="slide-h">Requisitos del laboratorio</h2>
   <div class="grid-3">
-    <div class="card"><h3><i class="fa-solid fa-server"></i>3 nodos (mínimo)</h3><p>Pueden ser 3 VMs (por ejemplo, clonadas con VirtualBox como en el laboratorio anterior) o 3 contenedores Docker-in-Docker.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-network-wired"></i>Red entre nodos</h3><p>Los 3 nodos deben poder verse entre sí por IP, con los puertos 2377, 7946 y 4789 abiertos.</p></div>
-    <div class="card"><h3><i class="fa-solid fa-download"></i>Docker Engine</h3><p>Instalado en los 3 nodos — Swarm es un modo nativo de Docker, no requiere instalar nada extra.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-server"></i>3 VMs con Ubuntu Server</h3><p>Las mismas VMs que ya tienen de VirtualBox (laboratorio anterior), con Ubuntu Server instalado y accesible por terminal en cada una.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-network-wired"></i>Red entre nodos</h3><p>Los 3 nodos deben poder verse entre sí por IP, con los puertos 2377, 7946 y 4789 abiertos (por defecto lo están en una red local/adaptador puente).</p></div>
+    <div class="card"><h3><i class="fa-solid fa-download"></i>Docker Engine</h3><p>Todavía NO viene instalado en esas VMs — lo instalamos ahora mismo, en la próxima diapositiva, en cada uno de los 3 nodos.</p></div>
   </div>
 </section>
 
-<!-- 3 -->
+<!-- 2b -->
 <section class="slide" data-idx="2">
+  <div class="eyebrow">Paso 0 — antes de Swarm</div>
+  <h2 class="slide-h">Instalar Docker en cada uno de los 3 nodos</h2>
+  <p class="lead">Este paso se repite igual en nodo1, nodo2 y nodo3 — conectate a cada VM por terminal (o SSH) y ejecutá:</p>
+  <div class="term">
+    <div class="term-bar"><span class="dot" style="background:#F87171"></span><span class="dot" style="background:#F0B429"></span><span class="dot" style="background:#34D399"></span>&nbsp;instalación de Docker (Ubuntu)</div>
+    <pre><code class="language-bash">sudo apt update
+sudo apt install docker.io -y
+sudo systemctl enable --now docker
+
+# Para no tener que escribir "sudo" antes de cada comando docker:
+sudo usermod -aG docker $USER
+# (cerrar sesión y volver a entrar para que el cambio de grupo tome efecto)</code></pre>
+  </div>
+  <div class="crayon-note">Verificación rápida en cada nodo antes de seguir: <span class="mono">docker --version</span> y <span class="mono">docker run hello-world</span> — si ese contenedor de prueba corre y muestra un mensaje de bienvenida, Docker está listo.</div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-idx="3">
   <div class="eyebrow">Paso 1</div>
   <h2 class="slide-h">Inicializar el cluster (manager)</h2>
   <p class="lead">El primer nodo que inicializa el swarm se convierte automáticamente en manager: es quien va a distribuir el trabajo hacia los workers.</p>
@@ -128,7 +146,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 </section>
 
 <!-- 4 -->
-<section class="slide" data-idx="3">
+<section class="slide" data-idx="4">
   <div class="eyebrow">Paso 2</div>
   <h2 class="slide-h">Sumar los workers</h2>
   <div class="term">
@@ -142,7 +160,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 </section>
 
 <!-- 5 -->
-<section class="slide" data-idx="4">
+<section class="slide" data-idx="5">
   <div class="eyebrow">Paso 3</div>
   <h2 class="slide-h">Desplegar un servicio con réplicas</h2>
   <p class="lead" style="max-width:760px">Un <strong style="color:var(--mist)">service</strong> en Swarm es la unidad que gestiona réplicas de un contenedor. Le decimos cuántas copias queremos y Swarm decide en qué nodos las corre.</p>
@@ -153,7 +171,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 </section>
 
 <!-- 6 -->
-<section class="slide" data-idx="5">
+<section class="slide" data-idx="6">
   <div class="eyebrow">Ejercicio 1</div>
   <h2 class="slide-h">Crear el servicio "web" con 3 réplicas</h2>
   <div class="exercise" id="ex1">
@@ -168,7 +186,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 </section>
 
 <!-- 7 -->
-<section class="slide" data-idx="6">
+<section class="slide" data-idx="7">
   <div class="eyebrow">Ejercicio 2</div>
   <h2 class="slide-h">Escalar en caliente</h2>
   <p class="lead">Sin tocar el contenedor ni reiniciar nada, le pedimos a Swarm más (o menos) réplicas del mismo servicio.</p>
@@ -184,7 +202,7 @@ p.lead{font-size:1.1rem; color:var(--mist-dim); max-width:700px; line-height:1.6
 </section>
 
 <!-- 8 -->
-<section class="slide" data-idx="7">
+<section class="slide" data-idx="8">
   <div class="eyebrow">Paso 4 · La falla provocada</div>
   <h2 class="slide-h">Tirar abajo un nodo a propósito</h2>
   <p class="lead">Vamos a poner un worker en modo "drain" (deja de recibir trabajo) para simular una caída controlada y observar cómo Swarm redistribuye las réplicas automáticamente hacia los nodos que siguen sanos.</p>
@@ -198,7 +216,7 @@ watch docker service ps web</code></pre>
 </section>
 
 <!-- 9 -->
-<section class="slide" data-idx="8">
+<section class="slide" data-idx="9">
   <div class="eyebrow">Ejercicio 3</div>
   <h2 class="slide-h">Verificar dónde quedaron las réplicas</h2>
   <div class="exercise" id="ex3">
@@ -213,7 +231,7 @@ watch docker service ps web</code></pre>
 </section>
 
 <!-- 10 -->
-<section class="slide" data-idx="9">
+<section class="slide" data-idx="10">
   <div class="eyebrow">Entregable del laboratorio</div>
   <h2 class="slide-h">Checklist para aprobar</h2>
   <ul class="checklist">
