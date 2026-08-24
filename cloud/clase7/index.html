@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 7 — Storage y Seguridad: NextCloud</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#38BDF8;
+  --gold:#F0B429;
+  --ground:#0B1120;
+  --ground2:#111a33;
+  --mist:#E2E8F0;
+  --mist-dim:#8DA0BE;
+  --line:rgba(226,232,240,.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Inter',sans-serif; background:var(--ground); color:var(--mist);
+  overflow:hidden; height:100vh;
+}
+code, .mono{font-family:'JetBrains Mono',monospace}
+
+/* ---- horizon backdrop: ground below, sky/cloud drift above ---- */
+#horizon{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sky-layer{position:absolute; inset:0; background:
+  radial-gradient(ellipse at 20% -10%, rgba(56,189,248,.14), transparent 55%),
+  radial-gradient(ellipse at 80% 0%, rgba(240,180,41,.08), transparent 50%),
+  var(--ground);}
+.ground-line{position:absolute; left:0; right:0; bottom:0; height:38%;
+  background:linear-gradient(180deg, transparent 0%, rgba(56,189,248,.05) 40%, var(--ground2) 100%);
+  border-top:1px solid var(--line);}
+.cloud-drift{position:absolute; border-radius:50%; filter:blur(30px); opacity:.16; background:var(--sky);
+  animation:drift linear infinite;}
+@keyframes drift{ from{transform:translateX(-10vw)} to{transform:translateX(110vw)} }
+.node{position:absolute; width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:.5;}
+.node::after{content:'';position:absolute; top:2px; left:5px; width:60px; height:1px; background:linear-gradient(90deg, var(--gold), transparent); opacity:.4;}
+
+/* ---- HUD ---- */
+#progress-track{position:fixed; top:0; left:0; right:0; height:4px; background:var(--line); z-index:50;}
+#progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--sky),var(--gold)); transition:width .4s ease;}
+#hud{position:fixed; top:16px; right:20px; z-index:50; display:flex; gap:14px; align-items:center; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim);}
+#hud .badge-slide{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.35); color:var(--sky); padding:4px 10px; border-radius:20px;}
+#course-tag{position:fixed; top:16px; left:20px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); letter-spacing:.06em;}
+#course-tag strong{color:var(--sky)}
+
+/* ---- slides ---- */
+.slide{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center;
+  padding:90px 8vw 70px; opacity:0; pointer-events:none; transition:opacity .35s ease;}
+.slide.active{opacity:1; pointer-events:auto;}
+.eyebrow{font-family:'JetBrains Mono',monospace; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; font-size:.85rem; margin-bottom:14px;}
+h1.title{font-size:3.4rem; font-weight:800; line-height:1.05; margin:0 0 20px; letter-spacing:-.02em;}
+h1.title .accent{color:var(--sky)}
+h2.slide-h{font-size:2.1rem; font-weight:800; margin:0 0 26px; letter-spacing:-.01em;}
+p.lead{font-size:1.15rem; color:var(--mist-dim); max-width:640px; line-height:1.6;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:22px; max-width:1000px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1100px;}
+.card{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:24px;}
+.card h3{font-size:1.05rem; margin:0 0 10px; display:flex; align-items:center; gap:10px;}
+.card h3 i{color:var(--sky)}
+.card p{color:var(--mist-dim); font-size:.92rem; line-height:1.55; margin:0;}
+.vs-wrap{display:flex; gap:0; max-width:900px; border-radius:16px; overflow:hidden; border:1px solid var(--line);}
+.vs-col{flex:1; padding:28px;}
+.vs-col.onprem{background:rgba(240,180,41,.06); border-right:1px solid var(--line);}
+.vs-col.cloud{background:rgba(56,189,248,.06);}
+.vs-col h4{font-family:'JetBrains Mono',monospace; font-size:.95rem; margin-bottom:14px;}
+.vs-col.onprem h4{color:var(--gold)}
+.vs-col.cloud h4{color:var(--sky)}
+.vs-col ul{margin:0; padding-left:18px; color:var(--mist-dim); font-size:.92rem; line-height:1.9;}
+.stat{font-family:'JetBrains Mono',monospace; font-weight:800; font-size:2.6rem; color:var(--sky);}
+.stat-label{color:var(--mist-dim); font-size:.85rem;}
+.tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+.resp-table{width:100%; max-width:920px; border-collapse:separate; border-spacing:0; margin-top:8px; font-size:.92rem;}
+.resp-table th{text-align:center; padding:12px 10px; font-family:'JetBrains Mono',monospace; font-size:.8rem; color:var(--mist-dim); border-bottom:1px solid var(--line);}
+.resp-table td{padding:12px 10px; text-align:center; border-bottom:1px solid var(--line); font-weight:600;}
+.resp-table td.layer{text-align:left; color:var(--mist-dim); font-weight:400; font-size:.88rem;}
+.resp-cliente{background:rgba(240,180,41,.14); color:var(--gold);}
+.resp-proveedor{background:rgba(56,189,248,.14); color:var(--sky);}
+.crayon-note{background:rgba(240,180,41,.1); border:2px dashed rgba(240,180,41,.5); border-radius:14px; padding:18px 22px; max-width:820px; margin-top:20px; font-size:1.05rem; color:var(--mist);}
+
+/* nav */
+#nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
+#nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
+#dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
+#dots .dot{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.3s;}
+#dots .dot.active{background:var(--sky); width:22px; border-radius:4px;}
+
+.quiz-btn{background:linear-gradient(135deg,var(--sky),#0ea5e9); border:none; color:#0B1120; font-weight:700; padding:14px 30px; border-radius:10px; font-size:1rem; margin-top:24px; cursor:pointer;}
+.quiz-btn:hover{filter:brightness(1.08)}
+.locked{opacity:.4; filter:grayscale(.6);}
+
+@media (max-width:820px){
+  h1.title{font-size:2.1rem}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .vs-wrap{flex-direction:column}
+  .slide{padding:80px 6vw 90px}
+}
+</style>
+</head>
+<body>
+
+<div id="horizon">
+  <div class="sky-layer"></div>
+  <div class="cloud-drift" style="width:260px;height:100px;top:8%;animation-duration:52s;"></div>
+  <div class="cloud-drift" style="width:180px;height:70px;top:18%;animation-duration:74s;animation-delay:-20s;"></div>
+  <div class="cloud-drift" style="width:320px;height:120px;top:4%;animation-duration:90s;animation-delay:-45s;"></div>
+  <div class="node" style="top:30%;left:15%;"></div>
+  <div class="node" style="top:22%;left:60%;"></div>
+  <div class="node" style="top:38%;left:80%;"></div>
+  <div class="ground-line"></div>
+</div>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Clase 7</div>
+<div id="hud"><span class="badge-slide" id="slide-counter">1 / 10</span></div>
+
+<!-- SLIDE 1 -->
+<section class="slide active" data-idx="0">
+  <div class="eyebrow">Módulo 7 · Storage y Seguridad</div>
+  <h1 class="title">Tu propia nube <span class="accent">de archivos, con NextCloud</span></h1>
+  <p class="lead">Hoy vemos qué es NextCloud, por qué es el ejemplo perfecto de storage cloud con control total, y cómo nos conectamos por SSH con Putty para instalarlo — la teoría que sostiene el laboratorio que ya hicieron.</p>
+  <div class="tag-row">
+    <span><i class="fa-solid fa-cloud"></i> NextCloud</span>
+    <span><i class="fa-solid fa-terminal"></i> SSH / Putty</span>
+    <span><i class="fa-solid fa-shield-halved"></i> Seguridad de datos</span>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide" data-idx="1">
+  <div class="eyebrow">El concepto central</div>
+  <h2 class="slide-h">¿Qué es NextCloud?</h2>
+  <p class="lead" style="max-width:760px">NextCloud es una plataforma de almacenamiento y colaboración <strong style="color:var(--mist)">open source y autoalojada</strong> — hace lo mismo que Google Drive o Dropbox (archivos, calendario, contactos), pero corre en un servidor que administrás vos, no un tercero.</p>
+  <div class="grid-3" style="margin-top:20px">
+    <div class="card"><h3><i class="fa-solid fa-folder-open"></i>Storage</h3><p>Sincronización de archivos entre dispositivos, con historial de versiones y papelera.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-puzzle-piece"></i>Apps</h3><p>Calendario, contactos, videollamadas (Talk), edición colaborativa de documentos — todo como módulos instalables.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-code-branch"></i>Open source</h3><p>El código es público y auditable — nadie tiene que "confiar a ciegas" en cómo se manejan los datos.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide" data-idx="2">
+  <div class="eyebrow">Por qué es el ejemplo perfecto de este módulo</div>
+  <h2 class="slide-h">SaaS vs. self-hosted: la misma función, distinto dueño</h2>
+  <p class="lead" style="max-width:760px">Google Drive es SaaS público: usás la app, pero el proveedor es dueño de la infraestructura y —en última instancia— tiene acceso técnico a tus datos. NextCloud autoalojado te da la misma experiencia, pero con la infraestructura bajo tu control total.</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-building"></i>Google Drive / Dropbox</h3><p>Cero mantenimiento, pero tus datos viven en infraestructura de un tercero, sujeta a sus políticas y jurisdicción.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-server"></i>NextCloud autoalojado</h3><p>Vos mantenés el servidor, pero decidís dónde viven físicamente los datos y quién tiene acceso — clave para instituciones con requisitos de cumplimiento.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide" data-idx="3">
+  <div class="eyebrow">Qué hay debajo del capó</div>
+  <h2 class="slide-h">La arquitectura de NextCloud</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-globe"></i>Apache</h3><p>El servidor web que atiende las peticiones del navegador o de la app de sincronización.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-code"></i>PHP</h3><p>El lenguaje en el que está escrito NextCloud — procesa la lógica de la aplicación en cada petición.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-database"></i>MariaDB</h3><p>Guarda metadatos: usuarios, permisos, estructura de carpetas — los archivos en sí van al disco.</p></div>
+  </div>
+  <p class="lead" style="margin-top:16px">Es la misma familia de stack que un sitio web tradicional (LAMP) — nada exótico, lo que lo hace fácil de auto-hospedar en cualquier servidor Linux.</p>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide" data-idx="4">
+  <div class="eyebrow">Antes de instalar nada</div>
+  <h2 class="slide-h">¿Qué es Putty y por qué lo usamos?</h2>
+  <p class="lead" style="max-width:760px">Putty es un cliente <strong style="color:var(--mist)">SSH</strong> para Windows: nos permite abrir una terminal remota contra la VM de Ubuntu Server sin tener que trabajar directo en la ventana de VirtualBox.</p>
+  <div class="grid-3" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-terminal"></i>Terminal remota</h3><p>Todo lo que escribimos en Putty se ejecuta realmente en la VM, no en nuestra PC.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-copy"></i>Copiar y pegar</h3><p>Mucho más cómodo que tipear comandos largos directo en la consola de VirtualBox.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-lock"></i>Cifrado</h3><p>SSH cifra toda la conexión — nadie en la red puede leer lo que escribís ni lo que responde el servidor.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide" data-idx="5">
+  <div class="eyebrow">Conectando por primera vez</div>
+  <h2 class="slide-h">Cómo abrir la sesión en Putty</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-1"></i>Conseguir la IP de la VM</h3><p>Adentro de la VM, en la consola de VirtualBox: <span class="mono">ip a</span> — buscá la IP del adaptador de red, no la de loopback.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-2"></i>Abrir Putty</h3><p>En "Host Name (or IP address)" ponés esa IP, puerto <span class="mono">22</span>, tipo de conexión <span class="mono">SSH</span>.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-3"></i>Primera conexión</h3><p>Putty va a preguntar si confiás en la "huella" (fingerprint) del servidor — aceptás una sola vez, la primera vez.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-4"></i>Login</h3><p>Usuario y contraseña que definiste al instalar Ubuntu Server — los mismos del laboratorio anterior.</p></div>
+  </div>
+  <div class="crayon-note">Si Putty no puede conectar, lo primero a revisar es si instalaron <span class="mono">OpenSSH</span> durante la instalación de Ubuntu (lo vimos en el laboratorio de NextCloud) y si la VM está en modo Adaptador Puente con IP real en la red.</div>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" data-idx="6">
+  <div class="eyebrow">De acá en más, todo por Putty</div>
+  <h2 class="slide-h">El resto ya lo hicieron: instalación completa</h2>
+  <p class="lead" style="max-width:760px">Una vez conectados por SSH, todos los comandos de instalación —actualización del sistema, dependencias, base de datos, descarga de NextCloud, configuración de Apache— se escriben en esa terminal de Putty, exactamente igual que si estuvieran sentados frente al servidor.</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-list-check"></i>Repaso rápido de los bloques</h3><p>Actualizar → instalar Apache/MariaDB/PHP → crear base de datos → descargar e instalar NextCloud → configurar VirtualHost → asistente web.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-link"></i>Referencia completa</h3><p>El paso a paso con cada comando exacto está en el laboratorio "Ubuntu Server + NextCloud" que ya armamos — hoy es la teoría que le da contexto.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 8 -->
+<section class="slide" data-idx="7">
+  <div class="eyebrow">Volviendo al eje del módulo</div>
+  <h2 class="slide-h">Seguridad en NextCloud</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-key"></i>Autenticación de dos factores</h3><p>Se puede exigir un segundo factor además de la contraseña, igual que en cualquier SaaS serio.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-lock"></i>Cifrado en reposo</h3><p>NextCloud puede cifrar los archivos en el disco del servidor, no solo en tránsito.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-user-shield"></i>Permisos granulares</h3><p>Compartir un archivo con fecha de expiración, contraseña propia, o solo lectura — control fino que rara vez existe en un pendrive compartido.</p></div>
+  </div>
+  <p class="lead" style="margin-top:16px">La diferencia con un SaaS público: acá esas políticas de seguridad las define y aplica quien administra el servidor — ustedes — no un proveedor externo.</p>
+</section>
+
+<!-- SLIDE 9 -->
+<section class="slide" data-idx="8">
+  <div class="eyebrow">Cierre del módulo</div>
+  <h2 class="slide-h">Lo que se lleva de esta clase</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-check"></i>NextCloud es SaaS, pero autoalojado</h3><p>Misma función que Drive/Dropbox, con la infraestructura bajo control propio.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Corre sobre un stack conocido</h3><p>Apache + PHP + MariaDB — nada distinto a cualquier sitio web tradicional.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Putty es la puerta de entrada remota</h3><p>SSH cifrado, sin depender de la consola gráfica de VirtualBox.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Autoalojar implica responsabilidad</h3><p>El control total sobre los datos viene con la responsabilidad de asegurar bien el servidor.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 10: QUIZ -->
+<section class="slide" data-idx="9">
+  <div class="eyebrow">Autoevaluación</div>
+  <h2 class="slide-h">Control rápido — Storage y Seguridad: NextCloud</h2>
+  <p class="lead">5 preguntas para cerrar el módulo. Podés repetirlo las veces que quieras.</p>
+  <button class="quiz-btn" onclick="startQuiz()"><i class="fa-solid fa-play"></i> Iniciar control</button>
+</section>
+
+<div id="dots"></div>
+<div id="nav-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> navegar &nbsp;·&nbsp; <kbd>Q</kbd> control</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=>goTo(i));
+  dotsWrap.appendChild(d);
+});
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  document.querySelectorAll('#dots .dot').forEach((d,i)=> d.classList.toggle('active', i===current));
+  document.getElementById('slide-counter').textContent = (current+1)+' / '+total;
+  document.getElementById('progress-fill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function next(){ goTo(current+1); }
+function prev(){ goTo(current-1); }
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+  if(e.key.toLowerCase()==='q') startQuiz();
+});
+render();
+
+const questions = [
+  {q:"NextCloud se diferencia de Google Drive principalmente porque:", opts:["No permite compartir archivos","Es autoalojado: vos controlás la infraestructura","No tiene apps adicionales","Solo funciona sin internet"], correct:1},
+  {q:"¿Qué protocolo usa Putty para conectarse a la VM?", opts:["FTP","HTTP","SSH","RDP"], correct:2},
+  {q:"En el stack de NextCloud, MariaDB se encarga de:", opts:["Servir las páginas web","Guardar metadatos como usuarios y permisos","Cifrar la conexión SSH","Ejecutar el sistema operativo"], correct:1},
+  {q:"Para poder conectarse por Putty, durante la instalación de Ubuntu es necesario haber instalado:", opts:["Un navegador gráfico","OpenSSH","Docker","Un antivirus"], correct:1},
+  {q:"¿Cuál de estas es una función de seguridad propia de NextCloud?", opts:["Autenticación de dos factores","Eliminar la necesidad de contraseña","Desactivar el cifrado por defecto","Compartir archivos sin ningún control de permisos"], correct:0}
+];
+
+async function startQuiz(){
+  let score = 0;
+  for(let i=0;i<questions.length;i++){
+    const qq = questions[i];
+    const {value} = await Swal.fire({
+      title: 'Pregunta '+(i+1)+' / '+questions.length,
+      html: '<p style="text-align:left;color:#334155;font-size:1rem">'+qq.q+'</p>',
+      input: 'radio',
+      inputOptions: Object.fromEntries(qq.opts.map((o,idx)=>[idx,o])),
+      confirmButtonText: 'Responder',
+      confirmButtonColor: '#38BDF8',
+      background:'#f8fafc',
+      inputValidator: (v)=> !v && 'Elegí una opción'
+    });
+    if(value !== undefined && parseInt(value) === qq.correct){
+      score++;
+      await Swal.fire({icon:'success', title:'¡Correcto!', timer:900, showConfirmButton:false, background:'#f8fafc'});
+    } else {
+      await Swal.fire({icon:'error', title:'No es esa', text:'La correcta era: '+qq.opts[qq.correct], background:'#f8fafc'});
+    }
+  }
+  Swal.fire({
+    title:'Resultado: '+score+' / '+questions.length,
+    icon: score===questions.length?'success':(score>=3?'info':'warning'),
+    confirmButtonColor:'#38BDF8',
+    background:'#f8fafc',
+    text: score===questions.length ? '¡Perfecto! Dominás las generalidades.' : 'Repasá las tarjetas de la clase y volvé a intentar.'
+  });
+}
+</script>
+</body>
+</html>
