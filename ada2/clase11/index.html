@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANDIS 2 · Unidad 2 — Tácticas para la disponibilidad</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#070b14; --bg-1:#0d1424; --panel:#111a2e; --panel-2:#16223a;
+  --accent:#3ec1ff; --accent-2:#7b6bff; --accent-3:#ffb547; --ok:#3ee6a8;
+  --text:#e8edf7; --text-dim:#8fa0bd; --border:#22304d;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(62,193,255,.10), transparent 60%),
+    radial-gradient(1000px 700px at 110% 10%, rgba(123,107,255,.12), transparent 55%),
+    var(--bg-0);
+  color:var(--text); font-family:'Inter',sans-serif; overflow:hidden;
+}
+.mono{font-family:'JetBrains Mono',monospace}
+.blueprint{
+  position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.35;
+  background-image:linear-gradient(rgba(62,193,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(62,193,255,.06) 1px, transparent 1px);
+  background-size:42px 42px;
+}
+.progress-track{position:fixed; top:0; left:0; width:100%; height:4px; background:rgba(255,255,255,.06); z-index:50;}
+.progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .4s ease; box-shadow:0 0 12px var(--accent);}
+.hud{position:fixed; top:14px; right:18px; z-index:50; background:rgba(17,26,46,.85); border:1px solid var(--border); backdrop-filter:blur(6px); padding:7px 14px; border-radius:999px; font-size:.82rem; color:var(--text-dim); display:flex; align-items:center; gap:8px;}
+.hud .unit-tag{color:var(--accent); font-weight:700}
+.brand{position:fixed; top:14px; left:18px; z-index:50; font-size:.78rem; color:var(--text-dim); display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.brand i{color:var(--accent-3)}
+.slides-container{position:relative; z-index:1; height:100vh; width:100vw;}
+.slide{position:absolute; inset:0; display:none; padding:90px 8vw 110px 8vw; overflow-y:auto;}
+.slide.active{display:block}
+.slide-inner{max-width:1180px; margin:0 auto;}
+.eyebrow{display:inline-flex; align-items:center; gap:8px; font-size:.78rem; text-transform:uppercase; letter-spacing:.12em; color:var(--accent); font-weight:700; margin-bottom:14px;}
+.eyebrow i{font-size:.9rem}
+h1.slide-title{font-size:clamp(1.9rem,3.4vw,3rem); font-weight:800; margin-bottom:.4rem; line-height:1.1;}
+h2.slide-title{font-size:clamp(1.5rem,2.6vw,2.2rem); font-weight:800; margin-bottom:.6rem;}
+.subtitle{color:var(--text-dim); font-size:1.05rem; max-width:820px;}
+.card-panel{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid var(--border); border-radius:16px; padding:26px 28px; box-shadow:0 12px 30px rgba(0,0,0,.35);}
+.card-panel + .card-panel{margin-top:18px}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:.76rem; font-weight:700; background:rgba(62,193,255,.12); color:var(--accent); border:1px solid rgba(62,193,255,.35);}
+.pill.purple{background:rgba(123,107,255,.14); color:#b3a8ff; border-color:rgba(123,107,255,.4)}
+.pill.amber{background:rgba(255,181,71,.14); color:var(--accent-3); border-color:rgba(255,181,71,.4)}
+.pill.ok{background:rgba(62,230,168,.12); color:var(--ok); border-color:rgba(62,230,168,.35)}
+.icon-tile{width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:rgba(62,193,255,.12); color:var(--accent); font-size:1.3rem; border:1px solid rgba(62,193,255,.3); flex-shrink:0;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+ul.clean{list-style:none; margin:0; padding:0;}
+ul.clean li{position:relative; padding:6px 0 6px 26px; color:var(--text); font-size:.94rem;}
+ul.clean li::before{content:"\f105"; font-family:"Font Awesome 6 Free"; font-weight:900; color:var(--accent); position:absolute; left:2px; top:8px; font-size:.85rem;}
+.nav-controls{position:fixed; bottom:18px; left:0; right:0; z-index:50; display:flex; justify-content:center; gap:14px; align-items:center;}
+.nav-btn{width:46px; height:46px; border-radius:50%; border:1px solid var(--border); background:rgba(17,26,46,.9); color:var(--text); display:flex; align-items:center; justify-content:center; font-size:1.1rem; backdrop-filter:blur(6px);}
+.nav-btn:hover{border-color:var(--accent); color:var(--accent);}
+.nav-dots{display:flex; gap:6px; align-items:center; background:rgba(17,26,46,.9); border:1px solid var(--border); padding:8px 14px; border-radius:999px;}
+.nav-dots .dot{width:7px; height:7px; border-radius:50%; background:var(--border); cursor:pointer; transition:.2s;}
+.nav-dots .dot.active{background:var(--accent); width:20px; border-radius:4px;}
+.footer-note{position:fixed; bottom:20px; right:22px; z-index:50; font-size:.72rem; color:var(--text-dim); font-family:'JetBrains Mono';}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px}
+
+/* explorer tiles */
+.tac-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+@media (max-width:900px){.tac-grid{grid-template-columns:repeat(2,1fr);}}
+.tac-tile{
+  background:var(--panel-2); border:1px solid var(--border); border-radius:14px; padding:16px;
+  cursor:pointer; transition:.2s; text-align:center;
+}
+.tac-tile:hover{transform:translateY(-4px); border-color:var(--accent); box-shadow:0 10px 24px rgba(62,193,255,.15);}
+.tac-tile i{font-size:1.3rem; color:var(--accent); margin-bottom:6px; display:block;}
+.tac-tile .tname{font-size:.82rem; font-weight:700;}
+
+.link-row{display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid rgba(255,255,255,.06);}
+.link-row:last-child{border-bottom:none;}
+.link-row a{color:var(--text); text-decoration:none; font-weight:600;}
+.link-row a:hover{color:var(--accent);}
+.link-row .ext{margin-left:auto; color:var(--text-dim); font-size:.75rem;}
+
+.tree{display:flex; gap:14px; flex-wrap:wrap; justify-content:center;}
+.tree .branch{flex:1; min-width:220px; border-radius:14px; padding:18px; text-align:center; border:1px solid var(--border);}
+.branch-detect{background:rgba(62,193,255,.10); border-color:rgba(62,193,255,.35);}
+.branch-recover{background:rgba(123,107,255,.10); border-color:rgba(123,107,255,.35);}
+.branch-prevent{background:rgba(255,181,71,.10); border-color:rgba(255,181,71,.35);}
+</style>
+</head>
+<body>
+
+<div class="blueprint"></div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="brand"><i class="fa-solid fa-cubes"></i> ANDIS 2 · Unidad 2</div>
+<div class="hud"><i class="fa-solid fa-layer-group"></i> <span class="unit-tag" id="hudCurrent">1</span>/<span id="hudTotal">0</span></div>
+
+<div class="slides-container" id="slidesContainer"></div>
+
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="nav-dots" id="navDots"></div>
+  <button class="nav-btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+<div class="footer-note">← → para navegar</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script>
+const slidesHTML = [];
+
+// 0. Portada
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center" style="min-height:78vh;">
+  <div class="animate__animated animate__fadeInDown">
+    <span class="eyebrow"><i class="fa-solid fa-toolbox"></i> Unidad 2 · Tácticas de arquitectura</span>
+    <h1 class="slide-title">Tácticas para la disponibilidad</h1>
+    <p class="subtitle">Detectar, recuperarse y prevenir: el catálogo completo de tácticas que un arquitecto elige y combina — no siempre implementa desde cero — para lograr disponibilidad.</p>
+  </div>
+</div>
+`);
+
+// 1. Introducción
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-circle-question"></i> Punto de partida</span>
+  <h2 class="slide-title">Tres propósitos, un rol distinto para el arquitecto</h2>
+  <div class="card-panel mt-3">
+    <p style="font-size:1.02rem; line-height:1.75;">
+      Las tácticas para disponibilidad tienen uno de tres propósitos: <strong>detectar fallas</strong>,
+      <strong>recuperarse de fallas</strong> o <strong>prevenir fallas</strong>.
+    </p>
+  </div>
+  <div class="card-panel mt-3 d-flex gap-3 align-items-center">
+    <div class="icon-tile" style="background:rgba(255,181,71,.14); color:var(--accent-3); border-color:rgba(255,181,71,.4)"><i class="fa-solid fa-user-tie"></i></div>
+    <div class="small" style="color:var(--text-dim)">Estas tácticas suelen venir dadas por plataformas, middleware u otra infraestructura de software. Por eso el arquitecto <strong style="color:var(--text)">elige y evalúa</strong> — en lugar de implementar desde cero — las tácticas adecuadas y la combinación correcta entre ellas.</div>
+  </div>
+</div>
+`);
+
+// 2. Taxonomía
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-sitemap"></i> El mapa completo</span>
+  <h2 class="slide-title">Tres ramas, veintiocho tácticas</h2>
+  <div class="tree mt-3">
+    <div class="branch branch-detect"><i class="fa-solid fa-magnifying-glass mb-2 d-block" style="color:var(--accent)"></i><strong>Detectar fallas</strong><div class="small mt-1" style="color:var(--text-dim)">11 tácticas</div></div>
+    <div class="branch branch-recover"><i class="fa-solid fa-heart-pulse mb-2 d-block" style="color:#b3a8ff"></i><strong>Recuperarse de fallas</strong><div class="small mt-1" style="color:var(--text-dim)">Preparación y reparación (8) + Re-introducción (4)</div></div>
+    <div class="branch branch-prevent"><i class="fa-solid fa-shield mb-2 d-block" style="color:var(--accent-3)"></i><strong>Prevenir fallas</strong><div class="small mt-1" style="color:var(--text-dim)">5 tácticas</div></div>
+  </div>
+  <p class="subtitle mt-3 mb-0">En las próximas diapositivas podés explorar cada táctica: tocá una tarjeta para ver su definición y un ejemplo.</p>
+</div>
+`);
+
+// 3. Explorador: Detectar fallas
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-magnifying-glass"></i> Rama 1</span>
+  <h2 class="slide-title">Detectar fallas</h2>
+  <p class="subtitle mb-3">Identificar tempranamente que algo no está funcionando como debería.</p>
+  <div class="tac-grid" id="gridDetectar"></div>
+</div>
+`);
+
+// 4. Explorador: Preparación y reparación
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-heart-pulse"></i> Rama 2a</span>
+  <h2 class="slide-title">Recuperarse: preparación y reparación</h2>
+  <p class="subtitle mb-3">Tener listo un plan y ejecutarlo cuando la falla ya ocurrió.</p>
+  <div class="tac-grid" id="gridReparacion"></div>
+</div>
+`);
+
+// 5. Explorador: Re-introducción
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-arrow-rotate-right"></i> Rama 2b</span>
+  <h2 class="slide-title">Recuperarse: re-introducción</h2>
+  <p class="subtitle mb-3">Volver a poner en línea un componente recuperado, con seguridad.</p>
+  <div class="tac-grid" id="gridReintroduccion"></div>
+</div>
+`);
+
+// 6. Explorador: Prevenir fallas
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-shield"></i> Rama 3</span>
+  <h2 class="slide-title">Prevenir fallas</h2>
+  <p class="subtitle mb-3">Evitar que la falla ocurra, en primer lugar.</p>
+  <div class="tac-grid" id="gridPrevenir"></div>
+</div>
+`);
+
+// 7. Para profundizar (links Azure)
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-book-open-reader"></i> Para profundizar</span>
+  <h2 class="slide-title">Recomendaciones del Azure Well-Architected Framework</h2>
+  <div class="card-panel mt-3">
+    <div class="link-row">
+      <i class="fa-solid fa-link" style="color:var(--accent)"></i>
+      <a href="https://learn.microsoft.com/en-us/azure/well-architected/reliability/monitoring-alerting-strategy" target="_blank">Designing a reliable monitoring and alerting strategy</a>
+      <span class="ext">Reliability</span>
+    </div>
+    <div class="link-row">
+      <i class="fa-solid fa-link" style="color:var(--accent)"></i>
+      <a href="https://learn.microsoft.com/en-us/azure/well-architected/design-guides/health-modeling" target="_blank">Health modeling for workloads</a>
+      <span class="ext">Design guides</span>
+    </div>
+    <div class="link-row">
+      <i class="fa-solid fa-link" style="color:var(--accent)"></i>
+      <a href="https://learn.microsoft.com/en-us/azure/well-architected/reliability/redundancy" target="_blank">Designing for redundancy</a>
+      <span class="ext">Reliability</span>
+    </div>
+    <div class="link-row">
+      <i class="fa-solid fa-link" style="color:var(--accent)"></i>
+      <a href="https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/mitigation-strategy" target="_blank">Designing a deployment failure mitigation strategy</a>
+      <span class="ext">Operational Excellence</span>
+    </div>
+    <div class="link-row">
+      <i class="fa-solid fa-link" style="color:var(--accent)"></i>
+      <a href="https://learn.microsoft.com/en-us/azure/well-architected/design-guides/handle-transient-faults" target="_blank">Handling transient faults</a>
+      <span class="ext">Design guides</span>
+    </div>
+  </div>
+</div>
+`);
+
+// 8. Quiz
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:70vh;">
+  <span class="eyebrow"><i class="fa-solid fa-brain"></i> Chequeo de comprensión</span>
+  <h2 class="slide-title">5 preguntas sobre tácticas de disponibilidad</h2>
+  <p class="subtitle mb-4">Detección, recuperación, prevención y el rol del arquitecto.</p>
+  <button class="check-btn" onclick="lanzarQuiz()" style="border:none; background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#04101f; font-weight:800; padding:10px 22px; border-radius:10px; font-size:.9rem; box-shadow:0 8px 22px rgba(62,193,255,.25); cursor:pointer;"><i class="fa-solid fa-play me-2"></i>Iniciar quiz</button>
+</div>
+`);
+
+// 9. Cierre
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:78vh;">
+  <div class="icon-tile mb-3" style="width:72px;height:72px;font-size:2rem;"><i class="fa-solid fa-check"></i></div>
+  <span class="eyebrow"><i class="fa-solid fa-flag-checkered"></i> Repaso completo</span>
+  <h2 class="slide-title">28 tácticas, tres decisiones</h2>
+  <p class="subtitle mb-4" style="max-width:640px;">Detectar antes de que escale, recuperarse rápido, prevenir cuando se pueda. La habilidad del arquitecto está en combinarlas, no en memorizarlas todas.</p>
+</div>
+`);
+
+/* ============ MOTOR DE NAVEGACIÓN ============ */
+const container = document.getElementById('slidesContainer');
+slidesHTML.forEach((html, i)=>{
+  const div = document.createElement('div');
+  div.className = 'slide' + (i===0 ? ' active' : '');
+  div.id = 'slide'+i;
+  div.innerHTML = html;
+  container.appendChild(div);
+});
+
+let current = 0;
+const total = slidesHTML.length;
+document.getElementById('hudTotal').textContent = total;
+
+const dotsWrap = document.getElementById('navDots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = ()=>goTo(i);
+  dotsWrap.appendChild(d);
+}
+
+function updateUI(){
+  document.querySelectorAll('.slide').forEach((s,i)=>{ s.classList.toggle('active', i===current); });
+  document.querySelectorAll('.nav-dots .dot').forEach((d,i)=>{ d.classList.toggle('active', i===current); });
+  document.getElementById('hudCurrent').textContent = current+1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+  const active = document.getElementById('slide'+current);
+  active.scrollTop = 0;
+  const animTarget = active.querySelector('.slide-inner');
+  if(animTarget){
+    animTarget.classList.remove('animate__fadeIn');
+    void animTarget.offsetWidth;
+    animTarget.classList.add('animate__animated','animate__fadeIn');
+  }
+}
+function goTo(i){ if(i<0||i>=total) return; current = i; updateUI(); }
+document.getElementById('prevBtn').onclick = ()=>goTo(current-1);
+document.getElementById('nextBtn').onclick = ()=>goTo(current+1);
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+updateUI();
+
+/* ============ DATOS DE TÁCTICAS ============ */
+const detectar = [
+  {icon:'fa-eye', n:'Monitoreo', d:'Observación continua del estado de un componente para detectar fallas o anomalías. Ejemplo: monitorear el uso de recursos de un servidor para evitar sobrecargas.'},
+  {icon:'fa-satellite-dish', n:'Ping/Echo', d:'Enviar un mensaje (ping) y esperar una respuesta (echo) para verificar disponibilidad. Ejemplo: el comando ping para comprobar conectividad con una IP.'},
+  {icon:'fa-heart-pulse', n:'Heartbeat', d:'Un componente envía señales periódicas de "estoy vivo". Si no llegan a tiempo, se asume que falló. Ejemplo: nodos de un clúster de alta disponibilidad.'},
+  {icon:'fa-clock', n:'Timestamp', d:'Asociar una marca de tiempo a eventos o mensajes para rastrear cuándo ocurrió una falla. En sistemas distribuidos sin relojes sincronizados, se usan números secuenciales.'},
+  {icon:'fa-gauge', n:'Monitoreo de condiciones', d:'Verificar condiciones específicas de operación para identificar anomalías respecto de lo asumido en el diseño. Ejemplo: uso de checksums.'},
+  {icon:'fa-check-double', n:'Control de cordura (sanity check)', d:'Verificación simple y rápida de que los valores recibidos o calculados, o el estado de un componente, son razonables.'},
+  {icon:'fa-copy', n:'Voto: Replicación', d:'Copias exactas de un componente listas para tomar su lugar si una falla. Sincrónica (siempre actualizada) o asíncrona (con retraso, más eficiente pero con riesgo de pérdida de datos).'},
+  {icon:'fa-code-branch', n:'Voto: Redundancia funcional', d:'Varias implementaciones distintas que cumplen la misma tarea (mismas entradas, misma salida, distinto cómputo). Si una falla, otra sigue funcionando.'},
+  {icon:'fa-chart-line', n:'Voto: Redundancia analítica', d:'Distintos métodos o algoritmos analizan el mismo conjunto de datos para obtener un resultado consensuado. Útil en sistemas de alta precisión, como control industrial.'},
+  {icon:'fa-triangle-exclamation', n:'Detección de excepciones', d:'Identificar y manejar condiciones excepcionales que podrían causar fallos. Ejemplo: uso de timeouts para detectar fallas en otros componentes.'},
+  {icon:'fa-vial', n:'Auto-diagnóstico (self-test)', d:'Un componente ejecuta pruebas internas para verificar su funcionamiento, a menudo apoyándose en ping/echo o chequeos de salud, antes de aceptar tráfico.'}
+];
+
+const reparacion = [
+  {icon:'fa-server', n:'Repuesto redundante', d:'Componentes de repuesto listos para reemplazar a los que fallan. Ejemplo: servidores de un clúster de alta disponibilidad que asumen el control si otro falla.'},
+  {icon:'fa-rotate-left', n:'Rollback', d:'Revertir un cambio (por ejemplo, un despliegue) a un estado anterior si se detectan problemas, restaurando datos y configuraciones. Requiere trazabilidad detallada de los cambios.'},
+  {icon:'fa-bug', n:'Manejo de excepciones', d:'Capturar y gestionar condiciones anómalas en tiempo de ejecución para mantener la estabilidad. Ejemplo: bloques try-catch.'},
+  {icon:'fa-arrow-up-from-bracket', n:'Actualización de software', d:'Implementar nuevas versiones sin interrumpir el servicio, apoyándose en replicación o repuesto redundante para redirigir tráfico mientras se actualiza cada réplica.'},
+  {icon:'fa-repeat', n:'Re-intentos', d:'Repetir una operación que falló, esperando que tenga éxito en un segundo intento. Útil para fallas transitorias.'},
+  {icon:'fa-forward', n:'Ignorar el comportamiento fallido', d:'Continuar operando a pesar de errores, ignorando el componente que falló. Ejemplo: ignorar mensajes corruptos o fallos en dependencias no críticas.'},
+  {icon:'fa-battery-quarter', n:'Degradación elegante', d:'Reducir la funcionalidad ante una falla en lugar de detenerse por completo. Ejemplo: desactivar funciones avanzadas de un sitio bajo alta carga.'},
+  {icon:'fa-sliders', n:'Re-configuración', d:'Ajustar dinámicamente la configuración del sistema para reasignar responsabilidades a componentes que siguen funcionando. Puede ser manual o automática.'}
+];
+
+const reintroduccion = [
+  {icon:'fa-user-secret', n:'Sombra (shadow)', d:'Ejecutar una réplica recién iniciada en paralelo, para probar que funciona correctamente antes de asignarle un rol activo.'},
+  {icon:'fa-arrows-spin', n:'Re-sincronización del estado', d:'Actualizar el estado (los datos) del componente de repuesto antes de activarlo. Se usa junto con repuesto redundante o replicación asíncrona.'},
+  {icon:'fa-layer-group', n:'Escalamiento del reinicio', d:'Reiniciar componentes de forma controlada tras un fallo, para manejar nuevos fallos sin afectar al resto del sistema. Ejemplo: reiniciar una VM en vez de todo el hypervisor.'},
+  {icon:'fa-route', n:'Reenvío sin pausa', d:'Separar responsabilidades de control y de datos, para que los datos sigan funcionando aunque falle el control, cuando las rutas ya son conocidas.'}
+];
+
+const prevenir = [
+  {icon:'fa-arrows-rotate', n:'Remoción del servicio / rejuvenecimiento', d:'Reiniciar componentes periódicamente para evitar fallas por degradación (memory leaks, conexiones abiertas). Ejemplo: reiniciar un servidor web cada cierto tiempo.'},
+  {icon:'fa-right-left', n:'Transacciones', d:'Agrupar operaciones en unidades atómicas: todas se completan, o ninguna lo hace. Garantiza consistencia ante fallos en operaciones complejas.'},
+  {icon:'fa-brain', n:'Modelo predictivo', d:'Usar aprendizaje automático y análisis predictivo sobre datos de monitoreo para anticipar fallas antes de que ocurran.'},
+  {icon:'fa-ban', n:'Prevención de excepciones', d:'Implementar medidas para evitar que ocurran errores en primer lugar. Ejemplo: bits de paridad o verificación de redundancia cíclica.'},
+  {icon:'fa-expand', n:'Aumentar el conjunto de competencia', d:'El "conjunto de competencia" son los estados en los que un componente puede operar. Ampliarlo reduce las entradas a estados excepcionales, aumentando la disponibilidad.'}
+];
+
+function renderGrid(containerId, items){
+  const grid = document.getElementById(containerId);
+  items.forEach(t=>{
+    const tile = document.createElement('div');
+    tile.className = 'tac-tile';
+    tile.innerHTML = `<i class="fa-solid ${t.icon}"></i><div class="tname">${t.n}</div>`;
+    tile.onclick = ()=>{
+      Swal.fire({
+        title: t.n,
+        html: `<p style="text-align:left;">${t.d}</p>`,
+        background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff'
+      });
+    };
+    grid.appendChild(tile);
+  });
+}
+renderGrid('gridDetectar', detectar);
+renderGrid('gridReparacion', reparacion);
+renderGrid('gridReintroduccion', reintroduccion);
+renderGrid('gridPrevenir', prevenir);
+
+/* ============ QUIZ ============ */
+const preguntas = [
+  {
+    texto:'¿Cuáles son los tres propósitos de las tácticas para disponibilidad?',
+    opciones:{
+      a:'Escalar, monitorear y facturar',
+      b:'Detectar fallas, recuperarse de fallas y prevenir fallas',
+      c:'Diseñar, implementar y desplegar',
+      d:'Medir, optimizar y documentar'
+    },
+    correcta:'b'
+  },
+  {
+    texto:'Según el texto, ¿cuál es el rol típico del arquitecto frente a las tácticas de disponibilidad?',
+    opciones:{
+      a:'Implementarlas siempre desde cero, sin depender de plataformas',
+      b:'Elegir y evaluar las tácticas adecuadas, ya que suelen venir dadas por plataformas o middleware',
+      c:'Delegar completamente esa decisión al equipo de operaciones',
+      d:'Documentarlas únicamente, sin intervenir en su selección'
+    },
+    correcta:'b'
+  },
+  {
+    texto:'Un servicio envía señales periódicas para indicar que sigue funcionando; si no llegan a tiempo, se asume que falló. ¿Qué táctica es?',
+    opciones:{
+      a:'Ping/Echo',
+      b:'Heartbeat',
+      c:'Timestamp',
+      d:'Monitoreo de condiciones'
+    },
+    correcta:'b'
+  },
+  {
+    texto:'¿En qué se diferencia la replicación sincrónica de la asíncrona?',
+    opciones:{
+      a:'La sincrónica actualiza las réplicas en tiempo real; la asíncrona lo hace con retraso, lo que puede ser más eficiente pero introduce riesgo de pérdida de datos',
+      b:'No hay diferencia real entre ambas',
+      c:'La asíncrona solo se usa en redundancia funcional',
+      d:'La sincrónica es exclusiva de sistemas de control industrial'
+    },
+    correcta:'a'
+  },
+  {
+    texto:'¿Qué táctica de recuperación consiste en reducir la funcionalidad del sistema ante una falla, en lugar de detenerse por completo?',
+    opciones:{
+      a:'Rollback',
+      b:'Re-configuración',
+      c:'Degradación elegante',
+      d:'Escalamiento del reinicio'
+    },
+    correcta:'c'
+  }
+];
+let idxPregunta = 0, aciertos = 0;
+
+function lanzarQuiz(){ idxPregunta = 0; aciertos = 0; mostrarPregunta(); }
+function mostrarPregunta(){
+  if(idxPregunta >= preguntas.length){
+    Swal.fire({
+      title:'Resultado',
+      html:`Acertaste <b>${aciertos}/${preguntas.length}</b>.`,
+      icon: aciertos===preguntas.length ? 'success' : 'info',
+      background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff'
+    });
+    return;
+  }
+  const p = preguntas[idxPregunta];
+  Swal.fire({
+    title: p.texto,
+    input:'radio',
+    inputOptions: p.opciones,
+    background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff',
+    confirmButtonText:'Responder',
+    inputValidator: (value)=> !value && 'Elegí una opción'
+  }).then(res=>{
+    if(!res.isConfirmed) return;
+    const ok = res.value === p.correcta;
+    if(ok) aciertos++;
+    Swal.fire({
+      title: ok ? '¡Correcto!' : 'No es así',
+      html: `La respuesta correcta era: <b>${p.opciones[p.correcta]}</b>`,
+      icon: ok ? 'success' : 'error',
+      background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff'
+    }).then(()=>{ idxPregunta++; mostrarPregunta(); });
+  });
+}
+</script>
+</body>
+</html>
