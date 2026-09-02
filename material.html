@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps para tontos — Guía desde cero</title>
+<style>
+:root{
+  --bg:#0a0e14;
+  --panel:#111720;
+  --panel2:#0d1219;
+  --border:#1e2833;
+  --text:#c9d4de;
+  --muted:#7d8b99;
+  --accent:#58a6ff;
+  --accent2:#3fb950;
+  --accent3:#e3b341;
+  --accent4:#f47067;
+  --mono:'JetBrains Mono','Fira Code',ui-monospace,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;overflow:hidden;}
+
+/* SIDEBAR */
+#sidebar{width:260px;min-width:260px;background:var(--panel2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 14px;overflow-y:auto;}
+#sidebar h1{font-family:var(--mono);font-size:13.5px;color:var(--accent);letter-spacing:.5px;margin:0 0 2px 4px;}
+#sidebar .sub{font-size:11px;color:var(--muted);margin:0 0 18px 4px;font-family:var(--mono);}
+.pipeline{display:flex;flex-direction:column;gap:2px;position:relative;}
+.pipeline::before{content:'';position:absolute;left:15px;top:14px;bottom:14px;width:2px;background:var(--border);z-index:0;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--muted);z-index:1;transition:.15s;font-family:var(--mono);}
+.nav-item .dot{width:14px;height:14px;min-width:14px;border-radius:50%;border:2px solid var(--border);background:var(--panel2);transition:.15s;}
+.nav-item:hover{background:#151d28;color:var(--text);}
+.nav-item.active{background:#132133;color:var(--accent);}
+.nav-item.active .dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px var(--accent);}
+.nav-item.done .dot{background:var(--accent2);border-color:var(--accent2);}
+#hint{margin-top:auto;font-size:10.5px;color:var(--muted);font-family:var(--mono);line-height:1.6;padding:10px 8px;border-top:1px solid var(--border);}
+#hint kbd{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--accent);}
+
+/* MAIN */
+#main{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+#progress{height:3px;background:var(--border);}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .25s ease;}
+#content{flex:1;overflow-y:auto;padding:40px 60px 90px;}
+.section{display:none;max-width:920px;margin:0 auto;animation:fade .25s ease;}
+.section.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+h2.title{font-size:30px;margin:0 0 6px;color:#fff;font-weight:700;letter-spacing:-0.5px;}
+.lead{font-size:15px;color:var(--muted);margin:0 0 22px;line-height:1.6;}
+h3{font-size:16px;color:var(--accent);margin:26px 0 10px;font-family:var(--mono);border-left:3px solid var(--accent);padding-left:10px;}
+h4{font-size:13.5px;color:var(--accent3);margin:16px 0 8px;font-family:var(--mono);}
+p{line-height:1.65;font-size:14.5px;color:var(--text);}
+ul{padding-left:20px;line-height:1.7;font-size:14.5px;}
+ol{padding-left:20px;line-height:1.8;font-size:14.5px;}
+li{margin-bottom:5px;}
+strong{color:#fff;}
+.muted{color:var(--muted);font-size:13px;}
+
+.analogy{
+  background:#101a12;
+  border:1px solid #1c3a24;
+  border-left:3px solid var(--accent2);
+  border-radius:10px;
+  padding:14px 18px;
+  margin:14px 0;
+}
+.analogy .lbl{font-family:var(--mono);font-size:11px;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:12px 0;}
+.card.warn{border-color:#4a3a1a;background:#1a1610;}
+.card.danger{border-color:#4a2222;background:#1c1414;}
+.card.ok{border-color:#1a3a24;background:#0f1a13;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.grid2{grid-template-columns:1fr;}}
+
+code,.code{font-family:var(--mono);background:#161c26;border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px;color:var(--accent2);}
+pre{background:#0d1219;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:12.8px;line-height:1.6;color:#d5dde5;}
+pre .cm{color:#5a6472;} pre .kw{color:#ff7b72;} pre .st{color:#a5d6ff;} pre .fn{color:#d2a8ff;}
+
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px;}
+th,td{border:1px solid var(--border);padding:7px 10px;text-align:left;}
+th{background:#161c26;color:var(--accent);font-family:var(--mono);font-size:12px;}
+td{color:var(--text);}
+
+.tag{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted);margin:2px 4px 2px 0;}
+.tag.blue{color:var(--accent);border-color:#1c3a56;} .tag.green{color:var(--accent2);border-color:#1c4a2a;} .tag.red{color:var(--accent4);border-color:#4a2222;}
+
+.quote{border-left:3px solid var(--accent3);padding:10px 16px;margin:14px 0;font-style:italic;color:#dbe2e8;background:#151810;font-size:13.5px;}
+.quote cite{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:6px;}
+
+.stages{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0;font-family:var(--mono);font-size:12px;}
+.stage{background:#132133;border:1px solid #1c3a56;color:var(--accent);padding:6px 12px;border-radius:6px;}
+.arrow{color:var(--muted);align-self:center;}
+
+.cases{display:flex;flex-direction:column;gap:9px;margin:12px 0;}
+.case{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:10px 13px;}
+.case b{color:#fff;font-size:13px;display:block;margin-bottom:2px;}
+.case span{font-size:12.5px;color:var(--muted);}
+
+/* QUIZ */
+.qcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:16px;}
+.qnum{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-bottom:6px;}
+.qtext{font-size:15px;color:#fff;margin-bottom:14px;font-weight:600;}
+.opt{display:block;width:100%;text-align:left;background:#151b24;border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:13.5px;font-family:var(--sans);transition:.15s;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#0f2a17;border-color:var(--accent2);color:#b6f0c4;}
+.opt.wrong{background:#2a1414;border-color:var(--accent4);color:#f0b6b6;}
+.opt.disabled{pointer-events:none;opacity:.85;}
+.explain{margin-top:10px;font-size:13px;color:var(--muted);border-top:1px dashed var(--border);padding-top:10px;display:none;}
+#quiz-score{font-family:var(--mono);font-size:14px;color:var(--accent);padding:14px 0;text-align:center;}
+#quiz-reset{font-family:var(--mono);font-size:12px;background:var(--panel);border:1px solid var(--border);color:var(--accent);padding:8px 16px;border-radius:6px;cursor:pointer;display:block;margin:10px auto 0;}
+#quiz-reset:hover{border-color:var(--accent);}
+
+::-webkit-scrollbar{width:9px;}
+::-webkit-scrollbar-track{background:var(--panel2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>&gt; devops --para-tontos</h1>
+  <p class="sub">todo, explicado desde cero</p>
+  <div class="pipeline" id="nav"></div>
+  <div id="hint">
+    <kbd>&larr;</kbd> <kbd>&rarr;</kbd> cambiar sección<br>
+    <kbd>0</kbd>-<kbd>7</kbd> ir directo<br>
+    funciona sin conexión
+  </div>
+</div>
+
+<div id="main">
+  <div id="progress"><div id="progress-bar"></div></div>
+  <div id="content">
+
+    <!-- 0 =============== BIENVENIDA =============== -->
+    <section class="section" data-idx="0">
+      <div class="eyebrow">Antes de empezar</div>
+      <h2 class="title">DevOps para tontos</h2>
+      <p class="lead">No sos tonto. Es que nadie te explicó esto empezando por el principio. Acá va, en orden, sin dar nada por sabido.</p>
+
+      <div class="analogy">
+        <div class="lbl">La idea en una frase</div>
+        <p style="margin:0;">Antes, un equipo <strong>escribía</strong> el software (Desarrollo) y otro equipo distinto lo <strong>hacía funcionar</strong> en los servidores (Operaciones), y se llevaban mal porque uno quería cambiar cosas rápido y el otro quería que nada se rompa. <strong>DevOps es la forma de que esos dos mundos trabajen juntos</strong>, con herramientas que automatizan todo el camino entre "escribí código" y "ya lo está usando la gente".</p>
+      </div>
+
+      <h3>El mapa completo</h3>
+      <div class="stages">
+        <span class="stage">1 · Qué es DevOps</span><span class="arrow">→</span>
+        <span class="stage">2 · Despliegues</span><span class="arrow">→</span>
+        <span class="stage">3 · Git</span><span class="arrow">→</span>
+        <span class="stage">4 · Docker</span><span class="arrow">→</span>
+        <span class="stage">5 · GitHub Actions</span><span class="arrow">→</span>
+        <span class="stage">6 · Python/Flask</span><span class="arrow">→</span>
+        <span class="stage">7 · Quiz</span>
+      </div>
+      <p class="muted">El orden importa: primero entendés <em>por qué</em> existe todo esto (1-2), después las <em>herramientas</em> que lo hacen posible (3-5), y por último un poco de código de ejemplo (6).</p>
+    </section>
+
+    <!-- 1 =============== QUE ES DEVOPS =============== -->
+    <section class="section" data-idx="1">
+      <div class="eyebrow">Paso 1</div>
+      <h2 class="title">¿Qué es DevOps, en serio?</h2>
+      <p class="lead">Ni una herramienta, ni un puesto de trabajo. Es una forma de trabajar.</p>
+
+      <div class="analogy">
+        <div class="lbl">Analogía</div>
+        <p style="margin:0;">Pensá en una fábrica de autos donde el diseñador y el que arma el auto en la línea de producción <strong>nunca hablan entre sí</strong>. El diseñador manda el plano por mail una vez al año y el de la línea se las arregla como puede. Resultado: autos con errores, entregas tardías, y los dos equipos peleados. DevOps es juntar a esas dos personas en el mismo pasillo, con un proceso claro y automatizado para pasar del plano al auto terminado.</p>
+      </div>
+
+      <h3>Definición "de libro"</h3>
+      <div class="quote">"DevOps es la unión de Personas, Procesos y Productos para hacer posible la entrega de valor a nuestros usuarios finales." <cite>— Donovan Brown</cite></div>
+
+      <h3>Las 4 ideas que sí o sí tenés que tener claras</h3>
+      <div class="grid2">
+        <div class="card"><strong>Colaboración</strong><p class="muted" style="margin:4px 0 0;">Desarrollo (Dev) y Operaciones (Ops) dejan de ser equipos separados que se tiran la pelota.</p></div>
+        <div class="card"><strong>Automatización</strong><p class="muted" style="margin:4px 0 0;">Todo lo que se hace a mano y se repite (testear, empaquetar, subir a producción) se automatiza.</p></div>
+        <div class="card"><strong>Despliegue frecuente</strong><p class="muted" style="margin:4px 0 0;">En vez de un lanzamiento gigante cada 6 meses, se suben cambios chicos todo el tiempo.</p></div>
+        <div class="card"><strong>Infraestructura como código</strong><p class="muted" style="margin:4px 0 0;">Los servidores se configuran con archivos de texto (código), no clickeando a mano en una pantalla.</p></div>
+      </div>
+
+      <h3>Mitos que tenés que poder desmentir</h3>
+      <div class="card danger">
+        <span class="tag red">"Es solo para empresas tipo Netflix"</span>
+        <span class="tag red">"Reemplaza a las metodologías Ágiles"</span>
+        <span class="tag red">"Elimina el área de Operaciones"</span>
+        <span class="tag red">"Es lo mismo que Infraestructura como Código"</span>
+      </div>
+      <p class="muted">Todo falso. Ágil es un <em>facilitador</em> de DevOps (no un competidor), y Operaciones no desaparece: se vuelve más importante, porque ahora participa en todo el ciclo de vida del software, no solo al final.</p>
+
+      <h3>De dónde viene esto (rapidito)</h3>
+      <table>
+        <tr><th>Cuándo</th><th>Qué pasó</th></tr>
+        <tr><td>1946–1975</td><td>Toyota inventa su sistema de producción (LEAN): pedir solo lo necesario, mejora continua, cero desperdicio.</td></tr>
+        <tr><td>2001</td><td>Nace el Manifiesto Ágil: priorizar el software funcionando por sobre la documentación eterna.</td></tr>
+        <tr><td>2008</td><td>Patrick Debois y Andrew Shafer empiezan a aplicar ideas ágiles a la infraestructura de servidores.</td></tr>
+        <tr><td>2009</td><td>Charla "10+ Deploys per Day" en Flickr muestra que Dev y Ops pueden trabajar juntos. Nace la palabra "DevOps" en Ghent, Bélgica.</td></tr>
+      </table>
+
+      <h3>¿Para qué sirve todo esto al final?</h3>
+      <p>Para poder responder rápido cuando el mercado cambia. Necesitás: <strong>lanzar cosas rápido (Time To Market)</strong>, <strong>que el servicio no se caiga (SLA)</strong> y <strong>poder probar ideas sin miedo (experimentación)</strong>.</p>
+    </section>
+
+    <!-- 2 =============== DESPLIEGUES =============== -->
+    <section class="section" data-idx="2">
+      <div class="eyebrow">Paso 2</div>
+      <h2 class="title">Gestión de despliegues</h2>
+      <p class="lead">"Desplegar" = poner el software a correr en algún lado. Acá está toda la teoría de cómo hacerlo bien.</p>
+
+      <div class="analogy">
+        <div class="lbl">Analogía</div>
+        <p style="margin:0;">Es como mudarte de casa. Podés <strong>tirar todos los muebles viejos a la calle y meter los nuevos de golpe</strong> (arriesgado, si algo no entra por la puerta estás en problemas), o podés <strong>armar la casa nueva primero, con calma, y recién cuando está lista mudarte vos</strong> (mucho más seguro). Las estrategias de despliegue son distintas formas de "mudarte" sin dejar a la gente sin casa en el medio.</p>
+      </div>
+
+      <h3>Dos palabras que no son lo mismo</h3>
+      <div class="grid2">
+        <div class="card"><strong>Desplegar</strong><p class="muted" style="margin:4px 0 0;">Instalar una versión del software en algún ambiente (puede ser uno de prueba).</p></div>
+        <div class="card"><strong>Liberar</strong><p class="muted" style="margin:4px 0 0;">Que los usuarios reales empiecen a usar esa funcionalidad. Implica tener un plan B (rollback) por si sale mal.</p></div>
+      </div>
+
+      <h3>El camino que recorre el código</h3>
+      <div class="stages">
+        <span class="stage">Integración</span><span class="arrow">→</span>
+        <span class="stage">Aceptación</span><span class="arrow">→</span>
+        <span class="stage">UAT</span><span class="arrow">→</span>
+        <span class="stage">Staging</span><span class="arrow">→</span>
+        <span class="stage">Producción</span>
+      </div>
+      <p class="muted">En cada flecha hay una "compuerta": alguien (o algo automático) tiene que aprobar que el código pase a la siguiente etapa.</p>
+
+      <h3>Las estrategias, explicadas simple</h3>
+      <div class="cases">
+        <div class="case"><b>Redespliegue</b><span>Apagás todo y volvés a instalar la última versión que funcionaba. Simple, pero hay downtime (el servicio queda caído un rato).</span></div>
+        <div class="case"><b>Blue-Green</b><span>Tenés dos copias idénticas del sistema (azul y verde). Los usuarios usan la azul mientras probás todo en la verde. Cuando estás seguro, un router redirige el tráfico a la verde. Volver atrás = redirigir de nuevo.</span></div>
+        <div class="case"><b>Canary</b><span>Como Blue-Green, pero en vez de mover a todos de golpe, mandás solo un 10-20% del tráfico real a la versión nueva primero, para ver si explota algo antes de afectar a todos.</span></div>
+        <div class="case"><b>Rolling update</b><span>Típico de contenedores: vas reemplazando servidores viejos por nuevos de a uno, sin apagar todo junto. El servicio nunca se cae del todo.</span></div>
+        <div class="case"><b>Feature toggles</b><span>Un "interruptor" en el código. Subís la funcionalidad apagada, y la prendés cuando querés — sin volver a desplegar nada.</span></div>
+        <div class="case"><b>Despliegue a oscuras</b><span>Subís la funcionalidad a producción pero invisible para el usuario, solo para probar que aguanta el tráfico real, antes de mostrarla.</span></div>
+      </div>
+
+      <div class="card ok">
+        <h4 style="margin-top:0;">Regla de oro para arreglos urgentes (hotfix)</h4>
+        <p style="margin:0;">Aunque tengas apuro, <strong>no te saltes el proceso</strong> (probar → desplegar → testear). Muchas veces es más seguro hacer rollback a la versión anterior que meter un arreglo apurado sin probar.</p>
+      </div>
+    </section>
+
+    <!-- 3 =============== GIT =============== -->
+    <section class="section" data-idx="3">
+      <div class="eyebrow">Paso 3</div>
+      <h2 class="title">Git — la base de todo</h2>
+      <p class="lead">Antes de hablar de Docker o de automatizar nada, necesitás Git: es donde vive el código.</p>
+
+      <div class="analogy">
+        <div class="lbl">Analogía</div>
+        <p style="margin:0;">Git es una <strong>máquina del tiempo para tus archivos</strong>. Cada vez que hacés un <code>commit</code>, guardás una "foto" de cómo estaba todo en ese momento. Si rompés algo, podés volver a cualquier foto anterior. Y como varias personas pueden trabajar en "ramas" (branches) distintas al mismo tiempo, es como tener universos paralelos que después se juntan (merge).</p>
+      </div>
+
+      <h3>Los comandos que realmente vas a usar</h3>
+      <table>
+        <tr><th>Comando</th><th>Qué hace, en criollo</th></tr>
+        <tr><td><code>git clone &lt;url&gt;</code></td><td>Traé una copia del repositorio a tu compu</td></tr>
+        <tr><td><code>git status</code></td><td>¿Qué cambié y qué falta guardar?</td></tr>
+        <tr><td><code>git add &lt;archivo&gt;</code></td><td>"Poné este cambio en la lista para guardar"</td></tr>
+        <tr><td><code>git commit -m "mensaje"</code></td><td>Guardá la foto, con una nota de qué cambiaste</td></tr>
+        <tr><td><code>git push</code></td><td>Subí tus fotos guardadas al repositorio remoto (GitHub)</td></tr>
+        <tr><td><code>git pull</code></td><td>Traé los cambios que subieron otros</td></tr>
+        <tr><td><code>git checkout -b &lt;rama&gt;</code></td><td>Creá tu propio universo paralelo para probar algo</td></tr>
+        <tr><td><code>git merge &lt;rama&gt;</code></td><td>Juntá esa rama con la que estás parado ahora</td></tr>
+        <tr><td><code>git log</code></td><td>Ver el historial de fotos guardadas</td></tr>
+        <tr><td><code>git revert &lt;commit&gt;</code></td><td>Deshacer un cambio puntual, sin borrar el historial</td></tr>
+      </table>
+      <p class="muted">Todo lo demás (rebase, reflog, cherry-pick...) lo aprendés cuando lo necesites. Con esta lista sobrevivís el 90% de los casos.</p>
+    </section>
+
+    <!-- 4 =============== DOCKER =============== -->
+    <section class="section" data-idx="4">
+      <div class="eyebrow">Paso 4</div>
+      <h2 class="title">Docker — empaquetar tu app</h2>
+      <p class="lead">El problema que Docker resuelve: "en mi compu funciona" y en el servidor no.</p>
+
+      <div class="analogy">
+        <div class="lbl">Analogía</div>
+        <p style="margin:0;">Un contenedor Docker es como una <strong>caja de mudanza sellada</strong>: adentro va tu aplicación con TODO lo que necesita para funcionar (versión exacta de Python, librerías, configuración). No importa a qué "casa" (servidor) lleves la caja: al abrirla, todo funciona exactamente igual, porque no depende de lo que ya había en esa casa.</p>
+      </div>
+
+      <h3>El flujo básico</h3>
+      <div class="stages">
+        <span class="stage">Dockerfile (la receta)</span><span class="arrow">— build →</span>
+        <span class="stage">Imagen (la caja armada)</span><span class="arrow">— run →</span>
+        <span class="stage">Contenedor (la caja funcionando)</span>
+      </div>
+
+      <h3>Un Dockerfile explicado línea por línea</h3>
+      <pre><span class="cm"># De qué "base" partimos</span>
+<span class="kw">FROM</span> python:3.8-slim
+
+<span class="cm"># Carpeta de trabajo adentro del contenedor</span>
+<span class="kw">WORKDIR</span> /usr/src/app
+
+<span class="cm"># Copiamos la lista de dependencias</span>
+<span class="kw">COPY</span> requirements.txt .
+
+<span class="cm"># Las instalamos</span>
+<span class="kw">RUN</span> pip install --no-cache-dir -r requirements.txt
+
+<span class="cm"># Copiamos el resto del código</span>
+<span class="kw">COPY</span> . .
+
+<span class="cm"># Puerto que la app va a usar</span>
+<span class="kw">EXPOSE</span> 5000
+
+<span class="cm"># Comando que arranca la app</span>
+<span class="kw">CMD</span> [<span class="st">"python"</span>, <span class="st">"app.py"</span>]</pre>
+
+      <h3>Los dos comandos que hacen todo</h3>
+      <pre><span class="cm"># 1. Armar la caja (la imagen) a partir de la receta</span>
+docker build -t mi-app .
+
+<span class="cm"># 2. Abrir la caja y ponerla a funcionar (el contenedor)</span>
+docker run -d --name mi-app-corriendo -p 5000:5000 mi-app</pre>
+      <div class="card warn"><strong>No te olvides:</strong> parar los contenedores que no estás usando (<code>docker stop</code>), o te comen recursos de la máquina.</div>
+    </section>
+
+    <!-- 5 =============== GITHUB ACTIONS =============== -->
+    <section class="section" data-idx="5">
+      <div class="eyebrow">Paso 5</div>
+      <h2 class="title">GitHub Actions — el robot que hace el trabajo</h2>
+      <p class="lead">Ya tenés el código (Git) y sabés empaquetarlo (Docker). Ahora falta que <strong>nadie tenga que hacer nada a mano</strong>.</p>
+
+      <div class="analogy">
+        <div class="lbl">Analogía</div>
+        <p style="margin:0;">Es como dejar un <strong>robot contratado que vive adentro de GitHub</strong>. Vos le decís "cada vez que alguien suba código nuevo, corré los tests, y si pasan, armá la caja de Docker y mandala al servidor". El robot lo hace solo, sin que nadie tenga que acordarse de hacerlo a mano ni cometer el error de saltearse un paso.</p>
+      </div>
+
+      <h3>Vocabulario básico</h3>
+      <table>
+        <tr><th>Palabra</th><th>Qué es</th></tr>
+        <tr><td><strong>Workflow</strong></td><td>El proceso completo, escrito en un archivo YAML dentro de <code>.github/workflows/</code></td></tr>
+        <tr><td><strong>Event (evento)</strong></td><td>Lo que dispara el robot: <code>push</code>, <code>pull_request</code>, un horario (<code>schedule</code>), o un botón manual</td></tr>
+        <tr><td><strong>Job</strong></td><td>Un grupo de tareas que corre en una máquina virtual (el "runner")</td></tr>
+        <tr><td><strong>Step</strong></td><td>Un paso individual: un comando, o una "acción" ya hecha por otros</td></tr>
+      </table>
+
+      <h3>Un workflow real, comentado</h3>
+      <pre><span class="cm"># .github/workflows/ci.yml</span>
+<span class="kw">name:</span> CI
+
+<span class="kw">on:</span>
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+<span class="kw">jobs:</span>
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - <span class="kw">name:</span> Clonar el repo
+        uses: actions/checkout@v4
+
+      - <span class="kw">name:</span> Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: <span class="st">'3.11'</span>
+
+      - <span class="kw">name:</span> Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - <span class="kw">name:</span> Correr tests
+        run: pytest</pre>
+      <p class="muted">Traducido: "cada vez que alguien haga push o abra un pull request contra main, cloná el repo, instalá Python, instalá las dependencias, y corré los tests". Si algo falla, GitHub avisa antes de que ese código llegue a producción.</p>
+
+      <h3>Casos prácticos (para qué se usa en la vida real)</h3>
+      <div class="cases">
+        <div class="case"><b>1 · Integración continua (CI)</b><span>Correr tests automáticamente en cada cambio, antes de aprobar el merge.</span></div>
+        <div class="case"><b>2 · Build &amp; push de imagen Docker</b><span>Armar la imagen y subirla a un registry cuando se aprueba un cambio en <code>main</code>.</span></div>
+        <div class="case"><b>3 · Despliegue automatizado (CD)</b><span>Conectarse al servidor y aplicar un rolling update o Blue-Green automáticamente tras el build exitoso.</span></div>
+        <div class="case"><b>4 · Tareas programadas</b><span>Backups nocturnos, chequeos de salud de un servicio — con <code>on: schedule</code>.</span></div>
+        <div class="case"><b>5 · Control de calidad</b><span>Correr un linter o análisis de seguridad en cada pull request, bloqueando el merge si falla.</span></div>
+        <div class="case"><b>6 · Disparo manual</b><span>Un botón en GitHub (<code>workflow_dispatch</code>) para lanzar un despliegue a demanda, por ejemplo un hotfix ya aprobado.</span></div>
+      </div>
+    </section>
+
+    <!-- 6 =============== PYTHON / FLASK =============== -->
+    <section class="section" data-idx="6">
+      <div class="eyebrow">Paso 6</div>
+      <h2 class="title">Python &amp; Flask — la parte de código</h2>
+      <p class="lead">Flask es la forma más simple de exponer tu código como algo que se puede llamar por internet (una API).</p>
+
+      <h3>Una ruta Flask, mínima</h3>
+      <pre><span class="kw">from</span> flask <span class="kw">import</span> Flask, jsonify, request
+app = Flask(__name__)
+
+<span class="cm">@app.route('/hello')</span>
+<span class="kw">def</span> <span class="fn">hello</span>():
+    <span class="kw">return</span> jsonify({<span class="st">"mensaje"</span>: <span class="st">"Hola!"</span>})
+
+<span class="cm"># con un parámetro en la URL</span>
+<span class="cm">@app.route('/square/&lt;int:num&gt;')</span>
+<span class="kw">def</span> <span class="fn">square</span>(num):
+    <span class="kw">return</span> jsonify({<span class="st">"resultado"</span>: num ** 2})
+
+<span class="cm"># recibiendo datos (POST)</span>
+<span class="cm">@app.route('/libro', methods=['POST'])</span>
+<span class="kw">def</span> <span class="fn">libro</span>():
+    datos = request.get_json()
+    <span class="kw">return</span> jsonify(datos), 201</pre>
+
+      <h3>Automatización simple con Python (lo que usarías en DevOps real)</h3>
+      <ul>
+        <li><code>os.system("ping -c 2 " + host)</code> → ¿este servidor responde?</li>
+        <li><code>shutil.copy(origen, destino)</code> → hacer un backup de un archivo de configuración</li>
+        <li><code>subprocess.run([...], capture_output=True)</code> → correr un comando del sistema y leer el resultado (ej. <code>systemctl is-active</code>)</li>
+      </ul>
+      <p class="muted">Nada de esto es magia: son las mismas herramientas de siempre, aplicadas a "administrar servidores" en vez de "resolver un ejercicio".</p>
+    </section>
+
+    <!-- 7 =============== QUIZ =============== -->
+    <section class="section" data-idx="7">
+      <div class="eyebrow">Último paso</div>
+      <h2 class="title">Ponete a prueba</h2>
+      <p class="lead">15 preguntas mezclando todo. Si fallás alguna, ya sabés a qué sección volver.</p>
+      <div id="quiz-container"></div>
+      <div id="quiz-score"></div>
+      <button id="quiz-reset">↺ reiniciar quiz</button>
+    </section>
+
+  </div>
+</div>
+
+<script>
+const sections = [
+  {label:"Bienvenida"}, {label:"Qué es DevOps"}, {label:"Despliegues"},
+  {label:"Git"}, {label:"Docker"}, {label:"GitHub Actions"},
+  {label:"Python/Flask"}, {label:"Quiz"}
+];
+const navEl = document.getElementById('nav');
+sections.forEach((s,i)=>{
+  const el = document.createElement('div');
+  el.className = 'nav-item';
+  el.dataset.idx = i;
+  el.innerHTML = `<span class="dot"></span><span>${i}. ${s.label}</span>`;
+  el.addEventListener('click', ()=>goTo(i));
+  navEl.appendChild(el);
+});
+
+let current = 0;
+const total = sections.length;
+function goTo(i){
+  if(i<0) i=0;
+  if(i>=total) i=total-1;
+  current = i;
+  document.querySelectorAll('.section').forEach(s=>{
+    s.classList.toggle('active', parseInt(s.dataset.idx)===i);
+  });
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    const idx = parseInt(n.dataset.idx);
+    n.classList.toggle('active', idx===i);
+    if(idx<i) n.classList.add('done');
+  });
+  document.getElementById('progress-bar').style.width = ((i+1)/total*100)+'%';
+  document.getElementById('content').scrollTop = 0;
+}
+goTo(0);
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+  if(e.key>='0' && e.key<='7') goTo(parseInt(e.key));
+});
+
+/* QUIZ DATA */
+const quiz = [
+  {q:"En una frase, ¿qué es DevOps?", opts:["Un lenguaje de programación","Una forma de que Desarrollo y Operaciones trabajen juntos, con automatización","Un tipo de base de datos","Un antivirus para servidores"], correct:1,
+   explain:"DevOps = Personas + Procesos + Productos para entregar valor rápido y de forma confiable."},
+  {q:"¿Cuál de estas es una afirmación FALSA (mito) sobre DevOps?", opts:["DevOps elimina el área de Operaciones","Ágil facilita la adopción de DevOps","La cultura importa tanto como las herramientas","DevOps requiere automatización"], correct:0,
+   explain:"Operaciones no desaparece: participa más en todo el ciclo de vida del software."},
+  {q:"¿Cuál es la diferencia entre 'desplegar' y 'liberar'?", opts:["Son lo mismo","Desplegar instala en un ambiente; liberar lo expone a usuarios finales","Liberar es solo para bugs","Desplegar requiere aprobación del cliente siempre"], correct:1,
+   explain:"Liberar implica un ambiente final + tener un plan de rollback."},
+  {q:"En Blue-Green, hacer rollback significa:", opts:["Reinstalar todo desde cero","Redirigir el tráfico al ambiente anterior","Borrar la base de datos","Hacer un git commit --amend"], correct:1,
+   explain:"Al tener dos ambientes, volver atrás es simplemente cambiar a dónde apunta el router."},
+  {q:"Canary release se diferencia de Blue-Green en que:", opts:["No usa versiones nuevas","Manda solo una porción de tráfico real a la nueva versión antes de generalizar","Requiere apagar el sistema","Es exclusivo de bases de datos"], correct:1,
+   explain:"Es una forma más gradual y segura de probar en producción con tráfico real."},
+  {q:"¿Qué comando de Git guarda una 'foto' de tus cambios con un mensaje?", opts:["git push","git commit -m \"mensaje\"","git clone","git status"], correct:1,
+   explain:"git commit guarda los cambios que pusiste en 'add', con una descripción."},
+  {q:"¿Qué comando crea una rama nueva y te cambia a ella?", opts:["git branch nueva","git checkout -b nueva","git merge nueva","git log nueva"], correct:1,
+   explain:"git checkout -b crea Y cambia a la rama en un solo paso."},
+  {q:"En Docker, ¿qué archivo contiene la 'receta' para armar la imagen?", opts:["docker-compose.yml","Dockerfile","requirements.txt",".gitignore"], correct:1,
+   explain:"El Dockerfile define paso a paso cómo se arma la imagen."},
+  {q:"¿Qué instrucción del Dockerfile define el comando que arranca la app al correr el contenedor?", opts:["FROM","WORKDIR","CMD","COPY"], correct:2,
+   explain:"CMD es el comando por defecto que se ejecuta al iniciar el contenedor."},
+  {q:"¿Qué comando arma una imagen Docker a partir del Dockerfile en la carpeta actual?", opts:["docker run -t .","docker build -t nombre .","docker start .","docker init ."], correct:1,
+   explain:"docker build -t <nombre> . construye la imagen usando el Dockerfile presente."},
+  {q:"En GitHub Actions, un 'workflow' es:", opts:["Una base de datos","Un archivo YAML que define el proceso automatizado completo","Un tipo de contenedor Docker","Una rama de Git"], correct:1,
+   explain:"Vive en .github/workflows/ y define eventos, jobs y steps."},
+  {q:"¿Qué evento de GitHub Actions dispara un workflow con un botón manual en GitHub?", opts:["push","schedule","workflow_dispatch","pull_request"], correct:2,
+   explain:"workflow_dispatch permite lanzar el workflow a demanda desde la interfaz de GitHub."},
+  {q:"Un 'runner' en GitHub Actions es:", opts:["La persona que revisa el código","La máquina virtual donde corre el job","El nombre del repositorio","Un tipo de commit"], correct:1,
+   explain:"El runner es el servidor (dado por GitHub o propio) donde se ejecutan los steps del job."},
+  {q:"¿Cuál de estos NO es un caso práctico típico de GitHub Actions?", opts:["Correr tests en cada push","Editar manualmente archivos en producción","Build y push de una imagen Docker","Backups programados con cron"], correct:1,
+   explain:"Justamente lo que se busca evitar es editar producción a mano — todo se automatiza."},
+  {q:"Ante un problema urgente en producción (hotfix), la recomendación es:", opts:["Editar directo el servidor de producción","Saltearse los tests para ir más rápido","Seguir el proceso normal; a veces es más seguro un rollback que un fix apurado","Ignorar el problema hasta el próximo release"], correct:2,
+   explain:"Un cambio no probado puede agravar el problema; el rollback suele ser la opción más segura."}
+];
+
+const qc = document.getElementById('quiz-container');
+let answered = new Array(quiz.length).fill(false);
+let score = 0;
+
+function renderQuiz(){
+  qc.innerHTML = '';
+  answered = new Array(quiz.length).fill(false);
+  score = 0;
+  quiz.forEach((item, qi)=>{
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    card.innerHTML = `
+      <div class="qnum">Pregunta ${qi+1} / ${quiz.length}</div>
+      <div class="qtext">${item.q}</div>
+      <div class="opts"></div>
+      <div class="explain"></div>
+    `;
+    const optsWrap = card.querySelector('.opts');
+    item.opts.forEach((optText, oi)=>{
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.textContent = optText;
+      b.addEventListener('click', ()=>{
+        if(answered[qi]) return;
+        answered[qi] = true;
+        const allOpts = optsWrap.querySelectorAll('.opt');
+        allOpts.forEach((o,idx)=>{
+          o.classList.add('disabled');
+          if(idx===item.correct) o.classList.add('correct');
+        });
+        if(oi!==item.correct) b.classList.add('wrong');
+        else score++;
+        card.querySelector('.explain').style.display='block';
+        card.querySelector('.explain').textContent = item.explain;
+        updateScore();
+      });
+      optsWrap.appendChild(b);
+    });
+    qc.appendChild(card);
+  });
+  updateScore();
+}
+function updateScore(){
+  const done = answered.filter(Boolean).length;
+  document.getElementById('quiz-score').textContent =
+    done===quiz.length
+      ? `Resultado final: ${score} / ${quiz.length} correctas`
+      : `Progreso: ${done} / ${quiz.length} respondidas — ${score} correctas hasta ahora`;
+}
+document.getElementById('quiz-reset').addEventListener('click', renderQuiz);
+renderQuiz();
+</script>
+</body>
+</html>
