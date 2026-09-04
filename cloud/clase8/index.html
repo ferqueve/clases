@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 8 — Administración</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#38BDF8;
+  --gold:#F0B429;
+  --ground:#0B1120;
+  --ground2:#111a33;
+  --mist:#E2E8F0;
+  --mist-dim:#8DA0BE;
+  --line:rgba(226,232,240,.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Inter',sans-serif; background:var(--ground); color:var(--mist);
+  overflow:hidden; height:100vh;
+}
+code, .mono{font-family:'JetBrains Mono',monospace}
+
+/* ---- horizon backdrop: ground below, sky/cloud drift above ---- */
+#horizon{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sky-layer{position:absolute; inset:0; background:
+  radial-gradient(ellipse at 20% -10%, rgba(56,189,248,.14), transparent 55%),
+  radial-gradient(ellipse at 80% 0%, rgba(240,180,41,.08), transparent 50%),
+  var(--ground);}
+.ground-line{position:absolute; left:0; right:0; bottom:0; height:38%;
+  background:linear-gradient(180deg, transparent 0%, rgba(56,189,248,.05) 40%, var(--ground2) 100%);
+  border-top:1px solid var(--line);}
+.cloud-drift{position:absolute; border-radius:50%; filter:blur(30px); opacity:.16; background:var(--sky);
+  animation:drift linear infinite;}
+@keyframes drift{ from{transform:translateX(-10vw)} to{transform:translateX(110vw)} }
+.node{position:absolute; width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:.5;}
+.node::after{content:'';position:absolute; top:2px; left:5px; width:60px; height:1px; background:linear-gradient(90deg, var(--gold), transparent); opacity:.4;}
+
+/* ---- HUD ---- */
+#progress-track{position:fixed; top:0; left:0; right:0; height:4px; background:var(--line); z-index:50;}
+#progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--sky),var(--gold)); transition:width .4s ease;}
+#hud{position:fixed; top:16px; right:20px; z-index:50; display:flex; gap:14px; align-items:center; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim);}
+#hud .badge-slide{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.35); color:var(--sky); padding:4px 10px; border-radius:20px;}
+#course-tag{position:fixed; top:16px; left:20px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); letter-spacing:.06em;}
+#course-tag strong{color:var(--sky)}
+
+/* ---- slides ---- */
+.slide{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center;
+  padding:90px 8vw 70px; opacity:0; pointer-events:none; transition:opacity .35s ease;}
+.slide.active{opacity:1; pointer-events:auto;}
+.eyebrow{font-family:'JetBrains Mono',monospace; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; font-size:.85rem; margin-bottom:14px;}
+h1.title{font-size:3.4rem; font-weight:800; line-height:1.05; margin:0 0 20px; letter-spacing:-.02em;}
+h1.title .accent{color:var(--sky)}
+h2.slide-h{font-size:2.1rem; font-weight:800; margin:0 0 26px; letter-spacing:-.01em;}
+p.lead{font-size:1.15rem; color:var(--mist-dim); max-width:640px; line-height:1.6;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:22px; max-width:1000px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1100px;}
+.card{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:24px;}
+.card h3{font-size:1.05rem; margin:0 0 10px; display:flex; align-items:center; gap:10px;}
+.card h3 i{color:var(--sky)}
+.card p{color:var(--mist-dim); font-size:.92rem; line-height:1.55; margin:0;}
+.vs-wrap{display:flex; gap:0; max-width:900px; border-radius:16px; overflow:hidden; border:1px solid var(--line);}
+.vs-col{flex:1; padding:28px;}
+.vs-col.onprem{background:rgba(240,180,41,.06); border-right:1px solid var(--line);}
+.vs-col.cloud{background:rgba(56,189,248,.06);}
+.vs-col h4{font-family:'JetBrains Mono',monospace; font-size:.95rem; margin-bottom:14px;}
+.vs-col.onprem h4{color:var(--gold)}
+.vs-col.cloud h4{color:var(--sky)}
+.vs-col ul{margin:0; padding-left:18px; color:var(--mist-dim); font-size:.92rem; line-height:1.9;}
+.stat{font-family:'JetBrains Mono',monospace; font-weight:800; font-size:2.6rem; color:var(--sky);}
+.stat-label{color:var(--mist-dim); font-size:.85rem;}
+.tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+.resp-table{width:100%; max-width:920px; border-collapse:separate; border-spacing:0; margin-top:8px; font-size:.92rem;}
+.resp-table th{text-align:center; padding:12px 10px; font-family:'JetBrains Mono',monospace; font-size:.8rem; color:var(--mist-dim); border-bottom:1px solid var(--line);}
+.resp-table td{padding:12px 10px; text-align:center; border-bottom:1px solid var(--line); font-weight:600;}
+.resp-table td.layer{text-align:left; color:var(--mist-dim); font-weight:400; font-size:.88rem;}
+.resp-cliente{background:rgba(240,180,41,.14); color:var(--gold);}
+.resp-proveedor{background:rgba(56,189,248,.14); color:var(--sky);}
+.crayon-note{background:rgba(240,180,41,.1); border:2px dashed rgba(240,180,41,.5); border-radius:14px; padding:18px 22px; max-width:820px; margin-top:20px; font-size:1.05rem; color:var(--mist);}
+
+/* nav */
+#nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
+#nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
+#dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
+#dots .dot{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.3s;}
+#dots .dot.active{background:var(--sky); width:22px; border-radius:4px;}
+
+.quiz-btn{background:linear-gradient(135deg,var(--sky),#0ea5e9); border:none; color:#0B1120; font-weight:700; padding:14px 30px; border-radius:10px; font-size:1rem; margin-top:24px; cursor:pointer;}
+.quiz-btn:hover{filter:brightness(1.08)}
+.locked{opacity:.4; filter:grayscale(.6);}
+
+@media (max-width:820px){
+  h1.title{font-size:2.1rem}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .vs-wrap{flex-direction:column}
+  .slide{padding:80px 6vw 90px}
+}
+</style>
+</head>
+<body>
+
+<div id="horizon">
+  <div class="sky-layer"></div>
+  <div class="cloud-drift" style="width:260px;height:100px;top:8%;animation-duration:52s;"></div>
+  <div class="cloud-drift" style="width:180px;height:70px;top:18%;animation-duration:74s;animation-delay:-20s;"></div>
+  <div class="cloud-drift" style="width:320px;height:120px;top:4%;animation-duration:90s;animation-delay:-45s;"></div>
+  <div class="node" style="top:30%;left:15%;"></div>
+  <div class="node" style="top:22%;left:60%;"></div>
+  <div class="node" style="top:38%;left:80%;"></div>
+  <div class="ground-line"></div>
+</div>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Clase 8</div>
+<div id="hud"><span class="badge-slide" id="slide-counter">1 / 9</span></div>
+
+<!-- SLIDE 1 -->
+<section class="slide active" data-idx="0">
+  <div class="eyebrow">Módulo 8 · Administración</div>
+  <h1 class="title">Desplegar es el <span class="accent">principio, no el final</span></h1>
+  <p class="lead">Hasta ahora vimos cómo crear infraestructura. Hoy vemos qué pasa el día después: monitorear, dar accesos, parchear, controlar el gasto y automatizar — el trabajo que realmente ocupa la mayoría del tiempo de un equipo de infraestructura.</p>
+  <div class="tag-row">
+    <span><i class="fa-solid fa-gauge"></i> Monitoreo</span>
+    <span><i class="fa-solid fa-users-gear"></i> Usuarios y accesos</span>
+    <span><i class="fa-solid fa-code"></i> Infrastructure as Code</span>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide" data-idx="1">
+  <div class="eyebrow">El cambio de foco de este módulo</div>
+  <h2 class="slide-h">De "crear" a "sostener"</h2>
+  <p class="lead" style="max-width:760px">Todo lo anterior del curso resolvió cómo levantar infraestructura. La administración es el trabajo continuo, día tras día, para que siga funcionando bien, segura y dentro de presupuesto.</p>
+  <div class="grid-3" style="margin-top:20px">
+    <div class="card"><h3><i class="fa-solid fa-eye"></i>Visibilidad</h3><p>Saber en todo momento qué está pasando: uso de recursos, errores, tráfico anómalo.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-user-lock"></i>Control de acceso</h3><p>Quién puede tocar qué — y poder demostrarlo ante una auditoría.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-sack-dollar"></i>Costo bajo control</h3><p>La elasticidad que tanto celebramos también puede disparar la factura sin que nadie lo note a tiempo.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide" data-idx="2">
+  <div class="eyebrow">No podés administrar lo que no medís</div>
+  <h2 class="slide-h">Monitoreo de recursos</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-microchip"></i>Cómputo</h3><p>Uso de CPU y RAM por instancia — la base para decidir si hace falta escalar o redimensionar.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-hard-drive"></i>Storage</h3><p>Espacio disponible, IOPS, latencia de disco — un disco lleno tumba un servicio tan rápido como un CPU al 100%.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-network-wired"></i>Red</h3><p>Tráfico entrante/saliente, latencia, errores de conexión — clave para detectar tanto fallas como ataques.</p></div>
+  </div>
+  <p class="lead" style="margin-top:16px">En el laboratorio vamos a monitorear estos tres ejes con herramientas de línea de comandos simples — la misma lógica que usa cualquier plataforma de monitoreo profesional (Prometheus, Datadog, CloudWatch), solo que a mano.</p>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide" data-idx="3">
+  <div class="eyebrow">Quién puede hacer qué</div>
+  <h2 class="slide-h">Gestión de usuarios y accesos</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-user-shield"></i>Principio de mínimo privilegio</h3><p>Cada persona o servicio tiene exactamente el acceso que necesita — ni más, ni "por si acaso".</p></div>
+    <div class="card"><h3><i class="fa-solid fa-sitemap"></i>RBAC (control por roles)</h3><p>En vez de dar permisos persona por persona, se definen roles (lectura, operador, admin) y se asignan usuarios a esos roles.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-clipboard-list"></i>Auditoría</h3><p>Registro de quién hizo qué y cuándo — imprescindible cuando algo sale mal y hay que reconstruir la secuencia de eventos.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide" data-idx="4">
+  <div class="eyebrow">La tarea menos glamorosa, la más crítica</div>
+  <h2 class="slide-h">Parcheo y actualizaciones</h2>
+  <p class="lead" style="max-width:760px">La mayoría de los incidentes de seguridad no explotan vulnerabilidades desconocidas — explotan vulnerabilidades <strong style="color:var(--mist)">conocidas y no parcheadas</strong>. Mantener el software actualizado es, en la práctica, una de las medidas de seguridad más efectivas que existen.</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-calendar-check"></i>Ventanas de mantenimiento</h3><p>Horarios planificados donde se aplican actualizaciones con el menor impacto posible en el servicio.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-robot"></i>Automatización</h3><p>Actualizaciones de seguridad automáticas para no depender de que alguien se acuerde de hacerlo a mano cada semana.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide" data-idx="5">
+  <div class="eyebrow">La elasticidad tiene un precio</div>
+  <h2 class="slide-h">Control de costos</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-tags"></i>Tagging</h3><p>Etiquetar cada recurso por proyecto/equipo/ambiente, para saber después quién gastó qué.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-ruler-combined"></i>Rightsizing</h3><p>Revisar periódicamente si el flavor elegido sigue siendo el correcto, o si se está pagando de más por recursos que no se usan.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-bell"></i>Alertas de presupuesto</h3><p>Avisos automáticos antes de que el gasto se salga de control, no una sorpresa a fin de mes.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" data-idx="6">
+  <div class="eyebrow">Administrar sin repetir manualmente cada paso</div>
+  <h2 class="slide-h">Infrastructure as Code (IaC)</h2>
+  <p class="lead" style="max-width:760px">En vez de crear y configurar recursos a mano (como hicimos en los laboratorios), la infraestructura se describe en archivos de texto versionables — y una herramienta se encarga de aplicarlos.</p>
+  <div class="grid-3" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-file-code"></i>Herramientas típicas</h3><p>Terraform (multi-proveedor), Ansible (configuración), CloudFormation (AWS nativo).</p></div>
+    <div class="card"><h3><i class="fa-solid fa-code-compare"></i>Ventaja clave</h3><p>El estado de la infraestructura queda en control de versiones — se puede revisar, revertir y auditar como cualquier código.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-arrows-rotate"></i>Reproducibilidad</h3><p>El mismo archivo levanta un entorno idéntico las veces que haga falta — adiós a "en mi servidor funcionaba".</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 8 -->
+<section class="slide" data-idx="7">
+  <div class="eyebrow">Cierre del módulo</div>
+  <h2 class="slide-h">Lo que se lleva de esta clase</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Administrar es un trabajo continuo</h3><p>No termina cuando el recurso se crea — recién ahí empieza.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Monitoreo, accesos, parches y costos son las cuatro patas</h3><p>Descuidar cualquiera de las cuatro tarde o temprano genera un incidente.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>La automatización no es un lujo</h3><p>A mayor escala, hacerlo todo a mano deja de ser sostenible — de ahí IaC.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Todo lo anterior del curso vuelve acá</h3><p>Flavors, escalabilidad, seguridad — la administración es donde se sostienen en el tiempo.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 9: QUIZ -->
+<section class="slide" data-idx="8">
+  <div class="eyebrow">Autoevaluación</div>
+  <h2 class="slide-h">Control rápido — Administración</h2>
+  <p class="lead">5 preguntas para cerrar el módulo. Podés repetirlo las veces que quieras.</p>
+  <button class="quiz-btn" onclick="startQuiz()"><i class="fa-solid fa-play"></i> Iniciar control</button>
+</section>
+
+<div id="dots"></div>
+<div id="nav-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> navegar &nbsp;·&nbsp; <kbd>Q</kbd> control</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=>goTo(i));
+  dotsWrap.appendChild(d);
+});
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  document.querySelectorAll('#dots .dot').forEach((d,i)=> d.classList.toggle('active', i===current));
+  document.getElementById('slide-counter').textContent = (current+1)+' / '+total;
+  document.getElementById('progress-fill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function next(){ goTo(current+1); }
+function prev(){ goTo(current-1); }
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+  if(e.key.toLowerCase()==='q') startQuiz();
+});
+render();
+
+const questions = [
+  {q:"El 'principio de mínimo privilegio' significa:", opts:["Dar acceso total a todos por comodidad","Cada usuario tiene exactamente el acceso que necesita, ni más","Solo el administrador puede hacer login","No usar contraseñas"], correct:1},
+  {q:"La mayoría de los incidentes de seguridad explotan:", opts:["Vulnerabilidades desconocidas (zero-day)","Vulnerabilidades conocidas y no parcheadas","Errores de hardware","Fallas eléctricas"], correct:1},
+  {q:"'Rightsizing' consiste en:", opts:["Elegir siempre el flavor más grande disponible","Revisar si el flavor elegido sigue siendo el correcto para el uso real","Apagar todos los servidores los fines de semana","Un tipo de backup"], correct:1},
+  {q:"Infrastructure as Code (IaC) permite principalmente:", opts:["Describir infraestructura en archivos versionables y reproducibles","Eliminar la necesidad de servidores","Programar videojuegos en la nube","Reemplazar el monitoreo"], correct:0},
+  {q:"RBAC es un modelo de:", opts:["Backup automático","Control de acceso basado en roles","Escalado automático","Cifrado de disco"], correct:1}
+];
+
+async function startQuiz(){
+  let score = 0;
+  for(let i=0;i<questions.length;i++){
+    const qq = questions[i];
+    const {value} = await Swal.fire({
+      title: 'Pregunta '+(i+1)+' / '+questions.length,
+      html: '<p style="text-align:left;color:#334155;font-size:1rem">'+qq.q+'</p>',
+      input: 'radio',
+      inputOptions: Object.fromEntries(qq.opts.map((o,idx)=>[idx,o])),
+      confirmButtonText: 'Responder',
+      confirmButtonColor: '#38BDF8',
+      background:'#f8fafc',
+      inputValidator: (v)=> !v && 'Elegí una opción'
+    });
+    if(value !== undefined && parseInt(value) === qq.correct){
+      score++;
+      await Swal.fire({icon:'success', title:'¡Correcto!', timer:900, showConfirmButton:false, background:'#f8fafc'});
+    } else {
+      await Swal.fire({icon:'error', title:'No es esa', text:'La correcta era: '+qq.opts[qq.correct], background:'#f8fafc'});
+    }
+  }
+  Swal.fire({
+    title:'Resultado: '+score+' / '+questions.length,
+    icon: score===questions.length?'success':(score>=3?'info':'warning'),
+    confirmButtonColor:'#38BDF8',
+    background:'#f8fafc',
+    text: score===questions.length ? '¡Perfecto! Dominás las generalidades.' : 'Repasá las tarjetas de la clase y volvé a intentar.'
+  });
+}
+</script>
+</body>
+</html>
