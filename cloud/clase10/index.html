@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 10 — Tecnologías y Modelos de Servicios</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#38BDF8;
+  --gold:#F0B429;
+  --ground:#0B1120;
+  --ground2:#111a33;
+  --mist:#E2E8F0;
+  --mist-dim:#8DA0BE;
+  --line:rgba(226,232,240,.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Inter',sans-serif; background:var(--ground); color:var(--mist);
+  overflow:hidden; height:100vh;
+}
+code, .mono{font-family:'JetBrains Mono',monospace}
+
+/* ---- horizon backdrop: ground below, sky/cloud drift above ---- */
+#horizon{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sky-layer{position:absolute; inset:0; background:
+  radial-gradient(ellipse at 20% -10%, rgba(56,189,248,.14), transparent 55%),
+  radial-gradient(ellipse at 80% 0%, rgba(240,180,41,.08), transparent 50%),
+  var(--ground);}
+.ground-line{position:absolute; left:0; right:0; bottom:0; height:38%;
+  background:linear-gradient(180deg, transparent 0%, rgba(56,189,248,.05) 40%, var(--ground2) 100%);
+  border-top:1px solid var(--line);}
+.cloud-drift{position:absolute; border-radius:50%; filter:blur(30px); opacity:.16; background:var(--sky);
+  animation:drift linear infinite;}
+@keyframes drift{ from{transform:translateX(-10vw)} to{transform:translateX(110vw)} }
+.node{position:absolute; width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:.5;}
+.node::after{content:'';position:absolute; top:2px; left:5px; width:60px; height:1px; background:linear-gradient(90deg, var(--gold), transparent); opacity:.4;}
+
+/* ---- HUD ---- */
+#progress-track{position:fixed; top:0; left:0; right:0; height:4px; background:var(--line); z-index:50;}
+#progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--sky),var(--gold)); transition:width .4s ease;}
+#hud{position:fixed; top:16px; right:20px; z-index:50; display:flex; gap:14px; align-items:center; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim);}
+#hud .badge-slide{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.35); color:var(--sky); padding:4px 10px; border-radius:20px;}
+#course-tag{position:fixed; top:16px; left:20px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--mist-dim); letter-spacing:.06em;}
+#course-tag strong{color:var(--sky)}
+
+/* ---- slides ---- */
+.slide{position:fixed; inset:0; z-index:1; display:flex; flex-direction:column; justify-content:center;
+  padding:90px 8vw 70px; opacity:0; pointer-events:none; transition:opacity .35s ease;}
+.slide.active{opacity:1; pointer-events:auto;}
+.eyebrow{font-family:'JetBrains Mono',monospace; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; font-size:.85rem; margin-bottom:14px;}
+h1.title{font-size:3.4rem; font-weight:800; line-height:1.05; margin:0 0 20px; letter-spacing:-.02em;}
+h1.title .accent{color:var(--sky)}
+h2.slide-h{font-size:2.1rem; font-weight:800; margin:0 0 26px; letter-spacing:-.01em;}
+p.lead{font-size:1.15rem; color:var(--mist-dim); max-width:640px; line-height:1.6;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:22px; max-width:1000px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1100px;}
+.card{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px; padding:24px;}
+.card h3{font-size:1.05rem; margin:0 0 10px; display:flex; align-items:center; gap:10px;}
+.card h3 i{color:var(--sky)}
+.card p{color:var(--mist-dim); font-size:.92rem; line-height:1.55; margin:0;}
+.vs-wrap{display:flex; gap:0; max-width:900px; border-radius:16px; overflow:hidden; border:1px solid var(--line);}
+.vs-col{flex:1; padding:28px;}
+.vs-col.onprem{background:rgba(240,180,41,.06); border-right:1px solid var(--line);}
+.vs-col.cloud{background:rgba(56,189,248,.06);}
+.vs-col h4{font-family:'JetBrains Mono',monospace; font-size:.95rem; margin-bottom:14px;}
+.vs-col.onprem h4{color:var(--gold)}
+.vs-col.cloud h4{color:var(--sky)}
+.vs-col ul{margin:0; padding-left:18px; color:var(--mist-dim); font-size:.92rem; line-height:1.9;}
+.stat{font-family:'JetBrains Mono',monospace; font-weight:800; font-size:2.6rem; color:var(--sky);}
+.stat-label{color:var(--mist-dim); font-size:.85rem;}
+.tag-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px;}
+.tag-row span{background:rgba(255,255,255,.04); border:1px solid var(--line); padding:6px 14px; border-radius:20px; font-size:.85rem; color:var(--mist-dim); font-family:'JetBrains Mono',monospace;}
+.resp-table{width:100%; max-width:920px; border-collapse:separate; border-spacing:0; margin-top:8px; font-size:.92rem;}
+.resp-table th{text-align:center; padding:12px 10px; font-family:'JetBrains Mono',monospace; font-size:.8rem; color:var(--mist-dim); border-bottom:1px solid var(--line);}
+.resp-table td{padding:12px 10px; text-align:center; border-bottom:1px solid var(--line); font-weight:600;}
+.resp-table td.layer{text-align:left; color:var(--mist-dim); font-weight:400; font-size:.88rem;}
+.resp-cliente{background:rgba(240,180,41,.14); color:var(--gold);}
+.resp-proveedor{background:rgba(56,189,248,.14); color:var(--sky);}
+.crayon-note{background:rgba(240,180,41,.1); border:2px dashed rgba(240,180,41,.5); border-radius:14px; padding:18px 22px; max-width:820px; margin-top:20px; font-size:1.05rem; color:var(--mist);}
+
+/* nav */
+#nav-hint{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:50; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--mist-dim); display:flex; gap:16px; align-items:center;}
+#nav-hint kbd{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--mist);}
+#dots{position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:50; display:flex; gap:8px;}
+#dots .dot{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.3s;}
+#dots .dot.active{background:var(--sky); width:22px; border-radius:4px;}
+
+.quiz-btn{background:linear-gradient(135deg,var(--sky),#0ea5e9); border:none; color:#0B1120; font-weight:700; padding:14px 30px; border-radius:10px; font-size:1rem; margin-top:24px; cursor:pointer;}
+.quiz-btn:hover{filter:brightness(1.08)}
+.locked{opacity:.4; filter:grayscale(.6);}
+
+@media (max-width:820px){
+  h1.title{font-size:2.1rem}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .vs-wrap{flex-direction:column}
+  .slide{padding:80px 6vw 90px}
+}
+</style>
+</head>
+<body>
+
+<div id="horizon">
+  <div class="sky-layer"></div>
+  <div class="cloud-drift" style="width:260px;height:100px;top:8%;animation-duration:52s;"></div>
+  <div class="cloud-drift" style="width:180px;height:70px;top:18%;animation-duration:74s;animation-delay:-20s;"></div>
+  <div class="cloud-drift" style="width:320px;height:120px;top:4%;animation-duration:90s;animation-delay:-45s;"></div>
+  <div class="node" style="top:30%;left:15%;"></div>
+  <div class="node" style="top:22%;left:60%;"></div>
+  <div class="node" style="top:38%;left:80%;"></div>
+  <div class="ground-line"></div>
+</div>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+<div id="course-tag"><strong>CLOUD COMPUTING</strong> · UCU · Clase 10</div>
+<div id="hud"><span class="badge-slide" id="slide-counter">1 / 10</span></div>
+
+<!-- SLIDE 1 -->
+<section class="slide active" data-idx="0">
+  <div class="eyebrow">Módulo 10 · Tecnologías y modelos de servicios</div>
+  <h1 class="title">El catálogo <span class="accent">no termina en IaaS/PaaS/SaaS</span></h1>
+  <p class="lead">Esos tres fueron el punto de partida. Hoy vemos el resto del alfabeto "XaaS" y las tecnologías que conectan todo entre sí — APIs, colas de mensajes, CDN — el plomería que rara vez se ve pero sostiene cualquier arquitectura cloud real.</p>
+  <div class="tag-row">
+    <span><i class="fa-solid fa-boxes-stacked"></i> CaaS / DBaaS</span>
+    <span><i class="fa-solid fa-plug"></i> APIs</span>
+    <span><i class="fa-solid fa-globe"></i> CDN</span>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide" data-idx="1">
+  <div class="eyebrow">El mismo patrón, aplicado a todo</div>
+  <h2 class="slide-h">El alfabeto "XaaS"</h2>
+  <p class="lead" style="max-width:760px">La lógica de IaaS/PaaS/SaaS —convertir algo que antes administrabas vos en un servicio que consumís— se repite una y otra vez sobre distintas piezas de la infraestructura.</p>
+  <div class="grid-3" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-database"></i>DBaaS</h3><p>Base de datos como servicio: el proveedor administra backups, replicación y parches del motor.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-box"></i>CaaS</h3><p>Contenedores como servicio: corrés contenedores sin administrar el cluster de orquestación por debajo.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-hard-drive"></i>STaaS</h3><p>Storage como servicio: capacidad de almacenamiento elástica, facturada por uso — como el S3 de AWS.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide" data-idx="2">
+  <div class="eyebrow">La base de datos que no administrás</div>
+  <h2 class="slide-h">DBaaS en profundidad</h2>
+  <div class="grid-3">
+    <div class="card"><h3><i class="fa-solid fa-cloud"></i>Ejemplos</h3><p>Amazon RDS, Azure SQL Database, Google Cloud SQL, MongoDB Atlas.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-thumbs-up"></i>Ventaja</h3><p>Backups automáticos, réplicas de alta disponibilidad y parches de seguridad sin que nadie del equipo tenga que ejecutarlos a mano.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-triangle-exclamation"></i>Trade-off</h3><p>Menos control sobre configuración fina del motor, y suele costar más que administrar la base uno mismo en una VM.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide" data-idx="3">
+  <div class="eyebrow">Contenedores sin administrar el cluster</div>
+  <h2 class="slide-h">CaaS en profundidad</h2>
+  <p class="lead" style="max-width:760px">Recordemos Docker Swarm y Kubernetes del laboratorio de Escalabilidad: alguien tiene que administrar esos nodos. CaaS le saca esa capa al usuario — se sube un contenedor y el proveedor decide dónde y cómo correrlo.</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-cloud"></i>Ejemplos</h3><p>AWS Fargate, Google Cloud Run, Azure Container Instances.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-scale-balanced"></i>Dónde se ubica</h3><p>Es un punto intermedio entre el Docker Swarm que armaron a mano y el serverless total — administrás la imagen, no el cluster.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide" data-idx="4">
+  <div class="eyebrow">Dos siglas más, para completar el mapa</div>
+  <h2 class="slide-h">MBaaS y DaaS</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-mobile-screen"></i>MBaaS (Mobile Backend as a Service)</h3><p>Autenticación, base de datos en tiempo real y notificaciones push listas para usar desde una app móvil — Firebase es el ejemplo más conocido, y lo vamos a ver en la Clase de Cloud Móvil.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-desktop"></i>DaaS (Desktop as a Service)</h3><p>Un escritorio completo de Windows/Linux corriendo en la nube, accedido remotamente — útil para call centers o personal temporal sin entregar hardware físico.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide" data-idx="5">
+  <div class="eyebrow">El idioma común entre servicios</div>
+  <h2 class="slide-h">APIs y REST</h2>
+  <p class="lead" style="max-width:760px">Ningún servicio cloud vive aislado — todos se comunican entre sí a través de APIs. REST es el estilo más común: cada recurso tiene una URL, y se opera sobre él con verbos HTTP estándar.</p>
+  <div class="grid-3" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-eye"></i>GET</h3><p>Leer un recurso sin modificarlo.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-plus"></i>POST</h3><p>Crear un recurso nuevo.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-trash"></i>PUT / DELETE</h3><p>Actualizar o eliminar un recurso existente.</p></div>
+  </div>
+  <p class="lead" style="margin-top:14px">Cuando creamos una instancia con la consola web de un proveedor, por detrás la consola está llamando exactamente a esas mismas APIs.</p>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" data-idx="6">
+  <div class="eyebrow">Cuando el contenido viaja lejos</div>
+  <h2 class="slide-h">CDN (Content Delivery Network)</h2>
+  <p class="lead" style="max-width:760px">Una CDN distribuye copias de contenido estático (imágenes, video, JS/CSS) en servidores repartidos geográficamente, para que cada usuario lo reciba desde el punto más cercano.</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-gauge-high"></i>Por qué importa</h3><p>Reduce latencia drásticamente y descarga tráfico del servidor de origen.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-cloud"></i>Ejemplos</h3><p>Cloudflare, Amazon CloudFront, Akamai — las mismas que probablemente sirvieron esta página.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 8 -->
+<section class="slide" data-idx="7">
+  <div class="eyebrow">Cuando dos servicios no necesitan hablar en el momento</div>
+  <h2 class="slide-h">Colas de mensajes</h2>
+  <p class="lead" style="max-width:760px">En vez de que un servicio llame directo a otro y espere respuesta, deja un mensaje en una cola — y el otro servicio lo procesa cuando puede. Desacopla los sistemas y absorbe picos de tráfico.</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h3><i class="fa-solid fa-cloud"></i>Ejemplos</h3><p>Amazon SQS, RabbitMQ, Apache Kafka.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-link-slash"></i>Por qué se usa</h3><p>Si el servicio receptor está caído o saturado, el mensaje espera en la cola en vez de perderse — otra forma más de redundancia.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 9 -->
+<section class="slide" data-idx="8">
+  <div class="eyebrow">Cierre del módulo</div>
+  <h2 class="slide-h">Lo que se lleva de esta clase</h2>
+  <div class="grid-2">
+    <div class="card"><h3><i class="fa-solid fa-check"></i>El patrón "XaaS" es reutilizable</h3><p>DBaaS, CaaS, STaaS, MBaaS, DaaS — todos aplican la misma idea a distintas capas.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Las APIs son la base invisible</h3><p>Toda consola gráfica termina llamando a las mismas APIs REST que podríamos llamar nosotros directamente.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>CDN acerca el contenido al usuario</h3><p>Un problema de latencia física resuelto con distribución geográfica.</p></div>
+    <div class="card"><h3><i class="fa-solid fa-check"></i>Las colas desacoplan sistemas</h3><p>Comunicación asíncrona como otra herramienta más de resiliencia.</p></div>
+  </div>
+</section>
+
+<!-- SLIDE 10: QUIZ -->
+<section class="slide" data-idx="9">
+  <div class="eyebrow">Autoevaluación</div>
+  <h2 class="slide-h">Control rápido — Tecnologías y Modelos de Servicios</h2>
+  <p class="lead">5 preguntas para cerrar el módulo. Podés repetirlo las veces que quieras.</p>
+  <button class="quiz-btn" onclick="startQuiz()"><i class="fa-solid fa-play"></i> Iniciar control</button>
+</section>
+
+<div id="dots"></div>
+<div id="nav-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> navegar &nbsp;·&nbsp; <kbd>Q</kbd> control</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.addEventListener('click', ()=>goTo(i));
+  dotsWrap.appendChild(d);
+});
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  document.querySelectorAll('#dots .dot').forEach((d,i)=> d.classList.toggle('active', i===current));
+  document.getElementById('slide-counter').textContent = (current+1)+' / '+total;
+  document.getElementById('progress-fill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function next(){ goTo(current+1); }
+function prev(){ goTo(current-1); }
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+  if(e.key.toLowerCase()==='q') startQuiz();
+});
+render();
+
+const questions = [
+  {q:"DBaaS se refiere a:", opts:["Un tipo de balanceador de carga","Base de datos administrada como servicio","Un lenguaje de programación","Un protocolo de red"], correct:1},
+  {q:"CaaS se diferencia de administrar Docker Swarm uno mismo porque:", opts:["No usa contenedores","El proveedor administra el cluster de orquestación por debajo","Es más lento siempre","Solo funciona con bases de datos"], correct:1},
+  {q:"En una API REST, el verbo HTTP para crear un recurso nuevo es:", opts:["GET","POST","DELETE","PING"], correct:1},
+  {q:"Una CDN mejora principalmente:", opts:["La seguridad de las contraseñas","La latencia, acercando el contenido al usuario","El precio de las bases de datos","La cantidad de RAM disponible"], correct:1},
+  {q:"Una cola de mensajes (message queue) sirve principalmente para:", opts:["Aumentar la latencia a propósito","Desacoplar servicios y absorber picos de tráfico","Reemplazar las bases de datos","Cifrar el tráfico de red"], correct:1}
+];
+
+async function startQuiz(){
+  let score = 0;
+  for(let i=0;i<questions.length;i++){
+    const qq = questions[i];
+    const {value} = await Swal.fire({
+      title: 'Pregunta '+(i+1)+' / '+questions.length,
+      html: '<p style="text-align:left;color:#334155;font-size:1rem">'+qq.q+'</p>',
+      input: 'radio',
+      inputOptions: Object.fromEntries(qq.opts.map((o,idx)=>[idx,o])),
+      confirmButtonText: 'Responder',
+      confirmButtonColor: '#38BDF8',
+      background:'#f8fafc',
+      inputValidator: (v)=> !v && 'Elegí una opción'
+    });
+    if(value !== undefined && parseInt(value) === qq.correct){
+      score++;
+      await Swal.fire({icon:'success', title:'¡Correcto!', timer:900, showConfirmButton:false, background:'#f8fafc'});
+    } else {
+      await Swal.fire({icon:'error', title:'No es esa', text:'La correcta era: '+qq.opts[qq.correct], background:'#f8fafc'});
+    }
+  }
+  Swal.fire({
+    title:'Resultado: '+score+' / '+questions.length,
+    icon: score===questions.length?'success':(score>=3?'info':'warning'),
+    confirmButtonColor:'#38BDF8',
+    background:'#f8fafc',
+    text: score===questions.length ? '¡Perfecto! Dominás las generalidades.' : 'Repasá las tarjetas de la clase y volvé a intentar.'
+  });
+}
+</script>
+</body>
+</html>
