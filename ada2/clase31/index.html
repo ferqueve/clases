@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANDIS 2 · Unidad 3 — Messaging</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#070b14; --bg-1:#0d1424; --panel:#111a2e; --panel-2:#16223a;
+  --accent:#3ec1ff; --accent-2:#7b6bff; --accent-3:#ffb547; --ok:#3ee6a8;
+  --text:#e8edf7; --text-dim:#8fa0bd; --border:#22304d;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(62,193,255,.10), transparent 60%),
+    radial-gradient(1000px 700px at 110% 10%, rgba(123,107,255,.12), transparent 55%),
+    var(--bg-0);
+  color:var(--text); font-family:'Inter',sans-serif; overflow:hidden;
+}
+.mono{font-family:'JetBrains Mono',monospace}
+.blueprint{
+  position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.35;
+  background-image:linear-gradient(rgba(62,193,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(62,193,255,.06) 1px, transparent 1px);
+  background-size:42px 42px;
+}
+.progress-track{position:fixed; top:0; left:0; width:100%; height:4px; background:rgba(255,255,255,.06); z-index:50;}
+.progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .4s ease; box-shadow:0 0 12px var(--accent);}
+.hud{position:fixed; top:14px; right:18px; z-index:50; background:rgba(17,26,46,.85); border:1px solid var(--border); backdrop-filter:blur(6px); padding:7px 14px; border-radius:999px; font-size:.82rem; color:var(--text-dim); display:flex; align-items:center; gap:8px;}
+.hud .unit-tag{color:var(--accent); font-weight:700}
+.brand{position:fixed; top:14px; left:18px; z-index:50; font-size:.78rem; color:var(--text-dim); display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.brand i{color:var(--accent-3)}
+.slides-container{position:relative; z-index:1; height:100vh; width:100vw;}
+.slide{position:absolute; inset:0; display:none; padding:90px 8vw 110px 8vw; overflow-y:auto;}
+.slide.active{display:block}
+.slide-inner{max-width:1180px; margin:0 auto;}
+.eyebrow{display:inline-flex; align-items:center; gap:8px; font-size:.78rem; text-transform:uppercase; letter-spacing:.12em; color:var(--accent); font-weight:700; margin-bottom:14px;}
+.eyebrow i{font-size:.9rem}
+h1.slide-title{font-size:clamp(1.9rem,3.4vw,3rem); font-weight:800; margin-bottom:.4rem; line-height:1.1;}
+h2.slide-title{font-size:clamp(1.5rem,2.6vw,2.2rem); font-weight:800; margin-bottom:.6rem;}
+.subtitle{color:var(--text-dim); font-size:1.05rem; max-width:820px;}
+.card-panel{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid var(--border); border-radius:16px; padding:26px 28px; box-shadow:0 12px 30px rgba(0,0,0,.35);}
+.card-panel + .card-panel{margin-top:18px}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:.76rem; font-weight:700; background:rgba(62,193,255,.12); color:var(--accent); border:1px solid rgba(62,193,255,.35);}
+.pill.purple{background:rgba(123,107,255,.14); color:#b3a8ff; border-color:rgba(123,107,255,.4)}
+.pill.amber{background:rgba(255,181,71,.14); color:var(--accent-3); border-color:rgba(255,181,71,.4)}
+.pill.ok{background:rgba(62,230,168,.12); color:var(--ok); border-color:rgba(62,230,168,.35)}
+.pill.bad{background:rgba(255,107,107,.12); color:#ff6b6b; border-color:rgba(255,107,107,.35)}
+.icon-tile{width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:rgba(62,193,255,.12); color:var(--accent); font-size:1.3rem; border:1px solid rgba(62,193,255,.3); flex-shrink:0;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+.grid-4{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+@media (max-width:900px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+ul.clean{list-style:none; margin:0; padding:0;}
+ul.clean li{position:relative; padding:6px 0 6px 26px; color:var(--text); font-size:.94rem;}
+ul.clean li::before{content:"\f105"; font-family:"Font Awesome 6 Free"; font-weight:900; color:var(--accent); position:absolute; left:2px; top:8px; font-size:.85rem;}
+.check-btn{border:none; background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#04101f; font-weight:800; padding:10px 22px; border-radius:10px; font-size:.9rem; box-shadow:0 8px 22px rgba(62,193,255,.25); cursor:pointer;}
+.check-btn:hover{filter:brightness(1.08); color:#04101f;}
+.nav-controls{position:fixed; bottom:18px; left:0; right:0; z-index:50; display:flex; justify-content:center; gap:14px; align-items:center;}
+.nav-btn{width:46px; height:46px; border-radius:50%; border:1px solid var(--border); background:rgba(17,26,46,.9); color:var(--text); display:flex; align-items:center; justify-content:center; font-size:1.1rem; backdrop-filter:blur(6px);}
+.nav-btn:hover{border-color:var(--accent); color:var(--accent);}
+.nav-dots{display:flex; gap:6px; align-items:center; background:rgba(17,26,46,.9); border:1px solid var(--border); padding:8px 14px; border-radius:999px;}
+.nav-dots .dot{width:7px; height:7px; border-radius:50%; background:var(--border); cursor:pointer; transition:.2s;}
+.nav-dots .dot.active{background:var(--accent); width:20px; border-radius:4px;}
+.footer-note{position:fixed; bottom:20px; right:22px; z-index:50; font-size:.72rem; color:var(--text-dim); font-family:'JetBrains Mono';}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px}
+
+.tac-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+@media (max-width:900px){.tac-grid{grid-template-columns:1fr;}}
+.tac-tile{
+  background:var(--panel-2); border:1px solid var(--border); border-radius:14px; padding:16px;
+  cursor:pointer; transition:.2s; text-align:center;
+}
+.tac-tile:hover{transform:translateY(-4px); border-color:var(--accent); box-shadow:0 10px 24px rgba(62,193,255,.15);}
+.tac-tile i{font-size:1.3rem; color:var(--accent); margin-bottom:6px; display:block;}
+.tac-tile .tname{font-size:.86rem; font-weight:700;}
+
+.link-row{display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid rgba(255,255,255,.06);}
+.link-row:last-child{border-bottom:none;}
+.link-row a{color:var(--text); text-decoration:none; font-weight:600;}
+.link-row a:hover{color:var(--accent);}
+.link-row .ext{margin-left:auto; color:var(--text-dim); font-size:.75rem;}
+
+.fig-img{max-width:100%; border-radius:12px; border:1px solid var(--border); background:#fff; padding:14px; display:block; margin:0 auto;}
+.fig-cap{text-align:center; font-size:.78rem; color:var(--text-dim); margin-top:8px;}
+
+.step-big{display:flex; gap:20px; align-items:flex-start;}
+.step-num{
+  width:60px; height:60px; border-radius:16px; background:rgba(62,193,255,.12); border:1px solid rgba(62,193,255,.35);
+  color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:800;
+  font-family:'JetBrains Mono'; flex-shrink:0;
+}
+.compare-col{background:var(--panel-2); border:1px solid var(--border); border-radius:14px; padding:20px;}
+.compare-col h4{font-weight:800; font-size:1.02rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+.example-box{background:rgba(62,193,255,.07); border:1px dashed rgba(62,193,255,.35); border-radius:12px; padding:14px 16px; margin-top:10px;}
+.example-box .ex-label{font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); font-weight:800; margin-bottom:4px; display:flex; align-items:center; gap:6px;}
+.cmp-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+.cmp-table th, .cmp-table td{padding:10px 12px; text-align:left; border-bottom:1px solid var(--border);}
+.cmp-table th{color:var(--accent); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em;}
+.cmp-table td{color:var(--text-dim);}
+.cmp-table td strong{color:var(--text);}
+.cmp-table tr:last-child td{border-bottom:none;}
+</style>
+</head>
+<body>
+
+<div class="blueprint"></div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="brand"><i class="fa-solid fa-envelope"></i> ANDIS 2 · Unidad 3</div>
+<div class="hud"><i class="fa-solid fa-layer-group"></i> <span class="unit-tag" id="hudCurrent">1</span>/<span id="hudTotal">0</span></div>
+
+<div class="slides-container" id="slidesContainer"></div>
+
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="nav-dots" id="navDots"></div>
+  <button class="nav-btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+<div class="footer-note">← → para navegar</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script>
+const IMG_MSG = "data:image/png;base64,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";
+
+const slidesHTML = [];
+
+// 0. Portada
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center" style="min-height:78vh;">
+  <div class="animate__animated animate__fadeInDown">
+    <span class="eyebrow"><i class="fa-solid fa-envelope"></i> Unidad 3 · Integración de aplicaciones</span>
+    <h1 class="slide-title">Messaging</h1>
+    <p class="subtitle">El cuarto y último mecanismo: lo mejor de compartir datos y de invocar comportamiento, sin los problemas de ninguno de los dos — a cambio de aceptar que la respuesta no llega al instante.</p>
+  </div>
+</div>
+`);
+
+// 1. Lo que faltaba
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-puzzle-piece"></i> Repasando lo anterior</span>
+  <h2 class="slide-title">Lo que ningún mecanismo anterior resolvía del todo</h2>
+  <div class="card-panel">
+    <p style="font-size:1.0rem; line-height:1.75; margin-bottom:0;">
+      File Transfer y Shared Database permiten compartir <strong>datos</strong>, pero no funcionalidad. RPI permite compartir <strong>funcionalidad</strong>, pero introduce un fuerte acoplamiento: las diferencias de desempeño y confiabilidad entre invocaciones locales y remotas, si se ignoran, llevan a sistemas lentos y poco confiables.
+    </p>
+  </div>
+  <div class="example-box mt-3" style="margin-top:18px;">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Ejemplo simple</div>
+    Con RPI, cuando facturación le pide a turnos "cancelá este turno" vía una llamada remota síncrona, facturación queda <strong>esperando</strong> la respuesta. Si turnos está lento o caído en ese momento, facturación también se traba. Lo que hace falta es poder enviar ese pedido y seguir trabajando, sin quedar bloqueado.
+  </div>
+</div>
+`);
+
+// 2. Qué es Messaging
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-envelope"></i> La idea</span>
+  <h2 class="slide-title">¿Qué es Messaging?</h2>
+  <div class="card-panel">
+    <p style="font-size:1.0rem; line-height:1.75; margin-bottom:0;">
+      Es la posibilidad de enviar datos —como en File Transfer— con la garantía de que el receptor será <strong>notificado</strong> en cuanto lleguen, y de que ese envío puede <strong>desencadenar comportamiento</strong> en el receptor —como en RPI—, pero de forma <strong>asíncrona</strong>: quien envía no espera a quien recibe.
+    </p>
+  </div>
+  <img src="${IMG_MSG}" class="fig-img mt-3" alt="Integración de aplicaciones por mensajería: Aplicación A, B y C publican eventos a través de canales hacia un Message Bus compartido">
+  <p class="fig-cap">Figura 1: integración de aplicaciones por mensajería.</p>
+  <div class="example-box">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Ejemplo simple</div>
+    Con mensajería, facturación publica un evento "cancelar turno" en el <strong>Message Bus</strong> y sigue trabajando. La aplicación de turnos lo procesa cuando puede — segundos después, o si estuviera momentáneamente caída, en cuanto vuelva a estar en pie.
+  </div>
+</div>
+`);
+
+// 3. Por qué es pragmática
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-scale-balanced"></i> Cohesión arriba, acoplamiento abajo</span>
+  <h2 class="slide-title">Una solución pragmática</h2>
+  <div class="card-panel">
+    <p style="font-size:.98rem; line-height:1.75; margin-bottom:0;">
+      La mensajería asíncrona es pragmática porque <strong>no requiere</strong> que ambos sistemas estén disponibles al mismo tiempo, y reconoce que la latencia de las comunicaciones remotas es <strong>inevitable</strong>. Esto sube la <strong>cohesión</strong> —favorece el procesamiento local— y baja el <strong>acoplamiento</strong> —minimiza las interacciones remotas directas—.
+    </p>
+  </div>
+  <div class="grid-2 mt-3">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-unlink" style="color:var(--ok)"></i> Desacoplamiento como File Transfer</h4>
+      <p style="color:var(--text-dim); font-size:.87rem; line-height:1.6; margin:0;">El envío queda desacoplado de la recepción, y el mensaje puede transformarse en el camino sin que ninguna de las dos partes lo sepa. Esto también permite que <strong style="color:var(--text)">varias aplicaciones</strong> reciban el mismo mensaje.</p>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-bolt" style="color:var(--accent-3)"></i> Comportamiento como RPI</h4>
+      <p style="color:var(--text-dim); font-size:.87rem; line-height:1.6; margin:0;">Los mensajes pueden invocar acciones en el receptor. No es tan eficiente como una llamada directa, pero quien envía el pedido <strong style="color:var(--text)">sigue trabajando</strong> mientras el receptor lo procesa.</p>
+    </div>
+  </div>
+  <div class="example-box mt-3" style="margin-top:18px;">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Ejemplo simple</div>
+    Al confirmarse un pedido en una tienda online, el mismo evento "pedido confirmado" es recibido a la vez por inventario, facturación y envíos — algo que con RPI hubiera significado tres llamadas remotas separadas, cada una con su propio riesgo de fallar.
+  </div>
+</div>
+`);
+
+// 4. Roles de la mensajería - explorer
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-gears"></i> Nuevos temas a resolver</span>
+  <h2 class="slide-title">Cuatro preguntas, cuatro roles</h2>
+  <p class="subtitle mb-3">Usar mensajería implica conocer estas prácticas comunes. Tocá cada una.</p>
+  <div class="tac-grid" id="gridRoles"></div>
+</div>
+`);
+
+// 5. Comparación final de los 4 mecanismos
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-table"></i> Cerrando el círculo</span>
+  <h2 class="slide-title">Los 4 mecanismos, uno al lado del otro</h2>
+  <div class="card-panel">
+    <table class="cmp-table">
+      <thead><tr><th>Mecanismo</th><th>Comparte</th><th>¿Inmediato?</th><th>Acoplamiento</th></tr></thead>
+      <tbody>
+        <tr><td><strong>File Transfer</strong></td><td>Datos</td><td>No — según frecuencia</td><td>Bajo</td></tr>
+        <tr><td><strong>Shared Database</strong></td><td>Datos</td><td>Sí</td><td>Alto —rompe encapsulamiento—</td></tr>
+        <tr><td><strong>RPI</strong></td><td>Funcionalidad</td><td>Sí, síncrono</td><td>Alto —acoplamiento temporal—</td></tr>
+        <tr><td><strong>Messaging</strong></td><td>Datos y funcionalidad</td><td>Sí, asíncrono</td><td>Bajo</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-panel mt-3">
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageChannel.html" target="_blank">Message Channel</a><span class="ext">enterpriseintegrationpatterns.com</span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageRouter.html" target="_blank">Message Router</a><span class="ext">enterpriseintegrationpatterns.com</span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageTranslator.html" target="_blank">Message Translator</a><span class="ext">enterpriseintegrationpatterns.com</span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageEndpoint.html" target="_blank">Message Endpoint</a><span class="ext">enterpriseintegrationpatterns.com</span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://www.enterpriseintegrationpatterns.com/" target="_blank">Enterprise Integration Patterns</a><span class="ext">enterpriseintegrationpatterns.com</span></div>
+  </div>
+</div>
+`);
+
+// 6. Quiz
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:70vh;">
+  <span class="eyebrow"><i class="fa-solid fa-brain"></i> Chequeo de comprensión</span>
+  <h2 class="slide-title">6 preguntas sobre Messaging</h2>
+  <p class="subtitle mb-4">Qué resuelve, por qué es asíncrona, y los 4 roles que aparecen al usarla — más un repaso de los 4 mecanismos.</p>
+  <button class="check-btn" onclick="lanzarQuiz()"><i class="fa-solid fa-play me-2"></i>Iniciar quiz</button>
+</div>
+`);
+
+// 7. Cierre
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:78vh;">
+  <div class="icon-tile mb-3" style="width:72px;height:72px;font-size:2rem;"><i class="fa-solid fa-check"></i></div>
+  <span class="eyebrow"><i class="fa-solid fa-flag-checkered"></i> Repaso completo</span>
+  <h2 class="slide-title">Cuatro formas, un mismo problema</h2>
+  <p class="subtitle mb-4" style="max-width:680px;">File Transfer, Shared Database, RPI y Messaging resuelven el mismo problema —integrar aplicaciones que no se pensaron juntas— con trade-offs distintos entre inmediatez, acoplamiento y qué se comparte: datos, funcionalidad, o ambos. Elegir bien es, como siempre en arquitectura, entender qué necesita realmente el negocio.</p>
+</div>
+`);
+
+/* ============ MOTOR DE NAVEGACIÓN ============ */
+const container = document.getElementById('slidesContainer');
+slidesHTML.forEach((html, i)=>{
+  const div = document.createElement('div');
+  div.className = 'slide' + (i===0 ? ' active' : '');
+  div.id = 'slide'+i;
+  div.innerHTML = html;
+  container.appendChild(div);
+});
+
+let current = 0;
+const total = slidesHTML.length;
+document.getElementById('hudTotal').textContent = total;
+
+const dotsWrap = document.getElementById('navDots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = ()=>goTo(i);
+  dotsWrap.appendChild(d);
+}
+
+function updateUI(){
+  document.querySelectorAll('.slide').forEach((s,i)=>{ s.classList.toggle('active', i===current); });
+  document.querySelectorAll('.nav-dots .dot').forEach((d,i)=>{ d.classList.toggle('active', i===current); });
+  document.getElementById('hudCurrent').textContent = current+1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+  const active = document.getElementById('slide'+current);
+  active.scrollTop = 0;
+  const animTarget = active.querySelector('.slide-inner');
+  if(animTarget){
+    animTarget.classList.remove('animate__fadeIn');
+    void animTarget.offsetWidth;
+    animTarget.classList.add('animate__animated','animate__fadeIn');
+  }
+}
+function goTo(i){ if(i<0||i>=total) return; current = i; updateUI(); }
+document.getElementById('prevBtn').onclick = ()=>goTo(current-1);
+document.getElementById('nextBtn').onclick = ()=>goTo(current+1);
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+updateUI();
+
+/* ============ ROLES DE LA MENSAJERÍA ============ */
+const roles = [
+  {icon:'fa-road', n:'Message Channel', d:'¿Cómo transferir los paquetes de datos? El remitente lo envía a través de un canal que lo conecta con el receptor.<br><br><strong>Ejemplo simple:</strong> una cola de RabbitMQ o un tópico de Kafka llamado "pedidos-confirmados", por donde viaja cada mensaje.', link:'https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageChannel.html'},
+  {icon:'fa-signs-post', n:'Message Router', d:'¿Cómo saber dónde enviar los mensajes? Se envían a un enrutador, que los dirige al receptor adecuado.<br><br><strong>Ejemplo simple:</strong> un mensaje de "pedido con envío internacional" se enruta hacia el sistema de aduanas; uno local va directo a logística.', link:'https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageRouter.html'},
+  {icon:'fa-language', n:'Message Translator', d:'¿Cómo saber qué formato de datos usar? Un traductor convierte el mensaje al formato que el receptor espera.<br><br><strong>Ejemplo simple:</strong> el sistema de ventas envía el precio en dólares, y el traductor lo convierte a pesos antes de que lo reciba el sistema contable local.', link:'https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageTranslator.html'},
+  {icon:'fa-plug', n:'Message Endpoint', d:'¿Cómo conecta la aplicación con el sistema de mensajería? Implementando un endpoint que envía y recibe mensajes.<br><br><strong>Ejemplo simple:</strong> el pequeño módulo dentro de la app que se suscribe a la cola y llama a una función propia cada vez que llega un mensaje nuevo.', link:'https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageEndpoint.html'}
+];
+const gridRoles = document.getElementById('gridRoles');
+roles.forEach(t=>{
+  const tile = document.createElement('div');
+  tile.className = 'tac-tile';
+  tile.innerHTML = `<i class="fa-solid ${t.icon}"></i><div class="tname">${t.n}</div>`;
+  tile.onclick = ()=>{
+    const linkHtml = t.link ? `<p style="text-align:left; margin-top:10px;"><a href="${t.link}" target="_blank" style="color:#3ec1ff;">Más información →</a></p>` : '';
+    Swal.fire({
+      title: t.n,
+      html: `<div style="text-align:left; font-size:.94rem; line-height:1.6;">${t.d}</div>${linkHtml}`,
+      background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff'
+    });
+  };
+  gridRoles.appendChild(tile);
+});
+
+/* ============ QUIZ ============ */
+const preguntas = [
+  {
+    texto:'Con RPI, facturación queda esperando a que turnos procese la cancelación de un turno, y si turnos está caído, facturación también se traba. ¿Qué característica de Messaging evita este problema?',
+    opciones:{
+      a:'Que la mensajería siempre usa el mismo formato que RPI, sin traducción',
+      b:'Que el envío es asíncrono: quien envía el mensaje no tiene que esperar a que el receptor lo procese',
+      c:'Que la mensajería elimina por completo la necesidad de un receptor',
+      d:'Que los mensajes nunca pueden desencadenar ninguna acción en el receptor'
+    },
+    correcta:'b'
+  },
+  {
+    texto:'¿Qué característica comparte la mensajería con File Transfer?',
+    opciones:{
+      a:'Que el envío queda desacoplado de la recepción, y el mensaje puede transformarse en el camino sin que ninguna de las dos partes lo sepa',
+      b:'Que ambas requieren que el receptor esté disponible en el momento exacto del envío',
+      c:'Que ambas necesitan una base de datos compartida entre aplicaciones',
+      d:'Que ambas son mecanismos exclusivamente síncronos'
+    },
+    correcta:'a'
+  },
+  {
+    texto:'En un e-commerce, el evento "pedido confirmado" es recibido simultáneamente por inventario, facturación y envíos desde el mismo canal. ¿Qué posibilita esto?',
+    opciones:{
+      a:'Que Shared Database permite que varias aplicaciones lean la misma tabla',
+      b:'Que RPI invoca automáticamente varias funciones remotas a la vez',
+      c:'Que el desacoplamiento de la mensajería permite que varias aplicaciones reciban el mismo mensaje transmitido por otra',
+      d:'Que File Transfer sincroniza tres archivos distintos al mismo tiempo'
+    },
+    correcta:'c'
+  },
+  {
+    texto:'¿Qué rol de la mensajería se encarga de convertir un mensaje al formato que espera el receptor?',
+    opciones:{
+      a:'Message Channel',
+      b:'Message Router',
+      c:'Message Endpoint',
+      d:'Message Translator'
+    },
+    correcta:'d'
+  },
+  {
+    texto:'¿Por qué la mensajería asíncrona se describe como una solución "pragmática" a los problemas de los sistemas distribuidos?',
+    opciones:{
+      a:'Porque no requiere que ambos sistemas estén disponibles al mismo tiempo, y reconoce que la latencia de las comunicaciones remotas es inevitable',
+      b:'Porque elimina por completo la posibilidad de que un mensaje se pierda',
+      c:'Porque obliga a todas las aplicaciones a usar el mismo lenguaje de programación',
+      d:'Porque convierte automáticamente cualquier llamada remota en una llamada local'
+    },
+    correcta:'a'
+  },
+  {
+    texto:'De los 4 mecanismos de integración vistos, ¿cuál combina compartir datos y funcionalidad, de forma inmediata pero con bajo acoplamiento?',
+    opciones:{
+      a:'File Transfer',
+      b:'Shared Database',
+      c:'Messaging',
+      d:'Remote Procedure Invocation'
+    },
+    correcta:'c'
+  }
+];
+let idxPregunta = 0, aciertos = 0;
+
+function lanzarQuiz(){ idxPregunta = 0; aciertos = 0; mostrarPregunta(); }
+function mostrarPregunta(){
+  if(idxPregunta >= preguntas.length){
+    Swal.fire({
+      title:'Resultado',
+      html:`Acertaste <b>${aciertos}/${preguntas.length}</b>.`,
+      icon: aciertos===preguntas.length ? 'success' : 'info',
+      background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff'
+    });
+    return;
+  }
+  const p = preguntas[idxPregunta];
+  Swal.fire({
+    title: p.texto,
+    input:'radio',
+    inputOptions: p.opciones,
+    background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff',
+    confirmButtonText:'Responder',
+    inputValidator: (value)=> !value && 'Elegí una opción'
+  }).then(res=>{
+    if(!res.isConfirmed) return;
+    const ok = res.value === p.correcta;
+    if(ok) aciertos++;
+    Swal.fire({
+      title: ok ? '¡Correcto!' : 'No es así',
+      html: `La respuesta correcta era: <b>${p.opciones[p.correcta]}</b>`,
+      icon: ok ? 'success' : 'error',
+      background:'#111a2e', color:'#e8edf7', confirmButtonColor:'#3ec1ff'
+    }).then(()=>{ idxPregunta++; mostrarPregunta(); });
+  });
+}
+</script>
+</body>
+</html>
