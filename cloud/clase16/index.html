@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cómputo en IaaS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: una diapositiva a pantalla completa por vez, sobre un cielo nocturno con "flóculos" de nube; barra de región abajo */
+:root {
+  --ink: #0c1320;
+  --panel: #131d2d;
+  --panel-2: #1a2639;
+  --line: #27364f;
+  --fg: #e7edf5;
+  --muted: #93a4bb;
+  --sky: #7cc4ff;
+  --amber: #ffb04a;
+  --ok: #5fd39a;
+  --bad: #ff8080;
+  --f-display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(124,196,255,.07) 0 60px, transparent 61px),
+    radial-gradient(circle at 16% 22%, rgba(124,196,255,.05) 0 80px, transparent 81px),
+    radial-gradient(circle at 88% 82%, rgba(124,196,255,.06) 0 70px, transparent 71px),
+    radial-gradient(circle at 84% 78%, rgba(124,196,255,.04) 0 100px, transparent 101px),
+    var(--ink);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 18px;
+  line-height: 1.55;
+  overflow: hidden;
+}
+.deck { position: relative; height: 100%; }
+.slide {
+  position: absolute; inset: 0 0 56px 0;
+  overflow-y: auto;
+  padding-block: clamp(24px, 5vh, 56px);
+  padding-inline: max(16px, 5vw);
+  display: none;
+}
+.slide.active { display: block; animation: rise .35s ease; }
+@keyframes rise { from { opacity: .4; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide.active { animation: none; } }
+.inner { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; min-height: 100%; justify-content: center; }
+
+.eyebrow {
+  font-family: var(--f-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--sky); opacity: .85;
+}
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2.6rem, 8vw, 5.6rem); font-weight: 800; letter-spacing: -.02em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); font-weight: 600; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; margin: 0 0 6px; color: var(--fg); }
+p { margin: 0; max-width: 68ch; }
+.lead { font-size: 1.2rem; color: var(--muted); max-width: 60ch; }
+.muted { color: var(--muted); }
+strong { color: var(--fg); font-weight: 600; }
+.hl { color: var(--amber); }
+.sky { color: var(--sky); }
+code.i { font-family: var(--f-mono); font-size: .88em; background: var(--panel-2); padding: 1px 6px; border-radius: 4px; color: var(--sky); }
+
+/* Portada */
+.cover h1 .dot { color: var(--sky); }
+.puffs { display: flex; gap: 10px; align-items: flex-end; height: 40px; }
+.puffs span { display: block; border-radius: 50%; background: var(--sky); opacity: .8; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { font-family: var(--f-mono); font-size: .85rem; border: 1px solid var(--line); padding: 6px 12px; border-radius: 999px; color: var(--fg); background: var(--panel); }
+.chip b { color: var(--amber); font-weight: 600; }
+
+/* Grillas */
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.card p { font-size: .96rem; color: var(--muted); }
+.card .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); margin-bottom: 6px; display: block; }
+.callout { border-left: 3px solid var(--amber); padding: 10px 16px; background: rgba(255,176,74,.06); border-radius: 0 8px 8px 0; max-width: 80ch; }
+.callout.info { border-color: var(--sky); background: rgba(124,196,255,.06); }
+
+/* Código */
+.code { position: relative; background: #0a101a; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.code .bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: .86rem; line-height: 1.6; color: var(--fg); }
+.code .c { color: #6f819b; }
+.code .k { color: var(--sky); }
+.code .s { color: var(--ok); }
+.code .v { color: var(--amber); }
+.copy { font: inherit; font-size: .72rem; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 3px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--sky); }
+.copy:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+/* Tablas */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; min-width: 560px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--panel); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.m { font-family: var(--f-mono); font-size: .86rem; color: var(--sky); white-space: nowrap; }
+td.a { font-family: var(--f-mono); font-size: .86rem; color: var(--amber); white-space: nowrap; }
+
+/* Diagrama */
+.flow { display: grid; grid-template-columns: 1fr auto 1.1fr auto 1.6fr; gap: 12px; align-items: center; }
+.node { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+.node.core { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(124,196,255,.08); }
+.node small { display: block; font-family: var(--f-mono); color: var(--muted); font-size: .75rem; margin-top: 4px; }
+.arrow { font-family: var(--f-mono); color: var(--sky); text-align: center; font-size: .78rem; }
+.arrow span { display: block; font-size: 1.4rem; }
+.stack { display: grid; gap: 10px; }
+.stack .node h3 { font-size: .9rem; }
+.stack .node p { font-size: .88rem; color: var(--muted); }
+@media (max-width: 820px) {
+  .flow { grid-template-columns: 1fr; }
+  .arrow span { transform: rotate(90deg); }
+}
+
+/* Pasos */
+.steps { display: flex; gap: 8px; flex-wrap: wrap; }
+.steps span { font-family: var(--f-mono); font-size: .75rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.steps span.on { border-color: var(--amber); color: var(--amber); }
+.cols { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+.cols > * { min-width: 0; }
+@media (max-width: 820px) { .cols { grid-template-columns: 1fr; } }
+ul.clean { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; max-width: 70ch; }
+ul.clean li::marker { color: var(--sky); }
+
+/* Quiz */
+.q { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.q .prompt { font-weight: 600; font-size: 1.05rem; }
+.opts { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.opt { text-align: left; font: inherit; font-size: .95rem; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; display: flex; gap: 10px; align-items: baseline; }
+.opt b { font-family: var(--f-mono); color: var(--sky); }
+.opt:hover:not(:disabled) { border-color: var(--sky); }
+.opt.right { border-color: var(--ok); background: rgba(95,211,154,.1); }
+.opt.wrong { border-color: var(--bad); background: rgba(255,128,128,.08); }
+.opt:disabled { cursor: default; }
+.fb { font-size: .92rem; color: var(--muted); }
+.fb.okc { color: var(--ok); } .fb.badc { color: var(--bad); }
+
+/* Barra inferior */
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding: 0 max(16px, 3vw) env(safe-area-inset-bottom, 0px);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: rgba(12,19,32,.92); border-top: 1px solid var(--line);
+  font-family: var(--f-mono); font-size: .78rem; color: var(--muted);
+}
+.hud .region { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .region b { color: var(--sky); font-weight: 600; }
+.nav { display: flex; align-items: center; gap: 10px; }
+.nav button { font: inherit; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.nav button:hover { border-color: var(--sky); }
+.count { font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: center; }
+.progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--amber); transition: width .25s; z-index: 5; }
+a { color: var(--sky); }
+.links { display: grid; gap: 10px; }
+.links a { font-family: var(--f-mono); font-size: .95rem; }
+
+/* --- Clase IaaS --- */
+table.layers td.you { color: var(--amber); font-weight: 600; background: rgba(255,176,74,.08); }
+table.layers td.prov { color: var(--sky); background: rgba(124,196,255,.06); }
+table.layers tr.line td { border-top: 2px dashed var(--sky); }
+.blocks { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.block { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.block p { color: var(--muted); font-size: .95rem; }
+.block .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); display: block; margin-bottom: 6px; }
+.block.wide { grid-column: 1 / -1; border-style: dashed; border-color: var(--sky); }
+.anatomy { display: grid; gap: 10px; }
+.parts { display: flex; flex-wrap: wrap; gap: 14px; }
+.parts div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; min-width: 150px; flex: 1; }
+.parts b { font-family: var(--f-mono); font-size: 1.8rem; color: var(--amber); display: block; }
+.parts small { color: var(--muted); font-size: .88rem; }
+.net { display: grid; gap: 8px; justify-items: center; }
+.net-internet, .net-igw { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.net-igw { border-color: var(--sky); color: var(--sky); }
+.net-internet::after, .net-igw::after { content: ""; }
+.net-vpc { width: 100%; border: 2px dashed var(--sky); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+.net-label { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.net-subs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .net-subs { grid-template-columns: 1fr; } }
+.net-sub { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.net-sub .net-label { flex-basis: 100%; }
+.net-sub.pub { background: rgba(124,196,255,.05); }
+.net-sub.priv { background: rgba(255,176,74,.05); }
+.net-vm { font-family: var(--f-mono); font-size: .8rem; padding: 6px 10px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); }
+.net-sg { flex-basis: 100%; font-family: var(--f-mono); font-size: .72rem; color: var(--amber); }
+.life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 760px) { .life { grid-template-columns: 1fr 1fr; } }
+.life div { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--sky); border-radius: 8px; padding: 12px; min-width: 0; }
+.life div:nth-child(3) { border-top-color: var(--amber); }
+.life div:nth-child(4) { border-top-color: var(--bad); }
+.life b { font-family: var(--f-mono); display: block; }
+.life small { color: var(--muted); font-size: .86rem; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); }
+ul.clean.small { font-size: .95rem; color: var(--muted); }
+.card.good { border-top: 3px solid var(--ok); }
+.card.bad { border-top: 3px solid var(--bad); }
+
+/* --- Laboratorio IaaS --- */
+.net-s3 { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 8px; border: 1px dashed var(--amber); color: var(--amber); }
+.net-vm.disk { border-color: var(--amber); color: var(--amber); }
+.net-vm.ghost { border-style: dashed; color: var(--muted); background: transparent; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.ex label { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ex textarea { width: 100%; font-family: var(--f-mono); font-size: .9rem; background: #0a101a; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; resize: vertical; }
+.ex textarea:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
+.ex-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ex-actions button { font: inherit; font-size: .9rem; border-radius: 6px; padding: 7px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); }
+.ex-actions .check { background: var(--sky); color: #08121f; border-color: var(--sky); font-weight: 600; }
+.ex-actions button:disabled { opacity: .5; cursor: default; }
+.ex-state { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); }
+.ex-msg { font-size: .95rem; color: var(--muted); }
+.ex-msg.okc { color: var(--ok); } .ex-msg.badc { color: var(--bad); } .ex-msg.hintc { color: var(--amber); }
+.ex.solved { border-color: var(--ok); }
+.checklist { display: grid; gap: 10px; }
+.checklist label { display: flex; gap: 10px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; font-size: .95rem; }
+.checklist input { accent-color: var(--ok); width: 18px; height: 18px; flex: none; transform: translateY(3px); }
+.scorecard { background: var(--panel); border: 1px solid var(--sky); border-radius: 12px; padding: 18px; display: grid; gap: 6px; }
+.scorecard .big { font-family: var(--f-display); font-size: 3rem; font-weight: 800; color: var(--amber); font-variant-numeric: tabular-nums; line-height: 1; }
+.scorecard .big small { font-size: 1.1rem; color: var(--muted); font-weight: 400; }
+.hud .pts b { color: var(--amber); }
+
+/* --- Serie IaaS: elementos comunes --- */
+.series { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.series div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; display: grid; gap: 2px; }
+.series b { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); font-weight: 400; }
+.series span { font-weight: 600; }
+.series small { color: var(--muted); font-size: .85rem; }
+.series div.now { border-color: var(--amber); background: rgba(255,176,74,.08); }
+.series div.now b { color: var(--amber); }
+.host { display: grid; gap: 8px; }
+.host-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 640px) { .host-row { grid-template-columns: 1fr 1fr; } }
+.host-vm { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--panel); font-size: .88rem; min-width: 0; }
+.host-vm b { font-family: var(--f-mono); display: block; font-size: .8rem; }
+.host-vm small { color: var(--muted); }
+.host-vm.a { border-top: 3px solid var(--sky); }
+.host-vm.b { border-top: 3px solid var(--amber); }
+.host-layer { border-radius: 8px; padding: 9px 14px; font-family: var(--f-mono); font-size: .82rem; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.host-layer.hv { background: rgba(124,196,255,.12); border: 1px solid var(--sky); color: var(--sky); }
+.host-layer.hw { background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+.credits { display: grid; gap: 8px; }
+.credit-bar { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: center; font-size: .9rem; }
+.credit-bar .track { height: 18px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; position: relative; overflow: hidden; }
+.credit-bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--sky); opacity: .75; }
+.credit-bar .fill.burst { background: var(--amber); }
+.credit-bar .base { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
+.versus { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .versus { grid-template-columns: 1fr; } }
+.note-teacher { font-size: .86rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 10px 14px; }
+.note-teacher b { color: var(--amber); font-family: var(--f-mono); font-weight: 600; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<main class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide cover">
+  <div class="inner">
+    <div class="puffs" aria-hidden="true"><span style="width:18px;height:18px"></span><span style="width:30px;height:30px"></span><span style="width:22px;height:22px"></span><span style="width:12px;height:12px"></span></div>
+    <span class="eyebrow">Elementos de IaaS · Módulo 1 de 9</span>
+    <h1>Cómputo<span class="dot">.</span></h1>
+    <p class="lead">Instancias, imágenes, tipos, ciclo de vida, configuración en el arranque, metadatos y plantillas. Primero el concepto, después cada cosa con las manos.</p>
+    <div class="chips">
+      <span class="chip">teoría <b>12</b> diapositivas</span>
+      <span class="chip">práctica <b>8</b> pasos</span>
+      <span class="chip">ejercicios <b>4 × 10</b> puntos</span>
+    </div>
+    <p class="muted" style="font-size:.9rem">Avanzá con las flechas ← → del teclado.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Mapa de la serie</span>
+    <h2>Nueve elementos, uno por módulo</h2>
+    <p class="muted">Cada módulo se apoya en los anteriores. Empezamos por el cómputo porque todos los demás elementos existen para darle a una instancia disco, red, permisos o capacidad.</p>
+    <div class="series">
+      <div class="now"><b>módulo 1</b><span>Cómputo</span><small>instancias, imágenes, tipos</small></div>
+      <div><b>módulo 2</b><span>Almacenamiento de bloque</span><small>volúmenes y snapshots</small></div>
+      <div><b>módulo 3</b><span>Almacenamiento de objetos</span><small>buckets, versiones, políticas</small></div>
+      <div><b>módulo 4</b><span>Redes virtuales</span><small>VPC, subredes, rutas, gateways</small></div>
+      <div><b>módulo 5</b><span>Seguridad de red</span><small>security groups, ACL, claves</small></div>
+      <div><b>módulo 6</b><span>Identidad y acceso</span><small>usuarios, roles, políticas</small></div>
+      <div><b>módulo 7</b><span>Balanceo y escalado</span><small>balanceadores, auto scaling</small></div>
+      <div><b>módulo 8</b><span>Monitoreo</span><small>métricas, logs, alarmas</small></div>
+      <div><b>módulo 9</b><span>Infraestructura como código</span><small>todo lo anterior, en archivos</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · instancia</span>
+    <h2>Una instancia es una máquina virtual alquilada</h2>
+    <div class="cols">
+      <div class="host" aria-label="Un servidor físico con hipervisor y cuatro instancias de dos clientes distintos">
+        <div class="host-row">
+          <div class="host-vm a"><b>i-0a1</b><small>cliente A · t3.small</small></div>
+          <div class="host-vm b"><b>i-7f2</b><small>cliente B · t3.micro</small></div>
+          <div class="host-vm a"><b>i-0a2</b><small>cliente A · t3.small</small></div>
+          <div class="host-vm b"><b>i-7f3</b><small>cliente B · c7i.large</small></div>
+        </div>
+        <div class="host-layer hv"><span>hipervisor del proveedor</span><span>aísla a cada cliente</span></div>
+        <div class="host-layer hw"><span>servidor físico · CPU · RAM · red</span><span>centro de datos</span></div>
+      </div>
+      <div class="stack">
+        <p>Es lo mismo que hicimos en el laboratorio de VirtualBox, con tres diferencias: el hardware no es tuyo, se pide por API y se paga mientras corre.</p>
+        <div class="card"><span class="tag">multi-inquilino</span><p>En el mismo servidor físico conviven instancias de clientes distintos. El hipervisor impide que una vea la memoria o los discos de otra.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · tamaño</span>
+    <h2>vCPU y memoria: de qué está hecho un tipo</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Un <strong>tipo de instancia</strong> fija cuántas vCPU y cuánta memoria recibe la máquina. No se elige “4 GB y 3 CPU”: se elige un tipo del catálogo.</p>
+        <div class="card"><span class="tag">vCPU</span><p>En procesadores Intel y AMD, una vCPU es un hilo de un núcleo físico, así que 2 vCPU equivalen a un núcleo con sus dos hilos. En procesadores ARM, como Graviton, una vCPU es un núcleo completo.</p></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>vCPU</th><th>Memoria</th></tr></thead>
+          <tbody>
+            <tr><td class="m">t2.micro</td><td class="num">1</td><td class="num">1 GiB</td></tr>
+            <tr><td class="m">t3.micro</td><td class="num">2</td><td class="num">1 GiB</td></tr>
+            <tr><td class="m">t3.small</td><td class="num">2</td><td class="num">2 GiB</td></tr>
+            <tr><td class="m">t3.medium</td><td class="num">2</td><td class="num">4 GiB</td></tr>
+            <tr><td class="m">m7i.large</td><td class="num">2</td><td class="num">8 GiB</td></tr>
+            <tr><td class="m">c7i.large</td><td class="num">2</td><td class="num">4 GiB</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="muted">Mismo número de vCPU, distinta memoria: eso es lo que separa a las familias. En la práctica vamos a medir estos límites.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · familia t</span>
+    <h2>Instancias con ráfagas: créditos de CPU</h2>
+    <p>Las instancias de la familia <code class="i">t</code> son baratas porque no garantizan el 100&nbsp;% de la CPU todo el tiempo. Tienen una <strong>línea base</strong>: por ejemplo, una t3.micro tiene garantizado el 10&nbsp;% de cada vCPU.</p>
+    <div class="credits" aria-label="Uso de CPU frente a la línea base">
+      <div class="credit-bar"><span>noche · 4 %</span><div class="track"><div class="fill" style="width:4%"></div><div class="base" style="left:10%"></div></div></div>
+      <div class="credit-bar"><span>mañana · 8 %</span><div class="track"><div class="fill" style="width:8%"></div><div class="base" style="left:10%"></div></div></div>
+      <div class="credit-bar"><span>pico · 85 %</span><div class="track"><div class="fill burst" style="width:85%"></div><div class="base" style="left:10%"></div></div></div>
+    </div>
+    <p class="muted" style="font-size:.88rem">La raya blanca marca la línea base del 10 %.</p>
+    <div class="grid two">
+      <div class="card"><span class="tag">debajo de la línea base</span><p>La instancia acumula créditos. Es lo normal en un servidor web con poco tráfico.</p></div>
+      <div class="card"><span class="tag">por encima</span><p>Gasta créditos para correr a más velocidad. Si se le terminan, en modo <code class="i">standard</code> vuelve a la línea base; en modo <code class="i">unlimited</code> sigue rápida y se cobra el excedente.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · imagen</span>
+    <h2>La imagen: con qué arranca la instancia</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Una <strong>imagen</strong> (en AWS, <strong>AMI</strong>) es una plantilla de disco. Cada instancia nace como una copia de ella.</p>
+        <div class="card"><span class="tag">contiene</span><ul class="clean small">
+          <li>El disco raíz: sistema operativo y software instalado</li>
+          <li>Quién puede usarla: pública, privada o compartida con otras cuentas</li>
+          <li>Qué discos se conectan al arrancar y en qué dispositivo</li>
+        </ul></div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">de dónde salen</span><p><strong>Del proveedor</strong>, como Amazon Linux o Ubuntu oficial. <strong>De terceros</strong>, en el marketplace, a veces con costo de licencia. <strong>Propias</strong>, capturadas de una instancia ya configurada.</p></div>
+        <div class="card"><span class="tag">son regionales</span><p>Una AMI existe en una sola región. La misma Ubuntu tiene un ID distinto en us-east-1 y en sa-east-1. Para usarla en otra región, hay que copiarla.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · ciclo de vida</span>
+    <h2>Estados de una instancia y qué se cobra</h2>
+    <div class="life">
+      <div><b>pending</b><small>se asigna un servidor físico y se copia la imagen</small></div>
+      <div><b>running</b><small>arranca el sistema operativo</small></div>
+      <div><b>stopped</b><small>apagada; el disco se conserva</small></div>
+      <div><b>terminated</b><small>borrada para siempre</small></div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Estado</th><th>¿Cobra cómputo?</th><th>¿Cobra disco?</th><th>¿Se puede volver atrás?</th></tr></thead>
+        <tbody>
+          <tr><td class="m">running</td><td>Sí, por segundo</td><td>Sí</td><td>—</td></tr>
+          <tr><td class="m">stopped</td><td>No</td><td>Sí</td><td>Sí: start</td></tr>
+          <tr><td class="m">terminated</td><td>No</td><td>No, salvo volúmenes que se conservan</td><td>No</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><p><strong>Reiniciar no es apagar.</strong> Un reboot mantiene la instancia en el mismo servidor físico. Un stop y start puede moverla a otro, y cambia la IP pública.</p></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · configuración</span>
+    <h2>User data: el script del primer arranque</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>ejemplo de user data</span></div><pre><span class="c">#!/bin/bash</span>
+dnf update -y
+dnf install -y nginx
+systemctl enable --now nginx</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">cuándo corre</span><p>Una sola vez, en el primer arranque, como usuario root. Un reinicio no lo vuelve a ejecutar.</p></div>
+        <div class="card"><span class="tag">quién lo corre</span><p><strong>cloud-init</strong>, un programa preinstalado en casi todas las imágenes de nube. Lee el script desde el servicio de metadatos y lo ejecuta.</p></div>
+        <div class="card"><span class="tag">límite</span><p>Viaja codificado en base64 y tiene un tamaño máximo de 16 KB. Para algo más grande, el script descarga el resto.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · estrategia</span>
+    <h2>¿Hornear la imagen o configurar al arrancar?</h2>
+    <div class="versus">
+      <div class="card"><span class="tag">imagen horneada (golden image)</span><h3>Todo instalado de antemano</h3><ul class="clean small">
+        <li>La instancia arranca lista en segundos</li>
+        <li>Todas las copias son idénticas</li>
+        <li>No depende de internet ni de repositorios al arrancar</li>
+        <li>Cada cambio exige crear una imagen nueva</li>
+      </ul></div>
+      <div class="card"><span class="tag">configuración en el arranque</span><h3>Imagen genérica + user data</h3><ul class="clean small">
+        <li>Un solo script, fácil de cambiar</li>
+        <li>Siempre instala las versiones más nuevas</li>
+        <li>Arrancar tarda más, a veces minutos</li>
+        <li>Si un repositorio falla, la instancia nace rota</li>
+      </ul></div>
+    </div>
+    <p class="muted">En la práctica se combinan: una imagen con lo pesado ya instalado y un user data corto que aplica la configuración final.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · metadatos</span>
+    <h2>IMDS: la instancia pregunta quién es</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Desde adentro de cualquier instancia hay una dirección especial, <code class="i">169.254.169.254</code>, que responde datos sobre esa misma instancia: su ID, su tipo, su IP, su zona, su user data y credenciales temporales.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Versión</th><th>Cómo se pide</th></tr></thead>
+            <tbody>
+              <tr><td class="m">IMDSv1</td><td>Un GET directo, sin más</td></tr>
+              <tr><td class="m">IMDSv2</td><td>Primero un PUT que entrega un token; después cada GET lleva ese token</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card"><span class="tag">por qué existe IMDSv2</span><h3>Protección contra SSRF</h3><p>Si una aplicación web tiene un fallo que permite que un atacante le haga pedir cualquier URL, con IMDSv1 podría leer las credenciales de la instancia con un simple GET. El PUT previo y el encabezado del token bloquean ese ataque.</p><p style="margin-top:10px">Hoy se recomienda exigir IMDSv2 en todas las instancias.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · plantillas</span>
+    <h2>Plantillas de lanzamiento</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Una <strong>launch template</strong> guarda todos los parámetros de una instancia: imagen, tipo, claves, red, etiquetas y user data. Después se lanza con un solo parámetro.</p>
+        <div class="card"><span class="tag">versionadas</span><p>Cada cambio crea una versión nueva: v1 con t3.micro, v2 con t3.small. Una de ellas se marca como versión por defecto.</p></div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">por qué importan</span><p>Evitan errores de tipeo y hacen que todas las instancias de un mismo rol sean iguales.</p></div>
+        <div class="card"><span class="tag">próximamente</span><p>El escalado automático (módulo 7) usa una plantilla para saber qué instancias crear cuando sube la demanda.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Antes de practicar</span>
+    <h2>Cómo traduce Floci cada concepto</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Concepto</th><th>En AWS</th><th>En Floci</th></tr></thead>
+        <tbody>
+          <tr><td>Instancia</td><td>Máquina virtual</td><td>Contenedor Docker</td></tr>
+          <tr><td>Imagen</td><td>AMI con disco completo</td><td>Imagen Docker: amazonlinux, ubuntu, debian, alpine</td></tr>
+          <tr><td>Tipo</td><td>vCPU y memoria dedicadas</td><td>Límites de CPU y memoria del contenedor</td></tr>
+          <tr><td>Ciclo de vida</td><td>Hipervisor</td><td>docker start, stop, restart, rm</td></tr>
+          <tr><td>Metadatos</td><td>169.254.169.254</td><td>169.254.169.254, emulado</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><p><strong>Una diferencia que vamos a ver:</strong> un contenedor comparte el kernel con tu PC. Por eso, adentro, <code class="i">/proc/meminfo</code> muestra la memoria total de tu máquina, aunque el contenedor tenga un límite de 1 GiB. En una máquina virtual real mostraría 1 GiB.</p></div>
+  </div>
+</section>
+
+<!-- 13 Quiz -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Control de conceptos</span>
+    <h2>Antes de abrir la terminal</h2>
+    <div class="q" data-correct="c" data-why="En stopped no se cobra cómputo, pero el disco raíz sigue existiendo y se cobra por GB almacenado.">
+      <div class="prompt">Una instancia queda en estado stopped durante un mes. ¿Qué se cobra?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>Nada, porque está apagada</button>
+        <button class="opt" data-k="b"><b>B</b>Las horas de cómputo, a mitad de precio</button>
+        <button class="opt" data-k="c"><b>C</b>El disco</button>
+        <button class="opt" data-k="d"><b>D</b>Lo mismo que si estuviera encendida</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+    <div class="q" data-correct="a" data-why="El user data corre una sola vez, en el primer arranque. Para que algo se ejecute en cada inicio, hay que registrarlo como servicio.">
+      <div class="prompt">Un script de user data instala nginx. Al reiniciar la instancia, ¿qué pasa con el script?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>No se vuelve a ejecutar</button>
+        <button class="opt" data-k="b"><b>B</b>Se ejecuta otra vez y reinstala nginx</button>
+        <button class="opt" data-k="c"><b>C</b>Se ejecuta solo si cambió desde el último arranque</button>
+        <button class="opt" data-k="d"><b>D</b>Se borra del servicio de metadatos</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+    <div class="q" data-correct="d" data-why="Las AMI son regionales: existe una copia con otro ID en cada región. Se usa el ID de la región destino o se copia la imagen.">
+      <div class="prompt">Un script que usa un ID de AMI en us-east-1 falla al correrlo en sa-east-1. ¿Por qué?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>Esa región no tiene instancias t3</button>
+        <button class="opt" data-k="b"><b>B</b>Hay que pedir permiso para lanzar en otra región</button>
+        <button class="opt" data-k="c"><b>C</b>Las AMI caducan después de un tiempo</button>
+        <button class="opt" data-k="d"><b>D</b>Cada región tiene sus propias AMI, con otros IDs</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span class="on">1 · Explorar</span><span>2 · Lanzar</span><span>3 · Medir</span><span>4 · Metadatos</span><span>5 · Arranque</span><span>6 · Ciclo</span><span>7 · Plantilla</span><span>8 · Imagen</span></div>
+    <h2>Práctica 1 · Explorar el catálogo</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Preparar la terminal (si no lo hiciste ya)</span>
+<span class="v">$env:AWS_ENDPOINT_URL</span>      = <span class="s">"http://localhost:4566"</span>
+<span class="v">$env:AWS_ACCESS_KEY_ID</span>     = <span class="s">"test"</span>
+<span class="v">$env:AWS_SECRET_ACCESS_KEY</span> = <span class="s">"test"</span>
+<span class="v">$env:AWS_DEFAULT_REGION</span>    = <span class="s">"us-east-1"</span>
+mkdir modulo-computo; cd modulo-computo
+
+<span class="c"># ¿Qué imágenes hay?</span>
+aws ec2 describe-images --query <span class="s">"Images[].[ImageId,Name]"</span> --output table
+
+<span class="c"># ¿Qué tamaño tiene cada tipo?</span>
+aws ec2 describe-instance-types `
+  --instance-types t2.micro t3.micro t3.small t3.medium `
+  --query <span class="s">"InstanceTypes[].[InstanceType,VCpuInfo.DefaultVCpus,MemoryInfo.SizeInMiB]"</span> `
+  --output table</pre></div>
+    <p class="muted">Comparen la tabla con la de la diapositiva 4. La memoria se informa en MiB: 1024 MiB son 1 GiB.</p>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Explorar</span><span class="on">2 · Lanzar</span><span>3 · Medir</span><span>4 · Metadatos</span><span>5 · Arranque</span><span>6 · Ciclo</span><span>7 · Plantilla</span><span>8 · Imagen</span></div>
+    <h2>Práctica 2 · Lanzar la primera instancia</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="v">$WEBA</span> = aws ec2 run-instances `
+  --image-id ami-amazonlinux2023 `
+  --instance-type t2.micro `
+  --tag-specifications <span class="s">"ResourceType=instance,Tags=[{Key=Name,Value=web-a},{Key=Proyecto,Value=modulo-computo}]"</span> `
+  --query <span class="s">"Instances[0].InstanceId"</span> --output text
+
+<span class="c"># Estado de la instancia (repetir hasta ver running)</span>
+aws ec2 describe-instances --instance-ids <span class="v">$WEBA</span> `
+  --query <span class="s">"Reservations[0].Instances[0].State.Name"</span>
+
+<span class="c"># La misma instancia, vista desde Docker</span>
+docker ps --format <span class="s">"table {{.ID}}\t{{.Image}}\t{{.Names}}\t{{.Status}}"</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">sin red explícita</span><p>No indicamos subred ni security group, así que la instancia va a la VPC y al grupo por defecto. Las redes las vemos en el módulo 4.</p></div>
+        <div class="card"><span class="tag">etiqueta Proyecto</span><p>Todas las instancias del módulo llevan <code class="i">Proyecto=modulo-computo</code>. Al final la usamos para borrarlas de una vez.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 Ejercicio 1 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 1 · 10 puntos</span>
+    <h2>Lanzar una instancia más grande</h2>
+    <p>Escribí el comando que lanza una instancia <code class="i">t3.small</code> con Amazon Linux 2023 y la etiqueta <code class="i">Name=app-1</code>. Agregale también <code class="i">Proyecto=modulo-computo</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+run-instances\b)(?=.*--image-id\s+\S+)(?=.*--instance-type\s+t3\.small(\s|$))(?=.*Key=Name,Value=app-1\b)"
+         data-hint="Partí del comando de la práctica 2. Cambian dos cosas: el tipo de instancia y el valor de la etiqueta Name."
+         data-ok="Ejecutalo en PowerShell. En la práctica 3 vamos a comparar los límites de web-a y app-1.">
+      <label for="ex1">Tu comando</label>
+      <textarea id="ex1" rows="3" spellcheck="false" placeholder="aws ec2 run-instances ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Explorar</span><span>2 · Lanzar</span><span class="on">3 · Medir</span><span>4 · Metadatos</span><span>5 · Arranque</span><span>6 · Ciclo</span><span>7 · Plantilla</span><span>8 · Imagen</span></div>
+    <h2>Práctica 3 · ¿El tipo cambia algo de verdad?</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Guardar el ID de app-1</span>
+<span class="v">$APP1</span> = aws ec2 describe-instances `
+  --filters <span class="s">"Name=tag:Name,Values=app-1"</span> `
+  --query <span class="s">"Reservations[0].Instances[0].InstanceId"</span> --output text
+
+<span class="c"># Límite de memoria y CPU de cada contenedor</span>
+docker stats --no-stream `
+  --format <span class="s">"table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"</span>
+
+<span class="c"># Dentro de una instancia: el límite y lo que "ve"</span>
+docker exec <span class="v">&lt;contenedor&gt;</span> cat /sys/fs/cgroup/memory.max
+docker exec <span class="v">&lt;contenedor&gt;</span> head -1 /proc/meminfo</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">qué esperar</span><p>En la columna de memoria, web-a muestra un límite de 1 GiB y app-1, de 2 GiB. Son los valores de la tabla del catálogo.</p></div>
+        <div class="card"><span class="tag">memory.max</span><p>Devuelve el límite en bytes: 1073741824 es 1 GiB.</p></div>
+        <div class="card"><span class="tag">/proc/meminfo</span><p>Muestra la memoria de tu PC, no el límite. Es la diferencia entre contenedor y máquina virtual de la diapositiva 12.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Explorar</span><span>2 · Lanzar</span><span>3 · Medir</span><span class="on">4 · Metadatos</span><span>5 · Arranque</span><span>6 · Ciclo</span><span>7 · Plantilla</span><span>8 · Imagen</span></div>
+    <h2>Práctica 4 · Preguntarle a la instancia quién es</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell → dentro de web-a</span><button class="copy">Copiar</button></div><pre>docker exec -it <span class="v">&lt;contenedor-de-web-a&gt;</span> bash
+
+<span class="c"># IMDSv1: un GET directo</span>
+curl -s http://169.254.169.254/latest/meta-data/instance-id; echo
+
+<span class="c"># IMDSv2: primero el token...</span>
+TOKEN=$(curl -s -X PUT http://169.254.169.254/latest/api/token \
+  -H <span class="s">"x-aws-ec2-metadata-token-ttl-seconds: 300"</span>)
+
+<span class="c"># ...y después cada pedido lo lleva</span>
+curl -s -H <span class="s">"x-aws-ec2-metadata-token: $TOKEN"</span> \
+  http://169.254.169.254/latest/meta-data/placement/availability-zone; echo
+
+<span class="c"># Todo junto, en JSON</span>
+curl -s http://169.254.169.254/latest/dynamic/instance-identity/document
+exit</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">ojo con la terminal</span><p>Después de <code class="i">docker exec -it</code> estás en bash, dentro de Linux. Por eso la continuación de línea es <code class="i">\</code> y no el acento grave de PowerShell.</p></div>
+        <div class="card"><span class="tag">¿cuál es el contenedor?</span><p>Si hay dudas, entrá a cualquiera y pedí el <code class="i">instance-id</code>: compará con <code class="i">$WEBA</code>.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 19 Ejercicio 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 2 · 10 puntos</span>
+    <h2>El tipo, desde adentro</h2>
+    <p>Dentro de app-1, ¿qué comando le pregunta al servicio de metadatos el <strong>tipo de instancia</strong>? Podés usar IMDSv1 o IMDSv2.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\bcurl\b)(?=.*169\.254\.169\.254\/latest\/meta-data\/instance-type\b)"
+         data-hint="Es la misma ruta que instance-id, cambiando la última parte. El nombre del dato es igual que el parámetro de run-instances, sin los guiones iniciales."
+         data-ok="Debería responder t3.small. Una aplicación puede usar este dato para ajustar cuántos procesos lanza.">
+      <label for="ex2">Tu comando</label>
+      <textarea id="ex2" rows="3" spellcheck="false" placeholder="curl ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Explorar</span><span>2 · Lanzar</span><span>3 · Medir</span><span>4 · Metadatos</span><span class="on">5 · Arranque</span><span>6 · Ciclo</span><span>7 · Plantilla</span><span>8 · Imagen</span></div>
+    <h2>Práctica 5 · Configurar en el arranque</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="code"><div class="bar"><span>arranque.sh · guardar con fin de línea LF</span><button class="copy">Copiar</button></div><pre><span class="c">#!/bin/bash</span>
+echo <span class="s">"rol=worker"</span> &gt; /etc/lab-rol
+date &gt; /etc/lab-configurado</pre></div>
+        <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="v">$CFG</span> = aws ec2 run-instances `
+  --image-id ami-amazonlinux2023 --instance-type t3.micro `
+  --user-data file://arranque.sh `
+  --tag-specifications <span class="s">"ResourceType=instance,Tags=[{Key=Name,Value=cfg-1},{Key=Proyecto,Value=modulo-computo}]"</span> `
+  --query <span class="s">"Instances[0].InstanceId"</span> --output text
+
+<span class="c"># ¿Corrió el script?</span>
+docker exec <span class="v">&lt;contenedor-de-cfg-1&gt;</span> cat /etc/lab-rol
+
+<span class="c"># Así lo guarda AWS: en base64</span>
+<span class="v">$B64</span> = aws ec2 describe-instance-attribute --instance-id <span class="v">$CFG</span> `
+  --attribute userData --query UserData.Value --output text
+[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(<span class="v">$B64</span>))</pre></div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">sin internet</span><p>El script solo escribe archivos, así que funciona aunque el aula no tenga buena conexión.</p></div>
+        <div class="card"><span class="tag">CRLF</span><p>Si <code class="i">/etc/lab-rol</code> no existe, lo más probable es que el archivo se guardó con fin de línea de Windows. En VS Code, abajo a la derecha: CRLF → LF.</p></div>
+        <div class="card"><span class="tag">base64</span><p>La CLI codifica el script al enviarlo y la API lo devuelve codificado. La última línea lo decodifica.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Explorar</span><span>2 · Lanzar</span><span>3 · Medir</span><span>4 · Metadatos</span><span>5 · Arranque</span><span class="on">6 · Ciclo</span><span>7 · Plantilla</span><span>8 · Imagen</span></div>
+    <h2>Práctica 6 · Recorrer el ciclo de vida</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Apagar web-a y esperar</span>
+aws ec2 stop-instances --instance-ids <span class="v">$WEBA</span>
+aws ec2 wait instance-stopped --instance-ids <span class="v">$WEBA</span>
+
+<span class="c"># El contenedor sigue existiendo, detenido</span>
+docker ps -a --filter <span class="s">"status=exited"</span>
+
+<span class="c"># Encender y reiniciar</span>
+aws ec2 start-instances --instance-ids <span class="v">$WEBA</span>
+aws ec2 wait instance-running --instance-ids <span class="v">$WEBA</span>
+aws ec2 reboot-instances --instance-ids <span class="v">$WEBA</span>
+
+<span class="c"># Estado de cada instancia del módulo</span>
+aws ec2 describe-instances `
+  --filters <span class="s">"Name=tag:Proyecto,Values=modulo-computo"</span> `
+  --query <span class="s">"Reservations[].Instances[].[Tags[?Key=='Name']|[0].Value,InstanceType,State.Name]"</span> `
+  --output table</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">stopped = docker stop</span><p>El contenedor se detiene pero conserva su disco. Lo que se escribió adentro sigue ahí al volver a encender.</p></div>
+        <div class="card"><span class="tag">wait</span><p><code class="i">aws ec2 wait</code> consulta el estado una y otra vez hasta que se cumple. Sirve en scripts para no avanzar antes de tiempo.</p></div>
+        <div class="card"><span class="tag">la consulta final</span><p><code class="i">Tags[?Key=='Name']</code> busca, entre todas las etiquetas, la que se llama Name. Es lenguaje JMESPath.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 Ejercicio 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 3 · 10 puntos</span>
+    <h2>Apagar sin borrar</h2>
+    <p>app-1 no se va a usar hasta mañana. Escribí el comando que la deja <strong>apagada pero recuperable</strong>, para dejar de pagar cómputo sin perder su disco. Su ID está en <code class="i">$APP1</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+stop-instances\b)(?=.*--instance-ids\s+(\$APP1\b|i-[\w-]+))"
+         data-hint="Terminar la borra para siempre. Buscá la acción que la lleva al estado stopped."
+         data-ok="En AWS real, mientras esté en stopped se paga solo su disco.">
+      <label for="ex3">Tu comando</label>
+      <textarea id="ex3" rows="3" spellcheck="false" placeholder="aws ec2 ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 23 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Explorar</span><span>2 · Lanzar</span><span>3 · Medir</span><span>4 · Metadatos</span><span>5 · Arranque</span><span>6 · Ciclo</span><span class="on">7 · Plantilla</span><span>8 · Imagen</span></div>
+    <h2>Práctica 7 · Crear una plantilla con dos versiones</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="code"><div class="bar"><span>plantilla.json · crear en VS Code</span><button class="copy">Copiar</button></div><pre>{
+  <span class="k">"ImageId"</span>: <span class="s">"ami-amazonlinux2023"</span>,
+  <span class="k">"InstanceType"</span>: <span class="s">"t3.micro"</span>,
+  <span class="k">"TagSpecifications"</span>: [{
+    <span class="k">"ResourceType"</span>: <span class="s">"instance"</span>,
+    <span class="k">"Tags"</span>: [
+      { <span class="k">"Key"</span>: <span class="s">"Proyecto"</span>, <span class="k">"Value"</span>: <span class="s">"modulo-computo"</span> },
+      { <span class="k">"Key"</span>: <span class="s">"Origen"</span>, <span class="k">"Value"</span>: <span class="s">"plantilla"</span> }
+    ]
+  }]
+}</pre></div>
+        <div class="code"><div class="bar"><span>plantilla-v2.json</span><button class="copy">Copiar</button></div><pre>{ <span class="k">"InstanceType"</span>: <span class="s">"t3.small"</span> }</pre></div>
+      </div>
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Versión 1</span>
+aws ec2 create-launch-template `
+  --launch-template-name plantilla-web `
+  --version-description <span class="s">"v1 t3.micro"</span> `
+  --launch-template-data file://plantilla.json
+
+<span class="c"># Versión 2: hereda todo de la 1 y cambia el tipo</span>
+aws ec2 create-launch-template-version `
+  --launch-template-name plantilla-web `
+  --source-version 1 `
+  --version-description <span class="s">"v2 t3.small"</span> `
+  --launch-template-data file://plantilla-v2.json
+
+<span class="c"># Ver las versiones</span>
+aws ec2 describe-launch-template-versions `
+  --launch-template-name plantilla-web `
+  --query <span class="s">"LaunchTemplateVersions[].[VersionNumber,VersionDescription,LaunchTemplateData.InstanceType]"</span> `
+  --output table
+
+<span class="c"># Lanzar desde la versión 1</span>
+aws ec2 run-instances `
+  --launch-template LaunchTemplateName=plantilla-web,Version=1</pre></div>
+    </div>
+    <p class="muted"><code class="i">--source-version 1</code> es clave: sin él, la versión 2 empezaría vacía y solo tendría el tipo de instancia.</p>
+  </div>
+</section>
+
+<!-- 24 Ejercicio 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 4 · 10 puntos</span>
+    <h2>Lanzar desde la versión nueva</h2>
+    <p>Escribí el comando que lanza una instancia usando la <strong>versión 2</strong> de <code class="i">plantilla-web</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+run-instances\b)(?=.*--launch-template\s+\S*LaunchTemplateName=plantilla-web\b)(?=.*Version=(2\b|'?\$Latest))"
+         data-hint="Es igual al último comando de la práctica 7; cambia solo el número de versión."
+         data-ok="Verificá con la tabla de la práctica 6 que la nueva instancia es t3.small. Si usaste $Latest, en PowerShell va entre comillas simples para que no lo tome como variable.">
+      <label for="ex4">Tu comando</label>
+      <textarea id="ex4" rows="3" spellcheck="false" placeholder="aws ec2 run-instances ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 25 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Explorar</span><span>2 · Lanzar</span><span>3 · Medir</span><span>4 · Metadatos</span><span>5 · Arranque</span><span>6 · Ciclo</span><span>7 · Plantilla</span><span class="on">8 · Imagen</span></div>
+    <h2>Práctica 8 · Desafío: hornear una imagen propia</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Capturar cfg-1 como imagen nueva</span>
+<span class="v">$AMI</span> = aws ec2 create-image --instance-id <span class="v">$CFG</span> `
+  --name imagen-worker-v1 --query ImageId --output text
+aws ec2 describe-images --image-ids <span class="v">$AMI</span>
+
+<span class="c"># Lanzar desde esa imagen, SIN user data</span>
+aws ec2 run-instances --image-id <span class="v">$AMI</span> --instance-type t3.micro `
+  --tag-specifications <span class="s">"ResourceType=instance,Tags=[{Key=Name,Value=desde-imagen},{Key=Proyecto,Value=modulo-computo}]"</span>
+
+<span class="c"># ¿Trae el archivo que escribió el script original?</span>
+docker exec <span class="v">&lt;contenedor-de-desde-imagen&gt;</span> cat /etc/lab-rol</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">qué demuestra</span><p>Si aparece <code class="i">rol=worker</code>, la configuración viajó dentro de la imagen. Esta es la estrategia de la diapositiva 9.</p></div>
+        <div class="card"><span class="tag">reinicio</span><p><code class="i">create-image</code> reinicia la instancia de origen para capturar el disco en un estado consistente, salvo que se use <code class="i">--no-reboot</code>.</p></div>
+        <div class="note-teacher"><b>Docente</b>Este paso depende de cómo Floci captura el disco del contenedor. Probalo antes de clase: si el archivo no aparece, presentalo como demostración conceptual.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 26 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Limpieza</span>
+    <h2>Terminar todo lo del módulo</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Todas las instancias con la etiqueta del módulo, sin importar su estado</span>
+<span class="v">$TODAS</span> = (aws ec2 describe-instances `
+  --filters <span class="s">"Name=tag:Proyecto,Values=modulo-computo"</span> <span class="s">"Name=instance-state-name,Values=pending,running,stopping,stopped"</span> `
+  --query <span class="s">"Reservations[].Instances[].InstanceId"</span> --output text) -split <span class="s">"\s+"</span>
+
+aws ec2 terminate-instances --instance-ids <span class="v">$TODAS</span>
+aws ec2 wait instance-terminated --instance-ids <span class="v">$TODAS</span>
+
+<span class="c"># La plantilla y sus versiones</span>
+aws ec2 delete-launch-template --launch-template-name plantilla-web
+
+<span class="c"># Comprobar que Docker quedó limpio</span>
+docker ps -a</pre></div>
+    <p class="muted">Etiquetar todo desde el principio es lo que permite este borrado en un solo paso. En una cuenta real, también se borraría la imagen propia con <code class="i">deregister-image</code>.</p>
+  </div>
+</section>
+
+<!-- 27 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Para el informe</span>
+    <h2>Preguntas de reflexión</h2>
+    <ul class="clean">
+      <li>En la práctica 3, <code class="i">/proc/meminfo</code> mostró más memoria que el límite. ¿Por qué pasa en un contenedor y no en una máquina virtual?</li>
+      <li>¿Qué tipo elegirían para un servidor web con poco tráfico y picos ocasionales? ¿Y para una base de datos que siempre usa mucha memoria? Justifiquen con las familias vistas.</li>
+      <li>En el ejercicio 3 apagaron app-1 en vez de terminarla. Den un caso donde terminar sería la decisión correcta.</li>
+      <li>Comparen la instancia cfg-1 (configurada con user data) con desde-imagen (imagen horneada). ¿Cuál arrancaría más rápido si el script instalara diez paquetes de internet?</li>
+      <li>¿Qué ventaja tiene lanzar desde una plantilla frente a escribir todos los parámetros en cada run-instances?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 28 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Entregable</span>
+    <h2>Checklist y puntaje</h2>
+    <div class="cols">
+      <div class="checklist">
+        <label><input type="checkbox" id="ck1"> Tabla de <code class="i">describe-instance-types</code></label>
+        <label><input type="checkbox" id="ck2"> Captura de <code class="i">docker stats</code> con web-a (1 GiB) y app-1 (2 GiB)</label>
+        <label><input type="checkbox" id="ck3"> Respuestas del IMDS: ID, zona y tipo</label>
+        <label><input type="checkbox" id="ck4"> Contenido de <code class="i">/etc/lab-rol</code> y del user data decodificado</label>
+        <label><input type="checkbox" id="ck5"> Tabla de estados después del ejercicio 3</label>
+        <label><input type="checkbox" id="ck6"> Tabla de versiones de la plantilla</label>
+        <label><input type="checkbox" id="ck7"> Resultado del desafío de imagen propia</label>
+        <label><input type="checkbox" id="ck8"> Respuestas a las preguntas de reflexión</label>
+        <label><input type="checkbox" id="ck9"> Captura final de <code class="i">docker ps -a</code> vacío</label>
+      </div>
+      <div class="stack">
+        <div class="scorecard">
+          <span class="eyebrow">Puntaje de ejercicios</span>
+          <div class="big"><span id="scoreBig">0</span><small> / 40</small></div>
+          <div class="muted" id="scoreDetail">Ningún ejercicio resuelto todavía.</div>
+        </div>
+        <div class="card"><span class="tag">próximo módulo</span><p><strong>Almacenamiento de bloque:</strong> volúmenes, formatear y montar un disco, snapshots y restauración.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="hud">
+  <span class="region">módulo <b>1 · Cómputo</b> · <span class="pts">puntos <b id="ptsHud">0 / 40</b></span></span>
+  <div class="nav">
+    <button id="prev" aria-label="Diapositiva anterior">←</button>
+    <span class="count" id="count">1 / 1</span>
+    <button id="next" aria-label="Diapositiva siguiente">→</button>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const count = document.getElementById('count');
+  const progress = document.getElementById('progress');
+  let i = 0;
+
+  function fromHash() {
+    const m = /^#s(\d+)$/.exec(location.hash || '');
+    if (m) { const n = parseInt(m[1], 10) - 1; if (n >= 0 && n < slides.length) return n; }
+    return 0;
+  }
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    slides[i].scrollTop = 0;
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) {}
+  }
+  document.getElementById('prev').addEventListener('click', () => show(i - 1));
+  document.getElementById('next').addEventListener('click', () => show(i + 1));
+  document.addEventListener('keydown', (e) => {
+    if (document.querySelector('.swal2-container')) return;
+    if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && e.target === document.body)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+  });
+  let tx = null;
+  document.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 60) show(i + (dx < 0 ? 1 : -1));
+    tx = null;
+  });
+
+  // Copiar código
+  document.querySelectorAll('.copy').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.code').querySelector('pre');
+      const text = pre.innerText;
+      const done = () => { btn.textContent = 'Copiado'; setTimeout(() => (btn.textContent = 'Copiar'), 1400); };
+      const fallback = () => {
+        const r = document.createRange(); r.selectNodeContents(pre);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent = 'Ctrl+C'; setTimeout(() => (btn.textContent = 'Copiar'), 1800);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+        else fallback();
+      } catch (e) { fallback(); }
+    });
+  });
+
+  // Quizzes
+  document.querySelectorAll('.q').forEach((q) => {
+    const correct = q.dataset.correct;
+    const why = q.dataset.why;
+    const fb = q.querySelector('.fb');
+    const opts = Array.from(q.querySelectorAll('.opt'));
+    opts.forEach((b) => b.addEventListener('click', () => {
+      const ok = b.dataset.k === correct;
+      opts.forEach((o) => { o.disabled = true; if (o.dataset.k === correct) o.classList.add('right'); });
+      if (!ok) b.classList.add('wrong');
+      fb.textContent = (ok ? 'Correcto. ' : 'No es esa. ') + why;
+      fb.className = 'fb ' + (ok ? 'okc' : 'badc');
+      if (window.Swal) {
+        Swal.fire({
+          icon: ok ? 'success' : 'error',
+          title: ok ? '¡Correcto!' : 'Casi',
+          text: why,
+          background: '#131d2d', color: '#e7edf5',
+          confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir'
+        });
+      }
+    }));
+  });
+
+  window.addEventListener('hashchange', () => show(fromHash()));
+  show(fromHash());
+})();
+
+(function () {
+  const exs = Array.from(document.querySelectorAll('.ex'));
+  const state = exs.map(() => ({ hints: 0, solved: false, pts: 0 }));
+  const max = exs.reduce((a, e) => a + Number(e.dataset.pts || 0), 0);
+  const ptsHud = document.getElementById('ptsHud');
+  const scoreBig = document.getElementById('scoreBig');
+  const scoreDetail = document.getElementById('scoreDetail');
+
+  function normalize(s) {
+    return s.replace(/`\s*\r?\n/g, ' ').replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function render() {
+    const total = state.reduce((a, s) => a + s.pts, 0);
+    if (ptsHud) ptsHud.textContent = total + ' / ' + max;
+    if (scoreBig) scoreBig.textContent = total;
+    if (scoreDetail) {
+      const done = state.filter((s) => s.solved).length;
+      scoreDetail.textContent = done === 0
+        ? 'Ningún ejercicio resuelto todavía.'
+        : done + ' de ' + exs.length + ' ejercicios resueltos · ' + state.reduce((a, s) => a + s.hints, 0) + ' pistas usadas.';
+    }
+  }
+  function swal(opts) {
+    if (window.Swal) Swal.fire(Object.assign({ background: '#131d2d', color: '#e7edf5', confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir' }, opts));
+  }
+
+  exs.forEach((ex, idx) => {
+    const re = new RegExp(ex.dataset.re, 'i');
+    const pts = Number(ex.dataset.pts || 10);
+    const ta = ex.querySelector('textarea');
+    const msg = ex.querySelector('.ex-msg');
+    const st = ex.querySelector('.ex-state');
+    const btnCheck = ex.querySelector('.check');
+    const btnHint = ex.querySelector('.hint');
+
+    btnCheck.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      const cmd = normalize(ta.value);
+      if (!cmd) { msg.textContent = 'Escribí el comando antes de comprobar.'; msg.className = 'ex-msg badc'; return; }
+      if (re.test(cmd)) {
+        s.solved = true;
+        s.pts = Math.max(0, pts - 3 * s.hints);
+        ex.classList.add('solved');
+        btnCheck.disabled = true; btnHint.disabled = true;
+        msg.textContent = 'Correcto. ' + ex.dataset.ok;
+        msg.className = 'ex-msg okc';
+        st.textContent = '+' + s.pts + ' puntos';
+        swal({ icon: 'success', title: '¡Correcto! +' + s.pts, text: ex.dataset.ok });
+      } else {
+        msg.textContent = 'Todavía no. Revisá el nombre del comando y cada parámetro pedido.';
+        msg.className = 'ex-msg badc';
+        swal({ icon: 'error', title: 'Todavía no', text: 'Revisá el nombre del comando y cada parámetro que pide la consigna.' });
+      }
+      render();
+    });
+
+    btnHint.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      if (s.hints === 0) s.hints = 1;
+      btnHint.disabled = true;
+      msg.textContent = 'Pista: ' + ex.dataset.hint;
+      msg.className = 'ex-msg hintc';
+      st.textContent = 'pista usada (−3)';
+    });
+
+    ta.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); btnCheck.click(); }
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

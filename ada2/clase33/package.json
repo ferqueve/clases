@@ -1,0 +1,12 @@
+{
+  "name": "practico-rest-node",
+  "version": "1.0.0",
+  "description": "Mini API REST en Express para la práctica de ANDIS 2 - Unidad 3 (REST)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

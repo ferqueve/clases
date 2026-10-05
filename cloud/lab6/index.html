@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laboratorio IaaS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: una diapositiva a pantalla completa por vez, sobre un cielo nocturno con "flóculos" de nube; barra de región abajo */
+:root {
+  --ink: #0c1320;
+  --panel: #131d2d;
+  --panel-2: #1a2639;
+  --line: #27364f;
+  --fg: #e7edf5;
+  --muted: #93a4bb;
+  --sky: #7cc4ff;
+  --amber: #ffb04a;
+  --ok: #5fd39a;
+  --bad: #ff8080;
+  --f-display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(124,196,255,.07) 0 60px, transparent 61px),
+    radial-gradient(circle at 16% 22%, rgba(124,196,255,.05) 0 80px, transparent 81px),
+    radial-gradient(circle at 88% 82%, rgba(124,196,255,.06) 0 70px, transparent 71px),
+    radial-gradient(circle at 84% 78%, rgba(124,196,255,.04) 0 100px, transparent 101px),
+    var(--ink);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 18px;
+  line-height: 1.55;
+  overflow: hidden;
+}
+.deck { position: relative; height: 100%; }
+.slide {
+  position: absolute; inset: 0 0 56px 0;
+  overflow-y: auto;
+  padding-block: clamp(24px, 5vh, 56px);
+  padding-inline: max(16px, 5vw);
+  display: none;
+}
+.slide.active { display: block; animation: rise .35s ease; }
+@keyframes rise { from { opacity: .4; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide.active { animation: none; } }
+.inner { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; min-height: 100%; justify-content: center; }
+
+.eyebrow {
+  font-family: var(--f-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--sky); opacity: .85;
+}
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2.6rem, 8vw, 5.6rem); font-weight: 800; letter-spacing: -.02em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); font-weight: 600; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; margin: 0 0 6px; color: var(--fg); }
+p { margin: 0; max-width: 68ch; }
+.lead { font-size: 1.2rem; color: var(--muted); max-width: 60ch; }
+.muted { color: var(--muted); }
+strong { color: var(--fg); font-weight: 600; }
+.hl { color: var(--amber); }
+.sky { color: var(--sky); }
+code.i { font-family: var(--f-mono); font-size: .88em; background: var(--panel-2); padding: 1px 6px; border-radius: 4px; color: var(--sky); }
+
+/* Portada */
+.cover h1 .dot { color: var(--sky); }
+.puffs { display: flex; gap: 10px; align-items: flex-end; height: 40px; }
+.puffs span { display: block; border-radius: 50%; background: var(--sky); opacity: .8; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { font-family: var(--f-mono); font-size: .85rem; border: 1px solid var(--line); padding: 6px 12px; border-radius: 999px; color: var(--fg); background: var(--panel); }
+.chip b { color: var(--amber); font-weight: 600; }
+
+/* Grillas */
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.card p { font-size: .96rem; color: var(--muted); }
+.card .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); margin-bottom: 6px; display: block; }
+.callout { border-left: 3px solid var(--amber); padding: 10px 16px; background: rgba(255,176,74,.06); border-radius: 0 8px 8px 0; max-width: 80ch; }
+.callout.info { border-color: var(--sky); background: rgba(124,196,255,.06); }
+
+/* Código */
+.code { position: relative; background: #0a101a; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.code .bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: .86rem; line-height: 1.6; color: var(--fg); }
+.code .c { color: #6f819b; }
+.code .k { color: var(--sky); }
+.code .s { color: var(--ok); }
+.code .v { color: var(--amber); }
+.copy { font: inherit; font-size: .72rem; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 3px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--sky); }
+.copy:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+/* Tablas */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; min-width: 560px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--panel); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.m { font-family: var(--f-mono); font-size: .86rem; color: var(--sky); white-space: nowrap; }
+td.a { font-family: var(--f-mono); font-size: .86rem; color: var(--amber); white-space: nowrap; }
+
+/* Diagrama */
+.flow { display: grid; grid-template-columns: 1fr auto 1.1fr auto 1.6fr; gap: 12px; align-items: center; }
+.node { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+.node.core { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(124,196,255,.08); }
+.node small { display: block; font-family: var(--f-mono); color: var(--muted); font-size: .75rem; margin-top: 4px; }
+.arrow { font-family: var(--f-mono); color: var(--sky); text-align: center; font-size: .78rem; }
+.arrow span { display: block; font-size: 1.4rem; }
+.stack { display: grid; gap: 10px; }
+.stack .node h3 { font-size: .9rem; }
+.stack .node p { font-size: .88rem; color: var(--muted); }
+@media (max-width: 820px) {
+  .flow { grid-template-columns: 1fr; }
+  .arrow span { transform: rotate(90deg); }
+}
+
+/* Pasos */
+.steps { display: flex; gap: 8px; flex-wrap: wrap; }
+.steps span { font-family: var(--f-mono); font-size: .75rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.steps span.on { border-color: var(--amber); color: var(--amber); }
+.cols { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+.cols > * { min-width: 0; }
+@media (max-width: 820px) { .cols { grid-template-columns: 1fr; } }
+ul.clean { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; max-width: 70ch; }
+ul.clean li::marker { color: var(--sky); }
+
+/* Quiz */
+.q { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.q .prompt { font-weight: 600; font-size: 1.05rem; }
+.opts { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.opt { text-align: left; font: inherit; font-size: .95rem; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; display: flex; gap: 10px; align-items: baseline; }
+.opt b { font-family: var(--f-mono); color: var(--sky); }
+.opt:hover:not(:disabled) { border-color: var(--sky); }
+.opt.right { border-color: var(--ok); background: rgba(95,211,154,.1); }
+.opt.wrong { border-color: var(--bad); background: rgba(255,128,128,.08); }
+.opt:disabled { cursor: default; }
+.fb { font-size: .92rem; color: var(--muted); }
+.fb.okc { color: var(--ok); } .fb.badc { color: var(--bad); }
+
+/* Barra inferior */
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding: 0 max(16px, 3vw) env(safe-area-inset-bottom, 0px);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: rgba(12,19,32,.92); border-top: 1px solid var(--line);
+  font-family: var(--f-mono); font-size: .78rem; color: var(--muted);
+}
+.hud .region { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .region b { color: var(--sky); font-weight: 600; }
+.nav { display: flex; align-items: center; gap: 10px; }
+.nav button { font: inherit; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.nav button:hover { border-color: var(--sky); }
+.count { font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: center; }
+.progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--amber); transition: width .25s; z-index: 5; }
+a { color: var(--sky); }
+.links { display: grid; gap: 10px; }
+.links a { font-family: var(--f-mono); font-size: .95rem; }
+
+/* --- Laboratorio IaaS --- */
+.net-s3 { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 8px; border: 1px dashed var(--amber); color: var(--amber); }
+.net-vm.disk { border-color: var(--amber); color: var(--amber); }
+.net-vm.ghost { border-style: dashed; color: var(--muted); background: transparent; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.ex label { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ex textarea { width: 100%; font-family: var(--f-mono); font-size: .9rem; background: #0a101a; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; resize: vertical; }
+.ex textarea:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
+.ex-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ex-actions button { font: inherit; font-size: .9rem; border-radius: 6px; padding: 7px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); }
+.ex-actions .check { background: var(--sky); color: #08121f; border-color: var(--sky); font-weight: 600; }
+.ex-actions button:disabled { opacity: .5; cursor: default; }
+.ex-state { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); }
+.ex-msg { font-size: .95rem; color: var(--muted); }
+.ex-msg.okc { color: var(--ok); } .ex-msg.badc { color: var(--bad); } .ex-msg.hintc { color: var(--amber); }
+.ex.solved { border-color: var(--ok); }
+.checklist { display: grid; gap: 10px; }
+.checklist label { display: flex; gap: 10px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; font-size: .95rem; }
+.checklist input { accent-color: var(--ok); width: 18px; height: 18px; flex: none; transform: translateY(3px); }
+.scorecard { background: var(--panel); border: 1px solid var(--sky); border-radius: 12px; padding: 18px; display: grid; gap: 6px; }
+.scorecard .big { font-family: var(--f-display); font-size: 3rem; font-weight: 800; color: var(--amber); font-variant-numeric: tabular-nums; line-height: 1; }
+.scorecard .big small { font-size: 1.1rem; color: var(--muted); font-weight: 400; }
+.hud .pts b { color: var(--amber); }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<main class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide cover">
+  <div class="inner">
+    <div class="puffs" aria-hidden="true"><span style="width:18px;height:18px"></span><span style="width:30px;height:30px"></span><span style="width:22px;height:22px"></span><span style="width:12px;height:12px"></span></div>
+    <span class="eyebrow">Cloud Computing · Laboratorio</span>
+    <h1>Laboratorio IaaS<span class="dot">.</span></h1>
+    <p class="lead">Construir una infraestructura completa con la línea de comandos: red, firewall, dos servidores web, un disco y un bucket. Todo sobre Floci, sin cuenta en la nube.</p>
+    <div class="chips">
+      <span class="chip">duración <b>~2 h</b></span>
+      <span class="chip">ejercicios <b>4</b></span>
+      <span class="chip">puntaje <b>40</b></span>
+      <span class="chip">terminal <b>PowerShell</b></span>
+    </div>
+    <p class="muted" style="font-size:.9rem">Requisitos: Docker Desktop abierto, AWS CLI v2 y Floci funcionando, como vimos en la presentación de Floci.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Objetivo</span>
+    <h2>Lo que vamos a construir</h2>
+    <div class="net">
+      <div class="net-internet">Internet</div>
+      <div class="net-igw">lab-igw · internet gateway</div>
+      <div class="net-vpc">
+        <span class="net-label">lab-vpc · 10.0.0.0/16</span>
+        <div class="net-subs">
+          <div class="net-sub pub"><span class="net-label">subred pública · 10.0.1.0/24 · us-east-1a</span><div class="net-vm">web-1</div><div class="net-vm">web-2</div><div class="net-vm disk">vol 5 GiB</div><span class="net-sg">lab-web: TCP 80 y 443 desde 0.0.0.0/0</span></div>
+          <div class="net-sub priv"><span class="net-label">subred privada · 10.0.2.0/24 · ejercicio 1</span><div class="net-vm ghost">(reservada para una base de datos)</div></div>
+        </div>
+      </div>
+      <div class="net-s3">bucket S3 · lab-iaas-backups</div>
+    </div>
+    <div class="callout info"><p>Cada paso explica qué recurso se crea y qué equivale en una nube real. Los ejercicios suman 10 puntos cada uno; pedir una pista descuenta 3.</p></div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span class="on">0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span>3 · Servidores</span><span>4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Preparar la terminal</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># ¿Floci está corriendo?</span>
+floci status        <span class="c"># o: docker ps</span>
+
+<span class="c"># Carpeta de trabajo</span>
+mkdir lab-iaas
+cd lab-iaas
+
+<span class="c"># Apuntar la CLI a Floci</span>
+<span class="v">$env:AWS_ENDPOINT_URL</span>      = <span class="s">"http://localhost:4566"</span>
+<span class="v">$env:AWS_ACCESS_KEY_ID</span>     = <span class="s">"test"</span>
+<span class="v">$env:AWS_SECRET_ACCESS_KEY</span> = <span class="s">"test"</span>
+<span class="v">$env:AWS_DEFAULT_REGION</span>    = <span class="s">"us-east-1"</span>
+
+aws sts get-caller-identity</pre></div>
+      <div class="stack">
+        <div class="card"><h3>Una sola ventana</h3><p>Durante el laboratorio guardamos IDs en variables como <code class="i">$VPC</code> o <code class="i">$SG</code>. Viven solo en esta ventana de PowerShell: no la cierren.</p></div>
+        <div class="card"><h3>Si se cierra</h3><p>Los recursos siguen existiendo en Floci. Se recuperan los IDs con <code class="i">aws ec2 describe-vpcs</code>, <code class="i">describe-subnets</code>, etc., y se vuelven a asignar a las variables.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span class="on">1 · Red</span><span>2 · Firewall</span><span>3 · Servidores</span><span>4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 1 · Crear la VPC</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Red privada con 65 536 direcciones</span>
+<span class="v">$VPC</span> = aws ec2 create-vpc --cidr-block 10.0.0.0/16 `
+  --query Vpc.VpcId --output text
+
+<span class="c"># Ponerle nombre (etiqueta Name)</span>
+aws ec2 create-tags --resources <span class="v">$VPC</span> `
+  --tags Key=Name,Value=lab-vpc
+
+<span class="c"># Verificar</span>
+<span class="v">$VPC</span>
+aws ec2 describe-vpcs --vpc-ids <span class="v">$VPC</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">qué es</span><p>La VPC es nuestra red aislada. Nadie más la ve, aunque comparta el mismo hardware físico.</p></div>
+        <div class="card"><span class="tag">--query y --output text</span><p>De toda la respuesta JSON nos quedamos solo con el ID, para guardarlo en una variable.</p></div>
+        <div class="card"><span class="tag">etiquetas</span><p>Las etiquetas (tags) ordenan los recursos y permiten filtrarlos y repartir costos.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span class="on">1 · Red</span><span>2 · Firewall</span><span>3 · Servidores</span><span>4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 1 · Subred pública y salida a internet</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Subred pública en la zona us-east-1a</span>
+<span class="v">$SUBNET</span> = aws ec2 create-subnet --vpc-id <span class="v">$VPC</span> `
+  --cidr-block 10.0.1.0/24 --availability-zone us-east-1a `
+  --query Subnet.SubnetId --output text
+
+<span class="c"># Internet gateway: la puerta de la VPC hacia internet</span>
+<span class="v">$IGW</span> = aws ec2 create-internet-gateway `
+  --query InternetGateway.InternetGatewayId --output text
+aws ec2 attach-internet-gateway --internet-gateway-id <span class="v">$IGW</span> --vpc-id <span class="v">$VPC</span>
+
+<span class="c"># Tabla de rutas: todo lo que no es local (0.0.0.0/0) sale por el gateway</span>
+<span class="v">$RTB</span> = aws ec2 create-route-table --vpc-id <span class="v">$VPC</span> `
+  --query RouteTable.RouteTableId --output text
+aws ec2 create-route --route-table-id <span class="v">$RTB</span> `
+  --destination-cidr-block 0.0.0.0/0 --gateway-id <span class="v">$IGW</span>
+aws ec2 associate-route-table --route-table-id <span class="v">$RTB</span> --subnet-id <span class="v">$SUBNET</span></pre></div>
+    <div class="callout"><p><strong>Diferencia con AWS real:</strong> Floci guarda las rutas y el gateway, pero no enruta paquetes de verdad. En AWS, sin estos tres comandos la subred no tendría salida a internet: es lo que la convierte en <em>pública</em>.</p></div>
+  </div>
+</section>
+
+<!-- 6 Ejercicio 1 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 1 · 10 puntos</span>
+    <h2>Crear la subred privada</h2>
+    <p>La base de datos no debe ser accesible desde internet, así que irá en otra subred, sin ruta al gateway. Escribí el comando que crea en <code class="i">$VPC</code> una subred con el rango <code class="i">10.0.2.0/24</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+create-subnet\b)(?=.*--vpc-id\s+(\$VPC\b|vpc-\S+))(?=.*--cidr-block\s+10\.0\.2\.0\/24(\s|$))"
+         data-hint="Es casi igual al comando de la subred pública: cambia el rango, que ahora es 10.0.2.0/24. Podés guardarlo en $PRIV."
+         data-ok="Esa subred no está asociada a la tabla de rutas con el gateway: queda privada.">
+      <label for="ex1">Tu comando</label>
+      <textarea id="ex1" rows="3" spellcheck="false" placeholder="aws ec2 ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+    <p class="muted">Después de comprobarlo, ejecutalo en PowerShell para que la subred exista de verdad.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span class="on">2 · Firewall</span><span>3 · Servidores</span><span>4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 2 · Security group y par de claves</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Firewall para los servidores web</span>
+<span class="v">$SG</span> = aws ec2 create-security-group `
+  --group-name lab-web --description <span class="s">"Servidores web"</span> `
+  --vpc-id <span class="v">$VPC</span> --query GroupId --output text
+
+<span class="c"># Permitir HTTP desde cualquier origen</span>
+aws ec2 authorize-security-group-ingress --group-id <span class="v">$SG</span> `
+  --protocol tcp --port 80 --cidr 0.0.0.0/0
+
+<span class="c"># Par de claves para SSH</span>
+aws ec2 create-key-pair --key-name lab-key `
+  --query KeyMaterial --output text |
+  Out-File -Encoding ascii lab-key.pem
+
+<span class="c"># Ver las reglas</span>
+aws ec2 describe-security-groups --group-ids <span class="v">$SG</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">regla de entrada</span><p>Protocolo + puerto + origen. <code class="i">0.0.0.0/0</code> significa “cualquier dirección”.</p></div>
+        <div class="card"><span class="tag">todo lo demás, cerrado</span><p>Un security group nuevo rechaza toda entrada hasta que se agrega una regla.</p></div>
+        <div class="card"><span class="tag">en Floci</span><p>Cada puerto TCP abierto se publica en tu máquina, en el rango 30000–30999.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 Ejercicio 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 2 · 10 puntos</span>
+    <h2>Abrir HTTPS</h2>
+    <p>Más adelante los servidores atenderán HTTPS. Escribí el comando que agrega al security group <code class="i">$SG</code> una regla de entrada para TCP en el puerto <code class="i">443</code>, desde cualquier origen.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+authorize-security-group-ingress\b)(?=.*--group-id\s+(\$SG\b|sg-\S+))(?=.*--protocol\s+tcp\b)(?=.*--port\s+443(\s|$))(?=.*--cidr\s+0\.0\.0\.0\/0(\s|$))"
+         data-hint="Copiá la regla del puerto 80 y cambiá solo el número de puerto."
+         data-ok="Ahora el grupo acepta 80 y 443. Revisalo con describe-security-groups.">
+      <label for="ex2">Tu comando</label>
+      <textarea id="ex2" rows="3" spellcheck="false" placeholder="aws ec2 ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+    <p class="muted">Ejecutalo también en PowerShell.</p>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span class="on">3 · Servidores</span><span>4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 3 · El script de arranque</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>web.sh (en la carpeta lab-iaas)</span><button class="copy">Copiar</button></div><pre><span class="c">#!/bin/bash</span>
+dnf install -y nginx
+
+<span class="c"># Preguntarle al servicio de metadatos quién soy</span>
+ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+
+cat &gt; /usr/share/nginx/html/index.html &lt;&lt;EOF
+&lt;h1&gt;Servidor $ID&lt;/h1&gt;
+&lt;p&gt;IP privada: $IP&lt;/p&gt;
+EOF
+
+nginx</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">user data</span><p>Corre una sola vez, en el primer arranque. Así cada servidor nace configurado sin que nadie entre a instalar nada.</p></div>
+        <div class="card"><span class="tag">metadatos</span><p>Cada servidor muestra su propio ID e IP. Con eso vamos a distinguir las dos instancias en el navegador.</p></div>
+      </div>
+    </div>
+    <div class="callout"><p><strong>Guardar con fin de línea LF.</strong> En VS Code se cambia abajo a la derecha (CRLF → LF). Con CRLF, Linux no reconoce la primera línea y el script no corre.</p></div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span class="on">3 · Servidores</span><span>4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 3 · Lanzar dos servidores</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre>aws ec2 run-instances `
+  --image-id ami-amazonlinux2023 `
+  --instance-type t2.micro `
+  --count 2 `
+  --subnet-id <span class="v">$SUBNET</span> `
+  --security-group-ids <span class="v">$SG</span> `
+  --key-name lab-key `
+  --user-data file://web.sh `
+  --tag-specifications <span class="s">"ResourceType=instance,Tags=[{Key=Name,Value=web},{Key=Proyecto,Value=lab-iaas}]"</span>
+
+<span class="c"># Guardar los dos IDs en una lista</span>
+<span class="v">$IDS</span> = (aws ec2 describe-instances `
+  --filters <span class="s">"Name=tag:Proyecto,Values=lab-iaas"</span> `
+  --query <span class="s">"Reservations[].Instances[].InstanceId"</span> --output text) -split <span class="s">"\s+"</span>
+<span class="v">$WEB1</span> = <span class="v">$IDS</span>[0]
+
+<span class="c"># Ver ID, IP privada, tipo y estado en una tabla</span>
+aws ec2 describe-instances --instance-ids <span class="v">$IDS</span> `
+  --query <span class="s">"Reservations[].Instances[].[InstanceId,PrivateIpAddress,InstanceType,State.Name]"</span> `
+  --output table</pre></div>
+    <p class="muted"><code class="i">--count 2</code> crea dos instancias idénticas en una sola llamada. Las etiquetas se aplican a las dos.</p>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span class="on">3 · Servidores</span><span>4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 3 · Ver los servidores funcionando</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Buscar en los logs los puertos publicados</span>
+floci logs --follow       <span class="c"># o: docker logs -f floci</span>
+
+<span class="c"># Hay una línea por instancia, por ejemplo:</span>
+<span class="c"># Published EC2 instance i-0aa... app port 80 on host port 30000</span>
+<span class="c"># Published EC2 instance i-0bb... app port 80 on host port 30001</span>
+
+<span class="c"># Ctrl+C para salir de los logs y probar</span>
+curl.exe http://localhost:30000
+curl.exe http://localhost:30001</pre></div>
+      <div class="stack">
+        <div class="card"><h3>En el navegador</h3><p>Abrir los dos puertos. Cada página tiene que mostrar un ID de instancia y una IP privada distintos.</p></div>
+        <div class="card"><h3>Si no responde</h3><p>Esperar un minuto: <code class="i">dnf</code> está descargando nginx. Los logs muestran la salida del script.</p></div>
+        <div class="card"><h3>Escalado horizontal</h3><p>Acabamos de tener dos servidores iguales en vez de uno grande. Un balanceador de carga repartiría el tráfico entre ellos.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 Ejercicio 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 3 · 10 puntos</span>
+    <h2>Filtrar instancias</h2>
+    <p>En una cuenta real hay cientos de instancias. Escribí un <code class="i">describe-instances</code> que muestre solo las que tienen la etiqueta <code class="i">Proyecto=lab-iaas</code> <strong>y</strong> están en estado <code class="i">running</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+describe-instances\b)(?=.*--filters\b)(?=.*Name=tag:Proyecto,Values=lab-iaas\b)(?=.*Name=instance-state-name,Values=running\b)"
+         data-hint="--filters acepta varios filtros separados por espacio. Uno ya lo usamos en el paso 3; el otro filtra por instance-state-name."
+         data-ok="Los filtros se combinan con Y: deben cumplirse los dos.">
+      <label for="ex3">Tu comando</label>
+      <textarea id="ex3" rows="3" spellcheck="false" placeholder="aws ec2 describe-instances ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span>3 · Servidores</span><span class="on">4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 4 · Un disco de bloque</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Volumen de 5 GiB en la misma zona que la subred</span>
+<span class="v">$VOL</span> = aws ec2 create-volume --size 5 `
+  --volume-type gp3 --availability-zone us-east-1a `
+  --query VolumeId --output text
+
+<span class="c"># Conectarlo a web-1 como /dev/sdf</span>
+aws ec2 attach-volume --volume-id <span class="v">$VOL</span> `
+  --instance-id <span class="v">$WEB1</span> --device /dev/sdf
+
+<span class="c"># Verificar estado y a quién está conectado</span>
+aws ec2 describe-volumes --volume-ids <span class="v">$VOL</span> `
+  --query <span class="s">"Volumes[0].[Size,State,Attachments[0].InstanceId]"</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">misma zona</span><p>Un volumen solo se conecta a instancias de su zona de disponibilidad. Por eso usamos <code class="i">us-east-1a</code> en los dos.</p></div>
+        <div class="card"><span class="tag">persistente</span><p>El volumen sobrevive aunque la instancia se apague o se borre. Es el lugar para los datos que importan.</p></div>
+        <div class="card"><span class="tag">en Floci</span><p>Según la configuración de Docker, el disco aparece dentro de la instancia o queda registrado solo en la API. Para este laboratorio alcanza con verlo en estado <code class="i">in-use</code>.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span>3 · Servidores</span><span class="on">4 · Almacenamiento</span><span>5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 4 · Almacenamiento de objetos</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Bucket para respaldos</span>
+aws s3 mb s3://lab-iaas-backups
+
+<span class="c"># Respaldar el script de arranque</span>
+aws s3 cp web.sh s3://lab-iaas-backups/config/web.sh
+
+<span class="c"># Listar todo el contenido</span>
+aws s3 ls s3://lab-iaas-backups --recursive</pre></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th></th><th>Volumen</th><th>Bucket</th></tr></thead>
+          <tbody>
+            <tr><td>Se conecta a</td><td>Una instancia</td><td>Cualquiera, por HTTP</td></tr>
+            <tr><td>Se ve como</td><td>Un disco: /dev/sdf</td><td>Una URL: s3://…</td></tr>
+            <tr><td>Tamaño</td><td>Fijo: 5 GiB</td><td>Crece solo</td></tr>
+            <tr><td>Uso en este lab</td><td>Datos de web-1</td><td>Respaldos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span>3 · Servidores</span><span>4 · Almacenamiento</span><span class="on">5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 5 · Escalado vertical</h2>
+    <p class="muted">web-1 necesita más memoria. Para cambiar el tipo de instancia hay que apagarla primero.</p>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># 1. Apagar y esperar</span>
+aws ec2 stop-instances --instance-ids <span class="v">$WEB1</span>
+aws ec2 wait instance-stopped --instance-ids <span class="v">$WEB1</span>
+
+<span class="c"># 2. Cambiar de t2.micro (1 GiB) a t3.small (2 GiB)</span>
+aws ec2 modify-instance-attribute --instance-id <span class="v">$WEB1</span> `
+  --instance-type Value=t3.small
+
+<span class="c"># 3. Encender y comprobar</span>
+aws ec2 start-instances --instance-ids <span class="v">$WEB1</span>
+aws ec2 describe-instances --instance-ids <span class="v">$WEB1</span> `
+  --query <span class="s">"Reservations[0].Instances[0].[InstanceType,State.Name]"</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">vertical vs horizontal</span><p>En el paso 3 sumamos servidores. Acá agrandamos uno. Escalar verticalmente exige apagar: hay un corte de servicio.</p></div>
+        <div class="card"><span class="tag">nginx no vuelve solo</span><p>El user data corre solo en el primer arranque, y lo lanzamos a mano. Hay que iniciarlo de nuevo: <code class="i">docker ps</code> para ubicar el contenedor y <code class="i">docker exec &lt;id&gt; nginx</code>.</p></div>
+        <div class="card"><span class="tag">puerto publicado</span><p>Al apagar, Floci quita la publicación del puerto. Para restaurarla, revocar y volver a autorizar la regla del puerto 80.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span>3 · Servidores</span><span>4 · Almacenamiento</span><span class="on">5 · Escalar</span><span>6 · Limpiar</span></div>
+    <h2>Paso 5 · Volver a publicar web-1</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Iniciar nginx dentro de la instancia</span>
+docker ps                         <span class="c"># ubicar el contenedor de web-1</span>
+docker exec <span class="v">&lt;id-del-contenedor&gt;</span> nginx
+
+<span class="c"># Republicar el puerto 80</span>
+aws ec2 revoke-security-group-ingress --group-id <span class="v">$SG</span> `
+  --protocol tcp --port 80 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id <span class="v">$SG</span> `
+  --protocol tcp --port 80 --cidr 0.0.0.0/0
+
+<span class="c"># Buscar el nuevo puerto en los logs y probar</span>
+floci logs</pre></div>
+    <div class="callout info"><p>En un servidor real, nginx se registra como servicio (<code class="i">systemctl enable nginx</code>) y arranca solo después de cada reinicio. Nuestro contenedor no tiene systemd, por eso lo hacemos a mano.</p></div>
+  </div>
+</section>
+
+<!-- 17 Ejercicio 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 4 · 10 puntos</span>
+    <h2>Terminar los servidores</h2>
+    <p>Terminado el trabajo, hay que borrar las instancias. Escribí el comando que termina <strong>las dos</strong> en una sola llamada.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+terminate-instances\b)(?=.*--instance-ids\s+(\$IDS\b|(\$\w+|i-[\w-]+)\s+(\$\w+|i-[\w-]+)))"
+         data-hint="El parámetro es --instance-ids y acepta varios IDs. Ya tenemos la lista guardada en una variable."
+         data-ok="En AWS real, terminar borra la instancia y deja de cobrarse. Una instancia solo apagada sigue cobrando su disco.">
+      <label for="ex4">Tu comando</label>
+      <textarea id="ex4" rows="3" spellcheck="false" placeholder="aws ec2 ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+    <p class="muted">Antes de ejecutarlo, desconectá el volumen: <code class="i">aws ec2 detach-volume --volume-id $VOL</code>. Y sacá las capturas de los pasos anteriores.</p>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>0 · Preparar</span><span>1 · Red</span><span>2 · Firewall</span><span>3 · Servidores</span><span>4 · Almacenamiento</span><span>5 · Escalar</span><span class="on">6 · Limpiar</span></div>
+    <h2>Paso 6 · Desarmar todo, en orden</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># 1. Esperar a que las instancias terminen y borrar el volumen</span>
+aws ec2 wait instance-terminated --instance-ids <span class="v">$IDS</span>
+aws ec2 delete-volume --volume-id <span class="v">$VOL</span>
+
+<span class="c"># 2. Firewall y clave</span>
+aws ec2 delete-security-group --group-id <span class="v">$SG</span>
+aws ec2 delete-key-pair --key-name lab-key
+
+<span class="c"># 3. Subredes de la VPC (la pública y la privada)</span>
+<span class="v">$SUBNETS</span> = (aws ec2 describe-subnets --filters <span class="s">"Name=vpc-id,Values=$VPC"</span> `
+  --query <span class="s">"Subnets[].SubnetId"</span> --output text) -split <span class="s">"\s+"</span>
+foreach (<span class="v">$s</span> in <span class="v">$SUBNETS</span>) { aws ec2 delete-subnet --subnet-id <span class="v">$s</span> }
+
+<span class="c"># 4. Rutas, gateway y VPC</span>
+aws ec2 delete-route-table --route-table-id <span class="v">$RTB</span>
+aws ec2 detach-internet-gateway --internet-gateway-id <span class="v">$IGW</span> --vpc-id <span class="v">$VPC</span>
+aws ec2 delete-internet-gateway --internet-gateway-id <span class="v">$IGW</span>
+aws ec2 delete-vpc --vpc-id <span class="v">$VPC</span>
+
+<span class="c"># 5. Bucket con su contenido</span>
+aws s3 rb s3://lab-iaas-backups --force</pre></div>
+    <p class="muted">El orden importa: una VPC no se puede borrar mientras tenga subredes, security groups propios o un gateway conectado. El error se llama <code class="i">DependencyViolation</code>.</p>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Para el informe</span>
+    <h2>Preguntas de reflexión</h2>
+    <ul class="clean">
+      <li>En este laboratorio, ¿qué capas administró Floci (el “proveedor”) y cuáles administraron ustedes? Relacionarlo con la tabla de responsabilidades de la clase.</li>
+      <li>¿Qué ventaja tiene tener dos servidores t2.micro frente a uno solo más grande? ¿Y qué desventaja?</li>
+      <li>Después del paso 5, nginx no arrancó solo. ¿Por qué? ¿Cómo se evitaría en un servidor real?</li>
+      <li>¿Por qué la subred 10.0.2.0/24 se considera privada si nadie la marcó así explícitamente?</li>
+      <li>Si este laboratorio se hiciera en AWS real y se olvidara el paso 6, ¿qué recursos seguirían generando costo?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Entregable</span>
+    <h2>Checklist y puntaje</h2>
+    <div class="cols">
+      <div class="checklist">
+        <label><input type="checkbox" id="ck1"> Captura de <code class="i">describe-vpcs</code> mostrando lab-vpc</label>
+        <label><input type="checkbox" id="ck2"> Comandos de los ejercicios 1 a 4</label>
+        <label><input type="checkbox" id="ck3"> Captura de la tabla con las dos instancias en <code class="i">running</code></label>
+        <label><input type="checkbox" id="ck4"> Capturas del navegador con las dos páginas (ID distinto)</label>
+        <label><input type="checkbox" id="ck5"> Captura del volumen en estado <code class="i">in-use</code></label>
+        <label><input type="checkbox" id="ck6"> Captura de <code class="i">aws s3 ls</code> con el respaldo</label>
+        <label><input type="checkbox" id="ck7"> Captura de web-1 como <code class="i">t3.small</code></label>
+        <label><input type="checkbox" id="ck8"> Respuestas a las preguntas de reflexión</label>
+        <label><input type="checkbox" id="ck9"> Captura final sin lab-vpc tras la limpieza</label>
+      </div>
+      <div class="stack">
+        <div class="scorecard">
+          <span class="eyebrow">Puntaje de ejercicios</span>
+          <div class="big"><span id="scoreBig">0</span><small> / 40</small></div>
+          <div class="muted" id="scoreDetail">Ningún ejercicio resuelto todavía.</div>
+        </div>
+        <div class="card"><span class="tag">formato</span><p>Un único PDF con las capturas en el orden del checklist y las respuestas al final.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="hud">
+  <span class="region">endpoint <b>localhost:4566</b> · <span class="pts">puntos <b id="ptsHud">0 / 40</b></span></span>
+  <div class="nav">
+    <button id="prev" aria-label="Diapositiva anterior">←</button>
+    <span class="count" id="count">1 / 1</span>
+    <button id="next" aria-label="Diapositiva siguiente">→</button>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const count = document.getElementById('count');
+  const progress = document.getElementById('progress');
+  let i = 0;
+
+  function fromHash() {
+    const m = /^#s(\d+)$/.exec(location.hash || '');
+    if (m) { const n = parseInt(m[1], 10) - 1; if (n >= 0 && n < slides.length) return n; }
+    return 0;
+  }
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    slides[i].scrollTop = 0;
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) {}
+  }
+  document.getElementById('prev').addEventListener('click', () => show(i - 1));
+  document.getElementById('next').addEventListener('click', () => show(i + 1));
+  document.addEventListener('keydown', (e) => {
+    if (document.querySelector('.swal2-container')) return;
+    if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && e.target === document.body)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+  });
+  let tx = null;
+  document.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 60) show(i + (dx < 0 ? 1 : -1));
+    tx = null;
+  });
+
+  // Copiar código
+  document.querySelectorAll('.copy').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.code').querySelector('pre');
+      const text = pre.innerText;
+      const done = () => { btn.textContent = 'Copiado'; setTimeout(() => (btn.textContent = 'Copiar'), 1400); };
+      const fallback = () => {
+        const r = document.createRange(); r.selectNodeContents(pre);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent = 'Ctrl+C'; setTimeout(() => (btn.textContent = 'Copiar'), 1800);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+        else fallback();
+      } catch (e) { fallback(); }
+    });
+  });
+
+  // Quizzes
+  document.querySelectorAll('.q').forEach((q) => {
+    const correct = q.dataset.correct;
+    const why = q.dataset.why;
+    const fb = q.querySelector('.fb');
+    const opts = Array.from(q.querySelectorAll('.opt'));
+    opts.forEach((b) => b.addEventListener('click', () => {
+      const ok = b.dataset.k === correct;
+      opts.forEach((o) => { o.disabled = true; if (o.dataset.k === correct) o.classList.add('right'); });
+      if (!ok) b.classList.add('wrong');
+      fb.textContent = (ok ? 'Correcto. ' : 'No es esa. ') + why;
+      fb.className = 'fb ' + (ok ? 'okc' : 'badc');
+      if (window.Swal) {
+        Swal.fire({
+          icon: ok ? 'success' : 'error',
+          title: ok ? '¡Correcto!' : 'Casi',
+          text: why,
+          background: '#131d2d', color: '#e7edf5',
+          confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir'
+        });
+      }
+    }));
+  });
+
+  window.addEventListener('hashchange', () => show(fromHash()));
+  show(fromHash());
+})();
+
+(function () {
+  const exs = Array.from(document.querySelectorAll('.ex'));
+  const state = exs.map(() => ({ hints: 0, solved: false, pts: 0 }));
+  const max = exs.reduce((a, e) => a + Number(e.dataset.pts || 0), 0);
+  const ptsHud = document.getElementById('ptsHud');
+  const scoreBig = document.getElementById('scoreBig');
+  const scoreDetail = document.getElementById('scoreDetail');
+
+  function normalize(s) {
+    return s.replace(/`\s*\r?\n/g, ' ').replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function render() {
+    const total = state.reduce((a, s) => a + s.pts, 0);
+    if (ptsHud) ptsHud.textContent = total + ' / ' + max;
+    if (scoreBig) scoreBig.textContent = total;
+    if (scoreDetail) {
+      const done = state.filter((s) => s.solved).length;
+      scoreDetail.textContent = done === 0
+        ? 'Ningún ejercicio resuelto todavía.'
+        : done + ' de ' + exs.length + ' ejercicios resueltos · ' + state.reduce((a, s) => a + s.hints, 0) + ' pistas usadas.';
+    }
+  }
+  function swal(opts) {
+    if (window.Swal) Swal.fire(Object.assign({ background: '#131d2d', color: '#e7edf5', confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir' }, opts));
+  }
+
+  exs.forEach((ex, idx) => {
+    const re = new RegExp(ex.dataset.re, 'i');
+    const pts = Number(ex.dataset.pts || 10);
+    const ta = ex.querySelector('textarea');
+    const msg = ex.querySelector('.ex-msg');
+    const st = ex.querySelector('.ex-state');
+    const btnCheck = ex.querySelector('.check');
+    const btnHint = ex.querySelector('.hint');
+
+    btnCheck.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      const cmd = normalize(ta.value);
+      if (!cmd) { msg.textContent = 'Escribí el comando antes de comprobar.'; msg.className = 'ex-msg badc'; return; }
+      if (re.test(cmd)) {
+        s.solved = true;
+        s.pts = Math.max(0, pts - 3 * s.hints);
+        ex.classList.add('solved');
+        btnCheck.disabled = true; btnHint.disabled = true;
+        msg.textContent = 'Correcto. ' + ex.dataset.ok;
+        msg.className = 'ex-msg okc';
+        st.textContent = '+' + s.pts + ' puntos';
+        swal({ icon: 'success', title: '¡Correcto! +' + s.pts, text: ex.dataset.ok });
+      } else {
+        msg.textContent = 'Todavía no. Revisá el nombre del comando y cada parámetro pedido.';
+        msg.className = 'ex-msg badc';
+        swal({ icon: 'error', title: 'Todavía no', text: 'Revisá el nombre del comando y cada parámetro que pide la consigna.' });
+      }
+      render();
+    });
+
+    btnHint.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      if (s.hints === 0) s.hints = 1;
+      btnHint.disabled = true;
+      msg.textContent = 'Pista: ' + ex.dataset.hint;
+      msg.className = 'ex-msg hintc';
+      st.textContent = 'pista usada (−3)';
+    });
+
+    ta.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); btnCheck.click(); }
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
