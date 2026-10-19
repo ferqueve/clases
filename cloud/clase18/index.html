@@ -1,0 +1,1127 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Objetos en IaaS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: una diapositiva a pantalla completa por vez, sobre un cielo nocturno con "flóculos" de nube; barra de región abajo */
+:root {
+  --ink: #0c1320;
+  --panel: #131d2d;
+  --panel-2: #1a2639;
+  --line: #27364f;
+  --fg: #e7edf5;
+  --muted: #93a4bb;
+  --sky: #7cc4ff;
+  --amber: #ffb04a;
+  --ok: #5fd39a;
+  --bad: #ff8080;
+  --f-display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(124,196,255,.07) 0 60px, transparent 61px),
+    radial-gradient(circle at 16% 22%, rgba(124,196,255,.05) 0 80px, transparent 81px),
+    radial-gradient(circle at 88% 82%, rgba(124,196,255,.06) 0 70px, transparent 71px),
+    radial-gradient(circle at 84% 78%, rgba(124,196,255,.04) 0 100px, transparent 101px),
+    var(--ink);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 18px;
+  line-height: 1.55;
+  overflow: hidden;
+}
+.deck { position: relative; height: 100%; }
+.slide {
+  position: absolute; inset: 0 0 56px 0;
+  overflow-y: auto;
+  padding-block: clamp(24px, 5vh, 56px);
+  padding-inline: max(16px, 5vw);
+  display: none;
+}
+.slide.active { display: block; animation: rise .35s ease; }
+@keyframes rise { from { opacity: .4; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide.active { animation: none; } }
+.inner { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; min-height: 100%; justify-content: center; }
+
+.eyebrow {
+  font-family: var(--f-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--sky); opacity: .85;
+}
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2.6rem, 8vw, 5.6rem); font-weight: 800; letter-spacing: -.02em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); font-weight: 600; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; margin: 0 0 6px; color: var(--fg); }
+p { margin: 0; max-width: 68ch; }
+.lead { font-size: 1.2rem; color: var(--muted); max-width: 60ch; }
+.muted { color: var(--muted); }
+strong { color: var(--fg); font-weight: 600; }
+.hl { color: var(--amber); }
+.sky { color: var(--sky); }
+code.i { font-family: var(--f-mono); font-size: .88em; background: var(--panel-2); padding: 1px 6px; border-radius: 4px; color: var(--sky); }
+
+/* Portada */
+.cover h1 .dot { color: var(--sky); }
+.puffs { display: flex; gap: 10px; align-items: flex-end; height: 40px; }
+.puffs span { display: block; border-radius: 50%; background: var(--sky); opacity: .8; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { font-family: var(--f-mono); font-size: .85rem; border: 1px solid var(--line); padding: 6px 12px; border-radius: 999px; color: var(--fg); background: var(--panel); }
+.chip b { color: var(--amber); font-weight: 600; }
+
+/* Grillas */
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.card p { font-size: .96rem; color: var(--muted); }
+.card .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); margin-bottom: 6px; display: block; }
+.callout { border-left: 3px solid var(--amber); padding: 10px 16px; background: rgba(255,176,74,.06); border-radius: 0 8px 8px 0; max-width: 80ch; }
+.callout.info { border-color: var(--sky); background: rgba(124,196,255,.06); }
+
+/* Código */
+.code { position: relative; background: #0a101a; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.code .bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: .86rem; line-height: 1.6; color: var(--fg); }
+.code .c { color: #6f819b; }
+.code .k { color: var(--sky); }
+.code .s { color: var(--ok); }
+.code .v { color: var(--amber); }
+.copy { font: inherit; font-size: .72rem; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 3px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--sky); }
+.copy:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+/* Tablas */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; min-width: 560px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--panel); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.m { font-family: var(--f-mono); font-size: .86rem; color: var(--sky); white-space: nowrap; }
+td.a { font-family: var(--f-mono); font-size: .86rem; color: var(--amber); white-space: nowrap; }
+
+/* Diagrama */
+.flow { display: grid; grid-template-columns: 1fr auto 1.1fr auto 1.6fr; gap: 12px; align-items: center; }
+.node { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+.node.core { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(124,196,255,.08); }
+.node small { display: block; font-family: var(--f-mono); color: var(--muted); font-size: .75rem; margin-top: 4px; }
+.arrow { font-family: var(--f-mono); color: var(--sky); text-align: center; font-size: .78rem; }
+.arrow span { display: block; font-size: 1.4rem; }
+.stack { display: grid; gap: 10px; }
+.stack .node h3 { font-size: .9rem; }
+.stack .node p { font-size: .88rem; color: var(--muted); }
+@media (max-width: 820px) {
+  .flow { grid-template-columns: 1fr; }
+  .arrow span { transform: rotate(90deg); }
+}
+
+/* Pasos */
+.steps { display: flex; gap: 8px; flex-wrap: wrap; }
+.steps span { font-family: var(--f-mono); font-size: .75rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.steps span.on { border-color: var(--amber); color: var(--amber); }
+.cols { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+.cols > * { min-width: 0; }
+@media (max-width: 820px) { .cols { grid-template-columns: 1fr; } }
+ul.clean { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; max-width: 70ch; }
+ul.clean li::marker { color: var(--sky); }
+
+/* Quiz */
+.q { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.q .prompt { font-weight: 600; font-size: 1.05rem; }
+.opts { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.opt { text-align: left; font: inherit; font-size: .95rem; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; display: flex; gap: 10px; align-items: baseline; }
+.opt b { font-family: var(--f-mono); color: var(--sky); }
+.opt:hover:not(:disabled) { border-color: var(--sky); }
+.opt.right { border-color: var(--ok); background: rgba(95,211,154,.1); }
+.opt.wrong { border-color: var(--bad); background: rgba(255,128,128,.08); }
+.opt:disabled { cursor: default; }
+.fb { font-size: .92rem; color: var(--muted); }
+.fb.okc { color: var(--ok); } .fb.badc { color: var(--bad); }
+
+/* Barra inferior */
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding: 0 max(16px, 3vw) env(safe-area-inset-bottom, 0px);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: rgba(12,19,32,.92); border-top: 1px solid var(--line);
+  font-family: var(--f-mono); font-size: .78rem; color: var(--muted);
+}
+.hud .region { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .region b { color: var(--sky); font-weight: 600; }
+.nav { display: flex; align-items: center; gap: 10px; }
+.nav button { font: inherit; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.nav button:hover { border-color: var(--sky); }
+.count { font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: center; }
+.progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--amber); transition: width .25s; z-index: 5; }
+a { color: var(--sky); }
+.links { display: grid; gap: 10px; }
+.links a { font-family: var(--f-mono); font-size: .95rem; }
+
+/* --- Clase IaaS --- */
+table.layers td.you { color: var(--amber); font-weight: 600; background: rgba(255,176,74,.08); }
+table.layers td.prov { color: var(--sky); background: rgba(124,196,255,.06); }
+table.layers tr.line td { border-top: 2px dashed var(--sky); }
+.blocks { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.block { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.block p { color: var(--muted); font-size: .95rem; }
+.block .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); display: block; margin-bottom: 6px; }
+.block.wide { grid-column: 1 / -1; border-style: dashed; border-color: var(--sky); }
+.anatomy { display: grid; gap: 10px; }
+.parts { display: flex; flex-wrap: wrap; gap: 14px; }
+.parts div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; min-width: 150px; flex: 1; }
+.parts b { font-family: var(--f-mono); font-size: 1.8rem; color: var(--amber); display: block; }
+.parts small { color: var(--muted); font-size: .88rem; }
+.net { display: grid; gap: 8px; justify-items: center; }
+.net-internet, .net-igw { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.net-igw { border-color: var(--sky); color: var(--sky); }
+.net-internet::after, .net-igw::after { content: ""; }
+.net-vpc { width: 100%; border: 2px dashed var(--sky); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+.net-label { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.net-subs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .net-subs { grid-template-columns: 1fr; } }
+.net-sub { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.net-sub .net-label { flex-basis: 100%; }
+.net-sub.pub { background: rgba(124,196,255,.05); }
+.net-sub.priv { background: rgba(255,176,74,.05); }
+.net-vm { font-family: var(--f-mono); font-size: .8rem; padding: 6px 10px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); }
+.net-sg { flex-basis: 100%; font-family: var(--f-mono); font-size: .72rem; color: var(--amber); }
+.life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 760px) { .life { grid-template-columns: 1fr 1fr; } }
+.life div { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--sky); border-radius: 8px; padding: 12px; min-width: 0; }
+.life div:nth-child(3) { border-top-color: var(--amber); }
+.life div:nth-child(4) { border-top-color: var(--bad); }
+.life b { font-family: var(--f-mono); display: block; }
+.life small { color: var(--muted); font-size: .86rem; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); }
+ul.clean.small { font-size: .95rem; color: var(--muted); }
+.card.good { border-top: 3px solid var(--ok); }
+.card.bad { border-top: 3px solid var(--bad); }
+
+/* --- Laboratorio IaaS --- */
+.net-s3 { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 8px; border: 1px dashed var(--amber); color: var(--amber); }
+.net-vm.disk { border-color: var(--amber); color: var(--amber); }
+.net-vm.ghost { border-style: dashed; color: var(--muted); background: transparent; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.ex label { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ex textarea { width: 100%; font-family: var(--f-mono); font-size: .9rem; background: #0a101a; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; resize: vertical; }
+.ex textarea:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
+.ex-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ex-actions button { font: inherit; font-size: .9rem; border-radius: 6px; padding: 7px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); }
+.ex-actions .check { background: var(--sky); color: #08121f; border-color: var(--sky); font-weight: 600; }
+.ex-actions button:disabled { opacity: .5; cursor: default; }
+.ex-state { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); }
+.ex-msg { font-size: .95rem; color: var(--muted); }
+.ex-msg.okc { color: var(--ok); } .ex-msg.badc { color: var(--bad); } .ex-msg.hintc { color: var(--amber); }
+.ex.solved { border-color: var(--ok); }
+.checklist { display: grid; gap: 10px; }
+.checklist label { display: flex; gap: 10px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; font-size: .95rem; }
+.checklist input { accent-color: var(--ok); width: 18px; height: 18px; flex: none; transform: translateY(3px); }
+.scorecard { background: var(--panel); border: 1px solid var(--sky); border-radius: 12px; padding: 18px; display: grid; gap: 6px; }
+.scorecard .big { font-family: var(--f-display); font-size: 3rem; font-weight: 800; color: var(--amber); font-variant-numeric: tabular-nums; line-height: 1; }
+.scorecard .big small { font-size: 1.1rem; color: var(--muted); font-weight: 400; }
+.hud .pts b { color: var(--amber); }
+
+/* --- Serie IaaS: elementos comunes --- */
+.series { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.series div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; display: grid; gap: 2px; }
+.series b { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); font-weight: 400; }
+.series span { font-weight: 600; }
+.series small { color: var(--muted); font-size: .85rem; }
+.series div.now { border-color: var(--amber); background: rgba(255,176,74,.08); }
+.series div.now b { color: var(--amber); }
+.host { display: grid; gap: 8px; }
+.host-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 640px) { .host-row { grid-template-columns: 1fr 1fr; } }
+.host-vm { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--panel); font-size: .88rem; min-width: 0; }
+.host-vm b { font-family: var(--f-mono); display: block; font-size: .8rem; }
+.host-vm small { color: var(--muted); }
+.host-vm.a { border-top: 3px solid var(--sky); }
+.host-vm.b { border-top: 3px solid var(--amber); }
+.host-layer { border-radius: 8px; padding: 9px 14px; font-family: var(--f-mono); font-size: .82rem; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.host-layer.hv { background: rgba(124,196,255,.12); border: 1px solid var(--sky); color: var(--sky); }
+.host-layer.hw { background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+.credits { display: grid; gap: 8px; }
+.credit-bar { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: center; font-size: .9rem; }
+.credit-bar .track { height: 18px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; position: relative; overflow: hidden; }
+.credit-bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--sky); opacity: .75; }
+.credit-bar .fill.burst { background: var(--amber); }
+.credit-bar .base { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
+.versus { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .versus { grid-template-columns: 1fr; } }
+.note-teacher { font-size: .86rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 10px 14px; }
+.note-teacher b { color: var(--amber); font-family: var(--f-mono); font-weight: 600; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
+
+/* --- Bloque: snapshots incrementales --- */
+.bsets { display: grid; gap: 10px; }
+.brow { display: grid; grid-template-columns: minmax(130px, 190px) 1fr; gap: 14px; align-items: center; }
+.blab { font-family: var(--f-mono); font-size: .78rem; color: var(--muted); }
+.bgrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.bgrid i { display: block; height: 28px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); }
+.bgrid i.s { background: var(--sky); border-color: var(--sky); opacity: .85; }
+.bgrid i.c { background: var(--amber); border-color: var(--amber); }
+.bgrid i.e { border-style: dashed; background: transparent; }
+@media (max-width: 560px) { .brow { grid-template-columns: 1fr; gap: 4px; } }
+</style>
+
+<div class="progress" id="progress"></div>
+<main class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide cover">
+  <div class="inner">
+    <div class="puffs" aria-hidden="true"><span style="width:18px;height:18px"></span><span style="width:30px;height:30px"></span><span style="width:22px;height:22px"></span><span style="width:12px;height:12px"></span></div>
+    <span class="eyebrow">Elementos de IaaS · Módulo 3 de 9</span>
+    <h1>Objetos<span class="dot">.</span></h1>
+    <p class="lead">Buckets, claves, versiones, clases de almacenamiento, acceso y URLs firmadas. Primero el concepto, después cada cosa con las manos.</p>
+    <div class="chips">
+      <span class="chip">teoría <b>14</b> diapositivas</span>
+      <span class="chip">práctica <b>6</b> pasos</span>
+      <span class="chip">ejercicios <b>4 × 10</b> puntos</span>
+    </div>
+    <p class="muted" style="font-size:.9rem">Avanzá con las flechas ← → del teclado.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Mapa de la serie</span>
+    <h2>Nueve elementos, uno por módulo</h2>
+    <p class="muted">Un volumen de bloque pertenece a una instancia y a una zona. Los objetos son lo contrario: viven en la región, sin instancia, y cualquier aplicación los pide por HTTP.</p>
+    <div class="series">
+      <div><b>módulo 1</b><span>Cómputo</span><small>instancias, imágenes, tipos</small></div>
+      <div><b>módulo 2</b><span>Almacenamiento de bloque</span><small>volúmenes y snapshots</small></div>
+      <div class="now"><b>módulo 3</b><span>Almacenamiento de objetos</span><small>buckets, versiones, políticas</small></div>
+      <div><b>módulo 4</b><span>Redes virtuales</span><small>VPC, subredes, rutas, gateways</small></div>
+      <div><b>módulo 5</b><span>Seguridad de red</span><small>security groups, ACL, claves</small></div>
+      <div><b>módulo 6</b><span>Identidad y acceso</span><small>usuarios, roles, políticas</small></div>
+      <div><b>módulo 7</b><span>Balanceo y escalado</span><small>balanceadores, auto scaling</small></div>
+      <div><b>módulo 8</b><span>Monitoreo</span><small>métricas, logs, alarmas</small></div>
+      <div><b>módulo 9</b><span>Infraestructura como código</span><small>todo lo anterior, en archivos</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · bloque frente a objeto</span>
+    <h2>Un objeto no se monta: se pide por HTTP</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>Bloque (módulo 2)</th><th>Objetos (este módulo)</th></tr></thead>
+        <tbody>
+          <tr><td class="m">Acceso</td><td>Sistema operativo: formatear y montar</td><td>API HTTP: PUT, GET, DELETE</td></tr>
+          <tr><td class="m">Quién lo usa</td><td>Una instancia a la vez</td><td>Miles de clientes a la vez, desde cualquier lugar</td></tr>
+          <tr><td class="m">Alcance</td><td>Una zona de disponibilidad</td><td>Toda la región</td></tr>
+          <tr><td class="m">Modificar</td><td>Cambiar algunos bloques del medio</td><td>Reemplazar el objeto entero</td></tr>
+          <tr><td class="m">Tamaño</td><td>Se reserva por adelantado</td><td>Crece solo; se paga lo que se guarda</td></tr>
+          <tr><td class="m">Ideal para</td><td>Sistema operativo, bases de datos</td><td>Fotos, videos, respaldos, logs, sitios estáticos</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · anatomía</span>
+    <h2>Bucket, clave y objeto</h2>
+    <div class="code"><div class="bar"><span>la dirección de un objeto</span></div><pre>s3://<span class="k">objetos-4821</span>/<span class="v">reportes/2026/</span><span class="s">enero.txt</span></pre></div>
+    <div class="grid">
+      <div class="card"><span class="tag">bucket</span><h3>objetos-4821</h3><p>El contenedor. Su nombre es único en todo el mundo, de 3 a 63 caracteres en minúscula. Pertenece a una región.</p></div>
+      <div class="card"><span class="tag">clave (key)</span><h3>reportes/2026/enero.txt</h3><p>El nombre completo del objeto dentro del bucket. Puede tener hasta 1024 bytes.</p></div>
+      <div class="card"><span class="tag">objeto</span><h3>contenido + metadatos</h3><p>Los datos, de 0 bytes a 5 TiB, más información: tipo de contenido, fecha, ETag y los metadatos propios que quieras agregar.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · espacio plano</span>
+    <h2>Las carpetas no existen</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Un bucket es una lista plana de claves. La barra <code class="i">/</code> es un carácter más del nombre. Las consolas la muestran como carpeta porque agrupan por <strong>prefijo</strong>.</p>
+        <div class="card"><span class="tag">consecuencia</span><p>Renombrar una carpeta no existe: hay que copiar cada objeto con su clave nueva y borrar el original.</p></div>
+      </div>
+      <div class="code"><div class="bar"><span>tres objetos, cero carpetas</span></div><pre>reportes/2026/enero.txt
+reportes/2026/febrero.txt
+reportes/2025/diciembre.txt
+
+<span class="c"># prefijo  reportes/2026/  →  2 objetos</span>
+<span class="c"># delimitador /  →  "subcarpetas" 2025/ y 2026/</span></pre></div>
+    </div>
+    <p class="muted">Listar por prefijo y por delimitador es lo que simula el árbol de carpetas. Lo hacemos en la práctica 2.</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · operaciones</span>
+    <h2>Un bucket se maneja con pocas operaciones</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Operación</th><th>HTTP</th><th>Comando</th></tr></thead>
+        <tbody>
+          <tr><td>Guardar un objeto</td><td class="m">PUT</td><td class="m">aws s3 cp archivo s3://bucket/clave</td></tr>
+          <tr><td>Leer un objeto</td><td class="m">GET</td><td class="m">aws s3 cp s3://bucket/clave destino</td></tr>
+          <tr><td>Ver solo los metadatos</td><td class="m">HEAD</td><td class="m">aws s3api head-object</td></tr>
+          <tr><td>Listar</td><td class="m">GET</td><td class="m">aws s3 ls · list-objects-v2</td></tr>
+          <tr><td>Borrar</td><td class="m">DELETE</td><td class="m">aws s3 rm</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info"><p><strong>Dos comandos en la CLI.</strong> <code class="i">aws s3</code> tiene atajos cómodos, como cp, ls y sync. <code class="i">aws s3api</code> es la API completa, con todos los parámetros.</p></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · durabilidad</span>
+    <h2>Durabilidad no es disponibilidad</h2>
+    <div class="versus">
+      <div class="card"><span class="tag">durabilidad</span><h3>¿Se pierde el dato?</h3><p>S3 Standard promete 99,999999999 % (once nueves). Guarda copias en al menos tres zonas. Con diez millones de objetos, se espera perder uno cada diez mil años.</p></div>
+      <div class="card"><span class="tag">disponibilidad</span><h3>¿Puedo leerlo ahora?</h3><p>S3 Standard promete 99,99 %: hasta unos 53 minutos al año sin poder acceder. El dato sigue ahí; el servicio no responde.</p></div>
+    </div>
+    <p class="muted">Conecta con el SLA y el RTO de la Clase 3. Un objeto es muy durable, pero una aplicación que lo necesita sigue dependiendo de la disponibilidad.</p>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · clases de almacenamiento</span>
+    <h2>Cuanto menos se toca, menos cuesta</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Clase</th><th>Para</th><th>Recuperar</th><th>Permanencia mínima</th></tr></thead>
+        <tbody>
+          <tr><td class="m">STANDARD</td><td>Datos de uso frecuente</td><td>Inmediato</td><td>Ninguna</td></tr>
+          <tr><td class="m">STANDARD_IA</td><td>Poco acceso, pero rápido cuando se pide</td><td>Inmediato, con cargo por lectura</td><td>30 días</td></tr>
+          <tr><td class="m">GLACIER IR</td><td>Archivo con lecturas ocasionales</td><td>Inmediato</td><td>90 días</td></tr>
+          <tr><td class="m">GLACIER FLEXIBLE</td><td>Respaldos y archivo</td><td>Minutos a horas</td><td>90 días</td></tr>
+          <tr><td class="m">DEEP ARCHIVE</td><td>Retención de años por normativa</td><td>Hasta 12 horas o más</td><td>180 días</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">Bajar de clase abarata el GB almacenado y encarece o demora el acceso. Se conecta con FinOps de la Clase 13.</p>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · versionado</span>
+    <h2>Cada cambio guarda una versión</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Con el versionado activado, subir un objeto con una clave existente no lo reemplaza: crea una versión nueva y conserva la anterior.</p>
+        <div class="card"><span class="tag">borrar</span><p>Un DELETE normal no elimina nada. Agrega un <strong>marcador de borrado</strong> como versión más nueva y el objeto deja de aparecer al listar.</p></div>
+        <div class="card"><span class="tag">recuperar</span><p>Se borra el marcador, o se lee una versión concreta con su <code class="i">versionId</code>.</p></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Clave</th><th>Versión</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td class="m">config.txt</td><td class="m">3f9…</td><td>marcador de borrado (la más nueva)</td></tr>
+            <tr><td class="m">config.txt</td><td class="m">a07…</td><td>v2</td></tr>
+            <tr><td class="m">config.txt</td><td class="m">c41…</td><td>v1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout"><p><strong>Protege de errores y de ransomware.</strong> Una vez activado, el versionado no se puede desactivar: solo suspender. Y cada versión se cobra como un objeto.</p></div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · ciclo de vida</span>
+    <h2>Reglas que mueven y borran objetos solas</h2>
+    <div class="life">
+      <div><b>día 0</b><small>el objeto nace en STANDARD</small></div>
+      <div><b>día 30</b><small>pasa a STANDARD_IA</small></div>
+      <div><b>día 90</b><small>pasa a GLACIER</small></div>
+      <div><b>día 365</b><small>se elimina</small></div>
+    </div>
+    <div class="grid two">
+      <div class="card"><span class="tag">filtro</span><p>La regla puede aplicarse a todo el bucket o solo a un prefijo, como <code class="i">logs/</code>, o a objetos con una etiqueta.</p></div>
+      <div class="card"><span class="tag">también para versiones</span><p>Otra regla puede borrar versiones anteriores pasados N días, para que el versionado no crezca sin control.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · acceso</span>
+    <h2>Un bucket nuevo es privado</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="card"><span class="tag">política de identidad</span><p>Dice qué puede hacer un usuario o un rol. Se adjunta a la identidad. Módulo 6.</p></div>
+        <div class="card"><span class="tag">política de bucket</span><p>Dice quién puede tocar este bucket. Se adjunta al bucket y puede dar acceso a otras cuentas o al público.</p></div>
+        <div class="card"><span class="tag">bloqueo de acceso público</span><p>Un interruptor de seguridad por encima de las políticas. Está activo por defecto en los buckets nuevos.</p></div>
+      </div>
+      <div class="code"><div class="bar"><span>política de bucket</span></div><pre>{
+  <span class="k">"Effect"</span>:    <span class="s">"Allow"</span>,
+  <span class="k">"Principal"</span>: <span class="s">"*"</span>,
+  <span class="k">"Action"</span>:    <span class="s">"s3:GetObject"</span>,
+  <span class="k">"Resource"</span>:  <span class="s">"arn:aws:s3:::mi-bucket/publico/*"</span>
+}</pre></div>
+    </div>
+    <div class="callout"><p><strong>Quién, qué y sobre qué.</strong> Principal es quién, Action es qué puede hacer y Resource es sobre qué objetos. Esta política deja leer a cualquiera solo lo que esté bajo <code class="i">publico/</code>.</p></div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · URL prefirmada</span>
+    <h2>Compartir un objeto privado por tiempo limitado</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Una URL prefirmada lleva en sus parámetros una firma hecha con tus credenciales. Quien la tenga puede leer ese objeto hasta que venza, sin tener cuenta.</p>
+        <div class="card"><span class="tag">vencimiento</span><p>Se indica en segundos. Con credenciales de un usuario IAM, el máximo es de siete días.</p></div>
+      </div>
+      <div class="card"><span class="tag">cuidado</span><h3>La URL es la llave</h3><p>Cualquiera que la reciba puede usarla, la haya pedido o no. Por eso se usan vencimientos cortos y no se publican en lugares abiertos.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · cifrado</span>
+    <h2>Cifrado en reposo y en tránsito</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Modo</th><th>Quién guarda la clave</th><th>Para qué sirve</th></tr></thead>
+        <tbody>
+          <tr><td class="m">SSE-S3</td><td>El proveedor, de forma automática</td><td>Cifrado base, sin gestión. Hoy viene activado por defecto.</td></tr>
+          <tr><td class="m">SSE-KMS</td><td>El servicio de claves, bajo tu control</td><td>Auditar quién usa la clave y revocarla</td></tr>
+          <tr><td class="m">En el cliente</td><td>Solo vos</td><td>El proveedor nunca ve el dato en claro</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">En tránsito se usa HTTPS. La gestión de claves se profundiza en la Clase 12.</p>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · archivos grandes</span>
+    <h2>Subida multiparte</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Una sola operación PUT admite hasta 5 GiB. Para objetos más grandes, hasta 5 TiB, el archivo se parte y las partes se suben por separado.</p>
+        <div class="card"><span class="tag">ventajas</span><ul class="clean small">
+          <li>Las partes viajan en paralelo y la subida termina antes</li>
+          <li>Si una parte falla, se repite solo esa parte</li>
+          <li>Se puede pausar y retomar</li>
+        </ul></div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">límites</span><p>Cada parte de 5 MiB a 5 GiB y hasta 10 000 partes por objeto.</p></div>
+        <div class="card"><span class="tag">la CLI lo hace sola</span><p><code class="i">aws s3 cp</code> usa multiparte automáticamente con archivos grandes. Las partes sin completar se siguen cobrando: una regla de ciclo de vida puede abortarlas.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · cuándo usarlo</span>
+    <h2>Dónde encajan los objetos en una arquitectura</h2>
+    <div class="grid">
+      <div class="card good"><span class="tag">encaja</span><h3>Contenido estático</h3><p>Imágenes, videos, PDF y descargas, con una CDN delante (Clase 10).</p></div>
+      <div class="card good"><span class="tag">encaja</span><h3>Respaldos y archivo</h3><p>Snapshots exportados, copias de bases, logs históricos.</p></div>
+      <div class="card good"><span class="tag">encaja</span><h3>Datos de análisis</h3><p>Archivos que luego procesan herramientas de big data.</p></div>
+      <div class="card bad"><span class="tag">no encaja</span><h3>Base de datos activa</h3><p>Necesita escribir en medio de un archivo: eso es bloque.</p></div>
+      <div class="card bad"><span class="tag">no encaja</span><h3>Sistema operativo</h3><p>Una instancia no arranca desde un bucket.</p></div>
+      <div class="card bad"><span class="tag">no encaja</span><h3>Archivos que cambian mucho</h3><p>Cada cambio reescribe el objeto completo.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Antes de practicar</span>
+    <h2>Cómo traduce Floci cada concepto</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Concepto</th><th>En AWS</th><th>En Floci</th></tr></thead>
+        <tbody>
+          <tr><td>Bucket y objetos</td><td>S3, servicio de la región</td><td>API S3 emulada en localhost:4566</td></tr>
+          <tr><td>Versionado</td><td>Versiones y marcadores de borrado</td><td>Emulado; probar el comportamiento antes de clase</td></tr>
+          <tr><td>Políticas</td><td>Evaluadas en cada pedido</td><td>Se guardan; puede que no se hagan cumplir</td></tr>
+          <tr><td>URL prefirmada</td><td>Firma verificada por el servicio</td><td>Se genera igual; la verificación puede ser laxa</td></tr>
+          <tr><td>Clases y ciclo de vida</td><td>Mueven datos y cobran distinto</td><td>Se registran; no hay movimiento real</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><p><strong>Emular no es hacer cumplir.</strong> Un emulador local suele aceptar pedidos que AWS rechazaría. En cada práctica, la tabla de resultados esperados es la de AWS real.</p></div>
+  </div>
+</section>
+
+<!-- 17 Quiz -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Control de conceptos</span>
+    <h2>Antes de abrir la terminal</h2>
+    <div class="q" data-correct="c" data-why="En un bucket no hay carpetas: la barra es parte del nombre de la clave. Lo que parece una carpeta es solo un prefijo común.">
+      <div class="prompt">Querés renombrar la carpeta fotos/ a imagenes/ en un bucket. ¿Qué implica realmente?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>Una sola operación de renombrado</button>
+        <button class="opt" data-k="b"><b>B</b>Crear un bucket nuevo y borrar el anterior</button>
+        <button class="opt" data-k="c"><b>C</b>Copiar cada objeto con su clave nueva y borrar los originales</button>
+        <button class="opt" data-k="d"><b>D</b>No se puede hacer</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+    <div class="q" data-correct="a" data-why="Con versionado, el DELETE agrega un marcador de borrado. Las versiones anteriores siguen almacenadas y se recuperan quitando el marcador.">
+      <div class="prompt">Un bucket tiene el versionado activado y alguien ejecuta aws s3 rm sobre un objeto. ¿Qué pasa?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>Se agrega un marcador de borrado y las versiones siguen ahí</button>
+        <button class="opt" data-k="b"><b>B</b>Se borran todas las versiones</button>
+        <button class="opt" data-k="c"><b>C</b>Falla: con versionado no se puede borrar</button>
+        <button class="opt" data-k="d"><b>D</b>Se borra solo la versión más nueva</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+    <div class="q" data-correct="d" data-why="Una URL prefirmada funciona para quien la tenga hasta que venza. No identifica a la persona: es una llave temporal.">
+      <div class="prompt">Generás una URL prefirmada de 1 hora y la enviás por error a un grupo. ¿Quién puede leer el objeto?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>Solo quien tenga una cuenta de la organización</button>
+        <button class="opt" data-k="b"><b>B</b>Nadie: la URL solo funciona para quien la generó</button>
+        <button class="opt" data-k="c"><b>C</b>Solo quien la reciba primero</button>
+        <button class="opt" data-k="d"><b>D</b>Cualquiera que tenga la URL, durante esa hora</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+    <div class="q" data-correct="b" data-why="Los respaldos que casi nunca se leen van a una clase fría, como Glacier. Cuesta menos almacenar, y a cambio recuperar tarda o cuesta más.">
+      <div class="prompt">Guardás respaldos que se consultan una vez al año. ¿Qué clase de almacenamiento conviene?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>STANDARD</button>
+        <button class="opt" data-k="b"><b>B</b>Una clase fría de archivo, como Glacier</button>
+        <button class="opt" data-k="c"><b>C</b>Un volumen de bloque gp3 adjunto a una instancia</button>
+        <button class="opt" data-k="d"><b>D</b>Instance store</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span class="on">1 · Subir</span><span>2 · Prefijos</span><span>3 · Versiones</span><span>4 · URL firmada</span><span>5 · Política</span><span>6 · Ciclo de vida</span></div>
+    <h2>Práctica 1 · Crear un bucket y subir objetos</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Preparar la terminal (si no lo hiciste ya)</span>
+<span class="v">$env:AWS_ENDPOINT_URL</span>      = <span class="s">"http://localhost:4566"</span>
+<span class="v">$env:AWS_ACCESS_KEY_ID</span>     = <span class="s">"test"</span>
+<span class="v">$env:AWS_SECRET_ACCESS_KEY</span> = <span class="s">"test"</span>
+<span class="v">$env:AWS_DEFAULT_REGION</span>    = <span class="s">"us-east-1"</span>
+mkdir modulo-objetos; cd modulo-objetos
+
+<span class="c"># El nombre del bucket debe ser único en el mundo</span>
+<span class="v">$B</span> = <span class="s">"objetos-"</span> + (Get-Random -Maximum 99999)
+aws s3 mb s3://<span class="v">$B</span>
+
+<span class="c"># Un archivo de prueba y su subida</span>
+<span class="s">"Informe de enero"</span> | Out-File informe.txt -Encoding ascii
+aws s3 cp informe.txt s3://<span class="v">$B</span>/informe.txt
+
+<span class="c"># Lo mismo, con metadatos propios</span>
+aws s3 cp informe.txt s3://<span class="v">$B</span>/informe-meta.txt --metadata autor=ana,area=finanzas
+
+<span class="c"># Listar y mirar los metadatos</span>
+aws s3 ls s3://<span class="v">$B</span>
+aws s3api head-object --bucket <span class="v">$B</span> --key informe-meta.txt</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">$B</span><p>Guarda el nombre del bucket en una variable. Anotá el valor: lo usás en todas las prácticas.</p></div>
+        <div class="card"><span class="tag">head-object</span><p>Devuelve el tamaño, el tipo de contenido, el ETag y, en <code class="i">Metadata</code>, los valores que pusiste con <code class="i">--metadata</code>.</p></div>
+        <div class="card"><span class="tag">¿y si el nombre ya existe?</span><p>El error <code class="i">BucketAlreadyExists</code> indica que otro lo tiene. Cambiá el número.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 19 Ejercicio 1 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 1 · 10 puntos</span>
+    <h2>Subir a un prefijo</h2>
+    <p>Escribí el comando que sube <code class="i">informe.txt</code> al bucket <code class="i">$B</code> con la clave <code class="i">reportes/2026/enero.txt</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?:(?=.*\baws\s+s3\s+cp\s+\S+\s+s3://\S+/reportes/2026/enero\.txt)|(?=.*\baws\s+s3api\s+put-object\b)(?=.*--bucket\s+\S+)(?=.*--key\s+reportes/2026/enero\.txt))"
+         data-hint="No hay que crear la carpeta antes: el prefijo es parte de la clave. Usá el destino s3://bucket/clave completo."
+         data-ok="Ejecutalo y repetilo con febrero.txt en reportes/2026/ y con diciembre.txt en reportes/2025/. Los vas a necesitar en la práctica 2.">
+      <label for="ex1">Tu comando</label>
+      <textarea id="ex1" rows="3" spellcheck="false" placeholder="aws s3 cp ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Subir</span><span class="on">2 · Prefijos</span><span>3 · Versiones</span><span>4 · URL firmada</span><span>5 · Política</span><span>6 · Ciclo de vida</span></div>
+    <h2>Práctica 2 · Listar por prefijo y delimitador</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Todos los objetos, claves completas</span>
+aws s3api list-objects-v2 --bucket <span class="v">$B</span> `
+  --query <span class="s">"Contents[].Key"</span> --output table
+
+<span class="c"># Solo los de un prefijo</span>
+aws s3api list-objects-v2 --bucket <span class="v">$B</span> --prefix reportes/2026/ `
+  --query <span class="s">"Contents[].Key"</span>
+
+<span class="c"># "Carpetas" del primer nivel de reportes/</span>
+aws s3api list-objects-v2 --bucket <span class="v">$B</span> `
+  --prefix reportes/ --delimiter / `
+  --query <span class="s">"CommonPrefixes[].Prefix"</span>
+
+<span class="c"># Sincronizar una carpeta completa</span>
+mkdir lote; <span class="s">"a"</span> | Out-File lote/a.txt -Encoding ascii
+aws s3 sync lote s3://<span class="v">$B</span>/respaldo/</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">CommonPrefixes</span><p>Es lo que la consola muestra como carpetas: los prefijos distintos hasta el delimitador.</p></div>
+        <div class="card"><span class="tag">sync</span><p>Compara y sube solo lo que falta o cambió. Es la forma de respaldar una carpeta entera.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 Ejercicio 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 2 · 10 puntos</span>
+    <h2>Solo lo de 2025</h2>
+    <p>Escribí el comando que lista únicamente los objetos del bucket <code class="i">$B</code> cuya clave empieza con <code class="i">reportes/2025/</code>. Podés usar <code class="i">s3api</code> o <code class="i">s3 ls</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?:(?=.*\baws\s+s3api\s+list-objects(-v2)?\b)(?=.*--bucket\s+\S+)(?=.*--prefix\s+['&quot;]?reportes/2025/)|(?=.*\baws\s+s3\s+ls\s+s3://\S+/reportes/2025/))"
+         data-hint="Con s3api el filtro se llama --prefix. Con s3 ls, el prefijo se agrega al final de la dirección del bucket."
+         data-ok="Debería mostrar un solo objeto: diciembre.txt. Un prefijo sirve para listar y también para aplicar reglas, como veremos en el ciclo de vida.">
+      <label for="ex2">Tu comando</label>
+      <textarea id="ex2" rows="3" spellcheck="false" placeholder="aws s3api ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Subir</span><span>2 · Prefijos</span><span class="on">3 · Versiones</span><span>4 · URL firmada</span><span>5 · Política</span><span>6 · Ciclo de vida</span></div>
+    <h2>Práctica 3 · Versionado, borrado y recuperación</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Activar el versionado</span>
+aws s3api put-bucket-versioning --bucket <span class="v">$B</span> `
+  --versioning-configuration Status=Enabled
+aws s3api get-bucket-versioning --bucket <span class="v">$B</span>
+
+<span class="c"># Dos versiones de la misma clave</span>
+<span class="s">"version 1"</span> | Out-File config.txt -Encoding ascii
+aws s3 cp config.txt s3://<span class="v">$B</span>/config.txt
+<span class="s">"version 2"</span> | Out-File config.txt -Encoding ascii
+aws s3 cp config.txt s3://<span class="v">$B</span>/config.txt
+
+aws s3api list-object-versions --bucket <span class="v">$B</span> --prefix config.txt `
+  --query <span class="s">"Versions[].[VersionId,IsLatest,LastModified]"</span> --output table
+
+<span class="c"># Borrar: solo agrega un marcador</span>
+aws s3 rm s3://<span class="v">$B</span>/config.txt
+aws s3 ls s3://<span class="v">$B</span>/config.txt
+aws s3api list-object-versions --bucket <span class="v">$B</span> --prefix config.txt `
+  --query <span class="s">"DeleteMarkers[].[Key,VersionId,IsLatest]"</span> --output table</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">qué observar</span><p>Después del rm, <code class="i">ls</code> no muestra el objeto, pero <code class="i">list-object-versions</code> sigue mostrando las dos versiones y un marcador.</p></div>
+        <div class="card"><span class="tag">anotá los ID</span><p>Guardá el <code class="i">VersionId</code> del marcador y el de la versión 1: los usás ahora para recuperar.</p></div>
+        <div class="card"><span class="tag">recuperar</span><p>Quitar el marcador devuelve la versión 2: <code class="i">aws s3api delete-object --bucket $B --key config.txt --version-id &lt;id-del-marcador&gt;</code></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 23 Ejercicio 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 3 · 10 puntos</span>
+    <h2>Rescatar la versión 1</h2>
+    <p>Escribí el comando que descarga <strong>una versión concreta</strong> de <code class="i">config.txt</code>, con su <code class="i">VersionId</code>, a un archivo local llamado <code class="i">viejo.txt</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+s3api\s+get-object\b)(?=.*--bucket\s+\S+)(?=.*--key\s+config\.txt\b)(?=.*--version-id\s+\S+)(?=.*\sviejo\.txt\s*$)"
+         data-hint="get-object de s3api lleva tres parámetros con nombre y, al final, el nombre del archivo donde guardar el contenido."
+         data-ok="Ejecutalo con el VersionId de la versión 1 y abrí viejo.txt: debe decir 'version 1'. Así se recupera un archivo que se sobrescribió por error.">
+      <label for="ex3">Tu comando</label>
+      <textarea id="ex3" rows="3" spellcheck="false" placeholder="aws s3api get-object ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 24 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Subir</span><span>2 · Prefijos</span><span>3 · Versiones</span><span class="on">4 · URL firmada</span><span>5 · Política</span><span>6 · Ciclo de vida</span></div>
+    <h2>Práctica 4 · Compartir un objeto con una URL prefirmada</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># URL válida por 5 minutos</span>
+<span class="v">$URL</span> = aws s3 presign s3://<span class="v">$B</span>/informe.txt --expires-in 300
+<span class="v">$URL</span>
+
+<span class="c"># Leer el objeto como lo haría un navegador</span>
+(Invoke-WebRequest <span class="v">$URL</span> -UseBasicParsing).Content
+
+<span class="c"># La misma dirección, sin firma</span>
+Invoke-WebRequest <span class="s">"http://localhost:4566/$B/informe.txt"</span> -UseBasicParsing</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">los parámetros de la URL</span><p>Buscá en la URL <code class="i">X-Amz-Expires</code>, <code class="i">X-Amz-Date</code> y <code class="i">X-Amz-Signature</code>. Ahí viajan el vencimiento y la firma.</p></div>
+        <div class="card"><span class="tag">resultado esperado en AWS</span><p>Con la URL firmada se lee el contenido. Sin firma, el servicio responde <code class="i">403 Forbidden</code>.</p></div>
+        <div class="note-teacher"><b>Docente</b>Probá si Floci rechaza la URL sin firma. Los emuladores suelen devolver el objeto igual. Si pasa, presentalo como diferencia con AWS real y no como un error.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 25 Ejercicio 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 4 · 10 puntos</span>
+    <h2>Un enlace de quince minutos</h2>
+    <p>Escribí el comando que genera una URL prefirmada para <code class="i">s3://$B/reportes/2026/enero.txt</code> que <strong>venza a los 15 minutos</strong>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+s3\s+presign\s+s3://\S+/reportes/2026/enero\.txt)(?=.*--expires-in\s+900(\s|$))"
+         data-hint="El vencimiento se da en segundos. Quince minutos son 15 × 60."
+         data-ok="Con vencimientos cortos, aunque la URL se filtre, deja de servir pronto. Pasados los 900 segundos, el mismo enlace devolvería 403 en AWS real.">
+      <label for="ex4">Tu comando</label>
+      <textarea id="ex4" rows="3" spellcheck="false" placeholder="aws s3 presign ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 26 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Subir</span><span>2 · Prefijos</span><span>3 · Versiones</span><span>4 · URL firmada</span><span class="on">5 · Política</span><span>6 · Ciclo de vida</span></div>
+    <h2>Práctica 5 · Política de bucket de lectura pública</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Estado inicial del bloqueo público</span>
+aws s3api get-public-access-block --bucket <span class="v">$B</span>
+
+<span class="c"># La política: solo lectura, solo bajo publico/</span>
+@<span class="s">"
+{"Version":"2012-10-17","Statement":[{
+  "Sid":"LecturaPublica","Effect":"Allow","Principal":"*",
+  "Action":"s3:GetObject","Resource":"arn:aws:s3:::$B/publico/*"}]}
+"@</span> | Out-File politica.json -Encoding ascii
+
+<span class="c"># Permitir políticas públicas y adjuntar la nuestra</span>
+aws s3api put-public-access-block --bucket <span class="v">$B</span> `
+  --public-access-block-configuration BlockPublicPolicy=false
+aws s3api put-bucket-policy --bucket <span class="v">$B</span> --policy file://politica.json
+aws s3api get-bucket-policy --bucket <span class="v">$B</span> --query Policy --output text
+
+<span class="c"># Un objeto bajo el prefijo público</span>
+aws s3 cp informe.txt s3://<span class="v">$B</span>/publico/informe.txt
+Invoke-WebRequest <span class="s">"http://localhost:4566/$B/publico/informe.txt"</span> -UseBasicParsing</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">dos permisos hacen falta</span><p>La política da el permiso, pero el bloqueo de acceso público tiene que dejarla pasar. Con el bloqueo activo, <code class="i">put-bucket-policy</code> de una política pública falla en AWS real.</p></div>
+        <div class="card"><span class="tag">solo publico/*</span><p>Lo que está fuera de ese prefijo, como <code class="i">informe.txt</code> en la raíz, sigue privado.</p></div>
+        <div class="callout"><p><strong>En una cuenta real, nunca abras un bucket entero.</strong> Muchas filtraciones de datos fueron buckets con lectura pública por error.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 27 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Subir</span><span>2 · Prefijos</span><span>3 · Versiones</span><span>4 · URL firmada</span><span>5 · Política</span><span class="on">6 · Ciclo de vida</span></div>
+    <h2>Práctica 6 · Clase de almacenamiento y ciclo de vida</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Subir directamente a una clase más barata</span>
+aws s3 cp informe.txt s3://<span class="v">$B</span>/logs/enero.log --storage-class STANDARD_IA
+aws s3api head-object --bucket <span class="v">$B</span> --key logs/enero.log `
+  --query StorageClass
+
+<span class="c"># Regla: logs/ a IA a los 30 días, a GLACIER a los 90, borrar al año</span>
+@<span class="s">'
+{"Rules":[{"ID":"archivar-logs","Status":"Enabled",
+ "Filter":{"Prefix":"logs/"},
+ "Transitions":[{"Days":30,"StorageClass":"STANDARD_IA"},
+                {"Days":90,"StorageClass":"GLACIER"}],
+ "Expiration":{"Days":365}}]}
+'</span>@ | Out-File ciclo.json -Encoding ascii
+
+aws s3api put-bucket-lifecycle-configuration --bucket <span class="v">$B</span> `
+  --lifecycle-configuration file://ciclo.json
+aws s3api get-bucket-lifecycle-configuration --bucket <span class="v">$B</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">StorageClass</span><p>El valor de STANDARD no aparece en la respuesta: si falta, es STANDARD.</p></div>
+        <div class="card"><span class="tag">la regla no se ve en segundos</span><p>AWS aplica las reglas una vez por día. Acá comprobamos que se guardó; no esperamos a que se cumpla.</p></div>
+        <div class="card"><span class="tag">el filtro</span><p><code class="i">Prefix: logs/</code> limita la regla a esos objetos. Lo de reportes/ queda sin tocar.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 28 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Limpieza</span>
+    <h2>Vaciar y borrar el bucket</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Con versionado, rm --recursive no alcanza: hay que borrar cada versión</span>
+<span class="v">$v</span> = aws s3api list-object-versions --bucket <span class="v">$B</span> --output json | ConvertFrom-Json
+foreach (<span class="v">$o</span> in (@(<span class="v">$v</span>.Versions) + @(<span class="v">$v</span>.DeleteMarkers))) {
+  if (<span class="v">$o</span>) {
+    aws s3api delete-object --bucket <span class="v">$B</span> --key <span class="v">$o</span>.Key --version-id <span class="v">$o</span>.VersionId | Out-Null
+  }
+}
+
+<span class="c"># Ahora sí: el bucket vacío se puede borrar</span>
+aws s3 rb s3://<span class="v">$B</span>
+aws s3 ls</pre></div>
+    <p class="muted">Un bucket con objetos o versiones no se puede borrar. Si <code class="i">rb</code> da error, quedó alguna versión o un marcador.</p>
+  </div>
+</section>
+
+<!-- 29 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Para el informe</span>
+    <h2>Preguntas de reflexión</h2>
+    <ul class="clean">
+      <li>En la práctica 2 listaron con delimitador. ¿Por qué se dice que en un bucket no hay carpetas? ¿Qué problema trae eso para renombrar un directorio con miles de archivos?</li>
+      <li>Después del <code class="i">rm</code> con versionado, el objeto no aparecía en <code class="i">ls</code> pero seguía almacenado. ¿Qué ventaja y qué costo tiene eso?</li>
+      <li>¿Qué diferencia hay entre una política de bucket y una URL prefirmada para dar acceso a un archivo? Den un caso donde conviene cada una.</li>
+      <li>Una empresa guarda facturas que la ley obliga a conservar siete años y casi nunca se consultan. ¿Qué clase de almacenamiento y qué regla de ciclo de vida propondrían?</li>
+      <li>Una aplicación necesita guardar la base de datos de clientes y también las fotos de perfil. ¿Qué almacenamiento elegirían para cada una, bloque u objetos? Justifiquen.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 30 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Entregable</span>
+    <h2>Checklist y puntaje</h2>
+    <div class="cols">
+      <div class="checklist">
+        <label><input type="checkbox" id="ck1"> Salida de <code class="i">head-object</code> con los metadatos propios</label>
+        <label><input type="checkbox" id="ck2"> Listados por prefijo y por delimitador (<code class="i">CommonPrefixes</code>)</label>
+        <label><input type="checkbox" id="ck3"> Tabla de versiones de <code class="i">config.txt</code> antes y después del <code class="i">rm</code></label>
+        <label><input type="checkbox" id="ck4"> Contenido de <code class="i">viejo.txt</code> recuperado por <code class="i">VersionId</code></label>
+        <label><input type="checkbox" id="ck5"> URL prefirmada, con sus parámetros y el resultado de abrirla</label>
+        <label><input type="checkbox" id="ck6"> Política de bucket (<code class="i">get-bucket-policy</code>)</label>
+        <label><input type="checkbox" id="ck7"> Regla de ciclo de vida y clase del objeto de <code class="i">logs/</code></label>
+        <label><input type="checkbox" id="ck8"> Respuestas a las preguntas de reflexión</label>
+        <label><input type="checkbox" id="ck9"> Captura de la limpieza: bucket borrado, <code class="i">aws s3 ls</code> sin él</label>
+      </div>
+      <div class="stack">
+        <div class="scorecard">
+          <span class="eyebrow">Puntaje de ejercicios</span>
+          <div class="big"><span id="scoreBig">0</span><small> / 40</small></div>
+          <div class="muted" id="scoreDetail">Ningún ejercicio resuelto todavía.</div>
+        </div>
+        <div class="card"><span class="tag">próximo módulo</span><p><strong>Redes virtuales:</strong> VPC, subredes públicas y privadas, tablas de rutas y gateways.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="hud">
+  <span class="region">módulo <b>3 · Objetos</b> · <span class="pts">puntos <b id="ptsHud">0 / 40</b></span></span>
+  <div class="nav">
+    <button id="prev" aria-label="Diapositiva anterior">←</button>
+    <span class="count" id="count">1 / 1</span>
+    <button id="next" aria-label="Diapositiva siguiente">→</button>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const count = document.getElementById('count');
+  const progress = document.getElementById('progress');
+  let i = 0;
+
+  function fromHash() {
+    const m = /^#s(\d+)$/.exec(location.hash || '');
+    if (m) { const n = parseInt(m[1], 10) - 1; if (n >= 0 && n < slides.length) return n; }
+    return 0;
+  }
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    slides[i].scrollTop = 0;
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) {}
+  }
+  document.getElementById('prev').addEventListener('click', () => show(i - 1));
+  document.getElementById('next').addEventListener('click', () => show(i + 1));
+  document.addEventListener('keydown', (e) => {
+    if (document.querySelector('.swal2-container')) return;
+    if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && e.target === document.body)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+  });
+  let tx = null;
+  document.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 60) show(i + (dx < 0 ? 1 : -1));
+    tx = null;
+  });
+
+  // Copiar código
+  document.querySelectorAll('.copy').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.code').querySelector('pre');
+      const text = pre.innerText;
+      const done = () => { btn.textContent = 'Copiado'; setTimeout(() => (btn.textContent = 'Copiar'), 1400); };
+      const fallback = () => {
+        const r = document.createRange(); r.selectNodeContents(pre);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent = 'Ctrl+C'; setTimeout(() => (btn.textContent = 'Copiar'), 1800);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+        else fallback();
+      } catch (e) { fallback(); }
+    });
+  });
+
+  // Quizzes
+  document.querySelectorAll('.q').forEach((q) => {
+    const correct = q.dataset.correct;
+    const why = q.dataset.why;
+    const fb = q.querySelector('.fb');
+    const opts = Array.from(q.querySelectorAll('.opt'));
+    opts.forEach((b) => b.addEventListener('click', () => {
+      const ok = b.dataset.k === correct;
+      opts.forEach((o) => { o.disabled = true; if (o.dataset.k === correct) o.classList.add('right'); });
+      if (!ok) b.classList.add('wrong');
+      fb.textContent = (ok ? 'Correcto. ' : 'No es esa. ') + why;
+      fb.className = 'fb ' + (ok ? 'okc' : 'badc');
+      if (window.Swal) {
+        Swal.fire({
+          icon: ok ? 'success' : 'error',
+          title: ok ? '¡Correcto!' : 'Casi',
+          text: why,
+          background: '#131d2d', color: '#e7edf5',
+          confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir'
+        });
+      }
+    }));
+  });
+
+  window.addEventListener('hashchange', () => show(fromHash()));
+  show(fromHash());
+})();
+
+(function () {
+  const exs = Array.from(document.querySelectorAll('.ex'));
+  const state = exs.map(() => ({ hints: 0, solved: false, pts: 0 }));
+  const max = exs.reduce((a, e) => a + Number(e.dataset.pts || 0), 0);
+  const ptsHud = document.getElementById('ptsHud');
+  const scoreBig = document.getElementById('scoreBig');
+  const scoreDetail = document.getElementById('scoreDetail');
+
+  function normalize(s) {
+    return s.replace(/`\s*\r?\n/g, ' ').replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function render() {
+    const total = state.reduce((a, s) => a + s.pts, 0);
+    if (ptsHud) ptsHud.textContent = total + ' / ' + max;
+    if (scoreBig) scoreBig.textContent = total;
+    if (scoreDetail) {
+      const done = state.filter((s) => s.solved).length;
+      scoreDetail.textContent = done === 0
+        ? 'Ningún ejercicio resuelto todavía.'
+        : done + ' de ' + exs.length + ' ejercicios resueltos · ' + state.reduce((a, s) => a + s.hints, 0) + ' pistas usadas.';
+    }
+  }
+  function swal(opts) {
+    if (window.Swal) Swal.fire(Object.assign({ background: '#131d2d', color: '#e7edf5', confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir' }, opts));
+  }
+
+  exs.forEach((ex, idx) => {
+    const re = new RegExp(ex.dataset.re, 'i');
+    const pts = Number(ex.dataset.pts || 10);
+    const ta = ex.querySelector('textarea');
+    const msg = ex.querySelector('.ex-msg');
+    const st = ex.querySelector('.ex-state');
+    const btnCheck = ex.querySelector('.check');
+    const btnHint = ex.querySelector('.hint');
+
+    btnCheck.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      const cmd = normalize(ta.value);
+      if (!cmd) { msg.textContent = 'Escribí el comando antes de comprobar.'; msg.className = 'ex-msg badc'; return; }
+      if (re.test(cmd)) {
+        s.solved = true;
+        s.pts = Math.max(0, pts - 3 * s.hints);
+        ex.classList.add('solved');
+        btnCheck.disabled = true; btnHint.disabled = true;
+        msg.textContent = 'Correcto. ' + ex.dataset.ok;
+        msg.className = 'ex-msg okc';
+        st.textContent = '+' + s.pts + ' puntos';
+        swal({ icon: 'success', title: '¡Correcto! +' + s.pts, text: ex.dataset.ok });
+      } else {
+        msg.textContent = 'Todavía no. Revisá el nombre del comando y cada parámetro pedido.';
+        msg.className = 'ex-msg badc';
+        swal({ icon: 'error', title: 'Todavía no', text: 'Revisá el nombre del comando y cada parámetro que pide la consigna.' });
+      }
+      render();
+    });
+
+    btnHint.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      if (s.hints === 0) s.hints = 1;
+      btnHint.disabled = true;
+      msg.textContent = 'Pista: ' + ex.dataset.hint;
+      msg.className = 'ex-msg hintc';
+      st.textContent = 'pista usada (−3)';
+    });
+
+    ta.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); btnCheck.click(); }
+    });
+  });
+  render();
+})();
+</script>
+
+</body></html>
+</body></html>

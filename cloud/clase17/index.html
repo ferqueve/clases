@@ -1,0 +1,1162 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bloque en IaaS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: una diapositiva a pantalla completa por vez, sobre un cielo nocturno con "flóculos" de nube; barra de región abajo */
+:root {
+  --ink: #0c1320;
+  --panel: #131d2d;
+  --panel-2: #1a2639;
+  --line: #27364f;
+  --fg: #e7edf5;
+  --muted: #93a4bb;
+  --sky: #7cc4ff;
+  --amber: #ffb04a;
+  --ok: #5fd39a;
+  --bad: #ff8080;
+  --f-display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(124,196,255,.07) 0 60px, transparent 61px),
+    radial-gradient(circle at 16% 22%, rgba(124,196,255,.05) 0 80px, transparent 81px),
+    radial-gradient(circle at 88% 82%, rgba(124,196,255,.06) 0 70px, transparent 71px),
+    radial-gradient(circle at 84% 78%, rgba(124,196,255,.04) 0 100px, transparent 101px),
+    var(--ink);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 18px;
+  line-height: 1.55;
+  overflow: hidden;
+}
+.deck { position: relative; height: 100%; }
+.slide {
+  position: absolute; inset: 0 0 56px 0;
+  overflow-y: auto;
+  padding-block: clamp(24px, 5vh, 56px);
+  padding-inline: max(16px, 5vw);
+  display: none;
+}
+.slide.active { display: block; animation: rise .35s ease; }
+@keyframes rise { from { opacity: .4; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide.active { animation: none; } }
+.inner { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; min-height: 100%; justify-content: center; }
+
+.eyebrow {
+  font-family: var(--f-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--sky); opacity: .85;
+}
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2.6rem, 8vw, 5.6rem); font-weight: 800; letter-spacing: -.02em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); font-weight: 600; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; margin: 0 0 6px; color: var(--fg); }
+p { margin: 0; max-width: 68ch; }
+.lead { font-size: 1.2rem; color: var(--muted); max-width: 60ch; }
+.muted { color: var(--muted); }
+strong { color: var(--fg); font-weight: 600; }
+.hl { color: var(--amber); }
+.sky { color: var(--sky); }
+code.i { font-family: var(--f-mono); font-size: .88em; background: var(--panel-2); padding: 1px 6px; border-radius: 4px; color: var(--sky); }
+
+/* Portada */
+.cover h1 .dot { color: var(--sky); }
+.puffs { display: flex; gap: 10px; align-items: flex-end; height: 40px; }
+.puffs span { display: block; border-radius: 50%; background: var(--sky); opacity: .8; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { font-family: var(--f-mono); font-size: .85rem; border: 1px solid var(--line); padding: 6px 12px; border-radius: 999px; color: var(--fg); background: var(--panel); }
+.chip b { color: var(--amber); font-weight: 600; }
+
+/* Grillas */
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.card p { font-size: .96rem; color: var(--muted); }
+.card .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); margin-bottom: 6px; display: block; }
+.callout { border-left: 3px solid var(--amber); padding: 10px 16px; background: rgba(255,176,74,.06); border-radius: 0 8px 8px 0; max-width: 80ch; }
+.callout.info { border-color: var(--sky); background: rgba(124,196,255,.06); }
+
+/* Código */
+.code { position: relative; background: #0a101a; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.code .bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: .86rem; line-height: 1.6; color: var(--fg); }
+.code .c { color: #6f819b; }
+.code .k { color: var(--sky); }
+.code .s { color: var(--ok); }
+.code .v { color: var(--amber); }
+.copy { font: inherit; font-size: .72rem; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 3px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--sky); }
+.copy:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+/* Tablas */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; min-width: 560px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--panel); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.m { font-family: var(--f-mono); font-size: .86rem; color: var(--sky); white-space: nowrap; }
+td.a { font-family: var(--f-mono); font-size: .86rem; color: var(--amber); white-space: nowrap; }
+
+/* Diagrama */
+.flow { display: grid; grid-template-columns: 1fr auto 1.1fr auto 1.6fr; gap: 12px; align-items: center; }
+.node { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+.node.core { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(124,196,255,.08); }
+.node small { display: block; font-family: var(--f-mono); color: var(--muted); font-size: .75rem; margin-top: 4px; }
+.arrow { font-family: var(--f-mono); color: var(--sky); text-align: center; font-size: .78rem; }
+.arrow span { display: block; font-size: 1.4rem; }
+.stack { display: grid; gap: 10px; }
+.stack .node h3 { font-size: .9rem; }
+.stack .node p { font-size: .88rem; color: var(--muted); }
+@media (max-width: 820px) {
+  .flow { grid-template-columns: 1fr; }
+  .arrow span { transform: rotate(90deg); }
+}
+
+/* Pasos */
+.steps { display: flex; gap: 8px; flex-wrap: wrap; }
+.steps span { font-family: var(--f-mono); font-size: .75rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.steps span.on { border-color: var(--amber); color: var(--amber); }
+.cols { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+.cols > * { min-width: 0; }
+@media (max-width: 820px) { .cols { grid-template-columns: 1fr; } }
+ul.clean { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; max-width: 70ch; }
+ul.clean li::marker { color: var(--sky); }
+
+/* Quiz */
+.q { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.q .prompt { font-weight: 600; font-size: 1.05rem; }
+.opts { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.opt { text-align: left; font: inherit; font-size: .95rem; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; display: flex; gap: 10px; align-items: baseline; }
+.opt b { font-family: var(--f-mono); color: var(--sky); }
+.opt:hover:not(:disabled) { border-color: var(--sky); }
+.opt.right { border-color: var(--ok); background: rgba(95,211,154,.1); }
+.opt.wrong { border-color: var(--bad); background: rgba(255,128,128,.08); }
+.opt:disabled { cursor: default; }
+.fb { font-size: .92rem; color: var(--muted); }
+.fb.okc { color: var(--ok); } .fb.badc { color: var(--bad); }
+
+/* Barra inferior */
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding: 0 max(16px, 3vw) env(safe-area-inset-bottom, 0px);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: rgba(12,19,32,.92); border-top: 1px solid var(--line);
+  font-family: var(--f-mono); font-size: .78rem; color: var(--muted);
+}
+.hud .region { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .region b { color: var(--sky); font-weight: 600; }
+.nav { display: flex; align-items: center; gap: 10px; }
+.nav button { font: inherit; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.nav button:hover { border-color: var(--sky); }
+.count { font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: center; }
+.progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--amber); transition: width .25s; z-index: 5; }
+a { color: var(--sky); }
+.links { display: grid; gap: 10px; }
+.links a { font-family: var(--f-mono); font-size: .95rem; }
+
+/* --- Clase IaaS --- */
+table.layers td.you { color: var(--amber); font-weight: 600; background: rgba(255,176,74,.08); }
+table.layers td.prov { color: var(--sky); background: rgba(124,196,255,.06); }
+table.layers tr.line td { border-top: 2px dashed var(--sky); }
+.blocks { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.block { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.block p { color: var(--muted); font-size: .95rem; }
+.block .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); display: block; margin-bottom: 6px; }
+.block.wide { grid-column: 1 / -1; border-style: dashed; border-color: var(--sky); }
+.anatomy { display: grid; gap: 10px; }
+.parts { display: flex; flex-wrap: wrap; gap: 14px; }
+.parts div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; min-width: 150px; flex: 1; }
+.parts b { font-family: var(--f-mono); font-size: 1.8rem; color: var(--amber); display: block; }
+.parts small { color: var(--muted); font-size: .88rem; }
+.net { display: grid; gap: 8px; justify-items: center; }
+.net-internet, .net-igw { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.net-igw { border-color: var(--sky); color: var(--sky); }
+.net-internet::after, .net-igw::after { content: ""; }
+.net-vpc { width: 100%; border: 2px dashed var(--sky); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+.net-label { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.net-subs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .net-subs { grid-template-columns: 1fr; } }
+.net-sub { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.net-sub .net-label { flex-basis: 100%; }
+.net-sub.pub { background: rgba(124,196,255,.05); }
+.net-sub.priv { background: rgba(255,176,74,.05); }
+.net-vm { font-family: var(--f-mono); font-size: .8rem; padding: 6px 10px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); }
+.net-sg { flex-basis: 100%; font-family: var(--f-mono); font-size: .72rem; color: var(--amber); }
+.life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 760px) { .life { grid-template-columns: 1fr 1fr; } }
+.life div { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--sky); border-radius: 8px; padding: 12px; min-width: 0; }
+.life div:nth-child(3) { border-top-color: var(--amber); }
+.life div:nth-child(4) { border-top-color: var(--bad); }
+.life b { font-family: var(--f-mono); display: block; }
+.life small { color: var(--muted); font-size: .86rem; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); }
+ul.clean.small { font-size: .95rem; color: var(--muted); }
+.card.good { border-top: 3px solid var(--ok); }
+.card.bad { border-top: 3px solid var(--bad); }
+
+/* --- Laboratorio IaaS --- */
+.net-s3 { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 8px; border: 1px dashed var(--amber); color: var(--amber); }
+.net-vm.disk { border-color: var(--amber); color: var(--amber); }
+.net-vm.ghost { border-style: dashed; color: var(--muted); background: transparent; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.ex label { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ex textarea { width: 100%; font-family: var(--f-mono); font-size: .9rem; background: #0a101a; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; resize: vertical; }
+.ex textarea:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
+.ex-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ex-actions button { font: inherit; font-size: .9rem; border-radius: 6px; padding: 7px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); }
+.ex-actions .check { background: var(--sky); color: #08121f; border-color: var(--sky); font-weight: 600; }
+.ex-actions button:disabled { opacity: .5; cursor: default; }
+.ex-state { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); }
+.ex-msg { font-size: .95rem; color: var(--muted); }
+.ex-msg.okc { color: var(--ok); } .ex-msg.badc { color: var(--bad); } .ex-msg.hintc { color: var(--amber); }
+.ex.solved { border-color: var(--ok); }
+.checklist { display: grid; gap: 10px; }
+.checklist label { display: flex; gap: 10px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; font-size: .95rem; }
+.checklist input { accent-color: var(--ok); width: 18px; height: 18px; flex: none; transform: translateY(3px); }
+.scorecard { background: var(--panel); border: 1px solid var(--sky); border-radius: 12px; padding: 18px; display: grid; gap: 6px; }
+.scorecard .big { font-family: var(--f-display); font-size: 3rem; font-weight: 800; color: var(--amber); font-variant-numeric: tabular-nums; line-height: 1; }
+.scorecard .big small { font-size: 1.1rem; color: var(--muted); font-weight: 400; }
+.hud .pts b { color: var(--amber); }
+
+/* --- Serie IaaS: elementos comunes --- */
+.series { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.series div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; display: grid; gap: 2px; }
+.series b { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); font-weight: 400; }
+.series span { font-weight: 600; }
+.series small { color: var(--muted); font-size: .85rem; }
+.series div.now { border-color: var(--amber); background: rgba(255,176,74,.08); }
+.series div.now b { color: var(--amber); }
+.host { display: grid; gap: 8px; }
+.host-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 640px) { .host-row { grid-template-columns: 1fr 1fr; } }
+.host-vm { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--panel); font-size: .88rem; min-width: 0; }
+.host-vm b { font-family: var(--f-mono); display: block; font-size: .8rem; }
+.host-vm small { color: var(--muted); }
+.host-vm.a { border-top: 3px solid var(--sky); }
+.host-vm.b { border-top: 3px solid var(--amber); }
+.host-layer { border-radius: 8px; padding: 9px 14px; font-family: var(--f-mono); font-size: .82rem; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.host-layer.hv { background: rgba(124,196,255,.12); border: 1px solid var(--sky); color: var(--sky); }
+.host-layer.hw { background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+.credits { display: grid; gap: 8px; }
+.credit-bar { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: center; font-size: .9rem; }
+.credit-bar .track { height: 18px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; position: relative; overflow: hidden; }
+.credit-bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--sky); opacity: .75; }
+.credit-bar .fill.burst { background: var(--amber); }
+.credit-bar .base { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
+.versus { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .versus { grid-template-columns: 1fr; } }
+.note-teacher { font-size: .86rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 10px 14px; }
+.note-teacher b { color: var(--amber); font-family: var(--f-mono); font-weight: 600; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
+
+/* --- Bloque: snapshots incrementales --- */
+.bsets { display: grid; gap: 10px; }
+.brow { display: grid; grid-template-columns: minmax(130px, 190px) 1fr; gap: 14px; align-items: center; }
+.blab { font-family: var(--f-mono); font-size: .78rem; color: var(--muted); }
+.bgrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.bgrid i { display: block; height: 28px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); }
+.bgrid i.s { background: var(--sky); border-color: var(--sky); opacity: .85; }
+.bgrid i.c { background: var(--amber); border-color: var(--amber); }
+.bgrid i.e { border-style: dashed; background: transparent; }
+@media (max-width: 560px) { .brow { grid-template-columns: 1fr; gap: 4px; } }
+</style>
+
+<div class="progress" id="progress"></div>
+<main class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide cover">
+  <div class="inner">
+    <div class="puffs" aria-hidden="true"><span style="width:18px;height:18px"></span><span style="width:30px;height:30px"></span><span style="width:22px;height:22px"></span><span style="width:12px;height:12px"></span></div>
+    <span class="eyebrow">Elementos de IaaS · Módulo 2 de 9</span>
+    <h1>Bloque<span class="dot">.</span></h1>
+    <p class="lead">Volúmenes, tipos de disco, adjuntar y montar, redimensionar y snapshots. Primero el concepto, después cada cosa con las manos.</p>
+    <div class="chips">
+      <span class="chip">teoría <b>15</b> diapositivas</span>
+      <span class="chip">práctica <b>6</b> pasos</span>
+      <span class="chip">ejercicios <b>4 × 10</b> puntos</span>
+    </div>
+    <p class="muted" style="font-size:.9rem">Avanzá con las flechas ← → del teclado.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Mapa de la serie</span>
+    <h2>Nueve elementos, uno por módulo</h2>
+    <p class="muted">En el módulo 1 la instancia nació con un disco raíz que no elegimos. Ahora aprendemos a crear, agregar, ampliar y respaldar discos por nuestra cuenta.</p>
+    <div class="series">
+      <div><b>módulo 1</b><span>Cómputo</span><small>instancias, imágenes, tipos</small></div>
+      <div class="now"><b>módulo 2</b><span>Almacenamiento de bloque</span><small>volúmenes y snapshots</small></div>
+      <div><b>módulo 3</b><span>Almacenamiento de objetos</span><small>buckets, versiones, políticas</small></div>
+      <div><b>módulo 4</b><span>Redes virtuales</span><small>VPC, subredes, rutas, gateways</small></div>
+      <div><b>módulo 5</b><span>Seguridad de red</span><small>security groups, ACL, claves</small></div>
+      <div><b>módulo 6</b><span>Identidad y acceso</span><small>usuarios, roles, políticas</small></div>
+      <div><b>módulo 7</b><span>Balanceo y escalado</span><small>balanceadores, auto scaling</small></div>
+      <div><b>módulo 8</b><span>Monitoreo</span><small>métricas, logs, alarmas</small></div>
+      <div><b>módulo 9</b><span>Infraestructura como código</span><small>todo lo anterior, en archivos</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · bloque</span>
+    <h2>Tres formas de guardar datos en la nube</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Cómo se accede</th><th>Ejemplo</th><th>Módulo</th></tr></thead>
+        <tbody>
+          <tr><td class="m">Bloque</td><td>Como un disco crudo: el sistema operativo lo formatea y lo monta</td><td>EBS, Cinder, disco virtual de VirtualBox</td><td class="num">2</td></tr>
+          <tr><td class="m">Archivos</td><td>Carpetas compartidas por red entre varias máquinas</td><td>EFS, NFS, Samba</td><td class="num">—</td></tr>
+          <tr><td class="m">Objetos</td><td>Por API HTTP, un objeto entero por vez</td><td>S3, Swift, MinIO</td><td class="num">3</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><p><strong>Bloque es la base de las otras dos.</strong> Detrás de un servidor de archivos o de una base de datos hay, casi siempre, un volumen de bloque.</p></div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · volumen</span>
+    <h2>Un volumen es un disco que vive fuera de la instancia</h2>
+    <div class="cols">
+      <div class="net" aria-label="Una instancia conectada por red a dos volúmenes">
+        <div class="net-igw">instancia web-a</div>
+        <div class="net-vpc">
+          <span class="net-label">red de almacenamiento del proveedor · zona us-east-1a</span>
+          <div class="net-sub pub"><span class="net-label">/dev/sda1 · raíz</span><span class="net-vm disk">vol-0a1 · 8 GiB</span></div>
+          <div class="net-sub priv"><span class="net-label">/dev/sdf · datos</span><span class="net-vm disk">vol-0b2 · 20 GiB</span></div>
+        </div>
+      </div>
+      <div class="stack">
+        <p>Para la instancia parece un disco conectado por cable. En realidad está en servidores de almacenamiento, al otro lado de una red.</p>
+        <div class="card"><span class="tag">analogía</span><p>Es un pendrive que se conecta y se desconecta. La instancia puede apagarse o desaparecer y el pendrive sigue con sus datos.</p></div>
+        <div class="card"><span class="tag">en cualquier nube</span><p>EBS en AWS, Cinder en OpenStack, Managed Disks en Azure y Persistent Disk en Google. El nombre cambia; la idea es la misma.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · tipos de volumen</span>
+    <h2>Se elige por qué importa más: velocidad o costo</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Soporte</th><th>Pensado para</th><th>Rendimiento</th></tr></thead>
+        <tbody>
+          <tr><td class="m">gp3</td><td>SSD</td><td>Uso general: sistemas, aplicaciones, bases de datos medianas</td><td>3000 IOPS y 125 MiB/s de base, ampliables</td></tr>
+          <tr><td class="m">io2</td><td>SSD</td><td>Bases de datos críticas con mucha carga</td><td>IOPS provisionados a pedido, hasta decenas de miles</td></tr>
+          <tr><td class="m">st1</td><td>HDD</td><td>Lecturas grandes y seguidas: logs, big data</td><td>Buen caudal, pocas operaciones por segundo</td></tr>
+          <tr><td class="m">sc1</td><td>HDD</td><td>Datos fríos que casi no se tocan</td><td>El más barato de todos</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">Los HDD no pueden ser volumen raíz. La regla práctica: gp3 salvo que haya un motivo medido para otra cosa.</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · rendimiento</span>
+    <h2>IOPS, caudal y latencia no son lo mismo</h2>
+    <div class="grid">
+      <div class="card"><span class="tag">IOPS</span><h3>Operaciones por segundo</h3><p>Cuántas lecturas o escrituras pequeñas entran por segundo. Importa en bases de datos con muchas consultas chicas.</p></div>
+      <div class="card"><span class="tag">caudal (throughput)</span><h3>MiB por segundo</h3><p>Cuántos datos pasan por segundo. Importa al copiar archivos grandes o procesar logs enteros.</p></div>
+      <div class="card"><span class="tag">latencia</span><h3>Milisegundos por operación</h3><p>Cuánto tarda una sola operación. Importa cuando una aplicación espera cada respuesta antes de seguir.</p></div>
+    </div>
+    <div class="callout info"><p><strong>Cuentas rápidas.</strong> Un volumen de 3000 IOPS que escribe bloques de 16 KiB mueve unos 47 MiB/s. Con bloques de 256 KiB, el límite pasa a ser el caudal y no los IOPS.</p></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · ciclo de vida</span>
+    <h2>Un volumen se crea, se adjunta y se suelta</h2>
+    <div class="life">
+      <div><b>creating</b><small>el proveedor reserva el espacio</small></div>
+      <div><b>available</b><small>existe, pero ninguna instancia lo usa</small></div>
+      <div><b>in-use</b><small>adjunto a una instancia</small></div>
+      <div><b>deleted</b><small>borrado; los datos se pierden</small></div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Estado</th><th>¿Se cobra?</th><th>¿Qué lo cambia?</th></tr></thead>
+        <tbody>
+          <tr><td class="m">available</td><td>Sí, por GB al mes</td><td>attach-volume lo pasa a in-use</td></tr>
+          <tr><td class="m">in-use</td><td>Sí</td><td>detach-volume lo devuelve a available</td></tr>
+          <tr><td class="m">deleted</td><td>No</td><td>No se puede deshacer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><p><strong>Un volumen suelto sigue costando.</strong> Es el error más común: borrar instancias y olvidar los volúmenes que quedaron en available.</p></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · zona de disponibilidad</span>
+    <h2>El volumen vive en una sola zona</h2>
+    <div class="cols">
+      <div class="host" aria-label="Dos zonas de disponibilidad con una instancia y un volumen cada una">
+        <div class="host-row" style="grid-template-columns:1fr 1fr">
+          <div class="host-vm a"><b>us-east-1a</b><small>instancia web-a</small><br><small>vol-0b2 ✔ adjuntable</small></div>
+          <div class="host-vm b"><b>us-east-1b</b><small>instancia web-b</small><br><small>vol-0b2 ✘ otra zona</small></div>
+        </div>
+        <div class="host-layer hv"><span>región us-east-1</span><span>dos centros de datos separados</span></div>
+      </div>
+      <div class="stack">
+        <p>Un volumen solo se adjunta a instancias de <strong>su misma zona</strong>. La razón es física: el disco y la instancia tienen que estar cerca para que la red entre ambos sea rápida.</p>
+        <div class="card"><span class="tag">para mover datos entre zonas</span><p>Se crea un snapshot y se restaura como volumen nuevo en la otra zona. Lo hacemos en la práctica 4.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · borrado</span>
+    <h2>Qué pasa con los discos al terminar la instancia</h2>
+    <div class="versus">
+      <div class="card bad"><span class="tag">volumen raíz</span><h3>Se borra por defecto</h3><p>La opción <code class="i">DeleteOnTermination</code> viene en verdadero. Al terminar la instancia, su disco raíz desaparece con ella.</p></div>
+      <div class="card good"><span class="tag">volúmenes adicionales</span><h3>Se conservan por defecto</h3><p>Los que se adjuntan después quedan en available. Los datos sobreviven, y también el cobro.</p></div>
+    </div>
+    <p class="muted">Dato importante para el diseño: los datos que no pueden perderse van en un volumen aparte, separado del sistema operativo. Se puede soltar de una instancia y adjuntar a otra.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · usar el disco</span>
+    <h2>Adjuntar no alcanza: hay que formatear y montar</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="card"><span class="tag">1 · adjuntar</span><p>La nube conecta el volumen. Dentro de la instancia aparece un dispositivo crudo, por ejemplo <code class="i">/dev/sdb</code>, sin nada escrito.</p></div>
+        <div class="card"><span class="tag">2 · formatear</span><p>Se crea un sistema de archivos, como ext4 o xfs. Es lo que da forma a carpetas y archivos. Se hace una sola vez.</p></div>
+        <div class="card"><span class="tag">3 · montar</span><p>Se asocia el dispositivo a una carpeta, por ejemplo <code class="i">/datos</code>. Lo que se guarda ahí cae en el volumen.</p></div>
+      </div>
+      <div class="code"><div class="bar"><span>dentro de Linux</span></div><pre><span class="c"># ¿Qué discos ve el sistema?</span>
+lsblk
+<span class="c"># Formatear (borra todo lo que tuviera)</span>
+sudo mkfs.ext4 /dev/sdb
+<span class="c"># Montar</span>
+sudo mkdir /datos
+sudo mount /dev/sdb /datos
+df -h /datos</pre></div>
+    </div>
+    <div class="callout"><p><strong>Formatear un volumen que ya tiene datos los destruye.</strong> Un volumen restaurado desde un snapshot ya viene formateado: solo se monta.</p></div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · montaje permanente</span>
+    <h2>Que el montaje sobreviva al reinicio</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>/etc/fstab</span></div><pre><span class="c"># UUID del volumen</span>
+sudo blkid /dev/sdb
+
+<span class="c"># Una línea por disco en /etc/fstab</span>
+UUID=<span class="v">3f1c-…</span>  /datos  ext4  defaults,nofail  0  2
+
+<span class="c"># Probar sin reiniciar</span>
+sudo umount /datos
+sudo mount -a</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">por qué UUID</span><p>El nombre <code class="i">/dev/sdb</code> puede cambiar entre reinicios. El UUID identifica al sistema de archivos y no cambia.</p></div>
+        <div class="card"><span class="tag">nofail</span><p>Si el volumen no está, el sistema arranca igual. Sin esta opción, una línea incorrecta en fstab puede dejar a la instancia sin arrancar.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · redimensionar</span>
+    <h2>Un volumen puede crecer, no achicarse</h2>
+    <div class="steps"><span class="on">1 · ampliar el volumen</span><span class="on">2 · ampliar la partición</span><span class="on">3 · ampliar el sistema de archivos</span></div>
+    <div class="cols">
+      <div class="stack">
+        <div class="card"><span class="tag">en la nube</span><p><code class="i">modify-volume --size</code> aumenta la capacidad, incluso con la instancia encendida. Después hay que esperar a que termine la optimización.</p></div>
+        <div class="card"><span class="tag">dentro de Linux</span><p>El sistema no usa el espacio nuevo hasta que se extienden la partición y el sistema de archivos.</p></div>
+      </div>
+      <div class="code"><div class="bar"><span>dentro de Linux</span></div><pre><span class="c"># Si el disco tiene partición</span>
+sudo growpart /dev/xvda 1
+<span class="c"># ext4: extender al tamaño del disco</span>
+sudo resize2fs /dev/xvda1
+<span class="c"># xfs usa otro comando</span>
+sudo xfs_growfs /datos</pre></div>
+    </div>
+    <p class="muted">Para achicar hay que crear un volumen más chico, copiar los datos y reemplazar el original.</p>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · snapshot</span>
+    <h2>Un snapshot es una foto del volumen en un momento</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Guarda el contenido del volumen en el instante en que se pide. El volumen sigue funcionando mientras se toma.</p>
+        <div class="card"><span class="tag">no es un volumen</span><p>No se puede adjuntar a una instancia ni montar. Se usa para <strong>crear volúmenes nuevos</strong>.</p></div>
+        <div class="card"><span class="tag">es regional</span><p>No depende de la zona: de un snapshot se puede crear un volumen en cualquier zona de la región.</p></div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">flujo completo</span><p><strong>vol-0b2</strong> → create-snapshot → <strong>snap-01</strong> → create-volume → <strong>vol-0c3</strong> en otra zona o con otro tamaño</p></div>
+        <div class="card"><span class="tag">tamaño</span><p>Un volumen restaurado puede ser mayor que el original, nunca menor.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · incremental</span>
+    <h2>Cada snapshot guarda solo lo que cambió</h2>
+    <div class="bsets" aria-label="Bloques guardados por tres snapshots sucesivos">
+      <div class="brow"><span class="blab">volumen · lunes</span><div class="bgrid"><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i></div></div>
+      <div class="brow"><span class="blab">snapshot 1 guarda</span><div class="bgrid"><i class="s"></i><i class="s"></i><i class="s"></i><i class="s"></i><i class="s"></i><i class="s"></i><i class="s"></i><i class="s"></i></div></div>
+      <div class="brow"><span class="blab">martes cambian 2</span><div class="bgrid"><i class="n"></i><i class="c"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="c"></i><i class="n"></i><i class="n"></i></div></div>
+      <div class="brow"><span class="blab">snapshot 2 guarda</span><div class="bgrid"><i class="e"></i><i class="s"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="s"></i><i class="e"></i><i class="e"></i></div></div>
+    </div>
+    <div class="grid two">
+      <div class="card"><span class="tag">8 bloques + 2 bloques</span><p>El segundo snapshot guarda 2 bloques y apunta a los otros 6 del primero. Ocupa un cuarto del espacio.</p></div>
+      <div class="card"><span class="tag">pero cada uno es completo</span><p>Se puede borrar el snapshot 1 y el 2 sigue restaurando los 8 bloques: el proveedor conserva lo que haga falta.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · estrategia de respaldo</span>
+    <h2>Snapshots y RPO: cada cuánto sacar la foto</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>En la Clase 3 vimos el <strong>RPO</strong>: cuántos datos se aceptan perder. Con snapshots, el RPO es el tiempo entre una foto y la siguiente.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Frecuencia</th><th>RPO</th></tr></thead>
+            <tbody>
+              <tr><td class="m">cada hora</td><td>hasta 1 hora de datos</td></tr>
+              <tr><td class="m">diaria</td><td>hasta 24 horas</td></tr>
+              <tr><td class="m">semanal</td><td>hasta 7 días</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">automatizar</span><p>Con una política de ciclo de vida, el proveedor toma y borra snapshots solo, según una regla: por ejemplo diarios, conservando los últimos siete.</p></div>
+        <div class="card"><span class="tag">consistencia</span><p>Si una base de datos está escribiendo, el snapshot puede captar datos a medias. Para bases de datos, se detiene la escritura un instante o se usa su propia herramienta de respaldo.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Concepto · dos alternativas</span>
+    <h2>Instance store frente a volúmenes</h2>
+    <div class="versus">
+      <div class="card"><span class="tag">volumen de bloque</span><h3>Persistente</h3><ul class="clean small">
+        <li>Sobrevive a detener, terminar o fallar la instancia</li>
+        <li>Se puede ampliar y respaldar</li>
+        <li>Pasa por la red: algo más de latencia</li>
+      </ul></div>
+      <div class="card"><span class="tag">instance store</span><h3>Efímero</h3><ul class="clean small">
+        <li>Es un disco físico del servidor donde corre la instancia</li>
+        <li>Muy rápido y sin costo aparte</li>
+        <li>Los datos se pierden al detener la instancia</li>
+      </ul></div>
+    </div>
+    <p class="muted">Instance store sirve para cachés y archivos temporales. Nada que haya que conservar.</p>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Antes de practicar</span>
+    <h2>Cómo traduce Floci cada concepto</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Concepto</th><th>En AWS</th><th>En Floci</th></tr></thead>
+        <tbody>
+          <tr><td>Volumen</td><td>Disco en red de la zona</td><td>Registro emulado por la API; sin disco físico garantizado</td></tr>
+          <tr><td>Adjuntar</td><td>Aparece un dispositivo en la instancia</td><td>La API cambia el estado a in-use</td></tr>
+          <tr><td>Snapshot</td><td>Copia incremental</td><td>Registro emulado, restaurable como volumen</td></tr>
+          <tr><td>Formatear y montar</td><td>Comandos dentro de la instancia</td><td>No aplica: se practica en la VM de VirtualBox</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><p><strong>Por qué la práctica 6 usa VirtualBox.</strong> Floci emula la API de la nube, pero un contenedor no tiene discos reales para formatear. La VM Ubuntu de los laboratorios anteriores sí. Con un disco virtual extra se vive el mismo ciclo: agregar, formatear, montar.</p></div>
+  </div>
+</section>
+
+<!-- 18 Quiz -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Control de conceptos</span>
+    <h2>Antes de abrir la terminal</h2>
+    <div class="q" data-correct="b" data-why="El volumen y la instancia deben estar en la misma zona. Para usar los datos en otra zona, se crea un snapshot y se restaura allí.">
+      <div class="prompt">Una instancia corre en us-east-1a y el volumen está en us-east-1b. ¿Qué pasa al adjuntarlo?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>Se adjunta, pero con más latencia</button>
+        <button class="opt" data-k="b"><b>B</b>Falla: deben estar en la misma zona de disponibilidad</button>
+        <button class="opt" data-k="c"><b>C</b>Se adjunta si la instancia está detenida</button>
+        <button class="opt" data-k="d"><b>D</b>El proveedor mueve el volumen automáticamente</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+    <div class="q" data-correct="d" data-why="El snapshot es incremental: guarda solo los bloques que cambiaron desde el anterior. Aun así cada snapshot permite restaurar el volumen completo.">
+      <div class="prompt">Un volumen de 100 GiB cambió 5 GiB desde el último snapshot. ¿Cuánto guarda el nuevo?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>100 GiB</button>
+        <button class="opt" data-k="b"><b>B</b>105 GiB</button>
+        <button class="opt" data-k="c"><b>C</b>50 GiB</button>
+        <button class="opt" data-k="d"><b>D</b>Unos 5 GiB: solo los bloques cambiados</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+    <div class="q" data-correct="a" data-why="Los volúmenes adicionales conservan sus datos al terminar la instancia, y siguen cobrándose en estado available hasta que se borren.">
+      <div class="prompt">Terminás una instancia que tenía un volumen de datos adicional, creado con la configuración por defecto. ¿Qué pasa con ese volumen?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>Queda en available, con sus datos, y se sigue cobrando</button>
+        <button class="opt" data-k="b"><b>B</b>Se borra junto con la instancia</button>
+        <button class="opt" data-k="c"><b>C</b>Se convierte en un snapshot</button>
+        <button class="opt" data-k="d"><b>D</b>Queda detenido y sin costo</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+    <div class="q" data-correct="c" data-why="modify-volume solo amplía el volumen. Dentro de Linux hay que extender la partición y el sistema de archivos antes de que el espacio nuevo sea utilizable.">
+      <div class="prompt">Ampliaste un volumen de 8 a 16 GiB y df -h sigue mostrando 8 GiB. ¿Qué falta?</div>
+      <div class="opts">
+        <button class="opt" data-k="a"><b>A</b>Reiniciar la región</button>
+        <button class="opt" data-k="b"><b>B</b>Crear un snapshot y restaurarlo</button>
+        <button class="opt" data-k="c"><b>C</b>Extender la partición y el sistema de archivos</button>
+        <button class="opt" data-k="d"><b>D</b>Formatear el volumen con mkfs</button>
+      </div>
+      <div class="fb" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span class="on">1 · Crear</span><span>2 · Adjuntar</span><span>3 · Snapshot</span><span>4 · Restaurar</span><span>5 · Ampliar</span><span>6 · Montar</span></div>
+    <h2>Práctica 1 · Una instancia y un volumen</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Preparar la terminal (si no lo hiciste ya)</span>
+<span class="v">$env:AWS_ENDPOINT_URL</span>      = <span class="s">"http://localhost:4566"</span>
+<span class="v">$env:AWS_ACCESS_KEY_ID</span>     = <span class="s">"test"</span>
+<span class="v">$env:AWS_SECRET_ACCESS_KEY</span> = <span class="s">"test"</span>
+<span class="v">$env:AWS_DEFAULT_REGION</span>    = <span class="s">"us-east-1"</span>
+mkdir modulo-bloque; cd modulo-bloque
+
+<span class="c"># Una instancia para conectar los discos</span>
+<span class="v">$VM</span> = aws ec2 run-instances `
+  --image-id ami-amazonlinux2023 --instance-type t3.micro `
+  --placement AvailabilityZone=us-east-1a `
+  --tag-specifications <span class="s">"ResourceType=instance,Tags=[{Key=Name,Value=srv-1},{Key=Proyecto,Value=modulo-bloque}]"</span> `
+  --query <span class="s">"Instances[0].InstanceId"</span> --output text
+
+<span class="c"># Un volumen de datos de 8 GiB, tipo gp3</span>
+<span class="v">$VOL</span> = aws ec2 create-volume `
+  --availability-zone us-east-1a --size 8 --volume-type gp3 `
+  --tag-specifications <span class="s">"ResourceType=volume,Tags=[{Key=Name,Value=datos-1},{Key=Proyecto,Value=modulo-bloque}]"</span> `
+  --query <span class="s">"VolumeId"</span> --output text
+
+<span class="c"># Estado (esperado: available)</span>
+aws ec2 describe-volumes --volume-ids <span class="v">$VOL</span> `
+  --query <span class="s">"Volumes[0].[VolumeId,Size,VolumeType,AvailabilityZone,State]"</span> --output table</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">misma zona</span><p>La instancia y el volumen llevan <code class="i">us-east-1a</code>. Es el requisito de la diapositiva 8.</p></div>
+        <div class="card"><span class="tag">etiqueta</span><p>Todo lleva <code class="i">Proyecto=modulo-bloque</code> para borrar todo junto al final.</p></div>
+        <div class="note-teacher"><b>Docente</b>Probar antes de clase si Floci acepta <code class="i">--placement</code> y qué estados devuelve. Si no lo acepta, quitar esa línea y mantener la zona del volumen igual a la que informa la instancia.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 20 Ejercicio 1 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 1 · 10 puntos</span>
+    <h2>Crear un segundo volumen</h2>
+    <p>Escribí el comando que crea un volumen <strong>gp3 de 4 GiB</strong> en la zona <code class="i">us-east-1a</code>. Será el volumen de respaldo del módulo.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+create-volume\b)(?=.*--availability-zone\s+us-east-1a\b)(?=.*--size\s+4(\s|$))(?=.*--volume-type\s+gp3(\s|$))"
+         data-hint="Partí del create-volume de la práctica 1. Cambian el tamaño, que ahora es 4, y no hace falta repetir las etiquetas."
+         data-ok="Ejecutalo y guardá el ID en una variable $VOL2. Con describe-volumes verificá que el estado es available.">
+      <label for="ex1">Tu comando</label>
+      <textarea id="ex1" rows="3" spellcheck="false" placeholder="aws ec2 create-volume ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Crear</span><span class="on">2 · Adjuntar</span><span>3 · Snapshot</span><span>4 · Restaurar</span><span>5 · Ampliar</span><span>6 · Montar</span></div>
+    <h2>Práctica 2 · Adjuntar y soltar</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Adjuntar datos-1 a srv-1 como /dev/sdf</span>
+aws ec2 attach-volume --volume-id <span class="v">$VOL</span> `
+  --instance-id <span class="v">$VM</span> --device /dev/sdf
+
+<span class="c"># Ahora el estado es in-use y aparece el adjunto</span>
+aws ec2 describe-volumes --volume-ids <span class="v">$VOL</span> `
+  --query <span class="s">"Volumes[0].[State,Attachments[0].InstanceId,Attachments[0].Device]"</span> --output table
+
+<span class="c"># Soltarlo: vuelve a available y los datos siguen</span>
+aws ec2 detach-volume --volume-id <span class="v">$VOL</span>
+aws ec2 wait volume-available --volume-ids <span class="v">$VOL</span>
+
+<span class="c"># Y adjuntarlo de nuevo, para las prácticas que siguen</span>
+aws ec2 attach-volume --volume-id <span class="v">$VOL</span> `
+  --instance-id <span class="v">$VM</span> --device /dev/sdf</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">/dev/sdf</span><p>Es el nombre que se le pide a la nube. Dentro de Linux puede aparecer como <code class="i">/dev/xvdf</code> o <code class="i">/dev/nvme1n1</code>.</p></div>
+        <div class="card"><span class="tag">detach antes de borrar</span><p>Un volumen in-use no se puede eliminar. Primero se suelta.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 Ejercicio 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 2 · 10 puntos</span>
+    <h2>Un segundo disco para la instancia</h2>
+    <p>Escribí el comando que adjunta el segundo volumen, guardado en <code class="i">$VOL2</code>, a <code class="i">$VM</code> como dispositivo <code class="i">/dev/sdg</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+attach-volume\b)(?=.*--volume-id\s+(\$VOL2\b|vol-[\w-]+))(?=.*--instance-id\s+(\$VM\b|i-[\w-]+))(?=.*--device\s+/dev/(sd|xvd)g\b)"
+         data-hint="Es el attach-volume de la práctica 2. Cambian el ID del volumen y la letra del dispositivo, porque /dev/sdf ya está ocupado."
+         data-ok="Con describe-volumes sobre el filtro de Proyecto comprobá que los dos volúmenes están in-use, cada uno con su dispositivo.">
+      <label for="ex2">Tu comando</label>
+      <textarea id="ex2" rows="3" spellcheck="false" placeholder="aws ec2 attach-volume ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 23 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Crear</span><span>2 · Adjuntar</span><span class="on">3 · Snapshot</span><span>4 · Restaurar</span><span>5 · Ampliar</span><span>6 · Montar</span></div>
+    <h2>Práctica 3 · Sacar un snapshot</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># La foto de datos-1, con etiquetas</span>
+<span class="v">$SNAP</span> = aws ec2 create-snapshot --volume-id <span class="v">$VOL</span> `
+  --description <span class="s">"datos-1 lunes"</span> `
+  --tag-specifications <span class="s">"ResourceType=snapshot,Tags=[{Key=Name,Value=snap-lunes},{Key=Proyecto,Value=modulo-bloque}]"</span> `
+  --query <span class="s">"SnapshotId"</span> --output text
+
+<span class="c"># Esperar a que termine y ver el estado</span>
+aws ec2 wait snapshot-completed --snapshot-ids <span class="v">$SNAP</span>
+aws ec2 describe-snapshots --snapshot-ids <span class="v">$SNAP</span> `
+  --query <span class="s">"Snapshots[0].[SnapshotId,VolumeId,VolumeSize,State,Progress]"</span> --output table</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">estados</span><p>El snapshot pasa de <code class="i">pending</code> a <code class="i">completed</code>. Con volúmenes grandes en AWS real puede tardar minutos u horas.</p></div>
+        <div class="card"><span class="tag">el volumen sigue en uso</span><p>No hizo falta soltarlo ni apagar la instancia para tomar la foto.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 24 Ejercicio 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 3 · 10 puntos</span>
+    <h2>Respaldar el segundo volumen</h2>
+    <p>Escribí el comando que saca un snapshot del volumen <code class="i">$VOL2</code> con la descripción <code class="i">datos-2 martes</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+create-snapshot\b)(?=.*--volume-id\s+(\$VOL2\b|vol-[\w-]+))(?=.*--description\s+['&quot;]?datos-2 martes)"
+         data-hint="Es el comando de la práctica 3. Cambian el volumen y el texto de la descripción; las etiquetas son opcionales."
+         data-ok="Ahora hay dos snapshots. Con describe-snapshots y el filtro de Proyecto verificá que los dos están completed.">
+      <label for="ex3">Tu comando</label>
+      <textarea id="ex3" rows="3" spellcheck="false" placeholder="aws ec2 create-snapshot ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 25 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Crear</span><span>2 · Adjuntar</span><span>3 · Snapshot</span><span class="on">4 · Restaurar</span><span>5 · Ampliar</span><span>6 · Montar</span></div>
+    <h2>Práctica 4 · Restaurar en otra zona y ampliar</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Restaurar el snapshot en OTRA zona</span>
+<span class="v">$VOLB</span> = aws ec2 create-volume --snapshot-id <span class="v">$SNAP</span> `
+  --availability-zone us-east-1b `
+  --tag-specifications <span class="s">"ResourceType=volume,Tags=[{Key=Name,Value=datos-1-restaurado},{Key=Proyecto,Value=modulo-bloque}]"</span> `
+  --query <span class="s">"VolumeId"</span> --output text
+
+<span class="c"># Mismo tamaño que el original, zona distinta</span>
+aws ec2 describe-volumes --volume-ids <span class="v">$VOLB</span> `
+  --query <span class="s">"Volumes[0].[VolumeId,Size,AvailabilityZone,SnapshotId,State]"</span> --output table
+
+<span class="c"># Restaurar ampliando: de 8 a 16 GiB</span>
+aws ec2 create-volume --snapshot-id <span class="v">$SNAP</span> `
+  --availability-zone us-east-1a --size 16</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">la columna SnapshotId</span><p>Indica de qué foto nació el volumen. Es la trazabilidad entre un volumen y su origen.</p></div>
+        <div class="card"><span class="tag">sin --size</span><p>Si no se indica, el volumen nuevo hereda el tamaño del snapshot. Con <code class="i">--size</code> se puede pedir uno mayor, nunca menor.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 26 Ejercicio 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 4 · 10 puntos</span>
+    <h2>Recuperar un volumen en el lugar de trabajo</h2>
+    <p>Se dañó <code class="i">datos-1</code>. Escribí el comando que crea un volumen nuevo <strong>desde el snapshot</strong> <code class="i">$SNAP</code>, en la zona <code class="i">us-east-1a</code> donde está la instancia.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\baws\s+ec2\s+create-volume\b)(?=.*--snapshot-id\s+(\$SNAP\b|snap-[\w-]+))(?=.*--availability-zone\s+us-east-1a\b)"
+         data-hint="No se repara el volumen dañado: se crea uno nuevo. Usá create-volume con el parámetro que indica el snapshot de origen."
+         data-ok="Después de crearlo, se adjunta a la instancia con attach-volume y se monta. Los datos vuelven tal como estaban en el snapshot.">
+      <label for="ex4">Tu comando</label>
+      <textarea id="ex4" rows="3" spellcheck="false" placeholder="aws ec2 create-volume ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 27 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Crear</span><span>2 · Adjuntar</span><span>3 · Snapshot</span><span>4 · Restaurar</span><span class="on">5 · Ampliar</span><span>6 · Montar</span></div>
+    <h2>Práctica 5 · Ampliar un volumen en caliente</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># De 8 a 12 GiB, con el volumen adjunto</span>
+aws ec2 modify-volume --volume-id <span class="v">$VOL</span> --size 12
+
+<span class="c"># Seguimiento de la modificación</span>
+aws ec2 describe-volumes-modifications --volume-ids <span class="v">$VOL</span> `
+  --query <span class="s">"VolumesModifications[0].[ModificationState,OriginalSize,TargetSize]"</span> --output table
+
+<span class="c"># Intentar achicar: debe fallar</span>
+aws ec2 modify-volume --volume-id <span class="v">$VOL</span> --size 4</pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">estados</span><p><code class="i">modifying</code>, <code class="i">optimizing</code> y <code class="i">completed</code>. El volumen se puede usar durante la optimización.</p></div>
+        <div class="card"><span class="tag">el error esperado</span><p>Al pedir un tamaño menor, la API rechaza el cambio. Anotá el mensaje para el informe.</p></div>
+        <div class="note-teacher"><b>Docente</b>Probar si Floci implementa <code class="i">modify-volume</code>. Si no, mostrar solo el comando y la tabla de la diapositiva 12.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 28 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Crear</span><span>2 · Adjuntar</span><span>3 · Snapshot</span><span>4 · Restaurar</span><span>5 · Ampliar</span><span class="on">6 · Montar</span></div>
+    <h2>Práctica 6 · Agregar un disco a la VM y montarlo</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="code"><div class="bar"><span>PowerShell · con la VM apagada</span><button class="copy">Copiar</button></div><pre><span class="c"># Nombre y controladora de tu VM</span>
+VBoxManage list vms
+VBoxManage showvminfo <span class="s">"ubuntu-server"</span> | findstr /i <span class="s">"storage"</span>
+
+<span class="c"># Crear un disco de 2 GiB (en una carpeta simple)</span>
+mkdir C:\vms-disco; cd C:\vms-disco
+VBoxManage createmedium disk --filename datos.vdi --size 2048
+
+<span class="c"># Conectarlo (cambiá el nombre de la VM y de la controladora)</span>
+VBoxManage storageattach <span class="s">"ubuntu-server"</span> --storagectl <span class="s">"SATA Controller"</span> `
+  --port 1 --device 0 --type hdd --medium C:\vms-disco\datos.vdi</pre></div>
+        <div class="code"><div class="bar"><span>Dentro de Ubuntu</span><button class="copy">Copiar</button></div><pre>lsblk
+sudo mkfs.ext4 /dev/sdb
+sudo mkdir /datos
+sudo mount /dev/sdb /datos
+echo <span class="s">"hola bloque"</span> | sudo tee /datos/prueba.txt
+df -h /datos
+sudo blkid /dev/sdb
+<span class="c"># Agregar la línea de UUID a /etc/fstab, y probar:</span>
+sudo umount /datos && sudo mount -a && cat /datos/prueba.txt</pre></div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">¿qué disco es?</span><p>El disco de 2 GiB que aparece en <code class="i">lsblk</code> sin partición ni punto de montaje es el nuevo. Probablemente <code class="i">sdb</code>.</p></div>
+        <div class="card"><span class="tag">cuidado</span><p>No formatear <code class="i">sda</code>: es el disco del sistema operativo.</p></div>
+        <div class="card"><span class="tag">el mismo ciclo</span><p>Es lo que haría la instancia con un volumen adjunto: aparece crudo, se formatea, se monta y se guarda en fstab.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 29 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Limpieza</span>
+    <h2>Borrar todo lo del módulo</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Instancias del módulo</span>
+<span class="v">$INST</span> = (aws ec2 describe-instances `
+  --filters <span class="s">"Name=tag:Proyecto,Values=modulo-bloque"</span> <span class="s">"Name=instance-state-name,Values=pending,running,stopping,stopped"</span> `
+  --query <span class="s">"Reservations[].Instances[].InstanceId"</span> --output text) -split <span class="s">"\s+"</span>
+aws ec2 terminate-instances --instance-ids <span class="v">$INST</span>
+aws ec2 wait instance-terminated --instance-ids <span class="v">$INST</span>
+
+<span class="c"># Volúmenes que quedaron en available (los adicionales no se borran solos)</span>
+<span class="v">$VOLS</span> = (aws ec2 describe-volumes `
+  --filters <span class="s">"Name=tag:Proyecto,Values=modulo-bloque"</span> `
+  --query <span class="s">"Volumes[].VolumeId"</span> --output text) -split <span class="s">"\s+"</span>
+<span class="v">$VOLS</span> | ForEach-Object { aws ec2 delete-volume --volume-id <span class="v">$_</span> }
+
+<span class="c"># Snapshots del módulo</span>
+(aws ec2 describe-snapshots --owner-ids self `
+  --filters <span class="s">"Name=tag:Proyecto,Values=modulo-bloque"</span> `
+  --query <span class="s">"Snapshots[].SnapshotId"</span> --output text) -split <span class="s">"\s+"</span> |
+  ForEach-Object { aws ec2 delete-snapshot --snapshot-id <span class="v">$_</span> }</pre></div>
+    <p class="muted">Se borran primero las instancias, después los volúmenes y al final los snapshots. Si un volumen se niega a borrarse, todavía está in-use: soltalo con detach-volume.</p>
+  </div>
+</section>
+
+<!-- 30 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Para el informe</span>
+    <h2>Preguntas de reflexión</h2>
+    <ul class="clean">
+      <li>En la práctica 4 restauraron un snapshot en us-east-1b. ¿Por qué no se puede simplemente adjuntar el volumen original a una instancia de esa zona?</li>
+      <li>¿Qué tipo de volumen elegirían para una base de datos con muchas consultas pequeñas, y cuál para guardar logs antiguos? Justifiquen con IOPS y caudal.</li>
+      <li>Si el RPO de una aplicación es de cuatro horas, ¿cada cuánto deben sacarse snapshots? ¿Qué más hay que considerar si la aplicación es una base de datos?</li>
+      <li>En la práctica 6 el disco quedó montado con una línea de fstab. ¿Qué habría pasado al reiniciar sin esa línea? ¿Para qué sirve la opción <code class="i">nofail</code>?</li>
+      <li>Un colega borra una instancia y cree que ya no paga nada. ¿Qué le explicarían sobre los volúmenes adicionales?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 31 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Entregable</span>
+    <h2>Checklist y puntaje</h2>
+    <div class="cols">
+      <div class="checklist">
+        <label><input type="checkbox" id="ck1"> Tabla de <code class="i">describe-volumes</code> con el volumen en available</label>
+        <label><input type="checkbox" id="ck2"> Tabla con el volumen in-use y su dispositivo</label>
+        <label><input type="checkbox" id="ck3"> Tabla del snapshot en estado completed</label>
+        <label><input type="checkbox" id="ck4"> Volumen restaurado en otra zona, con su SnapshotId</label>
+        <label><input type="checkbox" id="ck5"> Modificación de tamaño y mensaje de error al achicar</label>
+        <label><input type="checkbox" id="ck6"> Captura de <code class="i">lsblk</code>, <code class="i">df -h</code> y <code class="i">prueba.txt</code> en la VM</label>
+        <label><input type="checkbox" id="ck7"> Línea de <code class="i">/etc/fstab</code> y prueba con <code class="i">mount -a</code></label>
+        <label><input type="checkbox" id="ck8"> Respuestas a las preguntas de reflexión</label>
+        <label><input type="checkbox" id="ck9"> Captura de la limpieza: sin volúmenes ni snapshots del módulo</label>
+      </div>
+      <div class="stack">
+        <div class="scorecard">
+          <span class="eyebrow">Puntaje de ejercicios</span>
+          <div class="big"><span id="scoreBig">0</span><small> / 40</small></div>
+          <div class="muted" id="scoreDetail">Ningún ejercicio resuelto todavía.</div>
+        </div>
+        <div class="card"><span class="tag">próximo módulo</span><p><strong>Almacenamiento de objetos:</strong> buckets, claves, versiones, políticas y acceso por HTTP.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="hud">
+  <span class="region">módulo <b>2 · Bloque</b> · <span class="pts">puntos <b id="ptsHud">0 / 40</b></span></span>
+  <div class="nav">
+    <button id="prev" aria-label="Diapositiva anterior">←</button>
+    <span class="count" id="count">1 / 1</span>
+    <button id="next" aria-label="Diapositiva siguiente">→</button>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const count = document.getElementById('count');
+  const progress = document.getElementById('progress');
+  let i = 0;
+
+  function fromHash() {
+    const m = /^#s(\d+)$/.exec(location.hash || '');
+    if (m) { const n = parseInt(m[1], 10) - 1; if (n >= 0 && n < slides.length) return n; }
+    return 0;
+  }
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    slides[i].scrollTop = 0;
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) {}
+  }
+  document.getElementById('prev').addEventListener('click', () => show(i - 1));
+  document.getElementById('next').addEventListener('click', () => show(i + 1));
+  document.addEventListener('keydown', (e) => {
+    if (document.querySelector('.swal2-container')) return;
+    if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && e.target === document.body)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+  });
+  let tx = null;
+  document.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 60) show(i + (dx < 0 ? 1 : -1));
+    tx = null;
+  });
+
+  // Copiar código
+  document.querySelectorAll('.copy').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.code').querySelector('pre');
+      const text = pre.innerText;
+      const done = () => { btn.textContent = 'Copiado'; setTimeout(() => (btn.textContent = 'Copiar'), 1400); };
+      const fallback = () => {
+        const r = document.createRange(); r.selectNodeContents(pre);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent = 'Ctrl+C'; setTimeout(() => (btn.textContent = 'Copiar'), 1800);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+        else fallback();
+      } catch (e) { fallback(); }
+    });
+  });
+
+  // Quizzes
+  document.querySelectorAll('.q').forEach((q) => {
+    const correct = q.dataset.correct;
+    const why = q.dataset.why;
+    const fb = q.querySelector('.fb');
+    const opts = Array.from(q.querySelectorAll('.opt'));
+    opts.forEach((b) => b.addEventListener('click', () => {
+      const ok = b.dataset.k === correct;
+      opts.forEach((o) => { o.disabled = true; if (o.dataset.k === correct) o.classList.add('right'); });
+      if (!ok) b.classList.add('wrong');
+      fb.textContent = (ok ? 'Correcto. ' : 'No es esa. ') + why;
+      fb.className = 'fb ' + (ok ? 'okc' : 'badc');
+      if (window.Swal) {
+        Swal.fire({
+          icon: ok ? 'success' : 'error',
+          title: ok ? '¡Correcto!' : 'Casi',
+          text: why,
+          background: '#131d2d', color: '#e7edf5',
+          confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir'
+        });
+      }
+    }));
+  });
+
+  window.addEventListener('hashchange', () => show(fromHash()));
+  show(fromHash());
+})();
+
+(function () {
+  const exs = Array.from(document.querySelectorAll('.ex'));
+  const state = exs.map(() => ({ hints: 0, solved: false, pts: 0 }));
+  const max = exs.reduce((a, e) => a + Number(e.dataset.pts || 0), 0);
+  const ptsHud = document.getElementById('ptsHud');
+  const scoreBig = document.getElementById('scoreBig');
+  const scoreDetail = document.getElementById('scoreDetail');
+
+  function normalize(s) {
+    return s.replace(/`\s*\r?\n/g, ' ').replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function render() {
+    const total = state.reduce((a, s) => a + s.pts, 0);
+    if (ptsHud) ptsHud.textContent = total + ' / ' + max;
+    if (scoreBig) scoreBig.textContent = total;
+    if (scoreDetail) {
+      const done = state.filter((s) => s.solved).length;
+      scoreDetail.textContent = done === 0
+        ? 'Ningún ejercicio resuelto todavía.'
+        : done + ' de ' + exs.length + ' ejercicios resueltos · ' + state.reduce((a, s) => a + s.hints, 0) + ' pistas usadas.';
+    }
+  }
+  function swal(opts) {
+    if (window.Swal) Swal.fire(Object.assign({ background: '#131d2d', color: '#e7edf5', confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir' }, opts));
+  }
+
+  exs.forEach((ex, idx) => {
+    const re = new RegExp(ex.dataset.re, 'i');
+    const pts = Number(ex.dataset.pts || 10);
+    const ta = ex.querySelector('textarea');
+    const msg = ex.querySelector('.ex-msg');
+    const st = ex.querySelector('.ex-state');
+    const btnCheck = ex.querySelector('.check');
+    const btnHint = ex.querySelector('.hint');
+
+    btnCheck.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      const cmd = normalize(ta.value);
+      if (!cmd) { msg.textContent = 'Escribí el comando antes de comprobar.'; msg.className = 'ex-msg badc'; return; }
+      if (re.test(cmd)) {
+        s.solved = true;
+        s.pts = Math.max(0, pts - 3 * s.hints);
+        ex.classList.add('solved');
+        btnCheck.disabled = true; btnHint.disabled = true;
+        msg.textContent = 'Correcto. ' + ex.dataset.ok;
+        msg.className = 'ex-msg okc';
+        st.textContent = '+' + s.pts + ' puntos';
+        swal({ icon: 'success', title: '¡Correcto! +' + s.pts, text: ex.dataset.ok });
+      } else {
+        msg.textContent = 'Todavía no. Revisá el nombre del comando y cada parámetro pedido.';
+        msg.className = 'ex-msg badc';
+        swal({ icon: 'error', title: 'Todavía no', text: 'Revisá el nombre del comando y cada parámetro que pide la consigna.' });
+      }
+      render();
+    });
+
+    btnHint.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      if (s.hints === 0) s.hints = 1;
+      btnHint.disabled = true;
+      msg.textContent = 'Pista: ' + ex.dataset.hint;
+      msg.className = 'ex-msg hintc';
+      st.textContent = 'pista usada (−3)';
+    });
+
+    ta.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); btnCheck.click(); }
+    });
+  });
+  render();
+})();
+</script>
+
+</body></html>
+</body></html>
