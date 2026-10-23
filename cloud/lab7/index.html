@@ -1,0 +1,938 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Laboratorio de instancias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: una diapositiva a pantalla completa por vez, sobre un cielo nocturno con "flóculos" de nube; barra de región abajo */
+:root {
+  --ink: #0c1320;
+  --panel: #131d2d;
+  --panel-2: #1a2639;
+  --line: #27364f;
+  --fg: #e7edf5;
+  --muted: #93a4bb;
+  --sky: #7cc4ff;
+  --amber: #ffb04a;
+  --ok: #5fd39a;
+  --bad: #ff8080;
+  --f-display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(124,196,255,.07) 0 60px, transparent 61px),
+    radial-gradient(circle at 16% 22%, rgba(124,196,255,.05) 0 80px, transparent 81px),
+    radial-gradient(circle at 88% 82%, rgba(124,196,255,.06) 0 70px, transparent 71px),
+    radial-gradient(circle at 84% 78%, rgba(124,196,255,.04) 0 100px, transparent 101px),
+    var(--ink);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 18px;
+  line-height: 1.55;
+  overflow: hidden;
+}
+.deck { position: relative; height: 100%; }
+.slide {
+  position: absolute; inset: 0 0 56px 0;
+  overflow-y: auto;
+  padding-block: clamp(24px, 5vh, 56px);
+  padding-inline: max(16px, 5vw);
+  display: none;
+}
+.slide.active { display: block; animation: rise .35s ease; }
+@keyframes rise { from { opacity: .4; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide.active { animation: none; } }
+.inner { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; min-height: 100%; justify-content: center; }
+
+.eyebrow {
+  font-family: var(--f-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--sky); opacity: .85;
+}
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2.6rem, 8vw, 5.6rem); font-weight: 800; letter-spacing: -.02em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); font-weight: 600; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; margin: 0 0 6px; color: var(--fg); }
+p { margin: 0; max-width: 68ch; }
+.lead { font-size: 1.2rem; color: var(--muted); max-width: 60ch; }
+.muted { color: var(--muted); }
+strong { color: var(--fg); font-weight: 600; }
+.hl { color: var(--amber); }
+.sky { color: var(--sky); }
+code.i { font-family: var(--f-mono); font-size: .88em; background: var(--panel-2); padding: 1px 6px; border-radius: 4px; color: var(--sky); }
+
+/* Portada */
+.cover h1 .dot { color: var(--sky); }
+.puffs { display: flex; gap: 10px; align-items: flex-end; height: 40px; }
+.puffs span { display: block; border-radius: 50%; background: var(--sky); opacity: .8; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { font-family: var(--f-mono); font-size: .85rem; border: 1px solid var(--line); padding: 6px 12px; border-radius: 999px; color: var(--fg); background: var(--panel); }
+.chip b { color: var(--amber); font-weight: 600; }
+
+/* Grillas */
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.card p { font-size: .96rem; color: var(--muted); }
+.card .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); margin-bottom: 6px; display: block; }
+.callout { border-left: 3px solid var(--amber); padding: 10px 16px; background: rgba(255,176,74,.06); border-radius: 0 8px 8px 0; max-width: 80ch; }
+.callout.info { border-color: var(--sky); background: rgba(124,196,255,.06); }
+
+/* Código */
+.code { position: relative; background: #0a101a; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.code .bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: .86rem; line-height: 1.6; color: var(--fg); }
+.code .c { color: #6f819b; }
+.code .k { color: var(--sky); }
+.code .s { color: var(--ok); }
+.code .v { color: var(--amber); }
+.copy { font: inherit; font-size: .72rem; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 3px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--sky); }
+.copy:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+/* Tablas */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; min-width: 560px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--panel); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.m { font-family: var(--f-mono); font-size: .86rem; color: var(--sky); white-space: nowrap; }
+td.a { font-family: var(--f-mono); font-size: .86rem; color: var(--amber); white-space: nowrap; }
+
+/* Diagrama */
+.flow { display: grid; grid-template-columns: 1fr auto 1.1fr auto 1.6fr; gap: 12px; align-items: center; }
+.node { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
+.node.core { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(124,196,255,.08); }
+.node small { display: block; font-family: var(--f-mono); color: var(--muted); font-size: .75rem; margin-top: 4px; }
+.arrow { font-family: var(--f-mono); color: var(--sky); text-align: center; font-size: .78rem; }
+.arrow span { display: block; font-size: 1.4rem; }
+.stack { display: grid; gap: 10px; }
+.stack .node h3 { font-size: .9rem; }
+.stack .node p { font-size: .88rem; color: var(--muted); }
+@media (max-width: 820px) {
+  .flow { grid-template-columns: 1fr; }
+  .arrow span { transform: rotate(90deg); }
+}
+
+/* Pasos */
+.steps { display: flex; gap: 8px; flex-wrap: wrap; }
+.steps span { font-family: var(--f-mono); font-size: .75rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.steps span.on { border-color: var(--amber); color: var(--amber); }
+.cols { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+.cols > * { min-width: 0; }
+@media (max-width: 820px) { .cols { grid-template-columns: 1fr; } }
+ul.clean { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; max-width: 70ch; }
+ul.clean li::marker { color: var(--sky); }
+
+/* Quiz */
+.q { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.q .prompt { font-weight: 600; font-size: 1.05rem; }
+.opts { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.opt { text-align: left; font: inherit; font-size: .95rem; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; display: flex; gap: 10px; align-items: baseline; }
+.opt b { font-family: var(--f-mono); color: var(--sky); }
+.opt:hover:not(:disabled) { border-color: var(--sky); }
+.opt.right { border-color: var(--ok); background: rgba(95,211,154,.1); }
+.opt.wrong { border-color: var(--bad); background: rgba(255,128,128,.08); }
+.opt:disabled { cursor: default; }
+.fb { font-size: .92rem; color: var(--muted); }
+.fb.okc { color: var(--ok); } .fb.badc { color: var(--bad); }
+
+/* Barra inferior */
+.hud {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding: 0 max(16px, 3vw) env(safe-area-inset-bottom, 0px);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: rgba(12,19,32,.92); border-top: 1px solid var(--line);
+  font-family: var(--f-mono); font-size: .78rem; color: var(--muted);
+}
+.hud .region { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .region b { color: var(--sky); font-weight: 600; }
+.nav { display: flex; align-items: center; gap: 10px; }
+.nav button { font: inherit; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.nav button:hover { border-color: var(--sky); }
+.count { font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: center; }
+.progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--amber); transition: width .25s; z-index: 5; }
+a { color: var(--sky); }
+.links { display: grid; gap: 10px; }
+.links a { font-family: var(--f-mono); font-size: .95rem; }
+
+/* --- Clase IaaS --- */
+table.layers td.you { color: var(--amber); font-weight: 600; background: rgba(255,176,74,.08); }
+table.layers td.prov { color: var(--sky); background: rgba(124,196,255,.06); }
+table.layers tr.line td { border-top: 2px dashed var(--sky); }
+.blocks { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.block { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.block p { color: var(--muted); font-size: .95rem; }
+.block .tag { font-family: var(--f-mono); font-size: .75rem; color: var(--amber); display: block; margin-bottom: 6px; }
+.block.wide { grid-column: 1 / -1; border-style: dashed; border-color: var(--sky); }
+.anatomy { display: grid; gap: 10px; }
+.parts { display: flex; flex-wrap: wrap; gap: 14px; }
+.parts div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; min-width: 150px; flex: 1; }
+.parts b { font-family: var(--f-mono); font-size: 1.8rem; color: var(--amber); display: block; }
+.parts small { color: var(--muted); font-size: .88rem; }
+.net { display: grid; gap: 8px; justify-items: center; }
+.net-internet, .net-igw { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.net-igw { border-color: var(--sky); color: var(--sky); }
+.net-internet::after, .net-igw::after { content: ""; }
+.net-vpc { width: 100%; border: 2px dashed var(--sky); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+.net-label { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.net-subs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .net-subs { grid-template-columns: 1fr; } }
+.net-sub { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.net-sub .net-label { flex-basis: 100%; }
+.net-sub.pub { background: rgba(124,196,255,.05); }
+.net-sub.priv { background: rgba(255,176,74,.05); }
+.net-vm { font-family: var(--f-mono); font-size: .8rem; padding: 6px 10px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); }
+.net-sg { flex-basis: 100%; font-family: var(--f-mono); font-size: .72rem; color: var(--amber); }
+.life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 760px) { .life { grid-template-columns: 1fr 1fr; } }
+.life div { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--sky); border-radius: 8px; padding: 12px; min-width: 0; }
+.life div:nth-child(3) { border-top-color: var(--amber); }
+.life div:nth-child(4) { border-top-color: var(--bad); }
+.life b { font-family: var(--f-mono); display: block; }
+.life small { color: var(--muted); font-size: .86rem; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); }
+ul.clean.small { font-size: .95rem; color: var(--muted); }
+.card.good { border-top: 3px solid var(--ok); }
+.card.bad { border-top: 3px solid var(--bad); }
+
+/* --- Laboratorio IaaS --- */
+.net-s3 { font-family: var(--f-mono); font-size: .8rem; padding: 6px 14px; border-radius: 8px; border: 1px dashed var(--amber); color: var(--amber); }
+.net-vm.disk { border-color: var(--amber); color: var(--amber); }
+.net-vm.ghost { border-style: dashed; color: var(--muted); background: transparent; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.ex label { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ex textarea { width: 100%; font-family: var(--f-mono); font-size: .9rem; background: #0a101a; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; resize: vertical; }
+.ex textarea:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
+.ex-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ex-actions button { font: inherit; font-size: .9rem; border-radius: 6px; padding: 7px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); }
+.ex-actions .check { background: var(--sky); color: #08121f; border-color: var(--sky); font-weight: 600; }
+.ex-actions button:disabled { opacity: .5; cursor: default; }
+.ex-state { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); }
+.ex-msg { font-size: .95rem; color: var(--muted); }
+.ex-msg.okc { color: var(--ok); } .ex-msg.badc { color: var(--bad); } .ex-msg.hintc { color: var(--amber); }
+.ex.solved { border-color: var(--ok); }
+.checklist { display: grid; gap: 10px; }
+.checklist label { display: flex; gap: 10px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; font-size: .95rem; }
+.checklist input { accent-color: var(--ok); width: 18px; height: 18px; flex: none; transform: translateY(3px); }
+.scorecard { background: var(--panel); border: 1px solid var(--sky); border-radius: 12px; padding: 18px; display: grid; gap: 6px; }
+.scorecard .big { font-family: var(--f-display); font-size: 3rem; font-weight: 800; color: var(--amber); font-variant-numeric: tabular-nums; line-height: 1; }
+.scorecard .big small { font-size: 1.1rem; color: var(--muted); font-weight: 400; }
+.hud .pts b { color: var(--amber); }
+
+/* --- Serie IaaS: elementos comunes --- */
+.series { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.series div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; display: grid; gap: 2px; }
+.series b { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); font-weight: 400; }
+.series span { font-weight: 600; }
+.series small { color: var(--muted); font-size: .85rem; }
+.series div.now { border-color: var(--amber); background: rgba(255,176,74,.08); }
+.series div.now b { color: var(--amber); }
+.host { display: grid; gap: 8px; }
+.host-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 640px) { .host-row { grid-template-columns: 1fr 1fr; } }
+.host-vm { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--panel); font-size: .88rem; min-width: 0; }
+.host-vm b { font-family: var(--f-mono); display: block; font-size: .8rem; }
+.host-vm small { color: var(--muted); }
+.host-vm.a { border-top: 3px solid var(--sky); }
+.host-vm.b { border-top: 3px solid var(--amber); }
+.host-layer { border-radius: 8px; padding: 9px 14px; font-family: var(--f-mono); font-size: .82rem; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.host-layer.hv { background: rgba(124,196,255,.12); border: 1px solid var(--sky); color: var(--sky); }
+.host-layer.hw { background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+.credits { display: grid; gap: 8px; }
+.credit-bar { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: center; font-size: .9rem; }
+.credit-bar .track { height: 18px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; position: relative; overflow: hidden; }
+.credit-bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--sky); opacity: .75; }
+.credit-bar .fill.burst { background: var(--amber); }
+.credit-bar .base { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
+.versus { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .versus { grid-template-columns: 1fr; } }
+.note-teacher { font-size: .86rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 10px 14px; }
+.note-teacher b { color: var(--amber); font-family: var(--f-mono); font-weight: 600; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
+
+/* --- Bloque: snapshots incrementales --- */
+.bsets { display: grid; gap: 10px; }
+.brow { display: grid; grid-template-columns: minmax(130px, 190px) 1fr; gap: 14px; align-items: center; }
+.blab { font-family: var(--f-mono); font-size: .78rem; color: var(--muted); }
+.bgrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.bgrid i { display: block; height: 28px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); }
+.bgrid i.s { background: var(--sky); border-color: var(--sky); opacity: .85; }
+.bgrid i.c { background: var(--amber); border-color: var(--amber); }
+.bgrid i.e { border-style: dashed; background: transparent; }
+@media (max-width: 560px) { .brow { grid-template-columns: 1fr; gap: 4px; } }
+</style>
+
+<div class="progress" id="progress"></div>
+<main class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide cover">
+  <div class="inner">
+    <div class="puffs" aria-hidden="true"><span style="width:18px;height:18px"></span><span style="width:30px;height:30px"></span><span style="width:22px;height:22px"></span><span style="width:12px;height:12px"></span></div>
+    <span class="eyebrow">Laboratorio · Cloud Computing</span>
+    <h1>Instancias<span class="dot">.</span></h1>
+    <p class="lead">Una consola de nube en tu PC: creá instancias de distintos tamaños, conectalas, dales un disco, sacales una imagen y documentá todo con capturas.</p>
+    <div class="chips">
+      <span class="chip">herramientas <b>Docker + Portainer</b></span>
+      <span class="chip">práctica <b>7</b> pasos</span>
+      <span class="chip">ejercicios <b>4 × 10</b> puntos</span>
+      <span class="chip">entrega <b>informe con capturas</b></span>
+    </div>
+    <p class="muted" style="font-size:.9rem">Avanzá con las flechas ← → del teclado.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Qué vamos a hacer</span>
+    <h2>Operar una nube pequeña y dejar evidencia</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Vas a hacer lo que hace un administrador de IaaS: <strong>crear instancias de distintos tamaños</strong>, conectarlas por red, guardar datos en un volumen y capturar una imagen. Todo desde una consola gráfica y desde la terminal.</p>
+        <div class="card"><span class="tag">por qué contenedores</span><p>Las máquinas virtuales nos dieron problemas en varias PC. Los contenedores corren con 8 GB de RAM y no necesitan virtualización anidada.</p></div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">entregable</span><p>Un informe en PDF con tabla de instancias, <strong>capturas de pantalla numeradas</strong> y respuestas a las preguntas de reflexión. Se sube a Moodle.</p></div>
+        <div class="card"><span class="tag">puntaje</span><p>Cuatro ejercicios de comandos con validación automática (hasta 40 puntos) más el informe, que corrige el docente.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Conceptos</span>
+    <h2>Lo que ya sabés, con otros nombres</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Concepto de IaaS</th><th>En OpenStack</th><th>En este laboratorio</th></tr></thead>
+        <tbody>
+          <tr><td>Instancia</td><td>Nova</td><td>Un contenedor</td></tr>
+          <tr><td>Flavor (tamaño)</td><td>vCPU, RAM y disco del flavor</td><td>Límites de CPU y memoria del contenedor</td></tr>
+          <tr><td>Imagen</td><td>Glance</td><td>Imagen de Docker</td></tr>
+          <tr><td>Volumen de bloque</td><td>Cinder</td><td>Volumen de Docker</td></tr>
+          <tr><td>Red</td><td>Neutron</td><td>Red de Docker</td></tr>
+          <tr><td>Panel de control</td><td>Horizon</td><td>Portainer</td></tr>
+          <tr><td>Usuario administrador</td><td>Keystone</td><td>El usuario admin de Portainer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">Es una correspondencia de ideas. Los nombres y las pantallas cambian entre plataformas, pero el ciclo de trabajo es el mismo: elegir imagen y tamaño, conectar a una red, agregar discos y apagar o borrar.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Alcance</span>
+    <h2>Un contenedor no es una máquina virtual</h2>
+    <div class="versus">
+      <div class="card good"><span class="tag">se conserva</span><h3>El flujo de trabajo</h3><ul class="clean small">
+        <li>Elegir imagen y tamaño</li>
+        <li>Conectar a una red, abrir puertos</li>
+        <li>Adjuntar un volumen persistente</li>
+        <li>Capturar una imagen y lanzar copias</li>
+        <li>Ciclo de vida: crear, detener, iniciar, borrar</li>
+      </ul></div>
+      <div class="card bad"><span class="tag">cambia</span><h3>El aislamiento</h3><ul class="clean small">
+        <li>Comparte el kernel con tu PC, sin kernel propio</li>
+        <li>No instala un sistema operativo completo</li>
+        <li>Arranca en segundos y pesa megabytes</li>
+        <li>Sin disco de arranque propio</li>
+      </ul></div>
+    </div>
+    <p class="muted">Esta diferencia es el tema de la Clase 6 y del deck contenedor frente a máquina virtual. En el informe vas a explicarla con tus propias observaciones.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Antes de empezar</span>
+    <h2>Lo que necesitás</h2>
+    <div class="grid">
+      <div class="card"><span class="tag">Docker Desktop</span><p>Instalado y <strong>abierto</strong>. En la barra de tareas debe verse la ballena sin mensajes de error. Probalo con <code class="i">docker version</code>.</p></div>
+      <div class="card"><span class="tag">PowerShell</span><p>Abrí una terminal común, sin administrador. Los comandos de este laboratorio son para PowerShell.</p></div>
+      <div class="card"><span class="tag">navegador y capturas</span><p>Cualquier navegador. Para capturas: tecla Windows + Mayús + S, o la herramienta Recortes.</p></div>
+    </div>
+    <div class="callout info"><p><strong>Sacá las capturas completas.</strong> Que se vea la pantalla entera con la barra de direcciones o el prompt de la terminal. El informe se corrige con ellas.</p></div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span class="on">1 · Consola</span><span>2 · Flavors</span><span>3 · Instancias</span><span>4 · Red</span><span>5 · Volumen</span><span>6 · Imagen</span><span>7 · Ciclo de vida</span></div>
+    <h2>Paso 1 · Instalar la consola</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Verificar Docker</span>
+docker version
+
+<span class="c"># Un volumen para que la consola guarde sus datos</span>
+docker volume create portainer_data
+
+<span class="c"># La consola: un contenedor más</span>
+docker run -d --name portainer --restart=always `
+  -p 9443:9443 -p 8000:8000 `
+  -v /var/run/docker.sock:/var/run/docker.sock `
+  -v portainer_data:/data `
+  portainer/portainer-ce:lts
+
+<span class="c"># ¿Está corriendo?</span>
+docker ps --filter <span class="s">"name=portainer"</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">el socket de Docker</span><p>La línea con <code class="i">docker.sock</code> le da a Portainer acceso al motor de Docker. Así puede crear y administrar contenedores, igual que Horizon administra Nova.</p></div>
+        <div class="card"><span class="tag">si falla</span><p>Si el puerto 9443 está ocupado, cambiá el primer número, por ejemplo <code class="i">-p 9444:9443</code>, y abrí esa dirección.</p></div>
+        <div class="note-teacher"><b>Docente</b>Probar esta instalación en Docker Desktop de Windows antes de clase. Si el montaje del socket da error, revisar que Docker Desktop use WSL 2.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span class="on">1 · Consola</span><span>2 · Flavors</span><span>3 · Instancias</span><span>4 · Red</span><span>5 · Volumen</span><span>6 · Imagen</span><span>7 · Ciclo de vida</span></div>
+    <h2>Paso 1 · Primer ingreso y recorrido</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="card"><span class="tag">1 · abrir</span><p>En el navegador: <code class="i">https://localhost:9443</code>. Aparece una advertencia de certificado: es un certificado propio. Elegí continuar.</p></div>
+        <div class="card"><span class="tag">2 · crear el administrador</span><p>Usuario <code class="i">admin</code> y una contraseña de al menos 12 caracteres. Anotala.</p></div>
+        <div class="card"><span class="tag">3 · elegir el entorno</span><p>En Home, abrí el entorno <strong>local</strong>. Es tu propio Docker.</p></div>
+        <div class="callout"><p>Si aparece un mensaje de tiempo agotado antes de crear el usuario, ejecutá <code class="i">docker restart portainer</code> y volvé a abrir la dirección.</p></div>
+      </div>
+      <div class="stack">
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Menú</th><th>Equivale a</th></tr></thead>
+            <tbody>
+              <tr><td class="m">Containers</td><td>Instancias</td></tr>
+              <tr><td class="m">Images</td><td>Imágenes</td></tr>
+              <tr><td class="m">Networks</td><td>Redes</td></tr>
+              <tr><td class="m">Volumes</td><td>Volúmenes</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note-teacher"><b>Captura 1</b>El panel del entorno local, con el recuadro de contenedores, imágenes, volúmenes y redes visible.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Consola</span><span class="on">2 · Flavors</span><span>3 · Instancias</span><span>4 · Red</span><span>5 · Volumen</span><span>6 · Imagen</span><span>7 · Ciclo de vida</span></div>
+    <h2>Paso 2 · Los flavors del laboratorio</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Un <strong>flavor</strong> fija cuánta CPU y memoria recibe una instancia. En Docker se logra con dos límites. Vamos a usar tres tamaños:</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Flavor</th><th>CPU</th><th>Memoria</th></tr></thead>
+            <tbody>
+              <tr><td class="m">flavor-small</td><td class="num">0,25</td><td class="num">128 MB</td></tr>
+              <tr><td class="m">flavor-medium</td><td class="num">0,5</td><td class="num">256 MB</td></tr>
+              <tr><td class="m">flavor-large</td><td class="num">1</td><td class="num">512 MB</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">--memory</span><p>Tope de memoria RAM. Si la instancia lo supera, Docker la mata. Lo veremos en el desafío del paso 7.</p></div>
+        <div class="card"><span class="tag">--cpus</span><p>Fracción de CPU. <code class="i">0.5</code> es la mitad de un núcleo.</p></div>
+        <div class="card"><span class="tag">igual que el módulo 1</span><p>Es la lógica de t2.micro, t3.small o m7i.large: elegir un tipo del catálogo, no pedir cualquier valor.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Consola</span><span>2 · Flavors</span><span class="on">3 · Instancias</span><span>4 · Red</span><span>5 · Volumen</span><span>6 · Imagen</span><span>7 · Ciclo de vida</span></div>
+    <h2>Paso 3 · Crear una instancia desde la consola</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="card"><span class="tag">1 · abrir el formulario</span><p>Containers → <strong>Add container</strong>.</p></div>
+        <div class="card"><span class="tag">2 · datos básicos</span><p>Name: <code class="i">web-small</code>. Image: <code class="i">nginx:alpine</code>. Activá <strong>publish a new network port</strong>: host <code class="i">8082</code>, container <code class="i">80</code>.</p></div>
+        <div class="card"><span class="tag">3 · el flavor</span><p>Abajo, pestaña <strong>Runtime &amp; Resources</strong>: Memory limit <code class="i">128</code> MB y CPU limit <code class="i">0.25</code>.</p></div>
+        <div class="card"><span class="tag">4 · crear</span><p>Botón <strong>Deploy the container</strong>.</p></div>
+      </div>
+      <div class="stack">
+        <div class="note-teacher"><b>Captura 2</b>El formulario con el nombre, la imagen, el puerto y la pestaña de recursos con los límites escritos, antes de hacer clic en Deploy.</div>
+        <div class="card"><span class="tag">comprobar</span><p>En la lista de Containers, <code class="i">web-small</code> debe estar en estado <strong>running</strong>. Abrí <code class="i">http://localhost:8082</code> en el navegador: aparece la página de bienvenida de nginx.</p></div>
+        <div class="note-teacher"><b>Docente</b>Los nombres de pestañas y botones pueden variar levemente entre versiones de Portainer. Si no coinciden, buscar la sección de límites de CPU y memoria en el formulario de creación.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Consola</span><span>2 · Flavors</span><span class="on">3 · Instancias</span><span>4 · Red</span><span>5 · Volumen</span><span>6 · Imagen</span><span>7 · Ciclo de vida</span></div>
+    <h2>Paso 3 · Crear una instancia desde la terminal</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># flavor-large: 1 CPU y 512 MB</span>
+docker run -d --name web-large --memory 512m --cpus 1 `
+  -p 8083:80 nginx:alpine
+
+<span class="c"># Los límites tal como los guarda Docker</span>
+docker inspect web-small web-large `
+  --format <span class="s">"{{.Name}} memoria={{.HostConfig.Memory}} cpu={{.HostConfig.NanoCpus}}"</span>
+
+<span class="c"># Uso y límite de cada instancia</span>
+docker stats --no-stream `
+  --format <span class="s">"table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">cómo leer inspect</span><p>La memoria se guarda en bytes: 536870912 es 512 MiB. La CPU se guarda en milmillonésimos de núcleo: 1000000000 es 1 núcleo.</p></div>
+        <div class="card"><span class="tag">cómo leer stats</span><p>La columna MEM USAGE muestra el uso actual, una barra y el <strong>límite</strong>. El límite de cada fila es su flavor.</p></div>
+        <div class="note-teacher"><b>Captura 3</b>La salida de <code class="i">docker inspect</code> y <code class="i">docker stats</code> con las instancias creadas hasta ahora.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 Ejercicio 1 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 1 · 10 puntos</span>
+    <h2>El flavor mediano</h2>
+    <p>Escribí el comando que crea la instancia <code class="i">web-medium</code> con <code class="i">flavor-medium</code> (256 MB de memoria y 0,5 CPU), usando la imagen <code class="i">nginx:alpine</code> y en segundo plano.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\bdocker\s+run\b)(?=.*(\s-d\b|\s--detach\b))(?=.*--name[= ]web-medium\b)(?=.*--memory[= ]256[mM]\b)(?=.*--cpus[= ]0?\.5\b)(?=.*\bnginx:alpine\b)"
+         data-hint="Partí del comando de web-large. Cambian el nombre, la memoria, las CPU y el puerto. Los límites se escriben con --memory y --cpus."
+         data-ok="Ejecutalo con un puerto libre, por ejemplo -p 8081:80, y comprobá con docker stats que el límite es 256 MiB. Esta instancia es la que vas a usar en los pasos siguientes.">
+      <label for="ex1">Tu comando</label>
+      <textarea id="ex1" rows="3" spellcheck="false" placeholder="docker run ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Consola</span><span>2 · Flavors</span><span>3 · Instancias</span><span class="on">4 · Red</span><span>5 · Volumen</span><span>6 · Imagen</span><span>7 · Ciclo de vida</span></div>
+    <h2>Paso 4 · Conectar las instancias por red</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Una red define quién puede hablar con quién. En una red creada por vos, las instancias se encuentran <strong>por nombre</strong>, sin conocer su IP. Es el equivalente a una subred privada.</p>
+        <div class="card"><span class="tag">ejercicio 2</span><p>La red <code class="i">red-lab</code> y una instancia <code class="i">app-1</code> conectada a ella las creás en el ejercicio siguiente. Después usás este bloque.</p></div>
+        <div class="note-teacher"><b>Captura 4</b>La pantalla Networks → red-lab en Portainer, con la lista de contenedores conectados, y la salida del ping.</div>
+      </div>
+      <div class="code"><div class="bar"><span>PowerShell · después del ejercicio 2</span><button class="copy">Copiar</button></div><pre><span class="c"># Conectar web-medium a la misma red</span>
+docker network connect red-lab web-medium
+
+<span class="c"># Quiénes están en la red y con qué dirección</span>
+docker network inspect red-lab `
+  --format <span class="s">"{{range .Containers}}{{.Name}} {{.IPv4Address}}{{println}}{{end}}"</span>
+
+<span class="c"># Hablarse por nombre</span>
+docker exec web-medium ping -c 2 app-1</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 Ejercicio 2 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 2 · 10 puntos</span>
+    <h2>Una red propia</h2>
+    <p>Escribí los dos comandos: crear la red <code class="i">red-lab</code> y lanzar la instancia <code class="i">app-1</code> (imagen <code class="i">nginx:alpine</code>, en segundo plano) <strong>conectada a esa red</strong>. Podés escribirlos en líneas separadas.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\bdocker\s+network\s+create\s+red-lab\b)(?=.*\bdocker\s+run\b)(?=.*(\s-d\b|\s--detach\b))(?=.*--name[= ]app-1\b)(?=.*--network[= ]red-lab\b)"
+         data-hint="Son dos comandos: docker network create con el nombre de la red, y un docker run con --network apuntando a esa red."
+         data-ok="Ahora seguí con el bloque de la diapositiva anterior: conectá web-medium y verificá con ping que se ven por nombre. Es lo que haría un servidor web con su servidor de aplicación.">
+      <label for="ex2">Tus comandos</label>
+      <textarea id="ex2" rows="4" spellcheck="false" placeholder="docker network create ...&#10;docker run ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Consola</span><span>2 · Flavors</span><span>3 · Instancias</span><span>4 · Red</span><span class="on">5 · Volumen</span><span>6 · Imagen</span><span>7 · Ciclo de vida</span></div>
+    <h2>Paso 5 · Un volumen que sobrevive a la instancia</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Lo que se escribe dentro de un contenedor se pierde si el contenedor se borra. Un <strong>volumen</strong> guarda datos aparte, como el volumen de bloque del módulo 2.</p>
+        <div class="card"><span class="tag">ejercicio 3</span><p>La instancia <code class="i">db-1</code> con el volumen <code class="i">datos-lab</code> la creás en el ejercicio siguiente. Después usás este bloque.</p></div>
+        <div class="note-teacher"><b>Captura 5</b>La salida del último comando mostrando el contenido de <code class="i">nota.txt</code> con la instancia original ya borrada.</div>
+      </div>
+      <div class="code"><div class="bar"><span>PowerShell · después del ejercicio 3</span><button class="copy">Copiar</button></div><pre><span class="c"># Escribir un dato en el volumen</span>
+docker exec db-1 sh -c <span class="s">"echo 'dato importante' > /datos/nota.txt"</span>
+
+<span class="c"># Borrar la instancia: el volumen queda</span>
+docker rm -f db-1
+docker volume ls --filter <span class="s">"name=datos-lab"</span>
+
+<span class="c"># Una instancia nueva lee el mismo dato</span>
+docker run --rm -v datos-lab:/datos alpine cat /datos/nota.txt</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 Ejercicio 3 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 3 · 10 puntos</span>
+    <h2>Un disco para db-1</h2>
+    <p>Escribí el comando que crea la instancia <code class="i">db-1</code> con imagen <code class="i">alpine</code>, que se quede corriendo (<code class="i">sleep 3600</code>), con el volumen <code class="i">datos-lab</code> montado en <code class="i">/datos</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\bdocker\s+run\b)(?=.*(\s-d\b|\s--detach\b))(?=.*--name[= ]db-1\b)(?=.*(\s-v\s+datos-lab:/datos\b|--volume[= ]datos-lab:/datos\b|--mount\s+\S*source=datos-lab\S*target=/datos|--mount\s+\S*target=/datos\S*source=datos-lab))(?=.*\balpine\b)(?=.*\bsleep\s+3600\b)"
+         data-hint="El volumen se monta con -v nombre-del-volumen:ruta-dentro-del-contenedor. El comando que mantiene viva la instancia va al final, después de la imagen."
+         data-ok="Docker crea el volumen datos-lab si no existía. Seguí con el bloque de la diapositiva anterior: escribir un dato, borrar la instancia y leerlo desde otra.">
+      <label for="ex3">Tu comando</label>
+      <textarea id="ex3" rows="3" spellcheck="false" placeholder="docker run ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Consola</span><span>2 · Flavors</span><span>3 · Instancias</span><span>4 · Red</span><span>5 · Volumen</span><span class="on">6 · Imagen</span><span>7 · Ciclo de vida</span></div>
+    <h2>Paso 6 · Capturar una imagen</h2>
+    <div class="cols">
+      <div class="stack">
+        <p>Una instancia ya configurada se puede convertir en una <strong>imagen propia</strong> y lanzar copias idénticas. Es la estrategia de la imagen horneada del módulo 1.</p>
+        <div class="card"><span class="tag">ejercicio 4</span><p>La imagen <code class="i">imagen-web:v1</code> la creás en el ejercicio siguiente, después de personalizar la página de <code class="i">web-medium</code>.</p></div>
+        <div class="note-teacher"><b>Captura 6</b>El navegador mostrando la página personalizada de <code class="i">web-clon</code> (puerto 8085) y la lista de imágenes con <code class="i">imagen-web:v1</code>.</div>
+      </div>
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># 1. Personalizar web-medium</span>
+docker exec web-medium sh -c <span class="s">"echo '&lt;h1&gt;Instancia v1&lt;/h1&gt;' > /usr/share/nginx/html/index.html"</span>
+
+<span class="c"># 2. Capturar la imagen: ejercicio 4</span>
+
+<span class="c"># 3. Lanzar una copia desde la imagen, en el mismo flavor</span>
+docker run -d --name web-clon --memory 256m --cpus 0.5 `
+  -p 8085:80 imagen-web:v1
+
+<span class="c"># 4. ¿Trae la página personalizada?</span>
+(Invoke-WebRequest http://localhost:8085 -UseBasicParsing).Content
+docker images imagen-web</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- 17 Ejercicio 4 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Ejercicio 4 · 10 puntos</span>
+    <h2>Hornear la imagen</h2>
+    <p>Escribí el comando que guarda el estado actual de la instancia <code class="i">web-medium</code> como una imagen llamada <code class="i">imagen-web</code> con la etiqueta <code class="i">v1</code>.</p>
+    <div class="ex" data-pts="10"
+         data-re="^(?=.*\bdocker\s+commit\b)(?=.*\bweb-medium\b)(?=.*\bimagen-web:v1\b)"
+         data-hint="El comando es docker commit. Lleva primero el nombre de la instancia de origen y después el nombre y la etiqueta de la imagen nueva."
+         data-ok="Con la imagen creada, volvé al bloque de la diapositiva anterior y lanzá web-clon. La página personalizada viaja dentro de la imagen, sin repetir ningún paso de configuración.">
+      <label for="ex4">Tu comando</label>
+      <textarea id="ex4" rows="3" spellcheck="false" placeholder="docker commit ..."></textarea>
+      <div class="ex-actions"><button class="check">Comprobar</button><button class="hint">Pista (−3)</button><span class="ex-state"></span></div>
+      <div class="ex-msg" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <div class="inner">
+    <div class="steps"><span>1 · Consola</span><span>2 · Flavors</span><span>3 · Instancias</span><span>4 · Red</span><span>5 · Volumen</span><span>6 · Imagen</span><span class="on">7 · Ciclo de vida</span></div>
+    <h2>Paso 7 · Ciclo de vida y un desafío</h2>
+    <div class="cols">
+      <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Apagar, ver el estado, encender y reiniciar</span>
+docker stop web-small
+docker ps -a --filter <span class="s">"name=web"</span> --format <span class="s">"table {{.Names}}\t{{.Status}}"</span>
+docker start web-small
+docker restart web-small
+
+<span class="c"># DESAFÍO (opcional): una instancia que se pasa de su flavor</span>
+docker run --name prueba-oom --memory 20m alpine tail /dev/zero
+docker inspect prueba-oom --format <span class="s">"{{.State.OOMKilled}} {{.State.ExitCode}}"</span></pre></div>
+      <div class="stack">
+        <div class="card"><span class="tag">en la consola</span><p>Mirá Containers en Portainer mientras apagás y encendés. El estado cambia entre <code class="i">running</code> y <code class="i">exited</code>.</p></div>
+        <div class="card"><span class="tag">el desafío</span><p><code class="i">tail /dev/zero</code> intenta guardar en memoria un flujo infinito. Al pasar los 20 MB del límite, Docker la mata. Se espera <code class="i">true 137</code>.</p></div>
+        <div class="note-teacher"><b>Captura 7</b>La lista de contenedores con <code class="i">web-small</code> detenida y, después, otra con las instancias en running. Si hiciste el desafío, sumá el resultado de <code class="i">inspect</code>.</div>
+        <div class="note-teacher"><b>Docente</b>Probar el desafío antes de clase: depende de cómo se comporte <code class="i">tail</code> en la imagen. Si no termina rápido, cortarlo con Ctrl+C y presentarlo como opcional.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Limpieza</span>
+    <h2>Dejar la PC como estaba</h2>
+    <div class="code"><div class="bar"><span>PowerShell</span><button class="copy">Copiar</button></div><pre><span class="c"># Instancias del laboratorio</span>
+docker rm -f web-small web-medium web-large web-clon app-1 db-1 prueba-oom
+
+<span class="c"># Red, volumen e imagen propios</span>
+docker network rm red-lab
+docker volume rm datos-lab
+docker rmi imagen-web:v1
+
+<span class="c"># Si ya no vas a usar la consola</span>
+docker rm -f portainer
+docker volume rm portainer_data
+
+<span class="c"># Comprobar</span>
+docker ps -a</pre></div>
+    <p class="muted">Las instancias que no existen dan error al borrarse: es normal si te saltaste algún paso. Hacé esta limpieza después de sacar todas las capturas.</p>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">El documento a subir</span>
+    <h2>Estructura del informe</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="card"><span class="tag">1 · carátula</span><p>Nombre, curso y fecha.</p></div>
+        <div class="card"><span class="tag">2 · tabla de instancias</span><p>Una fila por instancia: nombre, flavor, imagen, red, puerto y estado. Con los datos de tu propia terminal.</p></div>
+        <div class="card"><span class="tag">3 · capturas</span><p>Las siete numeradas, cada una con un pie de una o dos líneas que diga qué muestra.</p></div>
+        <div class="card"><span class="tag">4 · reflexión</span><p>Las respuestas a las preguntas de la diapositiva siguiente.</p></div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="tag">formato</span><p>PDF único. Nombre del archivo: <code class="i">apellido-laboratorio-instancias.pdf</code>.</p></div>
+        <div class="card"><span class="tag">capturas legibles</span><p>Si el texto no se lee, la captura no cuenta. Recortá lo que sobra pero dejá el comando y su salida completos.</p></div>
+        <div class="card"><span class="tag">trabajo propio</span><p>Los datos y las capturas de cada informe son tuyos. Las capturas copiadas de otro compañero no suman.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Para el informe</span>
+    <h2>Preguntas de reflexión</h2>
+    <ul class="clean">
+      <li>Mostrá con <code class="i">docker stats</code> cómo se aplican los tres flavors. ¿Qué diferencia hay entre el límite de una instancia y lo que realmente está usando?</li>
+      <li>Una instancia real de OpenStack con flavor de 512 MB tiene su propio sistema operativo y su kernel. ¿Qué observaste en el laboratorio que muestre que un contenedor no funciona así?</li>
+      <li>En el paso 5 borraste la instancia y el dato siguió ahí. ¿Con qué elemento del módulo 2 se corresponde el volumen? ¿Qué pasaría si el dato se hubiera escrito dentro del contenedor?</li>
+      <li>En el paso 6 lanzaste <code class="i">web-clon</code> desde una imagen que vos creaste. ¿Qué ventaja tiene sobre configurar cada instancia a mano? ¿Qué desventaja tendría si hay que cambiar la página cada semana?</li>
+      <li>Completá la tabla de la diapositiva 3 con lo que usaste de verdad en el laboratorio. ¿Qué parte de una nube real no pudiste ver con esta herramienta?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 22 -->
+<section class="slide">
+  <div class="inner">
+    <span class="eyebrow">Entregable</span>
+    <h2>Checklist y puntaje</h2>
+    <div class="cols">
+      <div class="checklist">
+        <label><input type="checkbox" id="ck1"> Captura 1: panel de Portainer con el entorno local</label>
+        <label><input type="checkbox" id="ck2"> Captura 2: formulario con los límites de web-small</label>
+        <label><input type="checkbox" id="ck3"> Captura 3: <code class="i">docker inspect</code> y <code class="i">docker stats</code></label>
+        <label><input type="checkbox" id="ck4"> Captura 4: red-lab con sus contenedores y el ping por nombre</label>
+        <label><input type="checkbox" id="ck5"> Captura 5: el dato leído desde el volumen con la instancia borrada</label>
+        <label><input type="checkbox" id="ck6"> Captura 6: la página de web-clon y la imagen imagen-web:v1</label>
+        <label><input type="checkbox" id="ck7"> Captura 7: instancia detenida y luego en running</label>
+        <label><input type="checkbox" id="ck8"> Tabla de instancias y respuestas a las preguntas de reflexión</label>
+        <label><input type="checkbox" id="ck9"> Informe en PDF único, con las capturas legibles</label>
+      </div>
+      <div class="stack">
+        <div class="scorecard">
+          <span class="eyebrow">Puntaje de ejercicios</span>
+          <div class="big"><span id="scoreBig">0</span><small> / 40</small></div>
+          <div class="muted" id="scoreDetail">Ningún ejercicio resuelto todavía.</div>
+        </div>
+        <div class="card"><span class="tag">si queda tiempo</span><p>El mismo recorrido, pero con la API de una nube: es lo que practicamos con Floci en los módulos de IaaS.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="hud">
+  <span class="region">laboratorio <b>Instancias con Docker</b> · <span class="pts">puntos <b id="ptsHud">0 / 40</b></span></span>
+  <div class="nav">
+    <button id="prev" aria-label="Diapositiva anterior">←</button>
+    <span class="count" id="count">1 / 1</span>
+    <button id="next" aria-label="Diapositiva siguiente">→</button>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
+<script>
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const count = document.getElementById('count');
+  const progress = document.getElementById('progress');
+  let i = 0;
+
+  function fromHash() {
+    const m = /^#s(\d+)$/.exec(location.hash || '');
+    if (m) { const n = parseInt(m[1], 10) - 1; if (n >= 0 && n < slides.length) return n; }
+    return 0;
+  }
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    slides[i].scrollTop = 0;
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) {}
+  }
+  document.getElementById('prev').addEventListener('click', () => show(i - 1));
+  document.getElementById('next').addEventListener('click', () => show(i + 1));
+  document.addEventListener('keydown', (e) => {
+    if (document.querySelector('.swal2-container')) return;
+    if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && e.target === document.body)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+  });
+  let tx = null;
+  document.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 60) show(i + (dx < 0 ? 1 : -1));
+    tx = null;
+  });
+
+  // Copiar código
+  document.querySelectorAll('.copy').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.code').querySelector('pre');
+      const text = pre.innerText;
+      const done = () => { btn.textContent = 'Copiado'; setTimeout(() => (btn.textContent = 'Copiar'), 1400); };
+      const fallback = () => {
+        const r = document.createRange(); r.selectNodeContents(pre);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent = 'Ctrl+C'; setTimeout(() => (btn.textContent = 'Copiar'), 1800);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+        else fallback();
+      } catch (e) { fallback(); }
+    });
+  });
+
+  // Quizzes
+  document.querySelectorAll('.q').forEach((q) => {
+    const correct = q.dataset.correct;
+    const why = q.dataset.why;
+    const fb = q.querySelector('.fb');
+    const opts = Array.from(q.querySelectorAll('.opt'));
+    opts.forEach((b) => b.addEventListener('click', () => {
+      const ok = b.dataset.k === correct;
+      opts.forEach((o) => { o.disabled = true; if (o.dataset.k === correct) o.classList.add('right'); });
+      if (!ok) b.classList.add('wrong');
+      fb.textContent = (ok ? 'Correcto. ' : 'No es esa. ') + why;
+      fb.className = 'fb ' + (ok ? 'okc' : 'badc');
+      if (window.Swal) {
+        Swal.fire({
+          icon: ok ? 'success' : 'error',
+          title: ok ? '¡Correcto!' : 'Casi',
+          text: why,
+          background: '#131d2d', color: '#e7edf5',
+          confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir'
+        });
+      }
+    }));
+  });
+
+  window.addEventListener('hashchange', () => show(fromHash()));
+  show(fromHash());
+})();
+
+(function () {
+  const exs = Array.from(document.querySelectorAll('.ex'));
+  const state = exs.map(() => ({ hints: 0, solved: false, pts: 0 }));
+  const max = exs.reduce((a, e) => a + Number(e.dataset.pts || 0), 0);
+  const ptsHud = document.getElementById('ptsHud');
+  const scoreBig = document.getElementById('scoreBig');
+  const scoreDetail = document.getElementById('scoreDetail');
+
+  function normalize(s) {
+    return s.replace(/`\s*\r?\n/g, ' ').replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function render() {
+    const total = state.reduce((a, s) => a + s.pts, 0);
+    if (ptsHud) ptsHud.textContent = total + ' / ' + max;
+    if (scoreBig) scoreBig.textContent = total;
+    if (scoreDetail) {
+      const done = state.filter((s) => s.solved).length;
+      scoreDetail.textContent = done === 0
+        ? 'Ningún ejercicio resuelto todavía.'
+        : done + ' de ' + exs.length + ' ejercicios resueltos · ' + state.reduce((a, s) => a + s.hints, 0) + ' pistas usadas.';
+    }
+  }
+  function swal(opts) {
+    if (window.Swal) Swal.fire(Object.assign({ background: '#131d2d', color: '#e7edf5', confirmButtonColor: '#3f7fb8', confirmButtonText: 'Seguir' }, opts));
+  }
+
+  exs.forEach((ex, idx) => {
+    const re = new RegExp(ex.dataset.re, 'i');
+    const pts = Number(ex.dataset.pts || 10);
+    const ta = ex.querySelector('textarea');
+    const msg = ex.querySelector('.ex-msg');
+    const st = ex.querySelector('.ex-state');
+    const btnCheck = ex.querySelector('.check');
+    const btnHint = ex.querySelector('.hint');
+
+    btnCheck.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      const cmd = normalize(ta.value);
+      if (!cmd) { msg.textContent = 'Escribí el comando antes de comprobar.'; msg.className = 'ex-msg badc'; return; }
+      if (re.test(cmd)) {
+        s.solved = true;
+        s.pts = Math.max(0, pts - 3 * s.hints);
+        ex.classList.add('solved');
+        btnCheck.disabled = true; btnHint.disabled = true;
+        msg.textContent = 'Correcto. ' + ex.dataset.ok;
+        msg.className = 'ex-msg okc';
+        st.textContent = '+' + s.pts + ' puntos';
+        swal({ icon: 'success', title: '¡Correcto! +' + s.pts, text: ex.dataset.ok });
+      } else {
+        msg.textContent = 'Todavía no. Revisá el nombre del comando y cada parámetro pedido.';
+        msg.className = 'ex-msg badc';
+        swal({ icon: 'error', title: 'Todavía no', text: 'Revisá el nombre del comando y cada parámetro que pide la consigna.' });
+      }
+      render();
+    });
+
+    btnHint.addEventListener('click', () => {
+      const s = state[idx];
+      if (s.solved) return;
+      if (s.hints === 0) s.hints = 1;
+      btnHint.disabled = true;
+      msg.textContent = 'Pista: ' + ex.dataset.hint;
+      msg.className = 'ex-msg hintc';
+      st.textContent = 'pista usada (−3)';
+    });
+
+    ta.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); btnCheck.click(); }
+    });
+  });
+  render();
+})();
+</script>
+
+</body></html>
+</body></html>
