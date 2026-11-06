@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANDIS 2 · Unidad 4 — Patrones de seguridad</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#070b14; --bg-1:#0d1424; --panel:#111a2e; --panel-2:#16223a;
+  --accent:#3ec1ff; --accent-2:#7b6bff; --accent-3:#ffb547; --ok:#3ee6a8; --bad:#ff6b6b;
+  --text:#e8edf7; --text-dim:#8fa0bd; --border:#22304d;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 700px at 15% -10%, rgba(62,193,255,.10), transparent 60%),radial-gradient(1000px 700px at 110% 10%, rgba(123,107,255,.12), transparent 55%),var(--bg-0);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden;}
+.mono{font-family:'JetBrains Mono',monospace}
+.blueprint{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;background-image:linear-gradient(rgba(62,193,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(62,193,255,.06) 1px, transparent 1px);background-size:42px 42px;}
+.progress-track{position:fixed;top:0;left:0;width:100%;height:4px;background:rgba(255,255,255,.06);z-index:50;}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .4s ease;box-shadow:0 0 12px var(--accent);}
+.hud{position:fixed;top:14px;right:18px;z-index:50;background:rgba(17,26,46,.85);border:1px solid var(--border);backdrop-filter:blur(6px);padding:7px 14px;border-radius:999px;font-size:.82rem;color:var(--text-dim);display:flex;align-items:center;gap:8px;}
+.hud .unit-tag{color:var(--accent);font-weight:700}
+.brand{position:fixed;top:14px;left:18px;z-index:50;font-size:.78rem;color:var(--text-dim);display:flex;align-items:center;gap:8px;letter-spacing:.03em;}
+.brand i{color:var(--accent-3)}
+.slides-container{position:relative;z-index:1;height:100vh;width:100vw;}
+.slide{position:absolute;inset:0;display:none;padding:90px 8vw 110px 8vw;overflow-y:auto;}
+.slide.active{display:block}
+.slide-inner{max-width:1180px;margin:0 auto;}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700;margin-bottom:14px;}
+h1.slide-title{font-size:clamp(1.9rem,3.4vw,3rem);font-weight:800;margin-bottom:.4rem;line-height:1.1;}
+h2.slide-title{font-size:clamp(1.5rem,2.6vw,2.2rem);font-weight:800;margin-bottom:.6rem;}
+.subtitle{color:var(--text-dim);font-size:1.05rem;max-width:820px;}
+.card-panel{background:linear-gradient(180deg, var(--panel), var(--panel-2));border:1px solid var(--border);border-radius:16px;padding:26px 28px;box-shadow:0 12px 30px rgba(0,0,0,.35);}
+.card-panel + .card-panel{margin-top:18px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:.76rem;font-weight:700;background:rgba(62,193,255,.12);color:var(--accent);border:1px solid rgba(62,193,255,.35);}
+.pill.amber{background:rgba(255,181,71,.14);color:var(--accent-3);border-color:rgba(255,181,71,.4)}
+.pill.ok{background:rgba(62,230,168,.12);color:var(--ok);border-color:rgba(62,230,168,.35)}
+.pill.bad{background:rgba(255,107,107,.12);color:#ff6b6b;border-color:rgba(255,107,107,.35)}
+.icon-tile{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(62,193,255,.12);color:var(--accent);font-size:1.3rem;border:1px solid rgba(62,193,255,.3);flex-shrink:0;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+ul.clean{list-style:none;margin:0;padding:0;}
+ul.clean li{position:relative;padding:6px 0 6px 26px;color:var(--text);font-size:.94rem;}
+ul.clean li::before{content:"\f105";font-family:"Font Awesome 6 Free";font-weight:900;color:var(--accent);position:absolute;left:2px;top:8px;font-size:.85rem;}
+ul.clean.bad li::before{content:"\f00d";color:var(--bad);}
+ul.clean.ok li::before{content:"\f00c";color:var(--ok);}
+.check-btn{border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#04101f;font-weight:800;padding:10px 22px;border-radius:10px;font-size:.9rem;box-shadow:0 8px 22px rgba(62,193,255,.25);cursor:pointer;}
+.check-btn:hover{filter:brightness(1.08);color:#04101f;}
+.sim-btn{border:1px solid var(--border);background:var(--panel-2);color:var(--text);font-weight:700;padding:8px 14px;border-radius:10px;font-size:.84rem;cursor:pointer;transition:.2s;}
+.sim-btn:hover{border-color:var(--accent);color:var(--accent);}
+.sim-btn.ok:hover{border-color:var(--ok);color:var(--ok);} .sim-btn.bad:hover{border-color:var(--bad);color:var(--bad);}
+.nav-controls{position:fixed;bottom:18px;left:0;right:0;z-index:50;display:flex;justify-content:center;gap:14px;align-items:center;}
+.nav-btn{width:46px;height:46px;border-radius:50%;border:1px solid var(--border);background:rgba(17,26,46,.9);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:1.1rem;backdrop-filter:blur(6px);}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+.nav-dots{display:flex;gap:6px;align-items:center;background:rgba(17,26,46,.9);border:1px solid var(--border);padding:8px 14px;border-radius:999px;}
+.nav-dots .dot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:.2s;}
+.nav-dots .dot.active{background:var(--accent);width:20px;border-radius:4px;}
+.footer-note{position:fixed;bottom:20px;right:22px;z-index:50;font-size:.72rem;color:var(--text-dim);font-family:'JetBrains Mono';}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+.tac-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.tac-grid.cols4{grid-template-columns:repeat(4,1fr);}
+@media (max-width:900px){.tac-grid,.tac-grid.cols4{grid-template-columns:1fr;}}
+.tac-tile{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:.2s;text-align:center;}
+.tac-tile:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 10px 24px rgba(62,193,255,.15);}
+.tac-tile i{font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block;}
+.tac-tile .tname{font-size:.86rem;font-weight:700;}
+.tac-tile .tsub{font-size:.72rem;color:var(--text-dim);margin-top:3px;}
+.example-box{background:rgba(62,193,255,.07);border:1px dashed rgba(62,193,255,.35);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:.93rem;line-height:1.6;}
+.example-box .ex-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.example-box.amber{background:rgba(255,181,71,.07);border-color:rgba(255,181,71,.4);}
+.example-box.amber .ex-label{color:var(--accent-3);}
+.fig-img{max-width:100%;border-radius:12px;border:1px solid var(--border);background:#fff;padding:14px;display:block;margin:0 auto;}
+.fig-img.sm{max-width:520px;} .fig-img.md{max-width:680px;}
+.fig-cap{text-align:center;font-size:.78rem;color:var(--text-dim);margin-top:8px;}
+.compare-col{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.compare-col h4{font-weight:800;font-size:1.02rem;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.link-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.link-row:last-child{border-bottom:none;}
+.link-row a{color:var(--text);text-decoration:none;font-weight:600;}
+.link-row a:hover{color:var(--accent);}
+.link-row .ext{margin-left:auto;color:var(--text-dim);font-size:.75rem;}
+.chain{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;}
+.chain .node{flex:1;min-width:190px;background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.chain .node .lvl{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:800;}
+.chain .node .nm{font-size:1.1rem;font-weight:800;margin:4px 0;}
+.chain .node .ex{font-size:.82rem;color:var(--text-dim);line-height:1.5;}
+.chain .arrow{display:flex;align-items:center;color:var(--accent-3);font-size:1.3rem;}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:.86rem;}
+.tbl th{background:var(--panel-2);color:var(--accent);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;}
+.tbl td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;line-height:1.5;}
+.tbl td:first-child{font-weight:800;white-space:nowrap;}
+.tbl tr:hover td{background:rgba(62,193,255,.04);}
+.sim{background:#0a1020;border:1px solid var(--border);border-radius:14px;padding:16px;}
+.sim .log{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-dim);min-height:90px;max-height:150px;overflow-y:auto;margin-top:10px;line-height:1.7;}
+.state-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.state-box{flex:1;min-width:110px;text-align:center;padding:12px 8px;border-radius:12px;border:1px solid var(--border);background:var(--panel-2);font-weight:800;font-size:.9rem;opacity:.45;transition:.25s;}
+.state-box.on.closed{opacity:1;border-color:var(--ok);color:var(--ok);box-shadow:0 0 18px rgba(62,230,168,.25);}
+.state-box.on.open{opacity:1;border-color:var(--bad);color:var(--bad);box-shadow:0 0 18px rgba(255,107,107,.25);}
+.state-box.on.half{opacity:1;border-color:var(--accent-3);color:var(--accent-3);box-shadow:0 0 18px rgba(255,181,71,.25);}
+.lines{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.prov{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;}
+.prov .pn{font-weight:800;font-size:.85rem;margin-bottom:6px;}
+.prov .ln{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;}
+.prov .ln span{width:20px;height:20px;border-radius:5px;background:rgba(62,230,168,.25);border:1px solid var(--ok);}
+.prov .ln span.wait{background:rgba(255,107,107,.3);border-color:var(--bad);}
+.prov .ln span.free{background:transparent;border-color:var(--border);}
+.ev{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-size:.86rem;}
+.ev .n{font-family:'JetBrains Mono';color:var(--text-dim);font-size:.75rem;width:26px;}
+.ev .amt{margin-left:auto;font-family:'JetBrains Mono';font-weight:800;}
+.ev.dep .amt{color:var(--ok)} .ev.ret .amt{color:var(--bad)}
+.ev.snap{border-color:var(--accent-3);background:rgba(255,181,71,.08);}
+.vs{display:flex;gap:14px;align-items:flex-end;justify-content:center;margin:10px 0;}
+.srv{background:var(--panel-2);border:1px solid var(--accent);border-radius:8px;text-align:center;font-size:.7rem;padding:6px 10px;color:var(--accent);font-weight:700;}
+.qbar{display:flex;gap:4px;flex-wrap:wrap;min-height:26px;margin-top:8px;}
+.qbar span{width:20px;height:20px;border-radius:5px;background:var(--accent-3);opacity:.9;}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0;}
+.flow .bx{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.8rem;font-weight:700;text-align:center;}
+.flow .bx.w{border-color:var(--bad);color:var(--bad)} .flow .bx.r{border-color:var(--ok);color:var(--ok)} .flow .bx.m{border-color:var(--accent-3);color:var(--accent-3)}
+.flow .ar{color:var(--text-dim)}
+.subr.hit{border-color:var(--ok);box-shadow:0 0 14px rgba(62,230,168,.3)}
+.subr{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;font-size:.84rem;font-weight:700;transition:.2s;}
+.step{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;background:var(--panel-2);opacity:.45;transition:.25s;font-size:.84rem;line-height:1.5;}
+.step.on{opacity:1;border-color:var(--accent);box-shadow:0 0 14px rgba(62,193,255,.2);}
+.step .sn{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#04101f;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.impl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;}
+.impl div{background:rgba(255,107,107,.12);border:1px solid var(--bad);border-radius:6px;font-size:.62rem;text-align:center;padding:4px 2px;color:var(--bad);font-weight:700;}
+.impl.ok div{background:rgba(62,230,168,.12);border-color:var(--ok);color:var(--ok);}
+.zone{border:1px dashed var(--border);border-radius:12px;padding:10px;text-align:center;}
+.zone .zt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:6px;font-weight:800;}
+pre.code{background:#0a1020;border:1px solid var(--border);border-radius:12px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#cfe3ff;overflow-x:auto;margin:0;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="blueprint"></div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="brand"><i class="fa-solid fa-lock"></i> ANDIS 2 · Unidad 4</div>
+<div class="hud"><i class="fa-solid fa-layer-group"></i> <span class="unit-tag" id="hudCurrent">1</span>/<span id="hudTotal">0</span></div>
+<div class="slides-container" id="slidesContainer"></div>
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="nav-dots" id="navDots"></div>
+  <button class="nav-btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+<div class="footer-note">← → para navegar</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script>
+const SW={background:'#111a2e',color:'#e8edf7',confirmButtonColor:'#3ec1ff'};
+const slidesHTML=[];
+
+// 0. Portada
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center" style="min-height:78vh;">
+  <div class="animate__animated animate__fadeInDown">
+    <span class="eyebrow"><i class="fa-solid fa-lock"></i> Unidad 4 · Patrones de arquitectura</span>
+    <h1 class="slide-title">Patrones de <span style="color:var(--accent)">seguridad</span></h1>
+    <p class="subtitle">Cinco patrones para proteger un sistema desde su arquitectura: Gatekeeper, Federated Identity, Gateway Offloading, Sidecar y Valet Key. Es la base teórica para resolver el práctico UT4-TA3.</p>
+    <div class="mt-3 d-flex gap-2 flex-wrap">
+      <span class="pill"><i class="fa-solid fa-person-military-pointing"></i> Gatekeeper</span>
+      <span class="pill"><i class="fa-solid fa-id-card"></i> Federated Identity</span>
+      <span class="pill"><i class="fa-solid fa-door-open"></i> Gateway Offloading</span>
+      <span class="pill"><i class="fa-solid fa-motorcycle"></i> Sidecar</span>
+      <span class="pill"><i class="fa-solid fa-key"></i> Valet Key</span>
+    </div>
+  </div>
+</div>
+`);
+
+// 1. Seguridad y tácticas
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-shield-halved"></i> Atributo de calidad</span>
+  <h2 class="slide-title">Seguridad y su árbol de tácticas</h2>
+  <div class="card-panel">
+    <p style="margin:0; line-height:1.7; font-size:.97rem;">La <strong>seguridad</strong> es la capacidad del sistema de proteger datos e información del acceso no autorizado, y a la vez permitir el acceso a quienes sí están autorizados. Se suele describir con tres ideas: <strong>confidencialidad</strong> (solo ven los datos quienes deben), <strong>integridad</strong> (los datos no se alteran sin permiso) y <strong>disponibilidad</strong> para los usuarios legítimos. Las tácticas se agrupan según el momento frente al ataque. Tocá cada grupo.</p>
+  </div>
+  <div class="tac-grid cols4 mt-3" id="tacticasGrid" style="margin-top:16px;"></div>
+  <div class="example-box mt-3" style="margin-top:16px;">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> En la vida real</div>
+    Un banco <strong>detecta</strong> (cámaras, alarmas), <strong>resiste</strong> (puerta blindada, bóveda, identificación en ventanilla), <strong>reacciona</strong> (bloquea la tarjeta, avisa al cliente) y <strong>se recupera</strong> (revisa los registros para saber qué pasó).
+  </div>
+  <div class="card-panel mt-3" style="margin-top:14px; padding:14px 20px;">
+    <span class="pill amber"><i class="fa-solid fa-sitemap"></i> Atributo → Táctica → Patrón</span>
+    <span style="font-size:.9rem; margin-left:8px;">En el práctico vas a decir <strong>qué tácticas</strong> aparecen dentro de cada patrón. Por eso conviene tener este árbol a mano.</span>
+  </div>
+</div>
+`);
+
+// 2. Mapa
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-map"></i> Mapa del tema</span>
+  <h2 class="slide-title">Los cinco patrones de un vistazo</h2>
+  <p class="subtitle">Cada tarjeta resume el problema, la idea central y una analogía cotidiana. Después los vemos uno por uno, con simuladores.</p>
+  <div class="tac-grid mt-3" id="patronesGrid" style="margin-top:18px; grid-template-columns:repeat(5,1fr);"></div>
+  <div class="example-box mt-3" style="margin-top:18px;">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Cómo recordarlos</div>
+    <strong>Gatekeeper</strong> = quién entra y qué trae. <strong>Federated Identity</strong> = quién sos, lo certifica otro. <strong>Gateway Offloading</strong> = lo común se hace una sola vez. <strong>Sidecar</strong> = el ayudante pegado a cada servicio. <strong>Valet Key</strong> = una llave limitada y temporal.
+  </div>
+</div>
+`);
+
+// 3. Principios
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-scale-balanced"></i> Ideas que se repiten</span>
+  <h2 class="slide-title">Cuatro principios detrás de los cinco patrones</h2>
+  <p class="subtitle">Si entendés estos principios, cada patrón deja de ser una receta y pasa a ser una consecuencia lógica.</p>
+  <div class="grid-2 mt-3" style="margin-top:14px;">
+    <div class="card-panel">
+      <div class="d-flex gap-3"><div class="icon-tile"><i class="fa-solid fa-layer-group"></i></div><div>
+      <div style="font-weight:800;">Defensa en profundidad</div>
+      <p style="font-size:.88rem; color:var(--text-dim); margin:4px 0 0; line-height:1.6;">Varias barreras, no una sola. Si una cae, la siguiente protege.</p>
+      <div class="example-box" style="margin-top:8px; font-size:.84rem;"><strong>Casa:</strong> portón, puerta con llave, alarma y caja fuerte.</div></div></div>
+    </div>
+    <div class="card-panel" style="margin-top:0;">
+      <div class="d-flex gap-3"><div class="icon-tile"><i class="fa-solid fa-user-lock"></i></div><div>
+      <div style="font-weight:800;">Mínimo privilegio</div>
+      <p style="font-size:.88rem; color:var(--text-dim); margin:4px 0 0; line-height:1.6;">Cada componente o persona recibe solo el acceso que necesita, y solo por el tiempo necesario.</p>
+      <div class="example-box" style="margin-top:8px; font-size:.84rem;"><strong>Oficina:</strong> la persona de limpieza tiene llave del pasillo, no de la contaduría.</div></div></div>
+    </div>
+    <div class="card-panel" style="margin-top:0;">
+      <div class="d-flex gap-3"><div class="icon-tile"><i class="fa-solid fa-expand"></i></div><div>
+      <div style="font-weight:800;">Reducir la superficie de ataque</div>
+      <p style="font-size:.88rem; color:var(--text-dim); margin:4px 0 0; line-height:1.6;">Cuantos menos puntos expuestos al exterior, menos lugares por donde entrar.</p>
+      <div class="example-box" style="margin-top:8px; font-size:.84rem;"><strong>Edificio:</strong> una sola puerta de acceso con portero, en vez de diez puertas.</div></div></div>
+    </div>
+    <div class="card-panel" style="margin-top:0;">
+      <div class="d-flex gap-3"><div class="icon-tile"><i class="fa-solid fa-puzzle-piece"></i></div><div>
+      <div style="font-weight:800;">Separación de responsabilidades</div>
+      <p style="font-size:.88rem; color:var(--text-dim); margin:4px 0 0; line-height:1.6;">Quien expone el servicio no es quien guarda los secretos; quien autentica no es quien autoriza.</p>
+      <div class="example-box" style="margin-top:8px; font-size:.84rem;"><strong>Banco:</strong> el cajero atiende, pero no tiene la llave de la bóveda.</div></div></div>
+    </div>
+  </div>
+</div>
+`);
+
+// 4. Gatekeeper
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-person-military-pointing"></i> Patrón 1</span>
+  <h2 class="slide-title">Gatekeeper <span style="color:var(--text-dim); font-weight:600;">(portero)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Problema:</strong> un servicio expuesto a internet maneja a la vez autenticación, validación, procesamiento <em>y</em> acceso a datos. Si un atacante compromete ese entorno, llega a credenciales, claves de almacenamiento y datos sensibles.</p>
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Solución:</strong> separar el código <strong>de cara al público</strong> del que procesa solicitudes y accede al almacenamiento. Una fachada recibe a los clientes, <strong>valida y sanea</strong> cada solicitud y solo reenvía las aprobadas, por un endpoint interno, una cola o un broker, hacia el <strong>host confiable</strong>.</p>
+        <div class="flow">
+          <div class="bx">Cliente</div><span class="ar"><i class="fa-solid fa-arrow-right"></i></span>
+          <div class="bx m">Gatekeeper<br><span style="font-weight:400;font-size:.68rem;">sin credenciales, privilegios mínimos</span></div><span class="ar"><i class="fa-solid fa-arrow-right"></i></span>
+          <div class="bx r">Host confiable (privado)</div><span class="ar"><i class="fa-solid fa-arrow-right"></i></span>
+          <div class="bx">Datos</div>
+        </div>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-building-shield"></i> Analogía: el guardia de la entrada</div>
+        Revisa quién llega y qué trae (mochilas, paquetes), pero <strong>no tiene la llave de la caja fuerte</strong>. Si lo engañan o lo reducen, el atacante todavía no llegó a lo valioso.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Puntos clave</h4>
+      <ul class="clean">
+        <li>El gatekeeper <strong style="color:var(--text)">solo valida y sanea</strong>: no procesa la lógica de negocio ni accede a datos.</li>
+        <li>Puede hacer <strong style="color:var(--text)">autorización</strong>, <strong style="color:var(--text)">rate limiting</strong> y chequeo de contenido inesperado en el payload.</li>
+        <li>Gatekeeper y backend viven en <strong style="color:var(--text)">límites de cómputo separados</strong>, con endpoints del backend <strong style="color:var(--text)">privados</strong>.</li>
+        <li>Usar <strong style="color:var(--text)">TLS/HTTPS</strong> entre ambos cuando sea posible.</li>
+      </ul>
+      <h4 style="margin-top:14px;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> Cuidado con...</h4>
+      <ul class="clean bad">
+        <li>La capa extra suma <strong style="color:var(--text)">latencia y saltos de red</strong>.</li>
+        <li>Puede ser un <strong style="color:var(--text)">punto único de falla</strong>: usar instancias redundantes y autoescalado.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 5. Gatekeeper sim
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-person-military-pointing"></i> Gatekeeper</span>
+  <h2 class="slide-title">Simulador: ¿qué deja pasar el portero?</h2>
+  <div class="grid-2">
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Enviá solicitudes al sistema</div>
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <button class="sim-btn ok" onclick="gkSend('ok')">Solicitud normal</button>
+        <button class="sim-btn bad" onclick="gkSend('inj')">Payload con SQL injection</button>
+        <button class="sim-btn bad" onclick="gkSend('anon')">Sin token de acceso</button>
+        <button class="sim-btn bad" onclick="gkSend('big')">Cuerpo de 500 MB</button>
+        <button class="sim-btn" onclick="gkReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div class="flow" style="margin-top:10px;">
+        <div class="bx" id="gkC">Cliente</div><span class="ar">→</span>
+        <div class="bx m" id="gkG">Gatekeeper</div><span class="ar">→</span>
+        <div class="bx" id="gkB">Backend privado</div>
+      </div>
+      <div class="log" id="gkLog" style="min-height:130px;"></div>
+    </div>
+    <div>
+      <div class="card-panel">
+        <div style="font-weight:800; margin-bottom:6px;"><i class="fa-solid fa-circle-question" style="color:var(--accent-3)"></i> ¿Y si comprometen al gatekeeper?</div>
+        <p style="font-size:.9rem; line-height:1.7; margin:0;">Como <strong>no tiene credenciales</strong> del backend y corre con <strong>privilegios mínimos</strong>, el atacante no puede acceder directamente a los servicios ni a los datos. Esa es la gracia del patrón: el eslabón más expuesto es también el menos valioso.</p>
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-layer-group"></i> Ejemplo de capas (Azure)</div>
+        <strong>Gatekeeper externo:</strong> Application Gateway con Web Application Firewall inspecciona el tráfico de internet. <strong>Gatekeeper interno:</strong> API Management reenvía solo lo aprobado hacia backends privados (por ejemplo, App Service con private endpoint). Todo con logging centralizado, correlation IDs y alertas ante picos de bloqueos.
+      </div>
+      <div class="compare-col" style="margin-top:12px;">
+        <h4><i class="fa-solid fa-compass" style="color:var(--accent)"></i> ¿Cuándo usarlo?</h4>
+        <ul class="clean ok">
+          <li>Se maneja <strong style="color:var(--text)">información sensible</strong>.</li>
+          <li>Hay servicios que necesitan protección fuerte ante tráfico malicioso.</li>
+          <li>Operaciones críticas que no toleran <strong style="color:var(--text)">exposición directa</strong> del backend.</li>
+        </ul>
+        <h4 style="margin-top:10px;"><i class="fa-solid fa-ban" style="color:var(--bad)"></i> ¿Cuándo no?</h4>
+        <ul class="clean bad">
+          <li>Los controles de la plataforma ya cubren la validación necesaria.</li>
+          <li>La latencia extra choca con requisitos estrictos de extremo a extremo.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 6. Federated Identity
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-id-card"></i> Patrón 2</span>
+  <h2 class="slide-title">Federated Identity <span style="color:var(--text-dim); font-weight:600;">(identidad federada)</span></h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-xmark" style="color:var(--bad)"></i> Sin federación</h4>
+      <div class="flow"><div class="bx w">App 1<br><span style="font-weight:400;font-size:.68rem;">usuarios y claves propios</span></div><div class="bx w">App 2<br><span style="font-weight:400;font-size:.68rem;">usuarios y claves propios</span></div><div class="bx w">App 3<br><span style="font-weight:400;font-size:.68rem;">usuarios y claves propios</span></div></div>
+      <ul class="clean bad">
+        <li>El usuario maneja <strong style="color:var(--text)">muchas claves</strong> y tiende a reutilizarlas.</li>
+        <li>Dar de baja a alguien exige hacerlo <strong style="color:var(--text)">app por app</strong>: si se olvidan una, sigue con acceso.</li>
+        <li>Cada app necesita su <strong style="color:var(--text)">propio código de autenticación</strong>, caro de hacer y mantener.</li>
+      </ul>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-check" style="color:var(--ok)"></i> Con federación</h4>
+      <div class="flow"><div class="bx r">App 1</div><div class="bx r">App 2</div><div class="bx r">App 3</div></div>
+      <div class="flow" style="margin-top:0;"><span class="ar">↓ confían en ↓</span></div>
+      <div class="flow" style="margin-top:0;"><div class="bx m">Proveedor de identidad (IdP)</div></div>
+      <ul class="clean ok mt-2">
+        <li>La <strong style="color:var(--text)">autenticación</strong> la hace el IdP; la <strong style="color:var(--text)">autorización</strong> sigue en cada app.</li>
+        <li><strong style="color:var(--text)">Single sign-on</strong> y administración centralizada.</li>
+        <li>MFA y políticas de contraseña se configuran <strong style="color:var(--text)">una sola vez</strong>.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid-2 mt-3" style="margin-top:16px;">
+    <div class="example-box">
+      <div class="ex-label"><i class="fa-solid fa-passport"></i> Analogía: el documento de identidad</div>
+      Para entrar a un trámite mostrás tu <strong>cédula</strong>. La oficina no te conoce, pero <strong>confía en quien la emitió</strong>. Qué trámites podés hacer lo decide cada oficina.
+    </div>
+    <div class="card-panel" style="margin-top:12px;">
+      <div style="font-weight:800; font-size:.9rem; margin-bottom:4px;">Quién puede ser el IdP</div>
+      <p style="font-size:.86rem; color:var(--text-dim); margin:0; line-height:1.6;">Un directorio corporativo, un servicio de federación on-premises, un socio de negocios o un proveedor social (Google, Facebook). Ejemplos de tecnologías: Azure AD / Entra ID, Google Workspace, SAML.</p>
+    </div>
+  </div>
+</div>
+`);
+
+// 7. Federated flow
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-id-card"></i> Federated Identity</span>
+  <h2 class="slide-title">El flujo, paso a paso</h2>
+  <div class="grid-2">
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:10px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Recorré la autenticación</div>
+      <div id="fiSteps">
+        <div class="step" id="fi1"><div class="sn">1</div><div>El <strong>usuario</strong> pide un recurso protegido de la aplicación.</div></div>
+        <div class="step" id="fi2"><div class="sn">2</div><div>La <strong>aplicación</strong> no ve sesión autenticada y <strong>redirige al IdP</strong>.</div></div>
+        <div class="step" id="fi3"><div class="sn">3</div><div>El usuario <strong>inicia sesión en el IdP</strong> (usuario y contraseña, MFA...).</div></div>
+        <div class="step" id="fi4"><div class="sn">4</div><div>El IdP emite un <strong>token con claims</strong> (quién es, a qué grupo pertenece...).</div></div>
+        <div class="step" id="fi5"><div class="sn">5</div><div>El usuario vuelve a la app con el token; la app <strong>autoriza según los claims</strong>.</div></div>
+      </div>
+      <div class="d-flex gap-2 mt-2">
+        <button class="sim-btn" onclick="fiNext()">Siguiente paso <i class="fa-solid fa-arrow-right"></i></button>
+        <button class="sim-btn" onclick="fiReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+    </div>
+    <div>
+      <div class="card-panel">
+        <div style="font-weight:800; margin-bottom:8px;">Reparto de responsabilidades</div>
+        <table class="tbl">
+          <tr><th>Proveedor de identidad</th><th>Aplicación</th></tr>
+          <tr><td style="white-space:normal;">Verifica credenciales (autentica)</td><td style="white-space:normal;">Decide qué puede hacer el usuario (autoriza)</td></tr>
+          <tr><td style="white-space:normal;">Emite el token con claims</td><td style="white-space:normal;">Valida el token y usa los claims</td></tr>
+          <tr><td style="white-space:normal;">Aplica MFA y políticas de clave</td><td style="white-space:normal;">Protege sus propios recursos y funciones</td></tr>
+        </table>
+      </div>
+      <div class="compare-col" style="margin-top:12px;">
+        <h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> Cuidado con...</h4>
+        <ul class="clean bad">
+          <li>Si el IdP cae, <strong style="color:var(--text)">nadie puede iniciar sesión</strong>: debe ser muy disponible, seguro y rápido.</li>
+          <li>El IdP <strong style="color:var(--text)">no autoriza</strong>: cada app aún debe aplicar permisos con los claims.</li>
+          <li>Un IdP que además gestiona todo suma <strong style="color:var(--text)">complejidad y riesgo</strong>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 8. Federated casos
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-id-card"></i> Federated Identity</span>
+  <h2 class="slide-title">¿Cuándo conviene? Cuatro escenarios típicos</h2>
+  <div class="grid-2 mt-3" style="margin-top:14px;">
+    <div class="card-panel"><div class="d-flex gap-3"><div class="icon-tile"><i class="fa-solid fa-building"></i></div><div><div style="font-weight:800;">SSO empresarial</div><p style="font-size:.88rem; color:var(--text-dim); margin:4px 0 0; line-height:1.6;">Un empleado usa <strong style="color:var(--text)">un solo usuario</strong> para cinco apps internas. Cuando se va, TI deshabilita <strong style="color:var(--text)">una única cuenta</strong>.</p></div></div></div>
+    <div class="card-panel" style="margin-top:0;"><div class="d-flex gap-3"><div class="icon-tile"><i class="fa-solid fa-handshake"></i></div><div><div style="font-weight:800;">B2B: acceso de socios</div><p style="font-size:.88rem; color:var(--text-dim); margin:4px 0 0; line-height:1.6;">Personal de un proveedor entra a tu portal con <strong style="color:var(--text)">el directorio de su propia empresa</strong>, sin crearles usuarios locales.</p></div></div></div>
+    <div class="card-panel" style="margin-top:0;"><div class="d-flex gap-3"><div class="icon-tile"><i class="fa-brands fa-google"></i></div><div><div style="font-weight:800;">B2C: clientes con cuentas sociales</div><p style="font-size:.88rem; color:var(--text-dim); margin:4px 0 0; line-height:1.6;">El cliente entra con su cuenta de <strong style="color:var(--text)">Google o Facebook</strong> y no tiene que crear otra contraseña.</p></div></div></div>
+    <div class="card-panel" style="margin-top:0;"><div class="d-flex gap-3"><div class="icon-tile"><i class="fa-solid fa-cloud"></i></div><div><div style="font-weight:800;">SaaS multi-tenant</div><p style="font-size:.88rem; color:var(--text-dim); margin:4px 0 0; line-height:1.6;">Cada cliente corporativo <strong style="color:var(--text)">conecta su propio IdP</strong> a la aplicación del proveedor.</p></div></div></div>
+  </div>
+  <div class="example-box amber mt-3" style="margin-top:16px;">
+    <div class="ex-label"><i class="fa-solid fa-circle-info"></i> Detalle útil</div>
+    Un proveedor externo suele devolver solo un correo o un ID único. Por eso el sistema de gestión de identidad <strong>mapea ese dato a un usuario local</strong> y arma los claims que viajan en el token.
+  </div>
+</div>
+`);
+
+// 9. Gateway Offloading concepto + sim
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-door-open"></i> Patrón 3</span>
+  <h2 class="slide-title">Gateway Offloading <span style="color:var(--text-dim); font-weight:600;">(descarga en el gateway)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Problema:</strong> cada servicio implementa por su cuenta las mismas funciones transversales (TLS, validación de tokens, logging, límites de tráfico). Hay <strong>duplicación</strong>, <strong>inconsistencias</strong> entre servicios y cada vez más trabajo de mantenimiento.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Solución:</strong> poner un <strong>gateway</strong> delante de los servicios que se encargue de esas funciones. Los servicios quedan solo con <strong>lógica de negocio</strong>, y toda solicitud pasa por un único punto donde se aplican las políticas.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-building"></i> Analogía: la mesa de entradas central</div>
+        En vez de que cada departamento tenga su propia recepción, hay <strong>una recepción</strong> que verifica a cada visitante. Los departamentos se dedican a su trabajo.
+      </div>
+    </div>
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Contá cuántas implementaciones hay</div>
+      <p style="font-size:.8rem; color:var(--text-dim); margin-bottom:8px;">3 servicios × 4 funciones transversales (TLS, autenticación, logging, rate limit).</p>
+      <div class="d-flex gap-2 mb-2 flex-wrap">
+        <button class="sim-btn" onclick="goSim('sin')">Sin gateway</button>
+        <button class="sim-btn" onclick="goSim('con')">Con gateway</button>
+      </div>
+      <div id="goView"></div>
+      <div id="goMsg" style="font-size:.84rem; margin-top:10px; line-height:1.5;"></div>
+    </div>
+  </div>
+</div>
+`);
+
+// 10. Gateway Offloading detalles
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-door-open"></i> Gateway Offloading</span>
+  <h2 class="slide-title">Qué se descarga, con qué, y qué riesgos trae</h2>
+  <p class="subtitle">Tocá cada función para ver qué significa y un ejemplo cotidiano.</p>
+  <div class="tac-grid mt-3" id="offGrid" style="margin-top:14px;"></div>
+  <div class="grid-2 mt-3" style="margin-top:16px;">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-toolbox" style="color:var(--accent)"></i> Opciones de implementación (.NET)</h4>
+      <ul class="clean">
+        <li><strong style="color:var(--text)">Azure API Management:</strong> servicio administrado con muchas políticas; menos personalizable y puede costar más a gran escala.</li>
+        <li><strong style="color:var(--text)">YARP:</strong> reverse proxy open source de Microsoft; control total, pero hay que parchear y escalar.</li>
+        <li><strong style="color:var(--text)">Ocelot:</strong> gateway liviano open source; rápido de configurar, menos extensible.</li>
+      </ul>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> Riesgos</h4>
+      <ul class="clean bad">
+        <li><strong style="color:var(--text)">Componente extra</strong>: hay que monitorearlo, parchearlo y escalarlo.</li>
+        <li><strong style="color:var(--text)">Punto único de falla y cuello de botella</strong>: usar instancias redundantes tras un balanceador.</li>
+        <li><strong style="color:var(--text)">Latencia</strong> por el salto adicional.</li>
+        <li><strong style="color:var(--text)">Gateway "dios"</strong>: se filtra lógica de negocio al gateway y se acopla a los servicios.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 11. Sidecar
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-motorcycle"></i> Patrón 4</span>
+  <h2 class="slide-title">Sidecar <span style="color:var(--text-dim); font-weight:600;">(sidecar o "sidekick")</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Problema:</strong> las funciones auxiliares (monitoreo, logging, configuración, red, seguridad) pueden ir <em>dentro</em> de la aplicación —y entonces una falla las arrastra y quedan atadas a su lenguaje— o en <em>servicios separados</em> —con más latencia y complejidad de despliegue—.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Solución:</strong> correrlas como un <strong>proceso aparte pegado a la aplicación</strong>. El sidecar comparte host, ciclo de vida y recursos con la app: nace y muere con ella, y se comunica por IPC, sockets o HTTP local.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-motorcycle"></i> Analogía: el sidecar de la moto</div>
+        Va <strong>enganchado a la moto</strong>, hace el mismo viaje y lleva cosas aparte, pero no cambia el motor. Se puede quitar o poner otro distinto sin tocar la moto.
+      </div>
+    </div>
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Un pod con aplicación y sidecar</div>
+      <div class="zone">
+        <div class="zt">Mismo host / pod</div>
+        <div class="flow" style="margin:0;">
+          <div class="bx r">App principal<br><span style="font-weight:400;font-size:.68rem;">solo lógica de negocio</span></div>
+          <span class="ar">⇄</span>
+          <div class="bx m" id="scBox">Sidecar<br><span style="font-weight:400;font-size:.68rem;" id="scName">agente de logs v1</span></div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap mt-2">
+        <button class="sim-btn" onclick="scLog()">La app genera un log</button>
+        <button class="sim-btn" onclick="scSwap()">Cambiar de sidecar</button>
+        <button class="sim-btn" onclick="scReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div class="log" id="scLog" style="min-height:110px;"></div>
+    </div>
+  </div>
+</div>
+`);
+
+// 12. Sidecar usos
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-motorcycle"></i> Sidecar</span>
+  <h2 class="slide-title">Usos típicos, ventajas y límites</h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Usos típicos</h4>
+      <ul class="clean">
+        <li><strong style="color:var(--text)">Logging y monitoreo:</strong> captura logs y métricas y los envía a un sistema central.</li>
+        <li><strong style="color:var(--text)">Seguridad:</strong> autenticación, autorización, cifrado y aplicación de políticas.</li>
+        <li><strong style="color:var(--text)">Service mesh y proxies:</strong> comunicación entre servicios, descubrimiento, circuit breaking y reintentos.</li>
+        <li><strong style="color:var(--text)">Transformación de datos:</strong> formato, compresión o cifrado antes de enviar o guardar.</li>
+      </ul>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-thumbs-up" style="color:var(--ok)"></i> Ventajas</h4>
+      <ul class="clean ok">
+        <li><strong style="color:var(--text)">Independiente del lenguaje</strong>: un mismo sidecar sirve a apps en distintas tecnologías.</li>
+        <li><strong style="color:var(--text)">Baja latencia</strong>, por la cercanía.</li>
+        <li>Agrega funciones a apps que <strong style="color:var(--text)">no se pueden modificar</strong>.</li>
+        <li>Aísla fallas y se puede <strong style="color:var(--text)">escalar o limitar por separado</strong>.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid-2 mt-3" style="margin-top:16px;">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-ban" style="color:var(--bad)"></i> Evitarlo cuando...</h4>
+      <ul class="clean bad">
+        <li>Hay que <strong style="color:var(--text)">minimizar la latencia</strong> entre procesos.</li>
+        <li>La app es <strong style="color:var(--text)">pequeña</strong> y el costo por instancia supera el beneficio.</li>
+        <li>La función debe <strong style="color:var(--text)">escalar de forma independiente</strong> de la app: mejor un servicio separado.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-lock"></i> En seguridad</div>
+        Un sidecar puede encargarse de <strong>cifrar y autenticar</strong> las comunicaciones de un servicio sin tocar su código: el equipo de seguridad lo mantiene aparte y se actualiza sin redesplegar la app.
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Antes de elegirlo</div>
+        Preguntate si no conviene más una <strong>librería</strong>, un <strong>daemon</strong> o un <strong>servicio separado</strong>, según quién lo mantiene, cómo escala y cuánta simplicidad necesitás.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 13. Valet Key
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-key"></i> Patrón 5</span>
+  <h2 class="slide-title">Valet Key <span style="color:var(--text-dim); font-weight:600;">(llave de valet)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Problema:</strong> si el servidor de la aplicación hace de intermediario en cada subida o descarga de archivos, <strong>consume ancho de banda, memoria y CPU</strong>. Y darle al cliente las credenciales del almacenamiento expone muchísimo más de lo que necesita.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Solución:</strong> el servidor <strong>valida al usuario y emite un token firmado, temporal y acotado</strong>. Con ese token, el cliente habla <strong>directo con el almacenamiento</strong>. El servidor decide quién y qué, pero <strong>nunca toca los bytes</strong>.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-car"></i> Analogía: la llave del valet parking</div>
+        Al dejar el auto, entregás una llave que <strong>arranca el motor y abre la puerta</strong>, pero <strong>no abre el baúl ni la guantera</strong>. Sirve para esa tarea y nada más.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-route" style="color:var(--accent)"></i> Flujo</h4>
+      <div class="step on"><div class="sn">1</div><div>El cliente pide permiso a la app (por ejemplo, para descargar un archivo).</div></div>
+      <div class="step on"><div class="sn">2</div><div>La app <strong>autentica, autoriza</strong> y genera el token (por ejemplo una URL firmada o un SAS).</div></div>
+      <div class="step on"><div class="sn">3</div><div>La app devuelve el token al cliente.</div></div>
+      <div class="step on"><div class="sn">4</div><div>El cliente usa el token <strong>directamente contra el almacenamiento</strong>, que valida firma, vencimiento y restricciones.</div></div>
+      <div class="step on"><div class="sn">5</div><div>El token <strong>vence solo</strong>; si no se usó, no queda nada que limpiar.</div></div>
+    </div>
+  </div>
+</div>
+`);
+
+// 14. Valet Key sim
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-key"></i> Valet Key</span>
+  <h2 class="slide-title">Simulador: ¿qué permite este token?</h2>
+  <div class="grid-2">
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Probá el token contra el almacenamiento</div>
+      <p style="font-size:.8rem; color:var(--text-dim); margin-bottom:10px;">Token emitido para: <strong style="color:var(--accent-3)">leer</strong> el archivo <strong style="color:var(--accent-3)">clase1.mp4</strong>, válido <strong style="color:var(--accent-3)">5 minutos</strong>.</p>
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <button class="sim-btn" onclick="vkIssue()"><i class="fa-solid fa-key"></i> Pedir token</button>
+        <button class="sim-btn ok" onclick="vkTry('get1')">GET clase1.mp4</button>
+        <button class="sim-btn bad" onclick="vkTry('get2')">GET clase2.mp4</button>
+        <button class="sim-btn bad" onclick="vkTry('put1')">PUT clase1.mp4 (subir)</button>
+        <button class="sim-btn bad" onclick="vkTry('list')">LIST del contenedor</button>
+        <button class="sim-btn" onclick="vkTime()"><i class="fa-solid fa-hourglass-end"></i> Pasan 10 min</button>
+        <button class="sim-btn" onclick="vkReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div class="log" id="vkLog" style="min-height:160px;"></div>
+    </div>
+    <div>
+      <div class="card-panel">
+        <div style="font-weight:800; margin-bottom:6px;">Propiedades de un buen token</div>
+        <ul class="clean">
+          <li><strong style="color:var(--text)">Acotado (scope):</strong> idealmente a un objeto exacto.</li>
+          <li><strong style="color:var(--text)">Permisos mínimos:</strong> solo la operación necesaria (solo lectura, solo PUT...), sin borrar ni listar.</li>
+          <li><strong style="color:var(--text)">Temporal:</strong> vida corta; unos minutos para descargas, algo más para subidas.</li>
+          <li><strong style="color:var(--text)">Íntegro:</strong> va firmado; si el cliente cambia el alcance o el vencimiento, la firma deja de valer.</li>
+          <li><strong style="color:var(--text)">Con restricciones:</strong> tamaño máximo, tipo de contenido, HTTPS, rango de IP.</li>
+        </ul>
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-cloud"></i> Implementaciones reales</div>
+        <strong>AWS S3:</strong> pre-signed URLs. <strong>Azure Storage:</strong> tokens SAS (Shared Access Signature).
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 15. Valet Key consideraciones
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-key"></i> Valet Key</span>
+  <h2 class="slide-title">Consideraciones y cuándo usarlo</h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> Cuidado con...</h4>
+      <ul class="clean bad">
+        <li><strong style="color:var(--text)">Revocación:</strong> un token común no se puede anular antes de que venza; por eso conviene que viva poco.</li>
+        <li><strong style="color:var(--text)">Contenido subido:</strong> que el token sea válido no significa que el archivo sea seguro; hay que validarlo (antivirus, tipo real) antes de usarlo.</li>
+        <li><strong style="color:var(--text)">Auditoría:</strong> registrar quién pidió el token, para qué recurso y hasta cuándo.</li>
+        <li><strong style="color:var(--text)">Gestión de claves:</strong> generar, distribuir y renovar de forma segura.</li>
+        <li>Vencimientos cortos pueden <strong style="color:var(--text)">incomodar</strong> a quien necesita acceso continuo.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-thumbs-up" style="color:var(--ok)"></i> Conviene cuando...</h4>
+        <ul class="clean ok">
+          <li>Hay <strong style="color:var(--text)">transferencias grandes</strong> (videos, documentos, backups, imágenes).</li>
+          <li>Se quiere <strong style="color:var(--text)">ahorrar ancho de banda</strong> del servidor de aplicación.</li>
+          <li>El cliente <strong style="color:var(--text)">no debe tener credenciales permanentes</strong>.</li>
+          <li>Se da acceso temporal a externos o contratistas.</li>
+        </ul>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-ban"></i> Reconsiderarlo si...</div>
+        El cliente necesita muchas operaciones por sesión (mejor credenciales temporales con SDK), se exige revocación inmediata, o el almacenamiento <strong>no soporta acceso firmado</strong>. Inventar un sistema propio de tokens es riesgoso: la seguridad pasa a ser tu responsabilidad.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 16. Comparativa
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-table"></i> Comparando</span>
+  <h2 class="slide-title">Cinco patrones, cinco preguntas distintas</h2>
+  <div class="card-panel" style="padding:10px 14px;">
+    <table class="tbl">
+      <tr><th>Patrón</th><th>Pregunta que responde</th><th>Quién hace qué</th><th>Riesgo típico</th></tr>
+      <tr><td>Gatekeeper</td><td style="white-space:normal;">¿Qué solicitudes llegan al backend?</td><td style="white-space:normal;">Valida y sanea; no procesa ni accede a datos</td><td style="white-space:normal;">Latencia, punto único de falla</td></tr>
+      <tr><td>Federated Identity</td><td style="white-space:normal;">¿Quién es el usuario?</td><td style="white-space:normal;">El IdP autentica; la app autoriza</td><td style="white-space:normal;">Si el IdP cae, nadie entra</td></tr>
+      <tr><td>Gateway Offloading</td><td style="white-space:normal;">¿Dónde se hace lo transversal?</td><td style="white-space:normal;">El gateway centraliza TLS, auth, logs, límites</td><td style="white-space:normal;">Cuello de botella, gateway "dios"</td></tr>
+      <tr><td>Sidecar</td><td style="white-space:normal;">¿Cómo agrego funciones sin tocar la app?</td><td style="white-space:normal;">Un proceso acompañante por instancia</td><td style="white-space:normal;">Costo por instancia, más piezas</td></tr>
+      <tr><td>Valet Key</td><td style="white-space:normal;">¿Cómo doy acceso directo y limitado a un recurso?</td><td style="white-space:normal;">La app emite el token; el storage lo valida</td><td style="white-space:normal;">Revocación, contenido no validado</td></tr>
+    </table>
+  </div>
+  <div class="example-box amber mt-3" style="margin-top:14px;">
+    <div class="ex-label"><i class="fa-solid fa-circle-exclamation"></i> Confusión frecuente: Gatekeeper vs. Gateway Offloading</div>
+    Ambos se ponen "en la puerta". El <strong>Gatekeeper</strong> busca <strong>aislar y proteger</strong> al backend: valida, sanea y no tiene credenciales. El <strong>Gateway Offloading</strong> busca <strong>no repetir</strong> funciones transversales en cada servicio. En la práctica suelen convivir, e incluso un mismo componente puede cumplir ambos roles. La clave es identificar <strong>qué problema</strong> estás resolviendo.
+  </div>
+</div>
+`);
+
+// 17. Ejemplo combinado
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-diagram-project"></i> Ejemplo resuelto en otro dominio</span>
+  <h2 class="slide-title">Combinándolos: app de turnos de una clínica</h2>
+  <p class="subtitle">Un caso distinto a los del práctico, para ver cómo se combinan los patrones en un mismo diagrama.</p>
+  <div class="card-panel mt-3" style="margin-top:14px;">
+    <div class="flow">
+      <div class="bx">Paciente<br><span style="font-weight:400;font-size:.68rem;">navegador / móvil</span></div><span class="ar">→</span>
+      <div class="bx m">WAF + Gateway<br><span style="font-weight:400;font-size:.68rem;">Gatekeeper + Offloading</span></div><span class="ar">→</span>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div class="bx r">Servicio Turnos <span style="font-weight:400;font-size:.65rem;">+ sidecar</span></div>
+        <div class="bx r">Servicio Pacientes <span style="font-weight:400;font-size:.65rem;">+ sidecar</span></div>
+      </div><span class="ar">→</span>
+      <div class="bx">Base de datos<br><span style="font-weight:400;font-size:.68rem;">privada</span></div>
+    </div>
+    <div class="flow">
+      <div class="bx w">IdP externo<br><span style="font-weight:400;font-size:.68rem;">Federated Identity</span></div>
+      <span class="ar">⇢ token con claims ⇢</span>
+      <div class="bx">Storage de estudios<br><span style="font-weight:400;font-size:.68rem;">acceso directo con Valet Key</span></div>
+    </div>
+  </div>
+  <div class="grid-2 mt-3" style="margin-top:16px;">
+    <div class="compare-col">
+      <ul class="clean">
+        <li><strong style="color:var(--text)">Gatekeeper:</strong> el gateway con WAF valida y sanea; los servicios no se exponen a internet.</li>
+        <li><strong style="color:var(--text)">Gateway Offloading:</strong> el mismo gateway termina TLS, valida el token y registra, así los servicios no lo repiten.</li>
+        <li><strong style="color:var(--text)">Federated Identity:</strong> el paciente entra con su cuenta de un IdP; cada servicio solo autoriza con los claims.</li>
+      </ul>
+    </div>
+    <div class="compare-col">
+      <ul class="clean">
+        <li><strong style="color:var(--text)">Sidecar:</strong> cada servicio lleva un acompañante que cifra y autentica el tráfico interno (por ejemplo con mTLS) y envía logs.</li>
+        <li><strong style="color:var(--text)">Valet Key:</strong> el paciente descarga sus estudios directo del storage con una URL firmada, corta y de solo lectura.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 18. Guía práctico
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-clipboard-list"></i> Práctico UT4-TA3</span>
+  <h2 class="slide-title">Cómo encarar cada ejercicio</h2>
+  <p class="subtitle">No son las respuestas: es el método para llegar a ellas. Tocá cada ejercicio.</p>
+  <div class="tac-grid mt-3" id="practicoGrid" style="margin-top:14px;"></div>
+  <div class="example-box amber mt-3" style="margin-top:16px;">
+    <div class="ex-label"><i class="fa-solid fa-pen"></i> Regla de oro</div>
+    En cada respuesta, <strong>justificá</strong>: "uso X porque el problema es Y, y X lo resuelve haciendo Z". Una respuesta sin el "porque" vale poco, aunque el patrón sea el correcto.
+  </div>
+</div>
+`);
+
+// 19. Atributos (ejercicio 2)
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-table-cells"></i> Práctico · Ejercicio 2</span>
+  <h2 class="slide-title">Cómo razonar el impacto en los otros atributos</h2>
+  <p class="subtitle">Todo patrón de seguridad agrega algo al sistema: un componente, un salto, una dependencia. Cada atributo se pregunta distinto.</p>
+  <div class="tac-grid mt-3" id="atribGrid" style="margin-top:14px;"></div>
+  <div class="example-box mt-3" style="margin-top:16px;">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Atención</div>
+    Un impacto "negativo" no es un defecto del patrón: es <strong>el precio</strong> que se paga. Y no todos los patrones afectan a todos los atributos: si no encontrás un impacto real, podés decirlo y <strong>justificar por qué no lo hay</strong>.
+  </div>
+</div>
+`);
+
+// 20. Analogías
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-lightbulb"></i> Wrap-up</span>
+  <h2 class="slide-title">Cada patrón, en una imagen cotidiana</h2>
+  <p class="subtitle">Tocá una tarjeta.</p>
+  <div class="tac-grid mt-3" id="analogiasGrid" style="margin-top:18px; grid-template-columns:repeat(5,1fr);"></div>
+</div>
+`);
+
+// 21. Links
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-book-open"></i> Para profundizar</span>
+  <h2 class="slide-title">Artículos de referencia</h2>
+  <p class="subtitle">Las páginas del Azure Architecture Center que referencia el repositorio de la materia.</p>
+  <div class="card-panel mt-3" style="margin-top:16px;">
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/gatekeeper" target="_blank" rel="noopener">Gatekeeper</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/federated-identity" target="_blank" rel="noopener">Federated Identity</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-offloading" target="_blank" rel="noopener">Gateway Offloading</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar" target="_blank" rel="noopener">Sidecar</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/valet-key" target="_blank" rel="noopener">Valet Key</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-shield-halved" style="color:var(--accent-3)"></i><a href="https://learn.microsoft.com/en-us/azure/well-architected/security/design-patterns" target="_blank" rel="noopener">Patrones de diseño que respaldan la seguridad (Well-Architected)</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-layer-group" style="color:var(--accent-3)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/" target="_blank" rel="noopener">Catálogo completo: Cloud Design Patterns</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+  </div>
+</div>
+`);
+
+// 22. Quiz
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:70vh;">
+  <span class="eyebrow"><i class="fa-solid fa-brain"></i> Chequeo de comprensión</span>
+  <h2 class="slide-title">8 preguntas sobre patrones de seguridad</h2>
+  <p class="subtitle mb-4">Escenarios nuevos, distintos a los del práctico, para que practiques cómo identificar el patrón y justificarlo.</p>
+  <button class="check-btn" onclick="lanzarQuiz()"><i class="fa-solid fa-play me-2"></i>Iniciar quiz</button>
+</div>
+`);
+
+// 23. Cierre
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:78vh;">
+  <div class="icon-tile mb-3" style="width:72px;height:72px;font-size:2rem;"><i class="fa-solid fa-lock"></i></div>
+  <span class="eyebrow"><i class="fa-solid fa-flag-checkered"></i> Repaso completo</span>
+  <h2 class="slide-title">Seguridad por diseño: menos exposición, menos privilegios, menos repetición</h2>
+  <p class="subtitle mb-4" style="max-width:780px;">Filtrar en la puerta (Gatekeeper), no guardar credenciales propias (Federated Identity), hacer una sola vez lo común (Gateway Offloading), acompañar sin invadir (Sidecar) y dar solo la llave necesaria (Valet Key). Cada uno agrega una pieza: por eso en el práctico no alcanza con nombrarlos, hay que justificar el costo.</p>
+</div>
+`);
+
+function initExplorers(){
+
+const tacticas=[
+  {nombre:'Detectar ataques',icon:'fa-eye',sub:'Enterarse de que algo pasa',items:['Detectar intrusiones','Detectar denegación de servicio','Verificar la integridad de mensajes','Detectar retrasos en mensajes'],ej:'La alarma de una casa avisa que se abrió una ventana.'},
+  {nombre:'Resistir ataques',icon:'fa-shield-halved',sub:'Impedir o dificultar',items:['Identificar actores','Autenticar actores','Autorizar actores','Limitar el acceso','Limitar la exposición','Cifrar datos','Separar entidades','Cambiar la configuración por defecto'],ej:'Puerta con cerradura, llaves distintas por habitación y caja fuerte para lo valioso.'},
+  {nombre:'Reaccionar a ataques',icon:'fa-bolt',sub:'Responder cuando ocurre',items:['Revocar el acceso','Bloquear el equipo o la cuenta','Informar a los actores'],ej:'El banco bloquea la tarjeta ante una compra sospechosa y te avisa.'},
+  {nombre:'Recuperarse de ataques',icon:'fa-rotate-left',sub:'Volver a la normalidad',items:['Restaurar el servicio (ver tácticas de disponibilidad)','Mantener un registro de auditoría'],ej:'Revisar las cámaras y el libro de visitas para saber qué ocurrió.'}
+];
+const NOTA='<p style="text-align:left; font-size:.75rem; color:#8fa0bd; margin-top:10px;">Basado en Bass, Clements &amp; Kazman. Los nombres exactos pueden variar levemente en tu material de la Unidad 2.</p>';
+const tg=document.getElementById('tacticasGrid');
+tacticas.forEach(t=>{
+  const tile=document.createElement('div');tile.className='tac-tile';
+  tile.innerHTML=`<i class="fa-solid ${t.icon}"></i><div class="tname">${t.nombre}</div><div class="tsub">${t.sub}</div>`;
+  tile.onclick=()=>Swal.fire({title:t.nombre,html:`<ul style="text-align:left; font-size:.9rem; line-height:1.8; padding-left:20px;">${t.items.map(i=>`<li>${i}</li>`).join('')}</ul><div style="text-align:left; background:rgba(62,193,255,.08); border:1px dashed rgba(62,193,255,.3); border-radius:10px; padding:10px 12px; font-size:.85rem; margin-top:10px;"><strong style="color:#3ec1ff;">Ejemplo:</strong> ${t.ej}</div>${NOTA}`,...SW});
+  tg.appendChild(tile);
+});
+
+const patrones=[
+  {nombre:'Gatekeeper',icon:'fa-person-military-pointing',sub:'Filtrar en la entrada',que:'Una fachada valida y sanea las solicitudes y solo reenvía las aprobadas a un backend privado. No tiene credenciales ni accede a datos.',an:'El guardia de la entrada, que no tiene la llave de la caja fuerte.'},
+  {nombre:'Federated Identity',icon:'fa-id-card',sub:'Autenticar fuera de la app',que:'La autenticación se delega en un proveedor de identidad confiable que emite tokens con claims. Cada aplicación sigue autorizando.',an:'Mostrar la cédula: la oficina confía en quien la emitió.'},
+  {nombre:'Gateway Offloading',icon:'fa-door-open',sub:'Lo común, una vez',que:'Un gateway asume TLS, validación de tokens, logging y límites de tráfico para que los servicios se concentren en la lógica de negocio.',an:'Una mesa de entradas central en vez de una recepción por departamento.'},
+  {nombre:'Sidecar',icon:'fa-motorcycle',sub:'Acompañante por instancia',que:'Un proceso auxiliar corre junto a la aplicación, comparte host y ciclo de vida, y le agrega funciones sin modificar su código.',an:'El sidecar de la moto: enganchado, pero se puede cambiar sin tocar el motor.'},
+  {nombre:'Valet Key',icon:'fa-key',sub:'Llave limitada y temporal',que:'La app valida al usuario y emite un token firmado, acotado y con vencimiento para que el cliente acceda directo al recurso.',an:'La llave del valet parking: arranca el auto, pero no abre el baúl.'}
+];
+const pg=document.getElementById('patronesGrid');
+patrones.forEach(t=>{
+  const tile=document.createElement('div');tile.className='tac-tile';
+  tile.innerHTML=`<i class="fa-solid ${t.icon}"></i><div class="tname">${t.nombre}</div><div class="tsub">${t.sub}</div>`;
+  tile.onclick=()=>Swal.fire({title:t.nombre,html:`<p style="text-align:left; font-size:.92rem; line-height:1.6;">${t.que}</p><div style="text-align:left; background:rgba(62,193,255,.08); border:1px dashed rgba(62,193,255,.3); border-radius:10px; padding:10px 12px; font-size:.85rem; margin-top:10px;"><strong style="color:#3ec1ff;">Analogía:</strong> ${t.an}</div>`,...SW});
+  pg.appendChild(tile);
+});
+const ag=document.getElementById('analogiasGrid');
+patrones.forEach(t=>{
+  const tile=document.createElement('div');tile.className='tac-tile';
+  tile.innerHTML=`<i class="fa-solid ${t.icon}"></i><div class="tname">${t.nombre}</div>`;
+  tile.onclick=()=>Swal.fire({title:t.nombre,html:`<p style="font-size:1rem; line-height:1.7;">${t.an}</p>`,icon:'info',...SW});
+  ag.appendChild(tile);
+});
+
+const off=[
+  {nombre:'Terminación TLS',icon:'fa-lock',sub:'Descifrar en el borde',txt:'El gateway recibe el tráfico cifrado (HTTPS) y gestiona los certificados. Los servicios no necesitan cada uno su certificado ni su configuración TLS.',ej:'Un solo control de acceso a la entrada del edificio, no uno por oficina.'},
+  {nombre:'Autenticación y autorización',icon:'fa-user-check',sub:'Validar tokens (JWT)',txt:'El gateway valida el token antes de dejar pasar la solicitud. Cambiar de proveedor de autenticación se hace en un solo lugar.',ej:'Revisar la entrada de un recital una vez, en la puerta, no en cada sector.'},
+  {nombre:'Rate limiting y throttling',icon:'fa-gauge',sub:'Controlar el tráfico',txt:'Se limita cuántas solicitudes puede enviar cada cliente o clave por período, antes de que lleguen a los servicios.',ej:'Máximo dos entradas por persona en la boletería.'},
+  {nombre:'Logging y trazabilidad',icon:'fa-clipboard-list',sub:'Registro central',txt:'Cada solicitud queda registrada en un único punto y se le asigna un correlation ID que viaja por todo el sistema.',ej:'El libro de visitas único de la recepción.'},
+  {nombre:'Transformación y cabeceras',icon:'fa-shuffle',sub:'Adaptar y proteger',txt:'Se modifican cabeceras, se traducen protocolos (por ejemplo MQTT a HTTP en IoT) y se agregan cabeceras de seguridad a las respuestas.',ej:'El traductor de una oficina internacional.'},
+  {nombre:'Caching y compresión',icon:'fa-bolt',sub:'Otras funciones transversales',txt:'El gateway puede guardar respuestas frecuentes y comprimir contenido, aliviando a los servicios. Mismo principio: lo transversal, afuera de cada servicio.',ej:'El kiosco de la entrada que ya tiene a mano lo que más se pide.'}
+];
+const og=document.getElementById('offGrid');
+off.forEach(t=>{
+  const tile=document.createElement('div');tile.className='tac-tile';
+  tile.innerHTML=`<i class="fa-solid ${t.icon}"></i><div class="tname">${t.nombre}</div><div class="tsub">${t.sub}</div>`;
+  tile.onclick=()=>Swal.fire({title:t.nombre,html:`<p style="text-align:left; font-size:.92rem; line-height:1.6;">${t.txt}</p><div style="text-align:left; background:rgba(62,193,255,.08); border:1px dashed rgba(62,193,255,.3); border-radius:10px; padding:10px 12px; font-size:.85rem; margin-top:10px;"><strong style="color:#3ec1ff;">En la vida real:</strong> ${t.ej}</div>`,...SW});
+  og.appendChild(tile);
+});
+
+const prac=[
+  {nombre:'Ejercicio 1',icon:'fa-sitemap',sub:'Tácticas en cada patrón',pasos:['Tené a mano el árbol de tácticas de seguridad (Detectar, Resistir, Reaccionar, Recuperarse).','Por cada patrón, preguntate: ¿qué hace exactamente? ¿valida? ¿autentica? ¿limita el acceso? ¿separa componentes? ¿cifra?','Recorré cada táctica del árbol y decidí si el patrón la implementa. Una táctica por afirmación.','Un patrón puede implementar varias tácticas, y no todas son obvias: apoyate en lo que dice la descripción del patrón, no en tu intuición.']},
+  {nombre:'Ejercicio 2',icon:'fa-table-cells',sub:'Impactos en otros atributos',pasos:['Para cada celda preguntate qué agrega el patrón: ¿un componente? ¿un salto de red? ¿una dependencia? ¿configuración extra?','Mirá la diapositiva anterior: tiene una pregunta guía por cada atributo.','Si encontrás impacto negativo, justificalo con un hecho concreto ("agrega un salto, por lo tanto suma latencia").','Si no lo hay, decilo y explicá por qué.']},
+  {nombre:'Ejercicio 3',icon:'fa-list-check',sub:'Situaciones y patrones',pasos:['Leé cada situación y subrayá las palabras clave: qué se necesita, qué no debe pasar, qué se quiere evitar.','Compará con la pregunta que responde cada patrón (ver la tabla comparativa).','Describí cómo lo usarías concretamente: qué componente aparece, qué hace, qué recibe y qué devuelve.','Justificá por qué ese patrón y no otro parecido.']},
+  {nombre:'Ejercicio 4',icon:'fa-code',sub:'Pseudocódigo con token temporal',pasos:['Releé el flujo de Valet Key: ¿quién valida al usuario? ¿quién genera el token? ¿quién lo usa?','Tu pseudocódigo debe dejar claro que el backend no le entrega al cliente las credenciales reales.','Preguntate qué tres cosas debe limitar el token (qué recurso, qué operación, por cuánto tiempo).','Pensá qué debe devolver ahora la función y qué hará el cliente con eso.']},
+  {nombre:'Ejercicio 5',icon:'fa-diagram-project',sub:'Rediseño de microservicios',pasos:['Identificá los dos problemas que plantea el enunciado: uno de exposición y uno de duplicación.','Para cada problema, buscá el patrón cuya descripción coincide con él. Fijate también en el ejemplo combinado de la clínica.','Definí la responsabilidad de cada componente nuevo: qué hace y qué no hace.','Redibujá el diagrama de componentes y marcá en él dónde se aplica cada patrón.']},
+  {nombre:'Ejercicio 6',icon:'fa-arrows-left-right',sub:'Diagrama de secuencia',pasos:['Identificá los participantes: usuario, aplicación y proveedor de identidad.','Repasá el flujo paso a paso de Federated Identity: ¿qué mensaje va primero? ¿cómo vuelve la evidencia de autenticación?','Mostrá en el diagrama cómo la aplicación usa esa evidencia para permitir el acceso.','Al justificar, separá qué hace el proveedor de identidad (autenticar) de lo que sigue haciendo la aplicación (autorizar).']}
+];
+const prg=document.getElementById('practicoGrid');
+prac.forEach(t=>{
+  const tile=document.createElement('div');tile.className='tac-tile';
+  tile.innerHTML=`<i class="fa-solid ${t.icon}"></i><div class="tname">${t.nombre}</div><div class="tsub">${t.sub}</div>`;
+  tile.onclick=()=>Swal.fire({title:t.nombre+': '+t.sub,html:`<ol style="text-align:left; font-size:.9rem; line-height:1.7; padding-left:20px;">${t.pasos.map(p=>`<li style="margin-bottom:6px;">${p}</li>`).join('')}</ol>`,...SW,width:640});
+  prg.appendChild(tile);
+});
+
+const atr=[
+  {nombre:'Disponibilidad',icon:'fa-server',sub:'¿Qué pasa si falla?',q:['¿El patrón agrega un componente por el que pasa todo el tráfico?','¿Qué ocurre con el sistema si ese componente cae?','¿Se puede mitigar con redundancia? ¿A qué costo?']},
+  {nombre:'Rendimiento',icon:'fa-gauge-high',sub:'¿Cuánto tarda?',q:['¿Suma saltos de red o procesamiento a cada solicitud?','¿Hay validaciones o cifrado que cuesten tiempo?','¿O por el contrario evita trabajo al servidor?']},
+  {nombre:'Protección',icon:'fa-hard-hat',sub:'Atributo distinto de Seguridad',q:['En el material del curso es una columna separada de Seguridad.','Revisá su definición en la Unidad 1 antes de responder.','Preguntate si el patrón podría provocar o evitar daños o estados peligrosos, según esa definición.']},
+  {nombre:'Seguridad',icon:'fa-lock',sub:'Columna ya marcada',q:['La celda viene marcada porque el patrón mejora la seguridad.','Igual podés preguntarte: ¿concentra demasiado poder en un componente? ¿introduce un riesgo nuevo si se configura mal?']},
+  {nombre:'Facilidad de modificación',icon:'fa-pen-to-square',sub:'¿Cuánto cuesta cambiar?',q:['Si hay que cambiar una política, ¿cuántos lugares hay que tocar?','¿El patrón centraliza (más fácil) o crea acoplamiento con otros componentes?','¿Hay riesgo de que se acumule lógica que no debería estar ahí?']},
+  {nombre:'Facilidad de despliegue',icon:'fa-rocket',sub:'¿Cuánto cuesta desplegar?',q:['¿Cuántos componentes nuevos hay que desplegar y configurar?','¿Cada servicio necesita algo extra por entorno?','¿Aparece una dependencia que debe estar lista antes de arrancar?']}
+];
+const atg=document.getElementById('atribGrid');
+atr.forEach(t=>{
+  const tile=document.createElement('div');tile.className='tac-tile';
+  tile.innerHTML=`<i class="fa-solid ${t.icon}"></i><div class="tname">${t.nombre}</div><div class="tsub">${t.sub}</div>`;
+  tile.onclick=()=>Swal.fire({title:t.nombre,html:`<p style="text-align:left; font-size:.85rem; color:#8fa0bd; margin-bottom:6px;">Preguntas guía:</p><ul style="text-align:left; font-size:.9rem; line-height:1.7; padding-left:20px;">${t.q.map(i=>`<li>${i}</li>`).join('')}</ul>`,...SW});
+  atg.appendChild(tile);
+});
+}
+
+/* ============ SIMULADORES ============ */
+function addLog(id,t,c){const l=document.getElementById(id);if(!l)return;l.innerHTML+=`<div style="color:${c||'inherit'}">${t}</div>`;l.scrollTop=l.scrollHeight;}
+function clearLog(id){const l=document.getElementById(id);if(l)l.innerHTML='';}
+
+function gkSend(t){
+  const r={
+    ok:['Solicitud normal → gatekeeper valida → <b>reenviada</b> al backend privado','#3ee6a8'],
+    inj:['Payload con SQL injection → el gatekeeper lo detecta al validar y sanear → <b>bloqueada</b>, el backend ni se entera','#ff6b6b'],
+    anon:['Sin token → el gatekeeper rechaza (<b>401</b>) antes de llegar al backend','#ff6b6b'],
+    big:['Cuerpo de 500 MB → supera el límite permitido → <b>rechazada</b> (<b>413</b>)','#ff6b6b']
+  }[t];
+  addLog('gkLog',r[0],r[1]);
+}
+function gkReset(){clearLog('gkLog');}
+
+let fiStep=0;
+function fiRender(){for(let i=1;i<=5;i++){const e=document.getElementById('fi'+i);if(e)e.classList.toggle('on',i===fiStep);}}
+function fiNext(){fiStep=fiStep>=5?1:fiStep+1;fiRender();}
+function fiReset(){fiStep=0;fiRender();}
+
+function goSim(m){
+  const v=document.getElementById('goView');
+  const fn=['TLS','Auth','Logs','Límites'];
+  if(m==='sin'){
+    v.innerHTML=['Pedidos','Clientes','Facturación'].map(s=>`<div style="margin-top:6px;"><div style="font-size:.75rem;font-weight:800;">Servicio ${s}</div><div class="impl">${fn.map(f=>`<div>${f}</div>`).join('')}</div></div>`).join('');
+    document.getElementById('goMsg').innerHTML='<span style="color:#ff6b6b;"><i class="fa-solid fa-triangle-exclamation"></i> 12 implementaciones. Si cambia la política de autenticación, hay que tocar los 3 servicios, y es fácil que queden distintas.</span>';
+  }else{
+    v.innerHTML=`<div style="margin-top:6px;"><div style="font-size:.75rem;font-weight:800;">Gateway</div><div class="impl ok">${fn.map(f=>`<div>${f}</div>`).join('')}</div></div><div class="flow" style="margin-top:10px;"><div class="bx r">Pedidos<br><span style="font-weight:400;font-size:.65rem;">solo negocio</span></div><div class="bx r">Clientes<br><span style="font-weight:400;font-size:.65rem;">solo negocio</span></div><div class="bx r">Facturación<br><span style="font-weight:400;font-size:.65rem;">solo negocio</span></div></div>`;
+    document.getElementById('goMsg').innerHTML='<span style="color:#3ee6a8;"><i class="fa-solid fa-circle-check"></i> 4 implementaciones, en un solo lugar. A cambio, el gateway es un componente crítico: hay que monitorearlo y hacerlo redundante.</span>';
+  }
+}
+
+let scName=1;
+function scLog(){
+  addLog('scLog',`app → escribe una línea de log en el disco compartido`,'#8fa0bd');
+  addLog('scLog',`sidecar (agente de logs v${scName}) → la lee y la envía al sistema central`,'#3ee6a8');
+}
+function scSwap(){
+  scName++;
+  document.getElementById('scName').textContent=`agente de logs v${scName}`;
+  addLog('scLog',`Se reemplazó el sidecar por la v${scName}. <b>La aplicación no se modificó ni se recompiló.</b>`,'#ffb547');
+}
+function scReset(){scName=1;document.getElementById('scName').textContent='agente de logs v1';clearLog('scLog');}
+
+let vk={token:false,expired:false};
+function vkIssue(){
+  vk={token:true,expired:false};
+  addLog('vkLog','La app autentica al usuario, lo autoriza y emite el token: <b>leer clase1.mp4, 5 minutos</b>','#ffb547');
+}
+function vkTry(a){
+  if(!vk.token){addLog('vkLog','Todavía no hay token. Pedilo primero.','#ff6b6b');return;}
+  if(vk.expired){addLog('vkLog',`${lbl(a)} → <b>403</b>: el token venció`,'#ff6b6b');return;}
+  if(a==='get1')addLog('vkLog','GET clase1.mp4 → <b>200 OK</b> · la descarga va directo al almacenamiento, sin pasar por la app','#3ee6a8');
+  else if(a==='get2')addLog('vkLog','GET clase2.mp4 → <b>403</b>: el token no cubre ese archivo','#ff6b6b');
+  else if(a==='put1')addLog('vkLog','PUT clase1.mp4 → <b>403</b>: el token solo permite lectura','#ff6b6b');
+  else addLog('vkLog','LIST del contenedor → <b>403</b>: el token no permite listar','#ff6b6b');
+}
+function lbl(a){return {get1:'GET clase1.mp4',get2:'GET clase2.mp4',put1:'PUT clase1.mp4',list:'LIST del contenedor'}[a];}
+function vkTime(){if(!vk.token){addLog('vkLog','Todavía no hay token.','#ff6b6b');return;}vk.expired=true;addLog('vkLog','⏱ Pasaron 10 minutos: el token <b>venció solo</b>, sin que nadie tenga que limpiarlo','#ffb547');}
+function vkReset(){vk={token:false,expired:false};clearLog('vkLog');}
+
+/* ============ MOTOR DE NAVEGACIÓN ============ */
+const container=document.getElementById('slidesContainer');
+slidesHTML.forEach((html,i)=>{
+  const div=document.createElement('div');
+  div.className='slide'+(i===0?' active':'');
+  div.id='slide'+i;
+  div.innerHTML=html;
+  container.appendChild(div);
+});
+initExplorers();
+goSim('sin');
+
+let current=0;
+const total=slidesHTML.length;
+document.getElementById('hudTotal').textContent=total;
+const dotsWrap=document.getElementById('navDots');
+for(let i=0;i<total;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsWrap.appendChild(d);
+}
+function updateUI(){
+  document.querySelectorAll('.slide').forEach((s,i)=>{s.classList.toggle('active',i===current);});
+  document.querySelectorAll('.nav-dots .dot').forEach((d,i)=>{d.classList.toggle('active',i===current);});
+  document.getElementById('hudCurrent').textContent=current+1;
+  document.getElementById('progressFill').style.width=((current+1)/total*100)+'%';
+  const active=document.getElementById('slide'+current);
+  active.scrollTop=0;
+  const animTarget=active.querySelector('.slide-inner');
+  if(animTarget){
+    animTarget.classList.remove('animate__fadeIn');
+    void animTarget.offsetWidth;
+    animTarget.classList.add('animate__animated','animate__fadeIn');
+  }
+}
+function goTo(i){if(i<0||i>=total)return;current=i;updateUI();}
+document.getElementById('prevBtn').onclick=()=>goTo(current-1);
+document.getElementById('nextBtn').onclick=()=>goTo(current+1);
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='ArrowRight')goTo(current+1);
+  if(e.key==='ArrowLeft')goTo(current-1);
+});
+updateUI();
+
+/* ============ QUIZ ============ */
+const preguntas=[
+  {
+    texto:'Un gatekeeper recibe tráfico de internet y reenvía solicitudes a un backend. ¿Por qué NO debe tener las credenciales del backend?',
+    opciones:{
+      a:'Porque las credenciales hacen que el tráfico viaje más lento entre el gatekeeper y los servicios internos',
+      b:'Si lo comprometen, el atacante no obtiene acceso directo a servicios ni datos',
+      c:'Porque así el backend puede aceptar solicitudes de cualquier origen sin necesidad de validarlas nunca',
+      d:'Porque las credenciales solo pueden usarse una vez y luego deben ser reemplazadas por completo'
+    },
+    correcta:'b'
+  },
+  {
+    texto:'Una app delega el inicio de sesión en un proveedor de identidad y recibe un token con claims. ¿Qué sigue siendo responsabilidad de la aplicación?',
+    opciones:{
+      a:'Verificar la contraseña del usuario y almacenarla de forma segura en su propia base de datos',
+      b:'Aplicar políticas de contraseñas y múltiples factores de autenticación para todos los usuarios',
+      c:'Emitir los tokens firmados que el proveedor de identidad luego utilizará para identificar al usuario',
+      d:'Autorizar: decidir qué puede hacer cada usuario según los claims'
+    },
+    correcta:'d'
+  },
+  {
+    texto:'Quince microservicios validan cada uno el token, terminan TLS y registran logs, con pequeñas diferencias entre sí. ¿Qué conviene hacer?',
+    opciones:{
+      a:'Mover esas funciones a un gateway ubicado delante de los servicios',
+      b:'Agregar más instancias de cada servicio para que las diferencias queden compensadas entre ellas',
+      c:'Escribir una librería compartida y obligar a cada equipo a compilarla en el mismo día exacto',
+      d:'Eliminar la validación de tokens de los servicios y confiar en que la red interna nunca será vulnerada'
+    },
+    correcta:'a'
+  },
+  {
+    texto:'¿En cuál de estos casos NO conviene usar un sidecar?',
+    opciones:{
+      a:'Cuando se quiere agregar monitoreo a una aplicación cuyo código no se puede modificar',
+      b:'Cuando varias aplicaciones en lenguajes distintos necesitan el mismo agente de logs y métricas',
+      c:'Una aplicación pequeña donde el costo por instancia supera el beneficio',
+      d:'Cuando un equipo de seguridad quiere mantener por separado el componente que cifra las comunicaciones'
+    },
+    correcta:'c'
+  },
+  {
+    texto:'En Valet Key, ¿por qué se recomienda que los tokens tengan una vida corta?',
+    opciones:{
+      a:'Si el token se filtra, el daño queda acotado en el tiempo',
+      b:'Porque el almacenamiento cobra un costo adicional por cada token que permanece activo más tiempo',
+      c:'Porque un token de vida larga permite al cliente ampliar por su cuenta los permisos que se le dieron',
+      d:'Porque los tokens firmados dejan de funcionar si se usan más de una vez en el mismo día'
+    },
+    correcta:'a'
+  },
+  {
+    texto:'Una universidad quiere que docentes visitantes entren con la cuenta de su institución de origen, sin crearles usuarios nuevos. ¿Qué patrón aplica?',
+    opciones:{
+      a:'Valet Key, porque emite una llave temporal para cada docente que visita la universidad',
+      b:'Gateway Offloading, porque el gateway crea automáticamente un usuario para cada docente visitante',
+      c:'Sidecar, porque cada docente recibe un proceso acompañante que guarda su contraseña original',
+      d:'Federated Identity'
+    },
+    correcta:'d'
+  },
+  {
+    texto:'¿Qué distingue principalmente a Gatekeeper de Gateway Offloading?',
+    opciones:{
+      a:'El primero se usa solo con almacenamiento y el segundo únicamente con bases de datos relacionales',
+      b:'Gatekeeper reemplaza al proveedor de identidad y Gateway Offloading lo hace opcional',
+      c:'Gatekeeper aísla y valida; Offloading centraliza funciones transversales',
+      d:'No hay diferencia: son nombres distintos para el mismo patrón según el proveedor de nube que se use'
+    },
+    correcta:'c'
+  },
+  {
+    texto:'Tanto un gatekeeper como un gateway concentran el tráfico de entrada. ¿Qué riesgo comparten?',
+    opciones:{
+      a:'Que hacen innecesaria cualquier validación de seguridad dentro de los servicios internos del sistema',
+      b:'Pueden ser un punto único de falla; se mitigan con redundancia',
+      c:'Que obligan a los clientes a instalar certificados especiales antes de poder hacer cualquier solicitud',
+      d:'Que impiden por completo que el sistema escale cuando aumenta la cantidad de solicitudes recibidas'
+    },
+    correcta:'b'
+  }
+];
+let idxPregunta=0,aciertos=0;
+function lanzarQuiz(){idxPregunta=0;aciertos=0;mostrarPregunta();}
+function mostrarPregunta(){
+  if(idxPregunta>=preguntas.length){
+    Swal.fire({title:'Resultado',html:`Acertaste <b>${aciertos}/${preguntas.length}</b>.`,icon:aciertos===preguntas.length?'success':'info',...SW});
+    return;
+  }
+  const p=preguntas[idxPregunta];
+  Swal.fire({
+    title:p.texto,input:'radio',inputOptions:p.opciones,...SW,
+    confirmButtonText:'Responder',
+    inputValidator:(value)=>!value&&'Elegí una opción'
+  }).then(res=>{
+    if(!res.isConfirmed)return;
+    const ok=res.value===p.correcta;
+    if(ok)aciertos++;
+    Swal.fire({
+      title:ok?'¡Correcto!':'No es así',
+      html:`La respuesta correcta era: <b>${p.opciones[p.correcta]}</b>`,
+      icon:ok?'success':'error',...SW
+    }).then(()=>{idxPregunta++;mostrarPregunta();});
+  });
+}
+</script>
+</body>
+</html>

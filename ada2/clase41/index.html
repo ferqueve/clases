@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANDIS 2 · Unidad 4 — Patrones de modificación y despliegue</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#070b14; --bg-1:#0d1424; --panel:#111a2e; --panel-2:#16223a;
+  --accent:#3ec1ff; --accent-2:#7b6bff; --accent-3:#ffb547; --ok:#3ee6a8; --bad:#ff6b6b;
+  --text:#e8edf7; --text-dim:#8fa0bd; --border:#22304d;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 700px at 15% -10%, rgba(62,193,255,.10), transparent 60%),radial-gradient(1000px 700px at 110% 10%, rgba(123,107,255,.12), transparent 55%),var(--bg-0);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden;}
+.mono{font-family:'JetBrains Mono',monospace}
+.blueprint{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;background-image:linear-gradient(rgba(62,193,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(62,193,255,.06) 1px, transparent 1px);background-size:42px 42px;}
+.progress-track{position:fixed;top:0;left:0;width:100%;height:4px;background:rgba(255,255,255,.06);z-index:50;}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .4s ease;box-shadow:0 0 12px var(--accent);}
+.hud{position:fixed;top:14px;right:18px;z-index:50;background:rgba(17,26,46,.85);border:1px solid var(--border);backdrop-filter:blur(6px);padding:7px 14px;border-radius:999px;font-size:.82rem;color:var(--text-dim);display:flex;align-items:center;gap:8px;}
+.hud .unit-tag{color:var(--accent);font-weight:700}
+.brand{position:fixed;top:14px;left:18px;z-index:50;font-size:.78rem;color:var(--text-dim);display:flex;align-items:center;gap:8px;letter-spacing:.03em;}
+.brand i{color:var(--accent-3)}
+.slides-container{position:relative;z-index:1;height:100vh;width:100vw;}
+.slide{position:absolute;inset:0;display:none;padding:90px 8vw 110px 8vw;overflow-y:auto;}
+.slide.active{display:block}
+.slide-inner{max-width:1180px;margin:0 auto;}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700;margin-bottom:14px;}
+h1.slide-title{font-size:clamp(1.9rem,3.4vw,3rem);font-weight:800;margin-bottom:.4rem;line-height:1.1;}
+h2.slide-title{font-size:clamp(1.5rem,2.6vw,2.2rem);font-weight:800;margin-bottom:.6rem;}
+.subtitle{color:var(--text-dim);font-size:1.05rem;max-width:820px;}
+.card-panel{background:linear-gradient(180deg, var(--panel), var(--panel-2));border:1px solid var(--border);border-radius:16px;padding:26px 28px;box-shadow:0 12px 30px rgba(0,0,0,.35);}
+.card-panel + .card-panel{margin-top:18px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:.76rem;font-weight:700;background:rgba(62,193,255,.12);color:var(--accent);border:1px solid rgba(62,193,255,.35);}
+.pill.amber{background:rgba(255,181,71,.14);color:var(--accent-3);border-color:rgba(255,181,71,.4)}
+.pill.ok{background:rgba(62,230,168,.12);color:var(--ok);border-color:rgba(62,230,168,.35)}
+.pill.bad{background:rgba(255,107,107,.12);color:#ff6b6b;border-color:rgba(255,107,107,.35)}
+.icon-tile{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(62,193,255,.12);color:var(--accent);font-size:1.3rem;border:1px solid rgba(62,193,255,.3);flex-shrink:0;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+ul.clean{list-style:none;margin:0;padding:0;}
+ul.clean li{position:relative;padding:6px 0 6px 26px;color:var(--text);font-size:.94rem;}
+ul.clean li::before{content:"\f105";font-family:"Font Awesome 6 Free";font-weight:900;color:var(--accent);position:absolute;left:2px;top:8px;font-size:.85rem;}
+ul.clean.bad li::before{content:"\f00d";color:var(--bad);}
+ul.clean.ok li::before{content:"\f00c";color:var(--ok);}
+.check-btn{border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#04101f;font-weight:800;padding:10px 22px;border-radius:10px;font-size:.9rem;box-shadow:0 8px 22px rgba(62,193,255,.25);cursor:pointer;}
+.check-btn:hover{filter:brightness(1.08);color:#04101f;}
+.sim-btn{border:1px solid var(--border);background:var(--panel-2);color:var(--text);font-weight:700;padding:8px 14px;border-radius:10px;font-size:.84rem;cursor:pointer;transition:.2s;}
+.sim-btn:hover{border-color:var(--accent);color:var(--accent);}
+.sim-btn.ok:hover{border-color:var(--ok);color:var(--ok);} .sim-btn.bad:hover{border-color:var(--bad);color:var(--bad);}
+.nav-controls{position:fixed;bottom:18px;left:0;right:0;z-index:50;display:flex;justify-content:center;gap:14px;align-items:center;}
+.nav-btn{width:46px;height:46px;border-radius:50%;border:1px solid var(--border);background:rgba(17,26,46,.9);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:1.1rem;backdrop-filter:blur(6px);}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+.nav-dots{display:flex;gap:6px;align-items:center;background:rgba(17,26,46,.9);border:1px solid var(--border);padding:8px 14px;border-radius:999px;}
+.nav-dots .dot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:.2s;}
+.nav-dots .dot.active{background:var(--accent);width:20px;border-radius:4px;}
+.footer-note{position:fixed;bottom:20px;right:22px;z-index:50;font-size:.72rem;color:var(--text-dim);font-family:'JetBrains Mono';}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+.tac-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.tac-grid.cols4{grid-template-columns:repeat(4,1fr);}
+@media (max-width:900px){.tac-grid,.tac-grid.cols4{grid-template-columns:1fr;}}
+.tac-tile{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:.2s;text-align:center;}
+.tac-tile:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 10px 24px rgba(62,193,255,.15);}
+.tac-tile i{font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block;}
+.tac-tile .tname{font-size:.86rem;font-weight:700;}
+.tac-tile .tsub{font-size:.72rem;color:var(--text-dim);margin-top:3px;}
+.example-box{background:rgba(62,193,255,.07);border:1px dashed rgba(62,193,255,.35);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:.93rem;line-height:1.6;}
+.example-box .ex-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.example-box.amber{background:rgba(255,181,71,.07);border-color:rgba(255,181,71,.4);}
+.example-box.amber .ex-label{color:var(--accent-3);}
+.fig-img{max-width:100%;border-radius:12px;border:1px solid var(--border);background:#fff;padding:14px;display:block;margin:0 auto;}
+.fig-img.sm{max-width:520px;} .fig-img.md{max-width:680px;}
+.fig-cap{text-align:center;font-size:.78rem;color:var(--text-dim);margin-top:8px;}
+.compare-col{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.compare-col h4{font-weight:800;font-size:1.02rem;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.link-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.link-row:last-child{border-bottom:none;}
+.link-row a{color:var(--text);text-decoration:none;font-weight:600;}
+.link-row a:hover{color:var(--accent);}
+.link-row .ext{margin-left:auto;color:var(--text-dim);font-size:.75rem;}
+.chain{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;}
+.chain .node{flex:1;min-width:190px;background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.chain .node .lvl{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:800;}
+.chain .node .nm{font-size:1.1rem;font-weight:800;margin:4px 0;}
+.chain .node .ex{font-size:.82rem;color:var(--text-dim);line-height:1.5;}
+.chain .arrow{display:flex;align-items:center;color:var(--accent-3);font-size:1.3rem;}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:.86rem;}
+.tbl th{background:var(--panel-2);color:var(--accent);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;}
+.tbl td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;line-height:1.5;}
+.tbl td:first-child{font-weight:800;white-space:nowrap;}
+.tbl tr:hover td{background:rgba(62,193,255,.04);}
+.sim{background:#0a1020;border:1px solid var(--border);border-radius:14px;padding:16px;}
+.sim .log{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-dim);min-height:90px;max-height:150px;overflow-y:auto;margin-top:10px;line-height:1.7;}
+.state-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.state-box{flex:1;min-width:110px;text-align:center;padding:12px 8px;border-radius:12px;border:1px solid var(--border);background:var(--panel-2);font-weight:800;font-size:.9rem;opacity:.45;transition:.25s;}
+.state-box.on.closed{opacity:1;border-color:var(--ok);color:var(--ok);box-shadow:0 0 18px rgba(62,230,168,.25);}
+.state-box.on.open{opacity:1;border-color:var(--bad);color:var(--bad);box-shadow:0 0 18px rgba(255,107,107,.25);}
+.state-box.on.half{opacity:1;border-color:var(--accent-3);color:var(--accent-3);box-shadow:0 0 18px rgba(255,181,71,.25);}
+.lines{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.prov{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;}
+.prov .pn{font-weight:800;font-size:.85rem;margin-bottom:6px;}
+.prov .ln{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;}
+.prov .ln span{width:20px;height:20px;border-radius:5px;background:rgba(62,230,168,.25);border:1px solid var(--ok);}
+.prov .ln span.wait{background:rgba(255,107,107,.3);border-color:var(--bad);}
+.prov .ln span.free{background:transparent;border-color:var(--border);}
+.ev{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-size:.86rem;}
+.ev .n{font-family:'JetBrains Mono';color:var(--text-dim);font-size:.75rem;width:26px;}
+.ev .amt{margin-left:auto;font-family:'JetBrains Mono';font-weight:800;}
+.ev.dep .amt{color:var(--ok)} .ev.ret .amt{color:var(--bad)}
+.ev.snap{border-color:var(--accent-3);background:rgba(255,181,71,.08);}
+.vs{display:flex;gap:14px;align-items:flex-end;justify-content:center;margin:10px 0;}
+.srv{background:var(--panel-2);border:1px solid var(--accent);border-radius:8px;text-align:center;font-size:.7rem;padding:6px 10px;color:var(--accent);font-weight:700;}
+.qbar{display:flex;gap:4px;flex-wrap:wrap;min-height:26px;margin-top:8px;}
+.qbar span{width:20px;height:20px;border-radius:5px;background:var(--accent-3);opacity:.9;}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0;}
+.flow .bx{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.8rem;font-weight:700;text-align:center;}
+.flow .bx.w{border-color:var(--bad);color:var(--bad)} .flow .bx.r{border-color:var(--ok);color:var(--ok)} .flow .bx.m{border-color:var(--accent-3);color:var(--accent-3)}
+.flow .ar{color:var(--text-dim)}
+.subr.hit{border-color:var(--ok);box-shadow:0 0 14px rgba(62,230,168,.3)}
+.subr{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;font-size:.84rem;font-weight:700;transition:.2s;}
+.step{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;background:var(--panel-2);opacity:.45;transition:.25s;font-size:.84rem;line-height:1.5;}
+.step.on{opacity:1;border-color:var(--accent);box-shadow:0 0 14px rgba(62,193,255,.2);}
+.step .sn{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#04101f;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.impl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;}
+.impl div{background:rgba(255,107,107,.12);border:1px solid var(--bad);border-radius:6px;font-size:.62rem;text-align:center;padding:4px 2px;color:var(--bad);font-weight:700;}
+.impl.ok div{background:rgba(62,230,168,.12);border-color:var(--ok);color:var(--ok);}
+.zone{border:1px dashed var(--border);border-radius:12px;padding:10px;text-align:center;}
+.zone .zt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:6px;font-weight:800;}
+pre.code{background:#0a1020;border:1px solid var(--border);border-radius:12px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#cfe3ff;overflow-x:auto;margin:0;line-height:1.6;}
+.inst{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:8px 0;}
+.inst div{height:26px;border-radius:6px;border:1px solid var(--border);font-size:.6rem;display:flex;align-items:center;justify-content:center;font-weight:800;}
+.inst .v1{background:rgba(62,193,255,.18);border-color:var(--accent);color:var(--accent);}
+.inst .v2{background:rgba(62,230,168,.2);border-color:var(--ok);color:var(--ok);}
+.inst .off{background:rgba(255,107,107,.12);border-color:var(--bad);color:var(--bad);}
+.inst .idle{background:transparent;border-style:dashed;color:var(--text-dim);}
+.tbar{height:14px;border-radius:7px;background:var(--accent);overflow:hidden;margin-top:6px;border:1px solid var(--border);}
+.tbar div{height:100%;background:var(--ok);transition:width .3s;}
+.stamp{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px;}
+.stamp.down{border-color:var(--bad);background:rgba(255,107,107,.08);}
+.stamp .st{font-size:.72rem;font-weight:800;margin-bottom:6px;}
+.chip{display:inline-block;background:rgba(62,193,255,.15);border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 7px;font-size:.68rem;margin:2px;font-weight:700;}
+.stamp.down .chip{background:rgba(255,107,107,.15);border-color:var(--bad);color:var(--bad);}
+</style>
+</head>
+<body>
+<div class="blueprint"></div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="brand"><i class="fa-solid fa-rocket"></i> ANDIS 2 · Unidad 4</div>
+<div class="hud"><i class="fa-solid fa-layer-group"></i> <span class="unit-tag" id="hudCurrent">1</span>/<span id="hudTotal">0</span></div>
+<div class="slides-container" id="slidesContainer"></div>
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="nav-dots" id="navDots"></div>
+  <button class="nav-btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+<div class="footer-note">← → para navegar</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script>
+const SW={background:'#111a2e',color:'#e8edf7',confirmButtonColor:'#3ec1ff'};
+const slidesHTML=[];
+
+// 0. Portada
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center" style="min-height:78vh;">
+  <div class="animate__animated animate__fadeInDown">
+    <span class="eyebrow"><i class="fa-solid fa-rocket"></i> Unidad 4 · Patrones de arquitectura</span>
+    <h1 class="slide-title">Patrones de <span style="color:var(--accent)">modificación</span> y <span style="color:var(--accent-3)">despliegue</span></h1>
+    <p class="subtitle">Ocho patrones para cambiar un sistema sin dolor y ponerlo en producción sin sobresaltos. Base teórica para el práctico UT4-TA4.</p>
+    <div class="mt-3 d-flex gap-2 flex-wrap">
+      <span class="pill"><i class="fa-solid fa-cubes"></i> Deployment Stamps</span>
+      <span class="pill"><i class="fa-solid fa-sliders"></i> External Configuration Store</span>
+      <span class="pill"><i class="fa-solid fa-bridge"></i> Messaging Bridge</span>
+      <span class="pill"><i class="fa-solid fa-seedling"></i> Strangler Fig</span>
+      <span class="pill amber"><i class="fa-solid fa-repeat"></i> Blue/Green</span>
+      <span class="pill amber"><i class="fa-solid fa-arrows-rotate"></i> Rolling Upgrade</span>
+      <span class="pill amber"><i class="fa-solid fa-dove"></i> Canary</span>
+      <span class="pill amber"><i class="fa-solid fa-code-compare"></i> A/B Testing</span>
+    </div>
+  </div>
+</div>
+`);
+
+// 1. Atributos y tácticas
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-pen-ruler"></i> Dos atributos de calidad</span>
+  <h2 class="slide-title">Facilidad de modificación y facilidad de despliegue</h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-pen-to-square" style="color:var(--accent)"></i> Facilidad de modificación</h4>
+      <p style="font-size:.9rem; line-height:1.7; margin:0;">Qué tan <strong>barato y rápido</strong> es cambiar el sistema: agregar una función, corregir algo, adaptarse a un nuevo entorno. Depende de cuánto se propaga un cambio: si tocar una pieza obliga a tocar diez, es caro.</p>
+      <div class="example-box" style="margin-top:10px; font-size:.86rem;"><strong>Casa:</strong> cambiar una lámpara es fácil; cambiar una cañería oculta dentro de la pared, no.</div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-rocket" style="color:var(--accent-3)"></i> Facilidad de despliegue</h4>
+      <p style="font-size:.9rem; line-height:1.7; margin:0;">Qué tan <strong>rápido, seguro y repetible</strong> es llevar una nueva versión a producción, y volver atrás si algo sale mal. Importa tanto la velocidad como el riesgo de cada liberación.</p>
+      <div class="example-box amber" style="margin-top:10px; font-size:.86rem;"><strong>Teatro:</strong> cambiar el decorado entre actos sin que el público lo note.</div>
+    </div>
+  </div>
+  <p class="subtitle mt-3" style="margin-top:16px;">Las tácticas de cada atributo se agrupan por el tipo de decisión que toman. Tocá cada grupo.</p>
+  <div class="tac-grid mt-2" id="tacticasGrid" style="grid-template-columns:repeat(3,1fr);"></div>
+  <div class="card-panel mt-3" style="margin-top:14px; padding:14px 20px;">
+    <span class="pill amber"><i class="fa-solid fa-sitemap"></i> Atributo → Táctica → Patrón</span>
+    <span style="font-size:.9rem; margin-left:8px;">En el práctico vas a decir <strong>qué tácticas</strong> intervienen en cada patrón. Tené este árbol a mano.</span>
+  </div>
+</div>
+`);
+
+// 2. Mapa
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-map"></i> Mapa del tema</span>
+  <h2 class="slide-title">Los ocho patrones de un vistazo</h2>
+  <p class="subtitle">Cuatro ayudan a <strong>cambiar</strong> la arquitectura y cuatro a <strong>liberar</strong> versiones. Tocá cada tarjeta.</p>
+  <div class="tac-grid cols4 mt-3" id="patronesGrid" style="margin-top:18px;"></div>
+</div>
+`);
+
+// 3. Microservicios contexto
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-cubes"></i> Contexto</span>
+  <h2 class="slide-title">Por qué estos patrones aparecen con los microservicios</h2>
+  <p class="subtitle">Muchos de estos patrones nacen de un problema de fondo: cambiar y desplegar un sistema grande es riesgoso si todo está junto. Los microservicios son una respuesta, y abren sus propios desafíos.</p>
+  <div class="grid-2 mt-3" style="margin-top:14px;">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-cube" style="color:var(--bad)"></i> Monolito</h4>
+      <div class="flow"><div class="bx w">Un solo bloque<br><span style="font-weight:400;font-size:.68rem;">todo se compila y se despliega junto</span></div></div>
+      <ul class="clean bad">
+        <li>Un cambio chico exige <strong style="color:var(--text)">desplegar todo</strong>.</li>
+        <li>Un error en un módulo puede <strong style="color:var(--text)">tumbar el resto</strong>.</li>
+        <li>Cuesta adoptar tecnologías nuevas por partes.</li>
+      </ul>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-cubes" style="color:var(--ok)"></i> Microservicios</h4>
+      <div class="flow"><div class="bx r">Servicio A</div><div class="bx r">Servicio B</div><div class="bx r">Servicio C</div></div>
+      <ul class="clean ok">
+        <li>Cada servicio se <strong style="color:var(--text)">cambia y despliega por separado</strong>.</li>
+        <li>Fallas más <strong style="color:var(--text)">acotadas</strong>.</li>
+        <li>Equipos autónomos y tecnologías por servicio.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid-2 mt-3" style="margin-top:16px;">
+    <div class="example-box">
+      <div class="ex-label"><i class="fa-solid fa-store"></i> Analogía: shopping vs. feria de puestos</div>
+      Cambiar un local del shopping obliga a coordinar con todo el edificio; en la feria, cada puesto se renueva o se muda por su cuenta. Pero la feria necesita más coordinación entre puestos.
+    </div>
+    <div class="example-box amber">
+      <div class="ex-label"><i class="fa-solid fa-triangle-exclamation"></i> No es gratis</div>
+      Más piezas implican más comunicación entre servicios, más configuración, más despliegues que orquestar. Varios patrones de este deck existen justamente para <strong>manejar esa complejidad</strong>.
+    </div>
+  </div>
+</div>
+`);
+
+// 4. Deployment Stamps
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-cubes"></i> Patrón 1</span>
+  <h2 class="slide-title">Deployment Stamps <span style="color:var(--text-dim); font-weight:600;">(sellos de despliegue)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Problema:</strong> una única instancia de la solución tiene límites: de escala, de costo (escalar hacia arriba se vuelve carísimo), de aislamiento entre clientes, de actualizaciones (no todos las toleran con la misma frecuencia) o de regulación geográfica.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Solución:</strong> desplegar <strong>varias copias independientes</strong> de los componentes <em>incluyendo los datos</em>, como un grupo de recursos. Cada copia es un <strong>stamp</strong> (también "scale unit" o "cell") y atiende a un subconjunto de clientes. Se agrega un stamp para escalar casi linealmente.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-stamp"></i> Analogía: sucursales de un banco</div>
+        En vez de agrandar una sola sucursal infinitamente, se abren <strong>sucursales idénticas</strong>. Cada una atiende a sus clientes; si una cierra por un problema, las demás siguen.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Puntos clave</h4>
+      <ul class="clean">
+        <li>Cada stamp <strong style="color:var(--text)">se despliega y actualiza por separado</strong>: permite <em>deployment rings</em> (grupos de clientes que reciben cambios en distinto momento).</li>
+        <li>Los stamps <strong style="color:var(--text)">particionan los datos</strong> de forma implícita (sharding).</li>
+        <li>Se define con <strong style="color:var(--text)">infraestructura como código</strong> (Bicep, Terraform) para que las copias sean idénticas.</li>
+        <li>Conviene <strong style="color:var(--text)">al menos dos stamps</strong>, para no hardcodear supuestos de "una sola".</li>
+        <li>Hace falta un componente de <strong style="color:var(--text)">enrutamiento</strong> que sepa a qué stamp va cada cliente.</li>
+        <li>Limita el <strong style="color:var(--text)">radio de impacto</strong> (blast radius) de una falla.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 5. Stamps sim
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-cubes"></i> Deployment Stamps</span>
+  <h2 class="slide-title">Simulador: una plataforma SaaS para gimnasios</h2>
+  <div class="grid-2">
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Cada stamp soporta 3 gimnasios</div>
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <button class="sim-btn ok" onclick="stAdd()">+ Nuevo gimnasio cliente</button>
+        <button class="sim-btn bad" onclick="stFail()">Falla un stamp</button>
+        <button class="sim-btn" onclick="stRing()">Actualizar por anillos</button>
+        <button class="sim-btn" onclick="stReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div id="stView" class="grid-2" style="gap:8px;"></div>
+      <div class="log" id="stLog" style="min-height:70px; margin-top:8px;"></div>
+    </div>
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-compass" style="color:var(--accent)"></i> Conviene cuando...</h4>
+        <ul class="clean ok">
+          <li>La solución tiene <strong style="color:var(--text)">límites naturales de escala</strong>.</li>
+          <li>Hay clientes que deben estar <strong style="color:var(--text)">aislados</strong> (seguridad, regulación).</li>
+          <li>Distintos clientes corren <strong style="color:var(--text)">versiones diferentes</strong> a la vez.</li>
+          <li>Se necesita enviar datos y tráfico de cada cliente a una <strong style="color:var(--text)">región específica</strong>.</li>
+        </ul>
+        <h4 style="margin-top:10px;"><i class="fa-solid fa-ban" style="color:var(--bad)"></i> Evitarlo cuando...</h4>
+        <ul class="clean bad">
+          <li>La solución es <strong style="color:var(--text)">simple</strong> o alcanza con escalar una instancia.</li>
+          <li>Los datos deben replicarse en <strong style="color:var(--text)">todas</strong> las instancias (ahí va el patrón Geode).</li>
+          <li>Solo algunos componentes necesitan escalar (mejor <em>sharding</em>).</li>
+        </ul>
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-circle-exclamation"></i> Costos de este patrón</div>
+        Más infraestructura (más caro), operaciones entre stamps más complejas (contar clientes en total), mover un cliente de stamp requiere lógica propia, y una caída regional deja sin servicio a sus clientes salvo que se agregue redundancia.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 6. ECS concepto + sim
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-sliders"></i> Patrón 2</span>
+  <h2 class="slide-title">External Configuration Store <span style="color:var(--text-dim); font-weight:600;">(almacén de configuración externo)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Problema:</strong> la configuración suele viajar en archivos dentro del paquete de la aplicación. Cambiar un valor exige <strong>redesplegar</strong>; es difícil compartir ajustes entre aplicaciones; y con muchas instancias, unas quedan con valores distintos a otras mientras se actualiza.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Solución:</strong> mover la configuración a un <strong>almacén centralizado</strong> con una interfaz para leer y actualizar. Las instancias leen de ahí (normalmente al arrancar y con una caché local) y los cambios se aplican <strong>sin redesplegar</strong>.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-tv"></i> Analogía: el control remoto central</div>
+        Un hotel con 200 televisores: en vez de ir cambiando la configuración de cada uno, se cambia <strong>una vez</strong> en el sistema central y todos la toman.
+      </div>
+    </div>
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Cambiá el timeout de 3 instancias</div>
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <button class="sim-btn" onclick="ecsChange()">Editar valor en el store (30 → 60 s)</button>
+        <button class="sim-btn" onclick="ecsRefresh()">Vence la caché (refresco)</button>
+        <button class="sim-btn bad" onclick="ecsLocal()">Modo archivo local: cambiar valor</button>
+        <button class="sim-btn" onclick="ecsReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div class="flow"><div class="bx m" id="ecsStore">Store: timeout = 30</div></div>
+      <div id="ecsInst" class="grid-3"></div>
+      <div class="log" id="ecsLog" style="min-height:70px; margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+`);
+
+// 7. ECS consideraciones
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-sliders"></i> External Configuration Store</span>
+  <h2 class="slide-title">Qué cuidar, y cuándo usarlo</h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> Consideraciones</h4>
+      <ul class="clean bad">
+        <li><strong style="color:var(--text)">Separar secretos de ajustes:</strong> flags y endpoints van en configuración; contraseñas, API keys y certificados, en un gestor de secretos.</li>
+        <li><strong style="color:var(--text)">Seguridad:</strong> separar permisos de lectura y escritura; auditar quién cambia qué.</li>
+        <li><strong style="color:var(--text)">Cambios críticos:</strong> una config compartida mal editada puede romper varias apps; tratarla como código (revisión, pruebas, despliegue gradual).</li>
+        <li><strong style="color:var(--text)">Resiliencia:</strong> si el store cae al arrancar, la caché no ayuda; tener a mano los últimos valores conocidos.</li>
+        <li><strong style="color:var(--text)">Versiones y entornos:</strong> desarrollo, pruebas y producción deben convivir.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-compass" style="color:var(--accent)"></i> Cuándo usarlo</h4>
+        <ul class="clean ok">
+          <li>Hay ajustes <strong style="color:var(--text)">compartidos</strong> entre aplicaciones o instancias.</li>
+          <li>Se quiere <strong style="color:var(--text)">estandarizar</strong> y simplificar la administración.</li>
+          <li>Se necesita cambiar valores <strong style="color:var(--text)">sin reiniciar ni redesplegar</strong>.</li>
+        </ul>
+        <h4 style="margin-top:10px;"><i class="fa-solid fa-ban" style="color:var(--bad)"></i> Evitarlo cuando...</h4>
+        <ul class="clean bad">
+          <li>La configuración es <strong style="color:var(--text)">simple</strong>, de una sola aplicación, y solo cambia con cada versión.</li>
+        </ul>
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-cloud"></i> Ejemplo: Azure App Configuration</div>
+        Pares clave-valor con etiquetas por entorno, historial de cambios y snapshots inmutables. Se integra con un gestor de secretos y permite <strong>feature flags</strong>: activar o desactivar una función sin desplegar.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 8. Messaging Bridge
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-bridge"></i> Patrón 3</span>
+  <h2 class="slide-title">Messaging Bridge <span style="color:var(--text-dim); font-weight:600;">(puente de mensajería)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Problema:</strong> por fusiones, adquisiciones o migraciones a la nube, una organización termina con sistemas que usan <strong>infraestructuras de mensajería distintas</strong> (MSMQ, RabbitMQ, Azure Service Bus, Amazon SQS). Integrarlos por HTTP obliga a modificar, probar y redesplegar ambos lados, y a alojar endpoints.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Solución:</strong> un <strong>puente</strong> conectado a las dos infraestructuras toma mensajes de una y los entrega a la otra <strong>sin cambiar el contenido</strong>. Los sistemas ni se enteran de que existe.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-mail-bulk"></i> Analogía: el correo internacional</div>
+        Entregás la carta en tu buzón local. El servicio postal la lleva hasta el buzón del otro país, <strong>sin abrirla ni modificarla</strong>. Ninguno de los dos habla el idioma del otro servicio postal.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-thumbs-up" style="color:var(--ok)"></i> Ventajas</h4>
+      <ul class="clean ok">
+        <li>Los sistemas <strong style="color:var(--text)">no se modifican</strong>.</li>
+        <li>Más <strong style="color:var(--text)">confiable</strong> que HTTP: entrega "al menos una vez".</li>
+        <li>Permite <strong style="color:var(--text)">migrar de infraestructura de a poco</strong>, no todo a la vez.</li>
+      </ul>
+      <h4 style="margin-top:10px;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> Desventajas</h4>
+      <ul class="clean bad">
+        <li>Funciones avanzadas de una tecnología pueden <strong style="color:var(--text)">no estar disponibles</strong> en la ruta puenteada.</li>
+        <li>Hay que respetar los <strong style="color:var(--text)">límites de ambas</strong> (por ejemplo, tamaño máximo de mensaje).</li>
+        <li>Suma un <strong style="color:var(--text)">componente intermedio</strong> a operar.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 9. Messaging Bridge sim + consideraciones
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-bridge"></i> Messaging Bridge</span>
+  <h2 class="slide-title">Simulador: tienda con stock legacy y app en la nube</h2>
+  <div class="grid-2">
+    <div class="sim">
+      <div class="flow">
+        <div class="bx">Sistema de stock<br><span style="font-weight:400;font-size:.68rem;">legacy · MSMQ</span></div><span class="ar">→</span>
+        <div class="bx m" id="mbB">Puente</div><span class="ar">→</span>
+        <div class="bx" id="mbC">App web<br><span style="font-weight:400;font-size:.68rem;">nube · Service Bus</span></div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap mt-2">
+        <button class="sim-btn ok" onclick="mbSend()">Legacy envía un mensaje</button>
+        <button class="sim-btn bad" onclick="mbDown()">Cae la nube</button>
+        <button class="sim-btn" onclick="mbUp()">Vuelve la nube</button>
+        <button class="sim-btn" onclick="mbReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div id="mbInfo" class="mono" style="font-size:.78rem; color:var(--accent-3); margin-top:8px;"></div>
+      <div class="log" id="mbLog" style="min-height:110px;"></div>
+    </div>
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Consideraciones</h4>
+        <ul class="clean">
+          <li><strong style="color:var(--text)">Transacciones distribuidas:</strong> si un sistema depende de ellas, el puente debe deduplicar.</li>
+          <li><strong style="color:var(--text)">Escala:</strong> se usa <em>Competing Consumers</em> para escalar el puente.</li>
+          <li><strong style="color:var(--text)">Reintentos y mensajes venenosos:</strong> el puente necesita una política propia para no confundir una caída de infraestructura con un mensaje defectuoso; <em>Circuit Breaker</em> pausa el reenvío durante una caída.</li>
+          <li><strong style="color:var(--text)">Migración gradual:</strong> mantener el puente hasta que se entreguen también los mensajes que ya estaban en tránsito.</li>
+        </ul>
+      </div>
+      <div class="compare-col" style="margin-top:12px;">
+        <h4><i class="fa-solid fa-compass" style="color:var(--accent)"></i> Cuándo sí / cuándo no</h4>
+        <ul class="clean ok">
+          <li>Integrar sistemas existentes con <strong style="color:var(--text)">mínima modificación</strong>.</li>
+          <li>Extender aplicaciones on-premises con componentes en la nube.</li>
+          <li>Migrar entre tecnologías de mensajería de forma incremental.</li>
+        </ul>
+        <ul class="clean bad mt-2">
+          <li>Si la integración es <strong style="color:var(--text)">síncrona</strong> y el emisor necesita respuesta inmediata.</li>
+          <li>Si un sistema depende de una función que la otra tecnología no tiene.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 10. Strangler Fig
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-seedling"></i> Patrón 4</span>
+  <h2 class="slide-title">Strangler Fig <span style="color:var(--text-dim); font-weight:600;">(higuera estranguladora)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;"><strong>Problema:</strong> los sistemas envejecen y reemplazar uno grande de una sola vez es difícil y riesgoso. Mantener dos versiones en paralelo también cuesta: los clientes tendrían que saber en cuál está cada función.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Solución:</strong> una <strong>fachada (proxy)</strong> se ubica entre los clientes y los sistemas. Intercepta cada solicitud y la manda al sistema viejo o al nuevo. Función por función, el sistema nuevo va <strong>reemplazando</strong> al viejo, hasta que este se retira.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-tree"></i> Analogía: la planta que crece sobre el árbol</div>
+        La higuera estranguladora crece alrededor del árbol huésped y, con el tiempo, lo reemplaza. De a poco, sin tirar el árbol de un día para el otro.
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-road"></i> Analogía: reparar una ruta con tránsito</div>
+        Se arregla un tramo por vez y se desvía el tránsito por el tramo nuevo, mientras la ruta sigue abierta.
+      </div>
+    </div>
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Simulador: biblioteca universitaria</div>
+      <p style="font-size:.8rem; color:var(--text-dim); margin-bottom:8px;">Un sistema legacy con 4 módulos se migra de a uno.</p>
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <button class="sim-btn ok" onclick="sfNext()">Migrar siguiente módulo</button>
+        <button class="sim-btn" onclick="sfReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div class="flow"><div class="bx">Clientes</div><span class="ar">→</span><div class="bx m">Fachada</div></div>
+      <div class="grid-2" style="gap:8px;">
+        <div class="zone"><div class="zt">Sistema legacy</div><div id="sfOld"></div></div>
+        <div class="zone"><div class="zt">Sistema nuevo</div><div id="sfNew"></div></div>
+      </div>
+      <div id="sfMsg" style="font-size:.84rem; margin-top:10px; line-height:1.5; min-height:40px;"></div>
+    </div>
+  </div>
+</div>
+`);
+
+// 11. Strangler consideraciones
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-seedling"></i> Strangler Fig</span>
+  <h2 class="slide-title">Las cuatro fases y lo que hay que cuidar</h2>
+  <div class="grid-2 mt-3" style="grid-template-columns:repeat(4,1fr); margin-top:12px;">
+    <div class="card-panel" style="margin-top:0;"><div class="pill">Fase 1</div><div style="font-weight:800; margin:6px 0 4px;">Introducir la fachada</div><p style="font-size:.8rem; color:var(--text-dim); margin:0; line-height:1.5;">Se ubica entre clientes y sistemas. Al principio manda casi todo al legacy.</p></div>
+    <div class="card-panel" style="margin-top:0;"><div class="pill">Fase 2</div><div style="font-weight:800; margin:6px 0 4px;">Descomposición incremental</div><p style="font-size:.8rem; color:var(--text-dim); margin:0; line-height:1.5;">Cada iteración desvía más solicitudes al sistema nuevo.</p></div>
+    <div class="card-panel" style="margin-top:0;"><div class="pill">Fase 3</div><div style="font-weight:800; margin:6px 0 4px;">Retirar el legacy</div><p style="font-size:.8rem; color:var(--text-dim); margin:0; line-height:1.5;">Cuando nada depende de él, la fachada manda todo al nuevo.</p></div>
+    <div class="card-panel" style="margin-top:0;"><div class="pill">Fase 4</div><div style="font-weight:800; margin:6px 0 4px;">Quitar la fachada</div><p style="font-size:.8rem; color:var(--text-dim); margin:0; line-height:1.5;">Los clientes hablan directo con el sistema nuevo.</p></div>
+  </div>
+  <div class="grid-2 mt-3" style="margin-top:16px;">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> Consideraciones</h4>
+      <ul class="clean bad">
+        <li><strong style="color:var(--text)">Recursos compartidos:</strong> los dos sistemas deben poder acceder a los mismos datos a la vez.</li>
+        <li><strong style="color:var(--text)">Dependencias cruzadas:</strong> el nuevo puede necesitar funciones del viejo y viceversa; una <em>Anti-corruption Layer</em> traduce y protege el diseño nuevo.</li>
+        <li><strong style="color:var(--text)">La fachada no debe ser cuello de botella</strong> ni punto único de falla, y debe acompañar el ritmo de la migración.</li>
+        <li>Diseñar lo nuevo <strong style="color:var(--text)">para que también pueda ser reemplazado</strong> algún día.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-compass" style="color:var(--accent)"></i> Cuándo sí / cuándo no</h4>
+        <ul class="clean ok">
+          <li>Migrar gradualmente un sistema cuya <strong style="color:var(--text)">sustitución total es riesgosa</strong>.</li>
+          <li>El original puede <strong style="color:var(--text)">seguir funcionando</strong> durante un tiempo largo.</li>
+        </ul>
+        <ul class="clean bad mt-2">
+          <li>No se pueden <strong style="color:var(--text)">interceptar las solicitudes</strong> al backend.</li>
+          <li>El sistema es <strong style="color:var(--text)">pequeño</strong> y conviene reemplazarlo entero.</li>
+          <li>Hay que <strong style="color:var(--text)">desactivar el original rápido</strong>.</li>
+        </ul>
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-database"></i> También sirve para bases de datos</div>
+        Se extraen las tablas de un dominio a una base propia (con ETL y captura de cambios para sincronizar), se valida y recién entonces se eliminan del monolito. Hay que tratar ese borrado como <strong>paso final y deliberado</strong>, porque desde ahí volver atrás cuesta mucho.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 12. Deployment vs release
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-rocket"></i> Estrategias de despliegue</span>
+  <h2 class="slide-title">Desplegar no es lo mismo que liberar</h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-upload" style="color:var(--accent)"></i> Despliegue (deployment)</h4>
+      <p style="font-size:.92rem; line-height:1.7; margin:0;">Instalar una versión del software en un entorno. Es una acción <strong>técnica</strong>: el código ya está corriendo, aunque nadie lo use.</p>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-eye" style="color:var(--accent-3)"></i> Liberación (release)</h4>
+      <p style="font-size:.92rem; line-height:1.7; margin:0;">Hacer que los usuarios <strong>vean y usen</strong> la funcionalidad nueva. Es una decisión de <strong>negocio</strong> que puede hacerse en otro momento.</p>
+    </div>
+  </div>
+  <div class="example-box mt-3" style="margin-top:14px;">
+    <div class="ex-label"><i class="fa-solid fa-theater-masks"></i> Analogía: el estreno de una obra</div>
+    El decorado se arma el lunes (despliegue), pero la función se abre al público el viernes (liberación). Si algo falla en el ensayo, se corrige sin que el público se entere.
+  </div>
+  <p class="subtitle mt-3" style="margin-top:14px;">Las cuatro estrategias que siguen responden a preguntas distintas. Antes de elegir, preguntate:</p>
+  <div class="grid-3" style="margin-top:8px;">
+    <div class="card-panel" style="margin-top:0;"><i class="fa-solid fa-circle-question" style="color:var(--accent)"></i> <strong>¿Cuánto cuesta equivocarse?</strong><p style="font-size:.8rem; color:var(--text-dim); margin:6px 0 0;">Define cuánto riesgo se acepta y cuán rápido debe ser el retroceso.</p></div>
+    <div class="card-panel" style="margin-top:0;"><i class="fa-solid fa-circle-question" style="color:var(--accent)"></i> <strong>¿Pueden convivir dos versiones?</strong><p style="font-size:.8rem; color:var(--text-dim); margin:6px 0 0;">Si no pueden, hay que cambiar todo de una vez.</p></div>
+    <div class="card-panel" style="margin-top:0;"><i class="fa-solid fa-circle-question" style="color:var(--accent)"></i> <strong>¿Qué se quiere averiguar?</strong><p style="font-size:.8rem; color:var(--text-dim); margin:6px 0 0;">Si la versión funciona (técnico) o si gusta / vende más (negocio).</p></div>
+  </div>
+</div>
+`);
+
+// 13. Blue/Green
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-repeat"></i> Estrategia 1</span>
+  <h2 class="slide-title">Blue/Green <span style="color:var(--text-dim); font-weight:600;">(azul/verde)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;">Se mantienen <strong>dos entornos de producción idénticos</strong>: uno atiende a los usuarios (activo) y el otro está inactivo. La nueva versión se despliega y se prueba en el inactivo, y después un <strong>router cambia todo el tráfico</strong> de golpe.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Rollback:</strong> volver a apuntar el router al entorno anterior, que sigue intacto. Es casi instantáneo.</p>
+      </div>
+      <div class="flow mt-2" style="margin-top:12px;">
+        <div class="bx">Usuarios</div><span class="ar">→</span><div class="bx m">Router</div>
+        <span class="ar">⇉</span>
+        <div style="display:flex; flex-direction:column; gap:6px;"><div class="bx" style="border-color:var(--accent);color:var(--accent);">Azul · v1 (activo)</div><div class="bx r">Verde · v2 (probando)</div></div>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-masks-theater"></i> Analogía: dos escenarios</div>
+        Mientras el público mira la obra en el escenario A, el equipo arma la siguiente en el B. Cuando está lista, se gira el público hacia el B. Si algo sale mal, se vuelve al A.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-thumbs-up" style="color:var(--ok)"></i> A favor</h4>
+      <ul class="clean ok">
+        <li>Se prueba en un entorno <strong style="color:var(--text)">igual al real</strong> antes de exponerlo.</li>
+        <li><strong style="color:var(--text)">Rollback rápido</strong>.</li>
+        <li>No hay <strong style="color:var(--text)">versiones mezcladas</strong> atendiendo a la vez.</li>
+      </ul>
+      <h4 style="margin-top:10px;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> En contra</h4>
+      <ul class="clean bad">
+        <li><strong style="color:var(--text)">Costo:</strong> hay que mantener dos entornos completos, casi el doble de infraestructura.</li>
+        <li><strong style="color:var(--text)">Todo o nada:</strong> el cambio expone a todos a la vez; un error se nota para todos.</li>
+        <li><strong style="color:var(--text)">Datos:</strong> las transacciones hechas en el entorno nuevo pueden perderse al volver; los cambios en la base de datos deben ser compatibles hacia atrás (soportar ambas versiones, desplegar, y recién después quitar lo viejo).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 14. Rolling
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-arrows-rotate"></i> Estrategia 2</span>
+  <h2 class="slide-title">Rolling Upgrade <span style="color:var(--text-dim); font-weight:600;">(actualización gradual por lotes)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;">Se actualizan las instancias <strong>por lotes</strong>: se retira un grupo, se reemplaza por la versión nueva y se pasa al siguiente. En todo momento <strong>queda un mínimo de instancias atendiendo</strong>.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;">En Kubernetes se regula con parámetros como cuántas instancias extra se pueden crear (<span class="mono">maxSurge</span>) y cuántas pueden estar fuera de servicio a la vez (<span class="mono">maxUnavailable</span>).</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Analogía: cambiar las lámparas de una calle</div>
+        Se cambian de a pocas, cuadra por cuadra. La calle nunca queda a oscuras, y no hace falta comprar una calle paralela.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-thumbs-up" style="color:var(--ok)"></i> A favor</h4>
+      <ul class="clean ok">
+        <li>Sin <strong style="color:var(--text)">infraestructura extra</strong> significativa.</li>
+        <li><strong style="color:var(--text)">Sin corte</strong> de servicio.</li>
+        <li>Simple de automatizar con la plataforma.</li>
+      </ul>
+      <h4 style="margin-top:10px;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> En contra</h4>
+      <ul class="clean bad">
+        <li><strong style="color:var(--text)">Conviven dos versiones</strong> durante la actualización: deben ser compatibles entre sí (APIs, mensajes, base de datos).</li>
+        <li><strong style="color:var(--text)">Rollback lento:</strong> hay que volver a actualizar lote por lote.</li>
+        <li>Los errores que aparecen solo con versiones mezcladas son <strong style="color:var(--text)">difíciles de reproducir</strong>.</li>
+        <li>La capacidad total baja un poco durante el proceso.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 15. Canary
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-dove"></i> Estrategia 3</span>
+  <h2 class="slide-title">Canary <span style="color:var(--text-dim); font-weight:600;">(canario)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;">La nueva versión se despliega, pero <strong>solo una porción pequeña de usuarios</strong> es enviada a ella (por ejemplo empleados, una región, o un porcentaje al azar). Se <strong>monitorean métricas</strong> de ambas versiones y, si todo va bien, se amplía el porcentaje hasta el 100%.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;"><strong>Rollback:</strong> dejar de enviar tráfico a la versión nueva.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-dove"></i> Origen del nombre</div>
+        Los mineros llevaban canarios a las minas: si el gas era peligroso, el pájaro (más sensible) lo notaba primero y daba tiempo a salir. Aquí, los pocos usuarios del canary avisan antes que el problema alcance a todos.
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-triangle-exclamation"></i> Cuidado con confundirlo</div>
+        El canary busca <strong>validar que la versión funciona</strong> (errores, latencia, recursos) y suele durar minutos u horas. No es un experimento de negocio.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-thumbs-up" style="color:var(--ok)"></i> A favor</h4>
+      <ul class="clean ok">
+        <li>Un error <strong style="color:var(--text)">afecta a pocos</strong> usuarios.</li>
+        <li>Se prueba con <strong style="color:var(--text)">tráfico real</strong>, no simulado.</li>
+        <li>Rollback rápido: se cambia el enrutamiento.</li>
+      </ul>
+      <h4 style="margin-top:10px;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> En contra</h4>
+      <ul class="clean bad">
+        <li>Requiere <strong style="color:var(--text)">enrutamiento por porcentaje o perfil</strong> y buen monitoreo comparando versiones.</li>
+        <li><strong style="color:var(--text)">Conviven versiones</strong>: hay compatibilidad que cuidar (incluida la base de datos).</li>
+        <li>Si no hay buenas métricas, el canary no sirve: <strong style="color:var(--text)">no se sabría qué mirar</strong>.</li>
+        <li>El despliegue completo es más lento.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 16. A/B
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-code-compare"></i> Estrategia 4</span>
+  <h2 class="slide-title">A/B Testing <span style="color:var(--text-dim); font-weight:600;">(prueba A/B)</span></h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;">Se muestran <strong>dos variantes</strong> (A, la actual; B, la nueva) a grupos de usuarios comparables, y se mide cuál logra mejor un <strong>resultado de negocio</strong>: más compras, más clics, más registros.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;">La pregunta no es "¿funciona?" sino <strong>"¿cuál funciona mejor para el objetivo?"</strong>. Se necesita suficiente cantidad de usuarios para que la diferencia sea estadísticamente significativa, lo que puede llevar días.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-utensils"></i> Analogía: dos cartas en un restaurante</div>
+        La mitad de las mesas recibe una carta con fotos, la otra mitad una carta solo de texto. Se compara cuál vende más postres.
+      </div>
+    </div>
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-scale-balanced" style="color:var(--accent)"></i> Canary vs. A/B</h4>
+        <table class="tbl">
+          <tr><th></th><th>Canary</th><th>A/B</th></tr>
+          <tr><td>Pregunta</td><td>¿La versión funciona?</td><td>¿Cuál rinde mejor?</td></tr>
+          <tr><td>Métricas</td><td>Técnicas</td><td>De negocio</td></tr>
+          <tr><td>Duración</td><td>Minutos a horas</td><td>Días o más</td></tr>
+          <tr><td>Resultado</td><td>Se expande o se revierte</td><td>Se elige una variante</td></tr>
+        </table>
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-link"></i> Se pueden combinar</div>
+        Primero un canary para asegurar que la variante B funciona técnicamente, y después el A/B para decidir si conviene.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 17. Simulador unificado
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-flask"></i> Simulador</span>
+  <h2 class="slide-title">Las cuatro estrategias en acción</h2>
+  <p class="subtitle">Elegí una estrategia, avanzá paso a paso y probá el rollback. Los números de métricas son ilustrativos.</p>
+  <div class="sim" style="margin-top:10px;">
+    <div class="d-flex gap-2 flex-wrap mb-2">
+      <button class="sim-btn" id="dpB_bg" onclick="dpSet('bg')">Blue/Green</button>
+      <button class="sim-btn" id="dpB_roll" onclick="dpSet('roll')">Rolling</button>
+      <button class="sim-btn" id="dpB_can" onclick="dpSet('can')">Canary</button>
+      <button class="sim-btn" id="dpB_ab" onclick="dpSet('ab')">A/B</button>
+      <span style="flex:1"></span>
+      <button class="sim-btn ok" onclick="dpNext()">Avanzar ▶</button>
+      <button class="sim-btn bad" onclick="dpBack()">Rollback ◀</button>
+      <button class="sim-btn" onclick="dpSet(dp.s)"><i class="fa-solid fa-rotate-left"></i></button>
+    </div>
+    <div class="mono" style="font-size:.72rem; color:var(--text-dim);" id="dpLab1">Entorno</div>
+    <div class="inst" id="dpG1"></div>
+    <div class="mono" style="font-size:.72rem; color:var(--text-dim);" id="dpLab2"></div>
+    <div class="inst" id="dpG2"></div>
+    <div class="d-flex justify-content-between mono" style="font-size:.72rem; margin-top:4px;"><span style="color:var(--accent)">v1 / A</span><span id="dpPct" style="color:var(--text)"></span><span style="color:var(--ok)">v2 / B</span></div>
+    <div class="tbar"><div id="dpBar" style="width:0%"></div></div>
+    <div class="log" id="dpLog" style="min-height:90px; margin-top:8px;"></div>
+  </div>
+</div>
+`);
+
+// 18. Tabla estrategias
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-table"></i> Comparativa</span>
+  <h2 class="slide-title">Cuatro estrategias, cinco dimensiones</h2>
+  <p class="subtitle">Para elegir, no memorices: identificá qué dimensión es la que manda en el problema.</p>
+  <div class="card-panel" style="margin-top:12px; padding:8px; overflow-x:auto;">
+    <table class="tbl">
+      <tr><th>Dimensión</th><th>Blue/Green</th><th>Rolling</th><th>Canary</th><th>A/B</th></tr>
+      <tr><td>Costo de infraestructura</td><td>Alto (dos entornos)</td><td>Bajo</td><td>Bajo a medio</td><td>Bajo a medio</td></tr>
+      <tr><td>Rollback</td><td>Casi instantáneo</td><td>Lento, por lotes</td><td>Rápido (enrutamiento)</td><td>Se descarta la variante</td></tr>
+      <tr><td>Versiones conviviendo</td><td>No (en el cambio)</td><td>Sí, durante el proceso</td><td>Sí, durante la expansión</td><td>Sí, durante el experimento</td></tr>
+      <tr><td>Exposición al riesgo</td><td>Todos de golpe</td><td>Progresiva</td><td>Mínima al inicio</td><td>Según el experimento</td></tr>
+      <tr><td>Pregunta clave</td><td>¿Puedo validar en un entorno igual y cambiar de una vez?</td><td>¿Puedo actualizar sin pagar un entorno duplicado?</td><td>¿Funciona con tráfico real, sin arriesgar a todos?</td><td>¿Qué versión logra mejor el objetivo de negocio?</td></tr>
+    </table>
+  </div>
+  <div class="example-box amber mt-3" style="margin-top:14px;">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Truco para el práctico</div>
+    Cuando un enunciado describe una necesidad, buscá la <strong>palabra que condiciona</strong> (costo, velocidad de vuelta atrás, porcentaje de usuarios, comparar resultados de negocio) y verificá qué estrategia la satisface mejor <em>y qué descarta a las otras</em>.
+  </div>
+</div>
+`);
+
+// 19. Tabla 4 patrones de modificación
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-table"></i> Comparativa</span>
+  <h2 class="slide-title">Los cuatro patrones de modificación, lado a lado</h2>
+  <div class="card-panel" style="margin-top:12px; padding:8px; overflow-x:auto;">
+    <table class="tbl">
+      <tr><th>Patrón</th><th>Problema de fondo</th><th>Idea central</th><th>Pieza clave</th><th>Precio</th></tr>
+      <tr><td>Deployment Stamps</td><td>Una sola instancia no escala ni aísla</td><td>Copias independientes, cada una con sus clientes</td><td>Enrutador de clientes a stamps</td><td>Más infraestructura y operación</td></tr>
+      <tr><td>External Configuration Store</td><td>Cambiar un ajuste obliga a redesplegar</td><td>Configuración fuera del paquete</td><td>Almacén central + caché</td><td>Dependencia del store; control de cambios</td></tr>
+      <tr><td>Messaging Bridge</td><td>Mensajería incompatible entre sistemas</td><td>Reenviar sin modificar los sistemas</td><td>Puente entre dos colas</td><td>Componente extra; funciones avanzadas limitadas</td></tr>
+      <tr><td>Strangler Fig</td><td>Reemplazar un sistema grande de golpe es riesgoso</td><td>Migrar función por función</td><td>Fachada que enruta</td><td>Fachada a mantener; convivencia de datos</td></tr>
+    </table>
+  </div>
+  <div class="example-box mt-3" style="margin-top:14px;">
+    <div class="ex-label"><i class="fa-solid fa-link"></i> Dos patrones que se parecen</div>
+    Strangler Fig y Messaging Bridge pueden usarse juntos: mientras se migra de a poco, el puente deja que sistemas viejos y nuevos sigan intercambiando mensajes sin tocarlos.
+  </div>
+</div>
+`);
+
+// 20. Ejemplo combinado
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-graduation-cap"></i> Ejemplo combinado</span>
+  <h2 class="slide-title">Una plataforma de cursos en línea, evolucionando</h2>
+  <p class="subtitle">Un SaaS educativo que vende su plataforma a universidades. Mismos patrones, otro dominio.</p>
+  <div class="grid-2 mt-2" style="margin-top:10px;">
+    <div class="compare-col">
+      <ul class="clean">
+        <li><i class="fa-solid fa-cubes" style="color:var(--accent)"></i> <strong style="color:var(--text)">Deployment Stamps:</strong> cada universidad grande (o grupo de pequeñas) tiene su propio stamp con su base de datos. Un pico de matrícula en una no afecta a las demás.</li>
+        <li><i class="fa-solid fa-sliders" style="color:var(--accent)"></i> <strong style="color:var(--text)">External Configuration Store:</strong> el período de entrega de trabajos y los límites de subida se cambian desde un panel sin redesplegar. Las claves van en un gestor de secretos.</li>
+        <li><i class="fa-solid fa-bridge" style="color:var(--accent)"></i> <strong style="color:var(--text)">Messaging Bridge:</strong> el sistema de notas antiguo publica en RabbitMQ; la app nueva consume de Service Bus. El puente los conecta sin tocar el sistema antiguo.</li>
+        <li><i class="fa-solid fa-seedling" style="color:var(--accent)"></i> <strong style="color:var(--text)">Strangler Fig:</strong> el módulo de certificados se reescribe como servicio nuevo; la fachada manda <span class="mono">/certificados</span> al nuevo y el resto al viejo.</li>
+      </ul>
+    </div>
+    <div class="compare-col">
+      <ul class="clean">
+        <li><i class="fa-solid fa-repeat" style="color:var(--accent-3)"></i> <strong style="color:var(--text)">Blue/Green:</strong> migrar a un nuevo motor de base de datos con ventana de cambio fija, validando antes en un entorno igual.</li>
+        <li><i class="fa-solid fa-arrows-rotate" style="color:var(--accent-3)"></i> <strong style="color:var(--text)">Rolling:</strong> parche menor de la API con cambios compatibles; se actualizan las instancias de a lotes.</li>
+        <li><i class="fa-solid fa-dove" style="color:var(--accent-3)"></i> <strong style="color:var(--text)">Canary:</strong> nuevo reproductor de video: primero 2% de estudiantes, mirando errores de reproducción.</li>
+        <li><i class="fa-solid fa-code-compare" style="color:var(--accent-3)"></i> <strong style="color:var(--text)">A/B:</strong> dos diseños de la página del curso para ver cuál logra más inscripciones.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 21. Guia práctico
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-clipboard-list"></i> Práctico UT4-TA4</span>
+  <h2 class="slide-title">Cómo encarar cada ejercicio</h2>
+  <p class="subtitle">No son las respuestas: es el método para llegar a ellas. Tocá cada ejercicio.</p>
+  <div class="tac-grid mt-3" id="practicoGrid" style="margin-top:14px; grid-template-columns:repeat(5,1fr);"></div>
+  <div class="example-box amber mt-3" style="margin-top:16px;">
+    <div class="ex-label"><i class="fa-solid fa-pen"></i> Regla de oro</div>
+    En cada respuesta, <strong>justificá</strong>: "uso X porque el problema es Y, y X lo resuelve haciendo Z". Una respuesta sin el "porque" vale poco, aunque el patrón sea el correcto.
+  </div>
+</div>
+`);
+
+// 22. Atributos
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-table-cells"></i> Práctico · Ejercicio 2</span>
+  <h2 class="slide-title">Cómo razonar el impacto en los otros atributos</h2>
+  <p class="subtitle">Cada patrón agrega algo: una copia, un componente, un salto, una convivencia de versiones. Cada atributo se pregunta distinto.</p>
+  <div class="tac-grid mt-3" id="atribGrid" style="margin-top:14px; grid-template-columns:repeat(3,1fr);"></div>
+  <div class="example-box mt-3" style="margin-top:16px;">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> Atención</div>
+    Un impacto "negativo" no es un defecto del patrón: es <strong>el precio</strong> que se paga. Y no todos los patrones afectan a todos los atributos: si no encontrás un impacto real, podés decirlo y <strong>justificar por qué no lo hay</strong>.
+  </div>
+</div>
+`);
+
+// 23. Analogías
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-lightbulb"></i> Wrap-up</span>
+  <h2 class="slide-title">Cada patrón, en una imagen cotidiana</h2>
+  <p class="subtitle">Tocá una tarjeta.</p>
+  <div class="tac-grid cols4 mt-3" id="analogiasGrid" style="margin-top:18px;"></div>
+</div>
+`);
+
+// 24. Links
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-book-open"></i> Para profundizar</span>
+  <h2 class="slide-title">Artículos de referencia</h2>
+  <p class="subtitle">Las fuentes que referencia el repositorio de la materia.</p>
+  <div class="card-panel mt-3" style="margin-top:16px;">
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/deployment-stamp" target="_blank" rel="noopener">Deployment Stamps</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/external-configuration-store" target="_blank" rel="noopener">External Configuration Store</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/messaging-bridge" target="_blank" rel="noopener">Messaging Bridge</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/strangler-fig" target="_blank" rel="noopener">Strangler Fig</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-cubes" style="color:var(--accent-3)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices" target="_blank" rel="noopener">Estilo de arquitectura de microservicios</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-repeat" style="color:var(--accent-3)"></i><a href="https://martinfowler.com/bliki/BlueGreenDeployment.html" target="_blank" rel="noopener">Blue/Green Deployment (Martin Fowler)</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-dove" style="color:var(--accent-3)"></i><a href="https://martinfowler.com/bliki/CanaryRelease.html" target="_blank" rel="noopener">Canary Release (Martin Fowler)</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-box" style="color:var(--accent-3)"></i><a href="https://learn.microsoft.com/en-us/azure/container-apps/blue-green-deployment?pivots=azure-cli" target="_blank" rel="noopener">Blue-green en Azure Container Apps (opcional)</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-layer-group" style="color:var(--accent-3)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/" target="_blank" rel="noopener">Catálogo completo: Cloud Design Patterns</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+  </div>
+</div>
+`);
+
+// 25. Quiz
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:70vh;">
+  <span class="eyebrow"><i class="fa-solid fa-brain"></i> Chequeo de comprensión</span>
+  <h2 class="slide-title">10 preguntas sobre modificación y despliegue</h2>
+  <p class="subtitle mb-4">Escenarios nuevos, distintos a los del práctico, para que practiques cómo identificar el patrón y justificarlo.</p>
+  <button class="check-btn" onclick="lanzarQuiz()"><i class="fa-solid fa-play me-2"></i>Iniciar quiz</button>
+</div>
+`);
+
+// 26. Cierre
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:78vh;">
+  <div class="icon-tile mb-3" style="width:72px;height:72px;font-size:2rem;"><i class="fa-solid fa-rocket"></i></div>
+  <span class="eyebrow"><i class="fa-solid fa-flag-checkered"></i> Repaso completo</span>
+  <h2 class="slide-title">Cambiar con poco riesgo y desplegar con poco miedo</h2>
+  <p class="subtitle mb-4" style="max-width:820px;">Copias independientes (Stamps), configuración fuera del código (ECS), sistemas que se hablan sin tocarse (Bridge) y migraciones graduales (Strangler Fig). Al liberar: cambiar de golpe con red de seguridad (Blue/Green), por lotes (Rolling), con un grupo pequeño primero (Canary) o comparando alternativas (A/B). En el práctico, identificá siempre la <strong>dimensión que manda</strong> y justificá.</p>
+</div>
+`);
+function initExplorers(){
+const EXB=(t,l)=>`<div style="text-align:left; background:rgba(62,193,255,.08); border:1px dashed rgba(62,193,255,.3); border-radius:10px; padding:10px 12px; font-size:.85rem; margin-top:10px;"><strong style="color:#3ec1ff;">${l}:</strong> ${t}</div>`;
+function mkTiles(id,arr,fn){
+  const g=document.getElementById(id);if(!g)return;
+  arr.forEach(t=>{
+    const tile=document.createElement('div');tile.className='tac-tile';
+    tile.innerHTML=`<i class="fa-solid ${t.icon}"></i><div class="tname">${t.nombre}</div><div class="tsub">${t.sub}</div>`;
+    tile.onclick=()=>Swal.fire({title:t.nombre,html:fn(t),...SW});
+    g.appendChild(tile);
+  });
+}
+const NOTA='<p style="text-align:left; font-size:.75rem; color:#8fa0bd; margin-top:10px;">Basado en Bass, Clements &amp; Kazman. Los nombres exactos pueden variar levemente según la edición y tu material de la Unidad 2.</p>';
+const lista=a=>`<ul style="text-align:left; font-size:.9rem; line-height:1.8; padding-left:20px;">${a.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+
+mkTiles('tacticasGrid',[
+ {nombre:'Reducir el tamaño de módulos',icon:'fa-scissors',sub:'Modificación',items:['Dividir un módulo grande en partes más chicas, para que un cambio toque menos código'],ej:'Separar un libro enorme en capítulos independientes.'},
+ {nombre:'Aumentar la cohesión',icon:'fa-magnet',sub:'Modificación',items:['Mantener juntas las responsabilidades que cambian por la misma razón','Mover lo que no corresponde a otro módulo'],ej:'Un cajón solo para cubiertos: no hay que revolver todo para encontrar una cuchara.'},
+ {nombre:'Reducir el acoplamiento',icon:'fa-link-slash',sub:'Modificación',items:['Encapsular','Usar un intermediario','Restringir dependencias','Abstraer servicios comunes'],ej:'Un enchufe estándar: el electrodoméstico no depende de qué central genera la energía.'},
+ {nombre:'Diferir el momento de enlace',icon:'fa-hourglass-half',sub:'Modificación',items:['Decidir lo más tarde posible qué componente o valor se usa','Ejemplos: archivos de configuración, parámetros en ejecución, plug-ins, registro y búsqueda dinámica de servicios, publicación-suscripción'],ej:'Elegir el menú cuando llegás al restaurante, no al reservar.'},
+ {nombre:'Gestionar el pipeline de despliegue',icon:'fa-gears',sub:'Despliegue',items:['Escalonar los despliegues (rollouts) a un subconjunto','Poder volver atrás (rollback)','Scriptear los comandos de despliegue'],ej:'Una línea de montaje automatizada con botón de parada.'},
+ {nombre:'Gestionar el sistema desplegado',icon:'fa-sitemap',sub:'Despliegue',items:['Gestionar las interacciones entre servicios','Empaquetar dependencias','Activar o desactivar funciones con feature toggles'],ej:'El tablero de luces de un edificio: se prende o apaga una zona sin tocar el cableado.'}
+],t=>lista(t.items)+EXB(t.ej,'Ejemplo')+NOTA);
+
+mkTiles('patronesGrid',[
+ {nombre:'Deployment Stamps',icon:'fa-cubes',sub:'Copias independientes',que:'Varias copias completas (con sus datos) de la solución, cada una atendiendo a un subconjunto de clientes. Se escala agregando stamps.',an:'Sucursales idénticas de un banco.'},
+ {nombre:'External Configuration Store',icon:'fa-sliders',sub:'Config fuera del paquete',que:'La configuración vive en un almacén central. Cambiarla no requiere redesplegar y puede compartirse entre aplicaciones.',an:'Un control remoto central para todos los televisores del hotel.'},
+ {nombre:'Messaging Bridge',icon:'fa-bridge',sub:'Conectar mensajerías',que:'Un puente reenvía mensajes entre infraestructuras de mensajería distintas sin modificar los sistemas ni el contenido.',an:'El correo internacional: no abre tu carta, solo la lleva.'},
+ {nombre:'Strangler Fig',icon:'fa-seedling',sub:'Migración gradual',que:'Una fachada enruta cada solicitud al sistema viejo o al nuevo; el nuevo va reemplazando al viejo función por función.',an:'La higuera que crece alrededor del árbol y lo reemplaza.'},
+ {nombre:'Blue/Green',icon:'fa-repeat',sub:'Dos entornos, un cambio',que:'Dos entornos idénticos; se valida en el inactivo y se cambia todo el tráfico de golpe.',an:'Dos escenarios: se arma el segundo mientras actúa el primero.'},
+ {nombre:'Rolling Upgrade',icon:'fa-arrows-rotate',sub:'Por lotes',que:'Se actualizan las instancias en lotes, siempre dejando algunas atendiendo.',an:'Cambiar las lámparas de la calle cuadra por cuadra.'},
+ {nombre:'Canary',icon:'fa-dove',sub:'Pocos usuarios primero',que:'La versión nueva atiende a un grupo pequeño; se monitorea y se expande si todo va bien.',an:'El canario en la mina de carbón.'},
+ {nombre:'A/B Testing',icon:'fa-code-compare',sub:'Comparar variantes',que:'Dos variantes se muestran a grupos comparables para medir cuál logra mejor un objetivo de negocio.',an:'Dos cartas de restaurante, y se mide cuál vende más.'}
+],t=>`<p style="text-align:left; font-size:.92rem; line-height:1.6;">${t.que}</p>`+EXB(t.an,'Analogía'));
+
+mkTiles('practicoGrid',[
+ {nombre:'Ejercicio 1',icon:'fa-diagram-project',sub:'Tácticas ↔ patrones',q:['Para cada patrón, preguntate: ¿qué hace concretamente? (divide, desacopla, difiere una decisión, escalona un despliegue, permite volver atrás...)','Recorré el árbol de tácticas de la diapositiva 2 y buscá cuáles encajan con esa acción.','Un patrón puede apoyarse en más de una táctica: justificá cada vínculo en una frase.']},
+ {nombre:'Ejercicio 2',icon:'fa-table-cells',sub:'Impactos negativos',q:['Preguntate qué agrega el patrón: ¿más piezas? ¿más saltos? ¿versiones conviviendo? ¿más infraestructura?','Para cada atributo usá las preguntas guía de la diapositiva 23.','Justificá con un mecanismo concreto, no con una frase general. Si no hay impacto, decilo y explicá por qué.']},
+ {nombre:'Ejercicio 3',icon:'fa-list-check',sub:'Situación → patrón',q:['Subrayá la necesidad central de cada situación: ¿cambiar un valor? ¿conectar dos mensajerías? ¿migrar? ¿copias por cliente o región? ¿liberar sin corte? ¿probar con pocos? ¿comparar diseños?','Reformulá la situación como un problema del tipo "el problema de fondo es...".','Buscá qué patrón de la diapositiva 21 resuelve ese problema y justificá por qué los otros no.']},
+ {nombre:'Ejercicio 4',icon:'fa-scale-balanced',sub:'Elegir estrategia',q:['Para cada escenario, identificá la dimensión que condiciona: costo, velocidad de rollback, porcentaje de usuarios, objetivo de negocio, convivencia de versiones.','Usá la tabla de la diapositiva 19 para ver qué estrategia la satisface mejor.','Nombrá el elemento determinante y explicá qué descarta a las otras tres.']},
+ {nombre:'Ejercicio 5',icon:'fa-sitemap',sub:'Migrar un monolito',q:['Dibujá primero el estado actual: quién habla con quién y quién accede a qué datos.','Pensá qué pieza debe interceptar las solicitudes para decidir quién las atiende, y dónde se ubica en el diagrama.','Dibujá el estado intermedio (con convivencia) y revisá qué dependencias cambian y qué datos se comparten.','Considerá qué pasa con los datos del módulo que se reemplaza durante la transición.']}
+],t=>`<p style="text-align:left; font-size:.85rem; color:#8fa0bd; margin-bottom:6px;">Preguntas guía:</p>`+lista(t.q));
+
+mkTiles('atribGrid',[
+ {nombre:'Disponibilidad',icon:'fa-heart-pulse',sub:'¿Sigue disponible?',q:['¿El patrón agrega un componente que, si falla, deja sin servicio al sistema?','¿Hay una ventana en que el sistema esté degradado o sin servicio?','¿Una falla queda contenida o se propaga?']},
+ {nombre:'Rendimiento',icon:'fa-gauge-high',sub:'¿Más lento?',q:['¿Agrega un salto o una consulta en el camino de cada solicitud?','¿Hay trabajo extra (copiar, traducir, sincronizar)?','¿Consume recursos que antes iban a la carga útil?']},
+ {nombre:'Protección',icon:'fa-hand',sub:'Según tu Unidad 1',q:['Revisá la definición de este atributo en tu material de la Unidad 1.','¿El patrón puede hacer que el sistema cause daño si se comporta mal o recibe datos inconsistentes?','Si no encontrás un impacto real, justificá por qué.']},
+ {nombre:'Seguridad',icon:'fa-lock',sub:'¿Más superficie?',q:['¿Hay un nuevo punto de entrada, un nuevo almacén o una nueva credencial?','¿Se mueven datos sensibles entre sistemas o regiones?','¿Quién tiene permiso de modificar el componente nuevo?']},
+ {nombre:'Facilidad de modificación',icon:'fa-pen-to-square',sub:'¿Cuesta cambiar?',q:['¿El patrón agrega complejidad que dificulta cambios futuros?','¿Hay más lugares que hay que mantener consistentes?','¿Cuánto cuesta cambiar el componente que el propio patrón introduce?']},
+ {nombre:'Facilidad de despliegue',icon:'fa-rocket',sub:'¿Cuesta liberar?',q:['¿Hay más cosas que desplegar o coordinar?','¿Hay versiones o copias que deben mantenerse sincronizadas?','¿Se necesita automatización, infraestructura o monitoreo extra que antes no hacía falta?']}
+],t=>`<p style="text-align:left; font-size:.85rem; color:#8fa0bd; margin-bottom:6px;">Preguntas guía:</p>`+lista(t.q));
+
+mkTiles('analogiasGrid',[
+ {nombre:'Deployment Stamps',icon:'fa-cubes',sub:'Sucursales idénticas',an:'En vez de agrandar una sola sucursal, se abren varias iguales. Si una cierra, las otras siguen.'},
+ {nombre:'External Config Store',icon:'fa-sliders',sub:'Control remoto central',an:'Se cambia una vez en el panel central y todos los televisores del hotel lo toman, sin ir uno por uno.'},
+ {nombre:'Messaging Bridge',icon:'fa-bridge',sub:'Correo internacional',an:'La carta cruza entre dos servicios postales sin ser abierta ni reescrita.'},
+ {nombre:'Strangler Fig',icon:'fa-seedling',sub:'Higuera estranguladora',an:'Crece alrededor del árbol huésped y lo reemplaza lentamente, sin talarlo de golpe.'},
+ {nombre:'Blue/Green',icon:'fa-repeat',sub:'Dos escenarios',an:'Mientras actúa la compañía en un escenario, se arma el decorado del otro. Después se gira al público.'},
+ {nombre:'Rolling Upgrade',icon:'fa-arrows-rotate',sub:'Alumbrado por cuadras',an:'Se cambian las lámparas de a pocas; la calle nunca queda a oscuras.'},
+ {nombre:'Canary',icon:'fa-dove',sub:'Canario en la mina',an:'El pájaro sensible avisa del gas antes que los mineros sufran.'},
+ {nombre:'A/B Testing',icon:'fa-code-compare',sub:'Dos cartas',an:'Mitad de las mesas ve una carta, mitad otra; gana la que vende más.'}
+],t=>`<p style="text-align:left; font-size:.95rem; line-height:1.6;">${t.an}</p>`);
+}
+
+/* ============ SIMULADORES ============ */
+function addLog(id,t,c){const l=document.getElementById(id);if(!l)return;l.innerHTML+=`<div style="color:${c||'inherit'}">${t}</div>`;l.scrollTop=l.scrollHeight;}
+function clearLog(id){const l=document.getElementById(id);if(l)l.innerHTML='';}
+
+/* --- Deployment Stamps --- */
+let st={gyms:[],stamps:[{down:false,ver:1}]};
+const CAP=3;
+function stView(){
+  const v=document.getElementById('stView');if(!v)return;
+  v.innerHTML=st.stamps.map((s,i)=>`<div class="stamp ${s.down?'down':''}"><div class="st">Stamp ${i+1} · v${s.ver} ${s.down?'· ⛔ caído':''}</div>${st.gyms.filter(g=>g.s===i).map(g=>`<span class="chip">Gimnasio ${g.n}</span>`).join('')||'<span style="font-size:.7rem;color:#8fa0bd;">vacío</span>'}</div>`).join('');
+}
+function stAdd(){
+  const n=st.gyms.length+1;
+  let i=st.stamps.findIndex((s,k)=>st.gyms.filter(g=>g.s===k).length<CAP);
+  if(i<0){st.stamps.push({down:false,ver:st.stamps[0].ver});i=st.stamps.length-1;addLog('stLog','Capacidad llena: se despliega un <b>nuevo stamp</b> (copia idéntica con su propia base de datos)','#ffb547');}
+  st.gyms.push({n,s:i});addLog('stLog',`Gimnasio ${n} asignado al stamp ${i+1} (el enrutador guarda la relación)`,'#3ee6a8');stView();
+}
+function stFail(){
+  const i=st.stamps.findIndex(s=>!s.down&&st.gyms.some(g=>g.s===st.stamps.indexOf(s)));
+  if(i<0){addLog('stLog','No hay stamps con clientes para fallar.','#ff6b6b');return;}
+  st.stamps[i].down=true;
+  const a=st.gyms.filter(g=>g.s===i).length,t=st.gyms.length;
+  addLog('stLog',`⛔ Falla el stamp ${i+1}: afecta a ${a} de ${t} clientes. Los demás <b>siguen funcionando</b> (radio de impacto acotado).`,'#ff6b6b');stView();
+}
+function stRing(){
+  const pend=st.stamps.findIndex(s=>s.ver===1&&!s.down);
+  if(pend<0){addLog('stLog','Todos los stamps sanos ya están en v2.','#ffb547');return;}
+  st.stamps[pend].ver=2;addLog('stLog',`Anillo ${pend+1}: stamp ${pend+1} actualizado a v2 antes que los otros. Si algo sale mal, solo ese grupo lo sufre.`,'#3ec1ff');stView();
+}
+function stReset(){st={gyms:[],stamps:[{down:false,ver:1}]};clearLog('stLog');stView();addLog('stLog','Un stamp inicial (capacidad: 3 gimnasios).');}
+
+/* --- External Configuration Store --- */
+let ecs={store:30,inst:[30,30,30],local:false,pend:0};
+function ecsView(){
+  document.getElementById('ecsStore').textContent='Store: timeout = '+ecs.store;
+  document.getElementById('ecsInst').innerHTML=ecs.inst.map((v,i)=>`<div class="subr ${v===ecs.store?'hit':''}">Instancia ${i+1}<br><span class="mono">timeout = ${v}</span></div>`).join('');
+}
+function ecsChange(){ecs.store=60;ecs.local=false;addLog('ecsLog','Valor cambiado en el store. Las instancias siguen con su caché hasta que venza.','#ffb547');ecsView();}
+function ecsRefresh(){
+  if(ecs.inst.every(v=>v===ecs.store)){addLog('ecsLog','Ya están todas sincronizadas.');return;}
+  ecs.inst=ecs.inst.map(()=>ecs.store);addLog('ecsLog','La caché venció: las 3 instancias leyeron el valor nuevo <b>sin redesplegar ni reiniciar</b>.','#3ee6a8');ecsView();
+}
+function ecsLocal(){
+  ecs.local=true;addLog('ecsLog','Con archivo local: hay que editar y <b>redesplegar instancia por instancia</b>. Mientras tanto conviven valores distintos.','#ff6b6b');
+  ecs.inst[0]=ecs.store;ecsView();
+}
+function ecsReset(){ecs={store:30,inst:[30,30,30],local:false,pend:0};clearLog('ecsLog');ecsView();addLog('ecsLog','Tres instancias con timeout = 30.');}
+
+/* --- Messaging Bridge --- */
+let mb={up:true,q:0,sent:0,deliv:0};
+function mbInfo(){document.getElementById('mbInfo').textContent=`Enviados: ${mb.sent} · Entregados: ${mb.deliv} · Retenidos en el puente: ${mb.q} · Nube: ${mb.up?'arriba':'caída'}`;document.getElementById('mbC').style.borderColor=mb.up?'#3ee6a8':'#ff6b6b';}
+function mbSend(){
+  mb.sent++;
+  if(mb.up){mb.deliv++;addLog('mbLog',`Mensaje ${mb.sent}: MSMQ → puente → Service Bus. Contenido idéntico.`,'#3ee6a8');}
+  else{mb.q++;addLog('mbLog',`Mensaje ${mb.sent}: la nube no responde. El puente lo <b>retiene</b> y reintenta (Circuit Breaker evita insistir sin parar).`,'#ffb547');}
+  mbInfo();
+}
+function mbDown(){mb.up=false;addLog('mbLog','⛔ La nube cae. El sistema legacy ni se entera.','#ff6b6b');mbInfo();}
+function mbUp(){
+  if(mb.up)return;mb.up=true;
+  if(mb.q){addLog('mbLog',`✓ La nube vuelve: el puente entrega los ${mb.q} retenidos (al menos una vez; el consumidor debe tolerar duplicados).`,'#3ee6a8');mb.deliv+=mb.q;mb.q=0;}
+  else addLog('mbLog','La nube vuelve.','#3ee6a8');
+  mbInfo();
+}
+function mbReset(){mb={up:true,q:0,sent:0,deliv:0};clearLog('mbLog');mbInfo();}
+
+/* --- Strangler Fig --- */
+const SF=['Catálogo de libros','Préstamos','Usuarios','Multas'];
+let sfN=0;
+function sfRender(){
+  document.getElementById('sfOld').innerHTML=SF.slice(sfN).map(m=>`<div class="subr" style="margin-bottom:5px;">${m}</div>`).join('')||'<div style="color:#8fa0bd;font-size:.8rem;">(retirado)</div>';
+  document.getElementById('sfNew').innerHTML=SF.slice(0,sfN).map(m=>`<div class="subr hit" style="margin-bottom:5px;">${m}</div>`).join('')||'<div style="color:#8fa0bd;font-size:.8rem;">(vacío)</div>';
+  const m=document.getElementById('sfMsg');
+  const txt=['Fase 1: la fachada solo reenvía todo al legacy.','Fase 2: <b>Catálogo</b> migrado. La fachada manda su ruta al nuevo y el resto sigue en el viejo.','Fase 2: <b>Préstamos</b> migrado. Los clientes no notaron nada.','Fase 2: <b>Usuarios</b> migrado. El legacy solo conserva Multas.','Fase 3 y 4: legacy retirado. La fachada ya no hace falta o queda como adaptador.'];
+  m.innerHTML=txt[sfN];
+}
+function sfNext(){if(sfN<SF.length){sfN++;sfRender();}}
+function sfReset(){sfN=0;sfRender();}
+
+/* --- Estrategias de despliegue --- */
+let dp={s:'bg',step:0};
+const DP_MAX={bg:2,roll:5,can:4,ab:2};
+function dpSet(s){dp={s,step:0};clearLog('dpLog');['bg','roll','can','ab'].forEach(k=>{const b=document.getElementById('dpB_'+k);if(b)b.style.outline=k===s?'2px solid #3ec1ff':'none';});dpRender();
+  addLog('dpLog',{bg:'Blue/Green: entorno azul (v1) activo. Avanzá para desplegar el verde.',roll:'Rolling: 10 instancias en v1. Se actualizan de a 2.',can:'Canary: 10 instancias en v1. Se irá exponiendo v2 a más usuarios.',ab:'A/B: queremos saber qué variante convierte mejor.'}[s]);}
+function dpGrid(arr){return arr.map(c=>`<div class="${c}">${c==='v1'?'v1':c==='v2'?'v2':c==='off'?'↻':'—'}</div>`).join('');}
+function dpRender(){
+  const s=dp.s,k=dp.step;let g1=Array(10).fill('v1'),g2=null,pct=0,l1='Producción',l2='';
+  if(s==='bg'){l1='Entorno azul';l2='Entorno verde';g2=Array(10).fill('idle');
+    if(k>=1){g2=Array(10).fill('v2');}
+    if(k>=2){pct=100;g1=Array(10).fill('idle');}}
+  if(s==='roll'){const n=Math.min(k*2,10);g1=g1.map((c,i)=>i<n?'v2':'v1');pct=n*10;}
+  if(s==='can'){const sh=[0,5,25,50,100][k];pct=sh;const n=[0,1,3,5,10][k];g1=g1.map((c,i)=>i<n?'v2':'v1');}
+  if(s==='ab'){l1='Variante A (actual) | Variante B (nueva)';if(k>=1){g1=g1.map((c,i)=>i<5?'v1':'v2');pct=50;}}
+  document.getElementById('dpG1').innerHTML=dpGrid(g1);
+  document.getElementById('dpLab1').textContent=l1;
+  document.getElementById('dpLab2').textContent=l2;
+  document.getElementById('dpG2').innerHTML=g2?dpGrid(g2):'';
+  document.getElementById('dpG2').style.display=g2?'grid':'none';
+  document.getElementById('dpPct').textContent=pct+'% del tráfico en v2 / B';
+  document.getElementById('dpBar').style.width=pct+'%';
+}
+function dpNext(){
+  const s=dp.s;if(dp.step>=DP_MAX[s]){addLog('dpLog','Ya se llegó al final de esta estrategia.','#ffb547');return;}
+  dp.step++;dpRender();const k=dp.step;
+  if(s==='bg')addLog('dpLog',k===1?'Se despliega v2 en el entorno verde y se prueba. Los usuarios siguen en el azul (0% a v2).':'<b>Corte:</b> el router apunta 100% al verde. El azul queda intacto como respaldo.','#3ec1ff');
+  if(s==='roll')addLog('dpLog',`Lote ${k}: 2 instancias reemplazadas por v2. Hay ${k*2} en v2 y ${10-k*2} en v1 <b>conviviendo</b>; siempre queda capacidad atendiendo.`,'#3ec1ff');
+  if(s==='can'){const sh=[0,5,25,50,100][k];addLog('dpLog',`Canary al ${sh}%. Métricas ilustrativas v2 vs v1: errores 0.4% vs 0.4% · latencia p95 210 ms vs 205 ms → ${k<4?'se expande':'se completa'}.`,'#3ee6a8');}
+  if(s==='ab')addLog('dpLog',k===1?'La mitad ve A, la otra mitad B. Se mide conversión (compras por visita).':'Tras varios días: A 3.1% vs B 3.8%, diferencia estadísticamente significativa → se promueve B a todos.','#3ec1ff');
+}
+function dpBack(){
+  const s=dp.s;if(dp.step===0){addLog('dpLog','No hay nada que revertir todavía.','#ffb547');return;}
+  dp.step--;dpRender();
+  const m={bg:'Rollback: el router vuelve al entorno azul. <b>Casi instantáneo</b>, porque nunca se apagó.',roll:'Rollback: hay que volver a actualizar lote por lote hacia v1. <b>Más lento</b>.',can:'Rollback: se deja de enviar tráfico a v2 (cambio de enrutamiento). Rápido.',ab:'Se descarta la variante B y todos vuelven a A.'};
+  addLog('dpLog',m[s],'#ff6b6b');
+}
+
+/* ============ MOTOR DE NAVEGACIÓN ============ */
+const container=document.getElementById('slidesContainer');
+slidesHTML.forEach((html,i)=>{
+  const div=document.createElement('div');
+  div.className='slide'+(i===0?' active':'');
+  div.id='slide'+i;
+  div.innerHTML=html;
+  container.appendChild(div);
+});
+initExplorers();
+stReset();ecsReset();mbReset();sfReset();dpSet('bg');
+
+let current=0;
+const total=slidesHTML.length;
+document.getElementById('hudTotal').textContent=total;
+const dotsWrap=document.getElementById('navDots');
+for(let i=0;i<total;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsWrap.appendChild(d);
+}
+function updateUI(){
+  document.querySelectorAll('.slide').forEach((s,i)=>{s.classList.toggle('active',i===current);});
+  document.querySelectorAll('.nav-dots .dot').forEach((d,i)=>{d.classList.toggle('active',i===current);});
+  document.getElementById('hudCurrent').textContent=current+1;
+  document.getElementById('progressFill').style.width=((current+1)/total*100)+'%';
+  const active=document.getElementById('slide'+current);
+  active.scrollTop=0;
+  const animTarget=active.querySelector('.slide-inner');
+  if(animTarget){
+    animTarget.classList.remove('animate__fadeIn');
+    void animTarget.offsetWidth;
+    animTarget.classList.add('animate__animated','animate__fadeIn');
+  }
+}
+function goTo(i){if(i<0||i>=total)return;current=i;updateUI();}
+document.getElementById('prevBtn').onclick=()=>goTo(current-1);
+document.getElementById('nextBtn').onclick=()=>goTo(current+1);
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='ArrowRight')goTo(current+1);
+  if(e.key==='ArrowLeft')goTo(current-1);
+});
+updateUI();
+
+/* ============ QUIZ ============ */
+const preguntas=[
+  {texto:'Una app de turnos médicos reúne clínicas en una sola instancia que ya no escala. Se decide desplegar copias completas, cada una con su propia base de datos y un grupo de clínicas. ¿Qué ventaja principal aporta esto frente a una falla?',
+   opciones:{a:'Todas las clínicas comparten la misma base de datos, así que cualquier dato está siempre disponible',b:'Se puede quitar la necesidad de un enrutador, porque cada clínica sabe a qué copia ir sola',c:'Una falla en una copia solo afecta a las clínicas que atiende, no a todas las demás del sistema',d:'La infraestructura se vuelve más barata que con una sola instancia grande en todos los casos'},correcta:'c'},
+  {texto:'Un microservicio necesita la contraseña de la base de datos y el límite de reintentos. ¿Cómo conviene tratar cada uno con un External Configuration Store?',
+   opciones:{a:'El límite en el store de configuración; la contraseña, en un gestor de secretos aparte',b:'Ambos en el mismo archivo dentro del paquete, para que viajen juntos con cada versión',c:'Ambos en texto plano en el store, con acceso de lectura abierto para todas las aplicaciones',d:'La contraseña en el store de configuración y el límite en el código fuente, compilado con la aplicación'},correcta:'a'},
+  {texto:'Una empresa absorbida usa RabbitMQ y la compradora usa Azure Service Bus. Quieren que los mensajes fluyan entre ambas sin cambiar ninguno de los dos sistemas. ¿Qué patrón aplica?',
+   opciones:{a:'Strangler Fig, porque reemplaza el sistema de la empresa absorbida de forma gradual',b:'Deployment Stamps, porque crea una copia de cada sistema para cada empresa',c:'External Configuration Store, porque guarda los datos de conexión en un lugar central',d:'Messaging Bridge, que reenvía mensajes de una infraestructura a otra sin modificar'},correcta:'d'},
+  {texto:'En una migración con Strangler Fig, ¿cuál es el rol de la fachada?',
+   opciones:{a:'Almacenar la copia de seguridad de los datos del sistema antiguo hasta el final',b:'Decidir, solicitud por solicitud, si la atiende el sistema viejo o el nuevo, según la ruta',c:'Traducir mensajes entre dos tecnologías de mensajería incompatibles sin cambiar su contenido',d:'Repartir tareas pesadas entre varias instancias idénticas para mejorar el rendimiento'},correcta:'b'},
+  {texto:'Un equipo dice: "Blue/Green nos asusta por el costo". ¿A qué se refieren principalmente?',
+   opciones:{a:'A que el cambio de tráfico necesita un reinicio manual de todas las computadoras de los usuarios',b:'A que el rollback lleva varias horas porque hay que reconstruir el entorno anterior',c:'A que los dos entornos no pueden ejecutarse al mismo tiempo en la misma región',d:'A mantener dos entornos de producción completos, casi idénticos y a la vez, con su costo'},correcta:'d'},
+  {texto:'Con Rolling Upgrade, durante la actualización conviven instancias viejas y nuevas. ¿Qué requisito técnico implica?',
+   opciones:{a:'Ambas versiones deben ser compatibles entre sí mientras conviven en producción',b:'Todas las instancias deben apagarse un instante para sincronizar su estado interno',c:'La base de datos debe duplicarse y mantener una copia exclusiva por versión',d:'Las instancias nuevas deben atender a todos los clientes antes que las viejas'},correcta:'a'},
+  {texto:'Un banco quiere enviar el 3% de sus usuarios a la nueva versión de la app, vigilando errores y tiempos de respuesta, y ampliar solo si todo va bien. ¿Qué estrategia es?',
+   opciones:{a:'Blue/Green, porque hay dos entornos y uno de ellos recibe una porción del tráfico',b:'A/B Testing, porque se comparan dos versiones entre grupos de usuarios distintos',c:'Canary: muy pocos usuarios primero, con monitoreo y ampliación gradual del alcance',d:'Rolling Upgrade, porque se actualiza una parte de las instancias antes que el resto'},correcta:'c'},
+  {texto:'¿Qué distingue a un A/B test de un canary?',
+   opciones:{a:'El A/B test no necesita monitoreo, porque el resultado se decide por votación entre los equipos',b:'Compara variantes según un objetivo de negocio; el canary valida que la versión funciona',c:'El A/B test siempre dura minutos y el canary siempre dura semanas de medición',d:'El canary se usa solo para bases de datos y el A/B test solo para interfaces gráficas'},correcta:'b'},
+  {texto:'Una empresa quiere reemplazar una aplicación vieja, pero no hay forma de interceptar las solicitudes que llegan a ella. ¿Por qué Strangler Fig no es adecuado?',
+   opciones:{a:'Sin interceptarlas no hay un punto donde enrutar entre el sistema viejo y el nuevo del cliente',b:'Porque el patrón solo funciona con sistemas escritos en lenguajes modernos y orientados a objetos',c:'Porque la fachada necesita ser desplegada siempre en una región distinta a la del sistema antiguo',d:'Porque el sistema viejo debe apagarse antes de empezar a construir cualquier parte del nuevo'},correcta:'a'},
+  {texto:'Un equipo cambia el valor de un límite de subida de archivos sin redesplegar nada, y las instancias lo toman solas. ¿Qué principio de modificabilidad se aprovecha?',
+   opciones:{a:'Reducir el tamaño de los módulos para que los cambios sean pequeños',b:'Aumentar la cohesión moviendo responsabilidades al mismo módulo',c:'Restringir las dependencias para que solo algunos módulos se comuniquen entre sí',d:'Diferir el momento de enlace: el valor se resuelve en ejecución, no al compilar'},correcta:'d'}
+];
+let idxPregunta=0,aciertos=0;
+function lanzarQuiz(){idxPregunta=0;aciertos=0;mostrarPregunta();}
+function mostrarPregunta(){
+  if(idxPregunta>=preguntas.length){
+    Swal.fire({title:'Resultado',html:`Acertaste <b>${aciertos}/${preguntas.length}</b>.`,icon:aciertos===preguntas.length?'success':'info',...SW});
+    return;
+  }
+  const p=preguntas[idxPregunta];
+  Swal.fire({
+    title:p.texto,input:'radio',inputOptions:p.opciones,...SW,
+    confirmButtonText:'Responder',
+    inputValidator:(value)=>!value&&'Elegí una opción'
+  }).then(res=>{
+    if(!res.isConfirmed)return;
+    const ok=res.value===p.correcta;
+    if(ok)aciertos++;
+    Swal.fire({
+      title:ok?'¡Correcto!':'No es así',
+      html:`La respuesta correcta era: <b>${p.opciones[p.correcta]}</b>`,
+      icon:ok?'success':'error',...SW
+    }).then(()=>{idxPregunta++;mostrarPregunta();});
+  });
+}
+</script>
+</body>
+</html>
