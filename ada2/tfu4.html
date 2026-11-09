@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UT4 · Patrones de Arquitectura · TFU</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e16; --panel:#111827; --panel2:#0f1522; --line:#1f2a3d;
+  --text:#e6e9ef; --muted:#8b95a7; --accent:#38bdf8;
+  --disp:#22c55e; --rend:#f59e0b; --seg:#ef4444; --mod:#a78bfa;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow:hidden}
+body::before{content:"";position:fixed;inset:0;background:
+  radial-gradient(circle at 15% 10%,rgba(56,189,248,.08),transparent 40%),
+  radial-gradient(circle at 85% 90%,rgba(167,139,250,.08),transparent 40%),
+  linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px) 0 0/100% 32px;pointer-events:none}
+.slide{position:absolute;inset:0;display:none;padding:2.2rem 3rem 4.5rem;overflow-y:auto}
+.slide.active{display:block}
+.slide-inner{max-width:1400px;margin:0 auto}
+h1,h2,h3,h4{font-weight:800;letter-spacing:-.02em}
+h2.title{font-size:2.1rem;margin-bottom:.3rem}
+.subtitle{color:var(--muted);font-size:1.1rem;margin-bottom:1.4rem}
+.mono,code,pre{font-family:'JetBrains Mono',monospace}
+.cardx{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem;height:100%}
+.cardx h4{font-size:1.15rem;margin-bottom:.6rem}
+.cardx p,.cardx li{color:#c9d1dd;font-size:1rem}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;padding:.2rem .6rem;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
+.t-disp{background:rgba(34,197,94,.15);color:var(--disp);border:1px solid rgba(34,197,94,.4)}
+.t-rend{background:rgba(245,158,11,.15);color:var(--rend);border:1px solid rgba(245,158,11,.4)}
+.t-seg{background:rgba(239,68,68,.15);color:var(--seg);border:1px solid rgba(239,68,68,.4)}
+.t-mod{background:rgba(167,139,250,.15);color:var(--mod);border:1px solid rgba(167,139,250,.4)}
+.t-acc{background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.4)}
+.bl-disp{border-left:4px solid var(--disp)} .bl-rend{border-left:4px solid var(--rend)}
+.bl-seg{border-left:4px solid var(--seg)} .bl-mod{border-left:4px solid var(--mod)} .bl-acc{border-left:4px solid var(--accent)}
+.c-disp{color:var(--disp)} .c-rend{color:var(--rend)} .c-seg{color:var(--seg)} .c-mod{color:var(--mod)} .c-acc{color:var(--accent)} .c-muted{color:var(--muted)}
+pre{margin:0;border-radius:12px;border:1px solid var(--line);position:relative}
+pre code.hljs{background:#0d1320;font-size:.82rem;line-height:1.5;padding:1rem 1.1rem;border-radius:12px;max-height:62vh}
+.code-wrap{position:relative}
+.copy-btn{position:absolute;top:.5rem;right:.5rem;z-index:3;background:#1b2436;color:var(--muted);border:1px solid var(--line);border-radius:8px;font-size:.75rem;padding:.2rem .55rem;cursor:pointer}
+.copy-btn:hover{color:var(--text);border-color:var(--accent)}
+.code-label{font-family:'JetBrains Mono';font-size:.78rem;color:var(--muted);margin-bottom:.35rem}
+.mermaid-box{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:1rem;display:flex;justify-content:center;align-items:center;min-height:200px}
+.mermaid-box .mermaid{width:100%;text-align:center;background:transparent}
+.mermaid-box svg{max-width:100%;height:auto}
+.chip{display:inline-block;margin:.2rem;padding:.35rem .75rem;border-radius:10px;background:#162034;border:1px solid var(--line);cursor:pointer;font-size:.92rem;transition:.2s}
+.chip:hover{transform:translateY(-2px);border-color:var(--accent)}
+.chip.sel{border-color:currentColor;font-weight:600}
+table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem}
+table.tbl th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:.75rem;letter-spacing:.06em;padding:.6rem .8rem;border-bottom:1px solid var(--line)}
+table.tbl td{padding:.65rem .8rem;border-bottom:1px solid var(--line);vertical-align:top}
+.big-num{font-size:3.4rem;font-weight:800;line-height:1}
+.kbd{font-family:'JetBrains Mono';background:#1b2436;border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:.05rem .45rem;font-size:.85rem}
+.hero{min-height:calc(100vh - 7rem);display:flex;flex-direction:column;justify-content:center}
+.hero h1{font-size:4rem;line-height:1.05}
+.grad{background:linear-gradient(90deg,var(--disp),var(--rend),var(--seg),var(--mod));-webkit-background-clip:text;background-clip:text;color:transparent}
+.step{display:flex;gap:.9rem;align-items:flex-start;margin-bottom:.9rem}
+.step .n{flex:0 0 2.2rem;height:2.2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;background:#162034;border:1px solid var(--line)}
+.note{background:rgba(56,189,248,.07);border:1px dashed rgba(56,189,248,.4);border-radius:12px;padding:.8rem 1rem;font-size:.95rem;color:#cfe8f7}
+.warn{background:rgba(245,158,11,.07);border:1px dashed rgba(245,158,11,.45);border-radius:12px;padding:.8rem 1rem;font-size:.95rem;color:#f7e5c4}
+.qa-opt{display:block;width:100%;text-align:left;margin-bottom:.6rem;padding:.8rem 1rem;border-radius:12px;background:#142036;border:1px solid var(--line);color:var(--text);transition:.2s}
+.qa-opt:hover{border-color:var(--accent);transform:translateX(4px)}
+.qa-opt .l{display:inline-block;width:1.8rem;font-family:'JetBrains Mono';color:var(--accent)}
+.check-item{display:flex;gap:.7rem;align-items:flex-start;padding:.55rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--panel);margin-bottom:.5rem;cursor:pointer}
+.check-item input{margin-top:.3rem;accent-color:var(--disp);transform:scale(1.2)}
+.check-item.done{opacity:.6;text-decoration:line-through}
+/* barra inferior */
+.navbar-x{position:fixed;left:0;right:0;bottom:0;height:3.2rem;background:rgba(10,14,22,.92);backdrop-filter:blur(6px);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 1.2rem;z-index:50}
+.navbar-x .btn-n{background:#162034;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:.25rem .8rem}
+.navbar-x .btn-n:hover{border-color:var(--accent)}
+.progress-x{position:fixed;left:0;bottom:3.2rem;height:3px;background:linear-gradient(90deg,var(--disp),var(--rend),var(--seg),var(--mod));transition:width .35s;z-index:51}
+.sec-name{font-family:'JetBrains Mono';font-size:.8rem;color:var(--muted)}
+.swal2-popup{font-family:'Outfit',sans-serif!important;border:1px solid var(--line)!important}
+.swal2-html-container code{background:#1b2436;padding:.1rem .35rem;border-radius:5px;color:#9ee6ff}
+.metric{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;text-align:center}
+.metric .v{font-size:1.6rem;font-weight:800}
+.metric .k{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.06em}
+@media (max-width:900px){.slide{padding:1.2rem 1rem 4.5rem}.hero h1{font-size:2.6rem}}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ 1 PORTADA -->
+<section class="slide" data-sec="Inicio">
+ <div class="slide-inner hero">
+  <div data-anim="fadeInDown"><span class="tag t-acc"><i class="fa-solid fa-diagram-project me-1"></i> Unidad Temática 4</span></div>
+  <h1 class="mt-3" data-anim="fadeInUp"><span class="grad">Patrones de Arquitectura</span><br>Trabajo Final de Unidad</h1>
+  <p class="subtitle mt-3" style="font-size:1.35rem;max-width:850px" data-anim="fadeInUp" data-delay="200">
+   Qué pide el ejercicio, cómo elegir los patrones y una <b>solución de referencia completa</b>: UML, código, docker-compose y scripts que prueban cada atributo de calidad.
+  </p>
+  <div class="d-flex gap-2 flex-wrap mt-2" data-anim="fadeIn" data-delay="400">
+   <span class="tag t-disp"><i class="fa-solid fa-heart-pulse me-1"></i>Disponibilidad</span>
+   <span class="tag t-rend"><i class="fa-solid fa-gauge-high me-1"></i>Rendimiento</span>
+   <span class="tag t-seg"><i class="fa-solid fa-shield-halved me-1"></i>Seguridad</span>
+   <span class="tag t-mod"><i class="fa-solid fa-code-branch me-1"></i>Modificabilidad / Despliegue</span>
+  </div>
+  <p class="c-muted mt-5" data-anim="fadeIn" data-delay="600">Navegá con <span class="kbd">←</span> <span class="kbd">→</span> · <span class="kbd">F</span> pantalla completa · <span class="kbd">Inicio</span>/<span class="kbd">Fin</span></p>
+ </div>
+</section>
+
+<!-- ============================================================ 2 QUÉ PIDE -->
+<section class="slide" data-sec="Enunciado">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-clipboard-list c-acc me-2"></i>¿Qué pide la TFU?</h2>
+  <p class="subtitle" data-anim="fadeIn">Partir de la app de la TFU anterior, <b>incorporar la retroalimentación recibida</b> y aplicarle patrones.</p>
+  <div class="row g-3 mb-3">
+   <div class="col-6 col-lg-3" data-anim="zoomIn" data-delay="100"><div class="cardx bl-disp text-center"><div class="big-num c-disp">2+</div><div>Disponibilidad</div></div></div>
+   <div class="col-6 col-lg-3" data-anim="zoomIn" data-delay="200"><div class="cardx bl-rend text-center"><div class="big-num c-rend">2+</div><div>Rendimiento</div></div></div>
+   <div class="col-6 col-lg-3" data-anim="zoomIn" data-delay="300"><div class="cardx bl-seg text-center"><div class="big-num c-seg">2+</div><div>Seguridad</div></div></div>
+   <div class="col-6 col-lg-3" data-anim="zoomIn" data-delay="400"><div class="cardx bl-mod text-center"><div class="big-num c-mod">1</div><div>Modificabilidad / Despliegue</div></div></div>
+  </div>
+  <div class="row g-3">
+   <div class="col-lg-6" data-anim="fadeInLeft" data-delay="500">
+    <div class="cardx">
+     <h4><i class="fa-solid fa-calculator me-2 c-acc"></i>La cuenta</h4>
+     <p class="mb-1">Monolito (o app no-microservicios): <b class="c-acc">2 + 2 + 2 + 1 = 7 patrones</b>.</p>
+     <p class="mb-0">Con microservicios <i>bien definidos</i>: se puede omitir el grupo 4 → <b class="c-acc">6 patrones</b>.</p>
+    </div>
+   </div>
+   <div class="col-lg-6" data-anim="fadeInRight" data-delay="600">
+    <div class="warn h-100">
+     <b><i class="fa-solid fa-triangle-exclamation me-1"></i> Letra chica (nota al pie)</b><br>
+     Cada contenedor debe implementar un servicio surgido de una <b>partición de dominio de primer nivel</b>. Separar en contenedores <i>frontend / backend / base de datos</i> es una partición <b>técnica</b>: <u>no</u> cuenta como microservicios.
+    </div>
+   </div>
+  </div>
+  <div class="note mt-3" data-anim="fadeIn" data-delay="700"><i class="fa-solid fa-lightbulb me-1"></i> Ojo: <b>Competing Consumers</b> aparece en disponibilidad y en rendimiento. Pueden usarlo, pero cuenta para <b>un solo</b> grupo. Justifiquen en cuál y por qué.</div>
+ </div>
+</section>
+
+<!-- ============================================================ 3 ENTREGABLES -->
+<section class="slide" data-sec="Enunciado">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-box-archive c-acc me-2"></i>Entregables</h2>
+  <p class="subtitle" data-anim="fadeIn">Dos partes que se corresponden 1 a 1: cada patrón documentado en la Parte 1 tiene que poder verse funcionando en la Parte 2.</p>
+  <div class="row g-3">
+   <div class="col-lg-6" data-anim="fadeInLeft" data-delay="150">
+    <div class="cardx bl-acc">
+     <span class="tag t-acc mb-2">Parte 1 · Documento</span>
+     <h4 class="mt-2"><i class="fa-solid fa-file-lines me-2"></i>Por cada patrón</h4>
+     <ul>
+      <li><b>Modelos UML</b> donde se vea el patrón aplicado: clases, secuencia, componentes o despliegue.</li>
+      <li><b>Explicación</b> de cómo el patrón logra el atributo de calidad.</li>
+      <li><b>Cómo comprobarlo empíricamente</b>: qué prueba, qué métrica, qué resultado esperan.</li>
+     </ul>
+    </div>
+   </div>
+   <div class="col-lg-6" data-anim="fadeInRight" data-delay="300">
+    <div class="cardx bl-mod">
+     <span class="tag t-mod mb-2">Parte 2 · Implementación</span>
+     <h4 class="mt-2"><i class="fa-solid fa-code me-2"></i>La aplicación</h4>
+     <ul>
+      <li><b>API REST</b> probable con <code>curl</code> o Postman.</li>
+      <li>Ejecutable en <b>Docker</b> (<code>docker-compose.yaml</code>) o <b>Azure VMs</b> (script <code>.azcli</code>).</li>
+      <li>Código en cualquier lenguaje/framework visto en la carrera.</li>
+      <li><b>Scripts de prueba</b> que demuestren cada atributo de calidad.</li>
+     </ul>
+    </div>
+   </div>
+  </div>
+  <div class="row g-3 mt-1">
+   <div class="col-md-4" data-anim="fadeInUp" data-delay="450"><div class="metric"><div class="v c-acc"><i class="fa-solid fa-diagram-project"></i></div><div class="k">UML que muestre el patrón</div></div></div>
+   <div class="col-md-4" data-anim="fadeInUp" data-delay="550"><div class="metric"><div class="v c-rend"><i class="fa-brands fa-docker"></i></div><div class="k">Corre en cualquier máquina</div></div></div>
+   <div class="col-md-4" data-anim="fadeInUp" data-delay="650"><div class="metric"><div class="v c-disp"><i class="fa-solid fa-flask-vial"></i></div><div class="k">Evidencia medible</div></div></div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 4 CATÁLOGO -->
+<section class="slide" data-sec="Catálogo">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-layer-group c-acc me-2"></i>Catálogo de patrones de la unidad</h2>
+  <p class="subtitle" data-anim="fadeIn"><i class="fa-solid fa-hand-pointer me-1"></i>Hacé clic en cualquier patrón para ver qué problema resuelve.</p>
+  <div class="row g-3">
+   <div class="col-lg-6" data-anim="fadeInUp" data-delay="100"><div class="cardx bl-disp">
+    <h4 class="c-disp"><i class="fa-solid fa-heart-pulse me-2"></i>1 · Disponibilidad</h4>
+    <span class="chip" data-p="Bulkhead">Bulkhead</span><span class="chip" data-p="Circuit Breaker">Circuit Breaker</span><span class="chip" data-p="Competing Consumers">Competing Consumers</span><span class="chip" data-p="Event Sourcing">Event Sourcing</span><span class="chip" data-p="Health Endpoint Monitoring">Health Endpoint Monitoring</span><span class="chip" data-p="Rate Limiting">Rate Limiting</span><span class="chip" data-p="Retry">Retry</span><span class="chip" data-p="Throttling">Throttling</span>
+   </div></div>
+   <div class="col-lg-6" data-anim="fadeInUp" data-delay="200"><div class="cardx bl-rend">
+    <h4 class="c-rend"><i class="fa-solid fa-gauge-high me-2"></i>2 · Rendimiento</h4>
+    <span class="chip" data-p="Cache-Aside">Cache-Aside</span><span class="chip" data-p="Queue-Based Load Leveling">Queue-Based Load Leveling</span><span class="chip" data-p="Competing Consumers">Competing Consumers</span><span class="chip" data-p="Publisher/Subscriber">Publisher/Subscriber</span><span class="chip" data-p="Asynchronous Request-Reply">Asynchronous Request-Reply</span><span class="chip" data-p="CQRS">CQRS</span><span class="chip" data-p="Materialized View">Materialized View</span>
+   </div></div>
+   <div class="col-lg-6" data-anim="fadeInUp" data-delay="300"><div class="cardx bl-seg">
+    <h4 class="c-seg"><i class="fa-solid fa-shield-halved me-2"></i>3 · Seguridad</h4>
+    <span class="chip" data-p="Gatekeeper">Gatekeeper</span><span class="chip" data-p="Federated Identity">Federated Identity</span><span class="chip" data-p="Gateway Offloading">Gateway Offloading</span><span class="chip" data-p="Sidecar">Sidecar</span><span class="chip" data-p="Valet Key">Valet Key</span>
+   </div></div>
+   <div class="col-lg-6" data-anim="fadeInUp" data-delay="400"><div class="cardx bl-mod">
+    <h4 class="c-mod"><i class="fa-solid fa-code-branch me-2"></i>4 · Modificabilidad y despliegue</h4>
+    <span class="chip" data-p="Deployment Stamps">Deployment Stamps</span><span class="chip" data-p="External Configuration Store">External Configuration Store</span><span class="chip" data-p="Messaging Bridge">Messaging Bridge</span><span class="chip" data-p="Strangler Fig">Strangler Fig</span>
+    <div class="mt-2 c-muted small">Estrategias:</div>
+    <span class="chip" data-p="Blue/green deployment">Blue/green</span><span class="chip" data-p="Rolling upgrade">Rolling upgrade</span><span class="chip" data-p="Canary testing">Canary</span><span class="chip" data-p="A/B testing">A/B testing</span>
+   </div></div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 5 CÓMO ELEGIR -->
+<section class="slide" data-sec="Método">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-route c-acc me-2"></i>Cómo elegir: del escenario al patrón</h2>
+  <p class="subtitle" data-anim="fadeIn">No se elige un patrón porque "queda lindo". Se elige porque resuelve un <b>escenario de calidad concreto</b> de <i>su</i> aplicación.</p>
+  <div class="row g-4">
+   <div class="col-lg-5">
+    <div class="step" data-anim="fadeInLeft" data-delay="100"><div class="n c-acc">1</div><div><b>Identificar el riesgo</b><br><span class="c-muted">¿Qué falla, se satura o queda expuesto en mi app?</span></div></div>
+    <div class="step" data-anim="fadeInLeft" data-delay="200"><div class="n c-acc">2</div><div><b>Escribir el escenario de calidad</b><br><span class="c-muted">Fuente · estímulo · artefacto · entorno · respuesta · medida.</span></div></div>
+    <div class="step" data-anim="fadeInLeft" data-delay="300"><div class="n c-acc">3</div><div><b>Elegir el patrón que responde</b><br><span class="c-muted">Justificar contra alternativas y anotar el costo (trade-off).</span></div></div>
+    <div class="step" data-anim="fadeInLeft" data-delay="400"><div class="n c-acc">4</div><div><b>Diseñar el experimento</b><br><span class="c-muted">La <b>medida</b> del escenario es la métrica del script de prueba.</span></div></div>
+   </div>
+   <div class="col-lg-7" data-anim="fadeInRight" data-delay="300">
+    <div class="cardx bl-disp">
+     <span class="tag t-disp">Ejemplo de escenario · Disponibilidad</span>
+     <table class="tbl mt-2">
+      <tr><td class="c-muted" style="width:28%">Fuente</td><td>Servicio externo de pagos</td></tr>
+      <tr><td class="c-muted">Estímulo</td><td>Deja de responder (timeouts)</td></tr>
+      <tr><td class="c-muted">Artefacto</td><td>Endpoint <code>POST /pagos</code> de la API</td></tr>
+      <tr><td class="c-muted">Entorno</td><td>Operación normal, 20 req/s</td></tr>
+      <tr><td class="c-muted">Respuesta</td><td>La API sigue atendiendo, falla rápido en pagos y responde con <i>fallback</i></td></tr>
+      <tr><td class="c-muted">Medida</td><td>Tras 3 fallas, respuestas de pagos en &lt; 50 ms (no 2 s); el resto de los endpoints sin degradación</td></tr>
+     </table>
+     <div class="mt-2"><i class="fa-solid fa-arrow-right c-disp me-1"></i> Patrón: <b>Circuit Breaker</b> (+ Retry)</div>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 6 ARQUITECTURA -->
+<section class="slide" data-sec="Solución de referencia">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-sitemap c-acc me-2"></i>Solución de referencia: "API de Pedidos"</h2>
+  <p class="subtitle" data-anim="fadeIn">Ejemplo con Node.js + Express. Cada grupo aplica la misma lógica a <b>su</b> app de la TFU anterior. Diagrama de despliegue simplificado:</p>
+  <div class="mermaid-box" data-anim="zoomIn" data-delay="150">
+<pre class="mermaid">
+flowchart LR
+  C([Cliente curl / Postman]) -->|HTTPS 443| N[nginx - Gateway Offloading]
+  N --> G[gatekeeper - JWT y validación]
+  subgraph interna [red interna - sin puertos publicados]
+    G --> A1[api réplica 1]
+    G --> A2[api réplica 2]
+    A1 & A2 --> R[(Redis - Cache-Aside)]
+    A1 & A2 --> P[(PostgreSQL)]
+    A1 & A2 -->|publica| Q[[RabbitMQ - cola pedidos]]
+    Q --> W1[worker 1]
+    Q --> W2[worker N]
+    W1 & W2 --> P
+    A1 & A2 -.->|Circuit Breaker + Retry| PM[pagos-mock]
+    A1 & A2 -.->|lee config| CS[config-server]
+  end
+</pre>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mt-3" data-anim="fadeIn" data-delay="400">
+   <span class="tag t-acc">GET /productos/:id</span><span class="tag t-acc">PUT /productos/:id</span><span class="tag t-acc">POST /pedidos</span><span class="tag t-acc">GET /pedidos/:id</span><span class="tag t-acc">POST /pagos</span><span class="tag t-acc">GET /health/live · /health/ready</span>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 7 SELECCIÓN -->
+<section class="slide" data-sec="Solución de referencia">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-list-check c-acc me-2"></i>Los 7 patrones elegidos y por qué</h2>
+  <p class="subtitle" data-anim="fadeIn">Cada fila es una sección del documento y un script en <code>tests/</code>.</p>
+  <div data-anim="fadeInUp" data-delay="150">
+  <table class="tbl">
+   <thead><tr><th>Grupo</th><th>Patrón</th><th>Problema que resuelve en esta app</th><th>Evidencia empírica</th></tr></thead>
+   <tbody>
+    <tr><td><span class="tag t-disp">Disp.</span></td><td><b>Health Endpoint Monitoring</b></td><td>Saber si la API y sus dependencias están vivas; Docker reinicia o no enruta</td><td>Bajar Postgres → <code>/health/ready</code> da 503</td></tr>
+    <tr><td><span class="tag t-disp">Disp.</span></td><td><b>Circuit Breaker</b> + Retry</td><td>Pagos externo lento/caído arrastra hilos y tumba la API</td><td>Latencia pasa de 2 s a &lt; 50 ms al abrir el circuito</td></tr>
+    <tr><td><span class="tag t-rend">Rend.</span></td><td><b>Cache-Aside</b></td><td>Catálogo de productos muy leído, poco escrito</td><td><code>X-Cache: HIT</code> y throughput con/sin caché</td></tr>
+    <tr><td><span class="tag t-rend">Rend.</span></td><td><b>Queue-Based Load Leveling</b> (+ Competing Consumers)</td><td>Picos de pedidos que saturan la base</td><td>300 POST concurrentes → 202 rápidos; cola drena</td></tr>
+    <tr><td><span class="tag t-seg">Seg.</span></td><td><b>Gatekeeper</b></td><td>La API no debe exponerse ni recibir entradas sin validar</td><td>API inaccesible directo; 401/400/413 en el gatekeeper</td></tr>
+    <tr><td><span class="tag t-seg">Seg.</span></td><td><b>Gateway Offloading</b></td><td>TLS, cabeceras de seguridad y límite de tasa repetidos en cada servicio</td><td>HTTPS, HSTS, 301 desde HTTP, 429 ante ráfaga</td></tr>
+    <tr><td><span class="tag t-mod">Mod.</span></td><td><b>External Configuration Store</b></td><td>Cambiar TTL, umbrales o flags obligaba a rebuild y redeploy</td><td>Cambio de comportamiento sin reiniciar el contenedor</td></tr>
+   </tbody>
+  </table>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 8 HEM concepto -->
+<section class="slide" data-sec="Disponibilidad · Health Endpoint Monitoring">
+ <div class="slide-inner">
+  <span class="tag t-disp" data-anim="fadeIn"><i class="fa-solid fa-heart-pulse me-1"></i>Disponibilidad</span>
+  <h2 class="title mt-2" data-anim="fadeInDown">Health Endpoint Monitoring</h2>
+  <div class="row g-4 mt-1">
+   <div class="col-lg-5" data-anim="fadeInLeft" data-delay="150">
+    <div class="cardx bl-disp">
+     <h4>¿Cómo logra disponibilidad?</h4>
+     <p>Expone endpoints que un agente externo (Docker, un balanceador, un monitor) consulta periódicamente. Así <b>detecta fallas rápido</b> (reduce el MTTD) y puede <b>sacar de rotación o reiniciar</b> la instancia enferma (reduce el MTTR).</p>
+     <ul>
+      <li><code>/health/live</code> → ¿el proceso responde? (si no: reiniciar)</li>
+      <li><code>/health/ready</code> → ¿puede atender? Chequea DB, Redis, cola (si no: no enviarle tráfico)</li>
+     </ul>
+     <div class="warn mt-2 small"><b>Trade-off:</b> el chequeo consume recursos y no debe exponer información sensible. En producción conviene restringir <code>/health/ready</code> a la red interna.</div>
+    </div>
+   </div>
+   <div class="col-lg-7" data-anim="fadeInRight" data-delay="300">
+    <div class="code-label">UML · diagrama de secuencia</div>
+    <div class="mermaid-box">
+<pre class="mermaid">
+sequenceDiagram
+  participant D as Docker healthcheck
+  participant A as api
+  participant P as PostgreSQL
+  participant R as Redis
+  participant Q as RabbitMQ
+  loop cada 10 s
+    D->>A: GET /health/ready
+    A->>P: SELECT 1
+    A->>R: PING
+    A->>Q: canal abierto?
+    alt todas UP
+      A-->>D: 200 status UP
+    else alguna DOWN
+      A-->>D: 503 status DOWN + detalle
+      Note over D: tras 3 fallos marca unhealthy
+    end
+  end
+</pre>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 9 HEM código -->
+<section class="slide" data-sec="Disponibilidad · Health Endpoint Monitoring">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-code c-disp me-2"></i>Health Endpoint · implementación y prueba</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-6" data-anim="fadeInLeft" data-delay="100">
+    <div class="code-label">api/src/health.js</div>
+<pre><code class="language-javascript">import { Router } from 'express';
+import { pool } from './db.js';
+import { redis } from './cache.js';
+import { getChannel } from './queue.js';
+
+export const health = Router();
+
+// Liveness: solo dice "el proceso responde"
+health.get('/health/live', (req, res) =&gt;
+  res.json({ status: 'UP' }));
+
+// Readiness: chequea dependencias con timeout
+const conTimeout = (p, ms = 1000) =&gt; Promise.race([
+  p, new Promise((_, rej) =&gt; setTimeout(() =&gt; rej(new Error('timeout')), ms))
+]);
+
+health.get('/health/ready', async (req, res) =&gt; {
+  const checks = {
+    postgres: () =&gt; pool.query('SELECT 1'),
+    redis:    () =&gt; redis.ping(),
+    rabbitmq: async () =&gt; { if (!getChannel()) throw new Error('sin canal'); }
+  };
+  const detalle = {};
+  for (const [nombre, fn] of Object.entries(checks)) {
+    try { await conTimeout(fn()); detalle[nombre] = 'UP'; }
+    catch { detalle[nombre] = 'DOWN'; }
+  }
+  const ok = Object.values(detalle).every(v =&gt; v === 'UP');
+  res.status(ok ? 200 : 503).json({
+    status: ok ? 'UP' : 'DOWN', checks: detalle, ts: new Date().toISOString()
+  });
+});</code></pre>
+   </div>
+   <div class="col-lg-6" data-anim="fadeInRight" data-delay="250">
+    <div class="code-label">docker-compose.yaml (fragmento)</div>
+<pre><code class="language-yaml">api:
+  build: ./api
+  healthcheck:
+    test: ["CMD", "wget", "-qO-", "http://localhost:3000/health/ready"]
+    interval: 10s
+    timeout: 3s
+    retries: 3
+    start_period: 15s
+  depends_on:
+    postgres: { condition: service_healthy }</code></pre>
+    <div class="code-label mt-3">tests/01-health.sh</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+API=https://localhost
+echo "== Estado normal =="
+curl -sk $API/health/ready | jq
+echo "== Simulo caída de PostgreSQL =="
+docker compose stop postgres
+sleep 2
+curl -sk -o /dev/null -w "HTTP %{http_code}\n" $API/health/ready
+curl -sk $API/health/ready | jq .checks
+sleep 35   # 3 intentos x 10 s
+docker inspect -f '{{.State.Health.Status}}' $(docker compose ps -q api | head -1)
+echo "== Recupero =="
+docker compose start postgres; sleep 15
+curl -sk $API/health/ready | jq .status</code></pre>
+    <div class="note mt-2 small"><b>Resultado esperado:</b> 200 → 503 con <code>postgres: DOWN</code> → contenedor <code>unhealthy</code> → 200 al recuperar. Docker Compose solo <i>marca</i> unhealthy; un orquestador (Swarm/K8s) o un balanceador es quien actúa. Mencionarlo en el documento.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 10 CB concepto -->
+<section class="slide" data-sec="Disponibilidad · Circuit Breaker">
+ <div class="slide-inner">
+  <span class="tag t-disp" data-anim="fadeIn"><i class="fa-solid fa-heart-pulse me-1"></i>Disponibilidad</span>
+  <h2 class="title mt-2" data-anim="fadeInDown">Circuit Breaker <span class="c-muted" style="font-size:1.3rem">+ Retry</span></h2>
+  <div class="row g-4 mt-1">
+   <div class="col-lg-5" data-anim="fadeInLeft" data-delay="150">
+    <div class="cardx bl-disp">
+     <h4>¿Cómo logra disponibilidad?</h4>
+     <p><b>Retry</b> resuelve fallas <i>transitorias</i>: reintenta con espera exponencial y <i>jitter</i>.</p>
+     <p><b>Circuit Breaker</b> resuelve fallas <i>persistentes</i>. Tras N fallas "abre" y <b>falla rápido</b> sin llamar al servicio. Así evita agotar conexiones e hilos esperando timeouts, y la falla <b>no se propaga</b> al resto de la API.</p>
+     <p class="mb-0"><b>Orden correcto:</b> <code>retry( breaker.fire(...) )</code>. Si el circuito está abierto, no se reintenta.</p>
+    </div>
+   </div>
+   <div class="col-lg-7" data-anim="fadeInRight" data-delay="300">
+    <div class="row g-3">
+     <div class="col-md-6">
+      <div class="code-label">UML · máquina de estados</div>
+      <div class="mermaid-box">
+<pre class="mermaid">
+stateDiagram-v2
+  [*] --> CLOSED
+  CLOSED --> OPEN: fallas >= umbral
+  OPEN --> HALF_OPEN: vence resetTimeout
+  HALF_OPEN --> CLOSED: prueba OK
+  HALF_OPEN --> OPEN: prueba falla
+</pre>
+      </div>
+     </div>
+     <div class="col-md-6">
+      <div class="code-label">UML · clases</div>
+      <div class="mermaid-box">
+<pre class="mermaid">
+classDiagram
+  class PagosService {
+    +cobrar(pedido)
+  }
+  class CircuitBreaker {
+    -state
+    -failures
+    -nextAttempt
+    +fire(args)
+    -onSuccess()
+    -onFailure()
+  }
+  class RetryPolicy {
+    -retries
+    -baseDelay
+    +execute(fn)
+  }
+  PagosService --> RetryPolicy
+  RetryPolicy --> CircuitBreaker
+  CircuitBreaker --> PagosClient
+</pre>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 11 CB código -->
+<section class="slide" data-sec="Disponibilidad · Circuit Breaker">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-code c-disp me-2"></i>Circuit Breaker + Retry · implementación</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-6" data-anim="fadeInLeft" data-delay="100">
+    <div class="code-label">api/src/resilience.js</div>
+<pre><code class="language-javascript">const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+
+export class CircuitBreaker {
+  constructor(fn, { failureThreshold = 3, resetTimeout = 10000, timeout = 2000 } = {}) {
+    Object.assign(this, { fn, failureThreshold, resetTimeout, timeout });
+    this.state = 'CLOSED'; this.failures = 0; this.nextAttempt = 0;
+  }
+  async fire(...args) {
+    if (this.state === 'OPEN') {
+      if (Date.now() &lt; this.nextAttempt) throw new Error('CIRCUIT_OPEN');
+      this.state = 'HALF_OPEN';            // dejo pasar una de prueba
+    }
+    try {
+      const r = await Promise.race([
+        this.fn(...args),
+        sleep(this.timeout).then(() =&gt; { throw new Error('TIMEOUT'); })
+      ]);
+      this.onSuccess(); return r;
+    } catch (e) { this.onFailure(); throw e; }
+  }
+  onSuccess() { this.failures = 0; this.state = 'CLOSED'; }
+  onFailure() {
+    this.failures++;
+    if (this.state === 'HALF_OPEN' || this.failures &gt;= this.failureThreshold) {
+      this.state = 'OPEN';
+      this.nextAttempt = Date.now() + this.resetTimeout;
+    }
+  }
+}
+
+export async function retry(fn, { retries = 2, base = 200 } = {}) {
+  for (let i = 0; ; i++) {
+    try { return await fn(); }
+    catch (e) {
+      if (e.message === 'CIRCUIT_OPEN' || i &gt;= retries) throw e;
+      await sleep(base * 2 ** i + Math.random() * 100); // backoff + jitter
+    }
+  }
+}</code></pre>
+   </div>
+   <div class="col-lg-6" data-anim="fadeInRight" data-delay="250">
+    <div class="code-label">api/src/pagos.js</div>
+<pre><code class="language-javascript">import { Router } from 'express';
+import { CircuitBreaker, retry } from './resilience.js';
+import { config } from './config.js';
+
+const llamarPagos = async (body) =&gt; {
+  const r = await fetch(`${process.env.PAGOS_URL}/cobrar`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`PAGOS_${r.status}`);
+  return r.json();
+};
+
+// umbrales leídos del External Configuration Store
+export const breaker = new CircuitBreaker(llamarPagos, config.cb);
+
+export const pagos = Router();
+
+pagos.post('/pagos', async (req, res) =&gt; {
+  try {
+    const out = await retry(() =&gt; breaker.fire(req.body));
+    res.json(out);
+  } catch (e) {
+    // Fallback: no se pierde el pedido, queda pendiente de cobro
+    res.status(503).set('Retry-After', '10').json({
+      estado: 'PAGO_PENDIENTE', motivo: e.message, circuito: breaker.state
+    });
+  }
+});
+
+// Endpoint de observación para las pruebas
+pagos.get('/pagos/circuito', (req, res) =&gt;
+  res.json({ state: breaker.state, failures: breaker.failures }));</code></pre>
+    <div class="note mt-2 small">En producción usarían una librería (<code>opossum</code>, Polly, resilience4j). Para la TFU, implementarlo a mano <b>muestra que entienden la máquina de estados</b>. Las dos opciones son válidas.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 12 CB prueba -->
+<section class="slide" data-sec="Disponibilidad · Circuit Breaker">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-flask-vial c-disp me-2"></i>Circuit Breaker · prueba empírica</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-7" data-anim="fadeInLeft" data-delay="100">
+    <div class="code-label">tests/02-circuit-breaker.sh</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+API=https://localhost
+TOKEN=$(./tests/token.sh)          # JWT de prueba
+BODY='{"pedidoId":"p-1","monto":1500}'
+
+pagar() {
+  curl -sk -o /dev/null -w "HTTP %{http_code}  %{time_total}s\n" \
+    -X POST $API/pagos -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" -d "$BODY"
+}
+
+echo "== 1. Servicio sano =="; pagar
+
+echo "== 2. Tiro el servicio de pagos =="
+docker compose stop pagos-mock
+for i in $(seq 1 8); do pagar; done
+curl -sk $API/pagos/circuito -H "Authorization: Bearer $TOKEN"
+
+echo "== 3. Otros endpoints NO se degradan =="
+curl -sk -o /dev/null -w "productos: %{time_total}s\n" \
+  $API/productos/1 -H "Authorization: Bearer $TOKEN"
+
+echo "== 4. Recupero y espero resetTimeout =="
+docker compose start pagos-mock; sleep 11
+pagar                                         # HALF_OPEN -&gt; CLOSED
+curl -sk $API/pagos/circuito -H "Authorization: Bearer $TOKEN"</code></pre>
+   </div>
+   <div class="col-lg-5" data-anim="fadeInRight" data-delay="250">
+    <div class="cardx bl-disp">
+     <h4>Salida esperada</h4>
+<pre><code class="language-plaintext">== 1 ==  HTTP 200  0.031s
+== 2 ==  HTTP 503  2.4s   ← timeouts + retries
+         HTTP 503  2.4s
+         HTTP 503  0.012s ← CIRCUITO ABIERTO
+         HTTP 503  0.009s
+         ...
+         {"state":"OPEN","failures":3}
+== 3 ==  productos: 0.008s
+== 4 ==  HTTP 200  0.040s
+         {"state":"CLOSED","failures":0}</code></pre>
+     <p class="mt-3 mb-1"><b>La métrica que importa:</b> el salto de latencia de ~2,4 s a ~10 ms. Es la prueba de que la API dejó de esperar a un servicio caído.</p>
+     <p class="mb-0 c-muted small">Tip: graficar el <code>time_total</code> de 30 requests (antes, durante y después) da una figura muy clara para el documento.</p>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 13 Cache concepto -->
+<section class="slide" data-sec="Rendimiento · Cache-Aside">
+ <div class="slide-inner">
+  <span class="tag t-rend" data-anim="fadeIn"><i class="fa-solid fa-gauge-high me-1"></i>Rendimiento</span>
+  <h2 class="title mt-2" data-anim="fadeInDown">Cache-Aside</h2>
+  <div class="row g-4 mt-1">
+   <div class="col-lg-5" data-anim="fadeInLeft" data-delay="150">
+    <div class="cardx bl-rend">
+     <h4>¿Cómo logra rendimiento?</h4>
+     <p>La <b>aplicación</b> consulta primero la caché. Si no está el dato (<i>MISS</i>), lo lee de la base y lo guarda con un TTL. Las lecturas siguientes (<i>HIT</i>) salen de memoria: <b>menor latencia y menos carga en la base</b>, lo que aumenta el throughput.</p>
+     <p>Al escribir: se actualiza la base y se <b>invalida</b> la clave (<code>DEL</code>).</p>
+     <div class="warn small"><b>Trade-off:</b> consistencia eventual. Durante el TTL se puede leer un dato viejo si otro proceso escribió sin invalidar. Elegir el TTL según cuán "fresco" debe ser el dato.</div>
+    </div>
+   </div>
+   <div class="col-lg-7" data-anim="fadeInRight" data-delay="300">
+    <div class="code-label">UML · diagrama de secuencia</div>
+    <div class="mermaid-box">
+<pre class="mermaid">
+sequenceDiagram
+  participant C as Cliente
+  participant A as api
+  participant R as Redis
+  participant DB as PostgreSQL
+  C->>A: GET /productos/7
+  A->>R: GET producto:7
+  alt HIT
+    R-->>A: json
+    A-->>C: 200 con X-Cache HIT
+  else MISS
+    R-->>A: nil
+    A->>DB: SELECT where id = 7
+    DB-->>A: fila
+    A->>R: SET producto:7 EX ttl
+    A-->>C: 200 con X-Cache MISS
+  end
+  Note over A,DB: PUT /productos/7 hace UPDATE en DB y luego DEL producto:7
+</pre>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 14 Cache código -->
+<section class="slide" data-sec="Rendimiento · Cache-Aside">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-code c-rend me-2"></i>Cache-Aside · implementación y prueba</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-6" data-anim="fadeInLeft" data-delay="100">
+    <div class="code-label">api/src/productos.js</div>
+<pre><code class="language-javascript">import { Router } from 'express';
+import { pool } from './db.js';
+import { redis } from './cache.js';
+import { config } from './config.js';
+
+export const productos = Router();
+
+productos.get('/productos/:id', async (req, res) =&gt; {
+  const key = `producto:${req.params.id}`;
+
+  if (config.cacheEnabled) {
+    const cached = await redis.get(key);
+    if (cached) {
+      res.set('X-Cache', 'HIT');
+      return res.json(JSON.parse(cached));
+    }
+  }
+
+  const { rows } = await pool.query(
+    'SELECT id, nombre, precio, stock FROM productos WHERE id = $1',
+    [req.params.id]);
+  if (!rows.length) return res.status(404).json({ error: 'no existe' });
+
+  if (config.cacheEnabled)
+    await redis.set(key, JSON.stringify(rows[0]), { EX: config.cacheTtl });
+
+  res.set('X-Cache', config.cacheEnabled ? 'MISS' : 'BYPASS').json(rows[0]);
+});
+
+productos.put('/productos/:id', async (req, res) =&gt; {
+  const { nombre, precio, stock } = req.body;
+  await pool.query(
+    'UPDATE productos SET nombre=$1, precio=$2, stock=$3 WHERE id=$4',
+    [nombre, precio, stock, req.params.id]);
+  await redis.del(`producto:${req.params.id}`);   // invalidación
+  res.status(204).end();
+});</code></pre>
+   </div>
+   <div class="col-lg-6" data-anim="fadeInRight" data-delay="250">
+    <div class="code-label">tests/03-cache.sh</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+API=https://localhost; TOKEN=$(./tests/token.sh)
+H="Authorization: Bearer $TOKEN"
+
+echo "== MISS vs HIT =="
+for i in 1 2 3; do
+  curl -sk -D - -o /dev/null -w "%{time_total}s\n" \
+    $API/productos/7 -H "$H" | grep -Ei "x-cache|^[0-9]"
+done
+
+echo "== Invalidación tras PUT =="
+curl -sk -X PUT $API/productos/7 -H "$H" \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Mouse","precio":990,"stock":5}'
+curl -sk -D - -o /dev/null $API/productos/7 -H "$H" | grep -i x-cache
+
+echo "== Carga: 2000 req, 50 concurrentes =="
+# hey: https://github.com/rakyll/hey
+hey -n 2000 -c 50 -H "$H" $API/productos/7 | grep -E "Requests/sec|Average"
+# Repetir con cacheEnabled=false (config externa) y comparar</code></pre>
+    <div class="row g-2 mt-2">
+     <div class="col-6"><div class="metric"><div class="v c-muted">≈ 900</div><div class="k">req/s sin caché</div></div></div>
+     <div class="col-6"><div class="metric"><div class="v c-rend">≈ 3.500</div><div class="k">req/s con caché</div></div></div>
+    </div>
+    <p class="c-muted small mt-2 mb-0">Valores ilustrativos: lo que cuenta es la <b>comparación en la misma máquina</b>. Registren sus propios números en el documento.</p>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 15 Queue concepto -->
+<section class="slide" data-sec="Rendimiento · Queue-Based Load Leveling">
+ <div class="slide-inner">
+  <span class="tag t-rend" data-anim="fadeIn"><i class="fa-solid fa-gauge-high me-1"></i>Rendimiento</span>
+  <h2 class="title mt-2" data-anim="fadeInDown">Queue-Based Load Leveling <span class="c-muted" style="font-size:1.3rem">+ Competing Consumers</span></h2>
+  <div class="row g-4 mt-1">
+   <div class="col-lg-5" data-anim="fadeInLeft" data-delay="150">
+    <div class="cardx bl-rend">
+     <h4>¿Cómo logra rendimiento?</h4>
+     <p>La cola actúa como <b>buffer</b>: <b>desacopla la tasa de llegada de la tasa de procesamiento</b>. Ante un pico, la API solo encola y responde <code>202 Accepted</code> en milisegundos. Los workers procesan a un ritmo que la base soporta.</p>
+     <p><b>Competing Consumers:</b> varios workers consumen la misma cola. Se escala horizontalmente con <code>--scale worker=N</code>.</p>
+     <p class="mb-0">El <code>202 + Location</code> es también <b>Asynchronous Request-Reply</b>: el cliente consulta <code>GET /pedidos/:id</code>.</p>
+     <div class="warn small mt-2"><b>Trade-off:</b> el procesamiento es asincrónico, así que el cliente no tiene el resultado inmediato. Requiere idempotencia y manejo de mensajes fallidos (DLQ).</div>
+    </div>
+   </div>
+   <div class="col-lg-7" data-anim="fadeInRight" data-delay="300">
+    <div class="code-label">UML · componentes / flujo</div>
+    <div class="mermaid-box">
+<pre class="mermaid">
+flowchart LR
+  C[Clientes en pico] -->|POST /pedidos| A[api - productor]
+  A -->|202 Accepted + Location| C
+  A -->|INSERT estado PENDIENTE| DB[(PostgreSQL)]
+  A -->|publica persistente| Q[[cola pedidos - durable]]
+  Q --> W1[worker 1]
+  Q --> W2[worker 2]
+  Q --> W3[worker N]
+  Q -.->|rechazados| DLQ[[pedidos.dlq]]
+  W1 & W2 & W3 -->|UPDATE PROCESADO| DB
+</pre>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 16 Queue código -->
+<section class="slide" data-sec="Rendimiento · Queue-Based Load Leveling">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-code c-rend me-2"></i>Load Leveling · productor, consumidor y prueba</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-4" data-anim="fadeInLeft" data-delay="100">
+    <div class="code-label">api/src/pedidos.js (productor)</div>
+<pre><code class="language-javascript">import { Router } from 'express';
+import { randomUUID } from 'node:crypto';
+import { pool } from './db.js';
+import { getChannel } from './queue.js';
+
+export const pedidos = Router();
+
+pedidos.post('/pedidos', async (req, res) =&gt; {
+  const id = randomUUID();
+  await pool.query(
+    "INSERT INTO pedidos(id, estado, payload) VALUES ($1,'PENDIENTE',$2)",
+    [id, req.body]);
+  getChannel().sendToQueue('pedidos',
+    Buffer.from(JSON.stringify({ id, ...req.body })),
+    { persistent: true });
+  res.status(202).location(`/pedidos/${id}`)
+     .json({ id, estado: 'PENDIENTE' });
+});
+
+pedidos.get('/pedidos/:id', async (req, res) =&gt; {
+  const { rows } = await pool.query(
+    'SELECT id, estado, worker FROM pedidos WHERE id=$1',
+    [req.params.id]);
+  rows.length ? res.json(rows[0]) : res.status(404).end();
+});</code></pre>
+   </div>
+   <div class="col-lg-4" data-anim="fadeInUp" data-delay="200">
+    <div class="code-label">worker/index.js (consumidor)</div>
+<pre><code class="language-javascript">import amqp from 'amqplib';
+import pg from 'pg';
+import os from 'node:os';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const conn = await amqp.connect(process.env.AMQP_URL);
+const ch = await conn.createChannel();
+
+await ch.assertQueue('pedidos.dlq', { durable: true });
+await ch.assertQueue('pedidos', {
+  durable: true,
+  deadLetterExchange: '',
+  deadLetterRoutingKey: 'pedidos.dlq'
+});
+ch.prefetch(1);   // reparto justo entre consumidores
+
+ch.consume('pedidos', async (msg) =&gt; {
+  const p = JSON.parse(msg.content.toString());
+  try {
+    await procesar(p);  // validar stock, totales, etc.
+    await pool.query(
+      "UPDATE pedidos SET estado='PROCESADO', worker=$2 " +
+      "WHERE id=$1 AND estado='PENDIENTE'",  // idempotente
+      [p.id, os.hostname()]);
+    ch.ack(msg);
+  } catch (e) {
+    console.error(e);
+    ch.nack(msg, false, false);  // va a la DLQ
+  }
+});
+
+async function procesar(p) {
+  await new Promise(r =&gt; setTimeout(r, 100)); // trabajo simulado
+}</code></pre>
+   </div>
+   <div class="col-lg-4" data-anim="fadeInRight" data-delay="300">
+    <div class="code-label">tests/04-load-leveling.sh</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+API=https://localhost; TOKEN=$(./tests/token.sh)
+export API TOKEN
+MQ="http://guest:guest@localhost:15672/api/queues/%2F/pedidos"
+
+docker compose up -d --scale worker=1
+echo "== Pico: 300 POST, 50 en paralelo =="
+seq 300 | xargs -P 50 -I{} curl -sk -o /dev/null \
+  -w "%{http_code} %{time_total}\n" -X POST $API/pedidos \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"items":[{"productoId":1,"cant":2}]}' \
+  | sort | uniq -c | head
+
+echo "== Profundidad de la cola =="
+for i in 1 2 3; do
+  curl -s $MQ | jq .messages; sleep 3
+done
+
+echo "== Escalo a 4 consumidores =="
+docker compose up -d --scale worker=4
+sleep 10; curl -s $MQ | jq .messages
+
+docker compose exec -T postgres psql -U app -d pedidos -c \
+ "SELECT worker, count(*) FROM pedidos GROUP BY worker;"</code></pre>
+    <div class="note small mt-2"><b>Evidencia:</b> todos <code>202</code> en pocos ms aunque el procesamiento tarde. La cola sube y luego drena más rápido con 4 workers. El <code>GROUP BY worker</code> muestra el reparto entre consumidores.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 17 Gatekeeper concepto -->
+<section class="slide" data-sec="Seguridad · Gatekeeper">
+ <div class="slide-inner">
+  <span class="tag t-seg" data-anim="fadeIn"><i class="fa-solid fa-shield-halved me-1"></i>Seguridad</span>
+  <h2 class="title mt-2" data-anim="fadeInDown">Gatekeeper</h2>
+  <div class="row g-4 mt-1">
+   <div class="col-lg-5" data-anim="fadeInLeft" data-delay="150">
+    <div class="cardx bl-seg">
+     <h4>¿Cómo logra seguridad?</h4>
+     <p>Un host dedicado, <b>expuesto</b>, que <b>autentica, valida y sanea</b> cada solicitud antes de reenviarla al <b>host de confianza</b> (la API). La API vive en una red interna sin puertos publicados.</p>
+     <ul>
+      <li><b>Reduce la superficie de ataque:</b> la API no es alcanzable desde afuera.</li>
+      <li><b>Limita el radio de impacto:</b> si comprometen el gatekeeper, no tiene credenciales de la base ni lógica de negocio.</li>
+     </ul>
+     <div class="warn small"><b>Trade-off:</b> agrega un salto de red (latencia) y es un posible punto único de falla. Mitigación: réplicas del gatekeeper.</div>
+    </div>
+   </div>
+   <div class="col-lg-7" data-anim="fadeInRight" data-delay="300">
+    <div class="code-label">UML · despliegue (redes Docker)</div>
+    <div class="mermaid-box">
+<pre class="mermaid">
+flowchart LR
+  X([Internet]) -->|443| N
+  subgraph publica [red publica]
+    N[nginx]
+    G[gatekeeper :4000]
+  end
+  subgraph interna [red interna - internal true]
+    G2[gatekeeper] --> API[api :3000]
+    API --> DB[(postgres)]
+    API --> RD[(redis)]
+  end
+  N --> G
+  G -.mismo contenedor en ambas redes.- G2
+  X -.x.->|sin ruta| API
+</pre>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 18 Gatekeeper código -->
+<section class="slide" data-sec="Seguridad · Gatekeeper">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-code c-seg me-2"></i>Gatekeeper · implementación y prueba</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-6" data-anim="fadeInLeft" data-delay="100">
+    <div class="code-label">gatekeeper/index.js</div>
+<pre><code class="language-javascript">import express from 'express';
+import jwt from 'jsonwebtoken';
+import Ajv from 'ajv';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+
+const app = express();
+const ajv = new Ajv({ allErrors: true });
+
+app.use(express.json({ limit: '10kb' }));        // 413 si es más grande
+
+// 1) Autenticación
+app.use((req, res, next) =&gt; {
+  const token = req.headers.authorization?.split(' ')[1];
+  try { req.user = jwt.verify(token, process.env.JWT_SECRET); next(); }
+  catch { res.status(401).json({ error: 'token inválido' }); }
+});
+
+// 2) Lista blanca de rutas + esquema
+const esquemas = {
+  'POST /pedidos': {
+    type: 'object', additionalProperties: false, required: ['items'],
+    properties: { items: { type: 'array', minItems: 1, maxItems: 50,
+      items: { type: 'object', additionalProperties: false,
+        required: ['productoId', 'cant'],
+        properties: { productoId: { type: 'integer', minimum: 1 },
+                      cant: { type: 'integer', minimum: 1, maximum: 100 } } } } }
+  },
+  'POST /pagos': {
+    type: 'object', additionalProperties: false, required: ['pedidoId', 'monto'],
+    properties: { pedidoId: { type: 'string', maxLength: 64 },
+                  monto: { type: 'number', exclusiveMinimum: 0 } }
+  }
+};
+const permitidas = [/^GET \/productos\/\d+$/, /^PUT \/productos\/\d+$/,
+  /^POST \/pedidos$/, /^GET \/pedidos\/[\w-]+$/, /^(GET|POST) \/pagos/];
+
+app.use((req, res, next) =&gt; {
+  const ruta = `${req.method} ${req.path}`;
+  if (!permitidas.some(rx =&gt; rx.test(ruta)))
+    return res.status(404).json({ error: 'ruta no permitida' });
+  const schema = esquemas[ruta];
+  if (schema &amp;&amp; !ajv.validate(schema, req.body))
+    return res.status(400).json({ error: 'payload inválido', detalle: ajv.errors });
+  next();
+});
+
+// 3) Reenvío al host de confianza
+app.use(createProxyMiddleware({
+  target: 'http://api:3000', changeOrigin: true,
+  on: { proxyReq: fixRequestBody }   // reenvía el body ya parseado
+}));
+
+app.listen(4000);</code></pre>
+   </div>
+   <div class="col-lg-6" data-anim="fadeInRight" data-delay="250">
+    <div class="code-label">tests/05-gatekeeper.sh</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+API=https://localhost; TOKEN=$(./tests/token.sh)
+c() { curl -sk -o /dev/null -w "%{http_code}  $1\n" "${@:2}"; }
+
+echo "== 1. La API no es accesible desde el host =="
+curl -s --max-time 3 http://localhost:3000/productos/1 \
+  || echo "OK: sin ruta a la API"
+
+echo "== 2. Sin token / token falso =="
+c "sin token"   $API/productos/1
+c "token falso" $API/productos/1 -H "Authorization: Bearer abc.def.ghi"
+
+echo "== 3. Payloads maliciosos =="
+c "campo extra" -X POST $API/pedidos -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"items":[{"productoId":1,"cant":1}],"admin":true}'
+c "inyección"   -X POST $API/pedidos -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"items":[{"productoId":"1; DROP TABLE pedidos","cant":1}]}'
+c "body 50kb"   -X POST $API/pedidos -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"x\":\"$(head -c 50000 /dev/zero | tr '\0' a)\"}"
+c "ruta oculta" $API/admin/usuarios -H "Authorization: Bearer $TOKEN"
+
+echo "== 4. Petición válida =="
+c "válida" -X POST $API/pedidos -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"items":[{"productoId":1,"cant":2}]}'</code></pre>
+    <div class="cardx bl-seg mt-2">
+<pre><code class="language-plaintext">OK: sin ruta a la API
+401  sin token        401  token falso
+400  campo extra      400  inyección
+413  body 50kb        404  ruta oculta
+202  válida</code></pre>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 19 Offloading -->
+<section class="slide" data-sec="Seguridad · Gateway Offloading">
+ <div class="slide-inner">
+  <span class="tag t-seg" data-anim="fadeIn"><i class="fa-solid fa-shield-halved me-1"></i>Seguridad</span>
+  <h2 class="title mt-2" data-anim="fadeInDown">Gateway Offloading</h2>
+  <div class="row g-4 mt-1">
+   <div class="col-lg-5" data-anim="fadeInLeft" data-delay="150">
+    <div class="cardx bl-seg">
+     <h4>¿Cómo logra seguridad?</h4>
+     <p>Mueve al gateway las funciones <b>transversales</b> que cada servicio tendría que repetir:</p>
+     <ul>
+      <li><i class="fa-solid fa-lock c-seg me-1"></i>Terminación <b>TLS</b> y redirección HTTP → HTTPS</li>
+      <li><i class="fa-solid fa-heading c-seg me-1"></i>Cabeceras de seguridad (HSTS, nosniff, frame-options)</li>
+      <li><i class="fa-solid fa-hand c-seg me-1"></i>Límite de tasa → 429</li>
+      <li><i class="fa-solid fa-file-zipper c-seg me-1"></i>Compresión, <code>X-Request-Id</code> para trazabilidad</li>
+     </ul>
+     <p class="mb-0">Un solo lugar configurado y auditado: <b>menos chances de que un servicio quede mal configurado</b>. Los certificados se gestionan en un único punto.</p>
+     <div class="note small mt-2"><b>¿Gatekeeper y Offloading son lo mismo?</b> No. El <b>offloading</b> quita responsabilidades <i>de infraestructura</i>; el <b>gatekeeper</b> valida <i>el contenido</i> y aísla al host de confianza. Acá viven en contenedores distintos para que se vea la separación.</div>
+    </div>
+   </div>
+   <div class="col-lg-7" data-anim="fadeInRight" data-delay="300">
+    <div class="code-label">nginx/nginx.conf</div>
+<pre><code class="language-nginx">events {}
+http {
+  limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+  server_tokens off;
+
+  upstream gatekeeper { server gatekeeper:4000; }
+
+  server {                              # HTTP -&gt; HTTPS
+    listen 80;
+    return 301 https://$host$request_uri;
+  }
+
+  server {
+    listen 443 ssl;
+    http2 on;
+    ssl_certificate     /etc/nginx/certs/cert.pem;
+    ssl_certificate_key /etc/nginx/certs/key.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    gzip on; gzip_types application/json; gzip_min_length 256;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+
+    location / {
+      limit_req zone=api burst=20 nodelay;
+      limit_req_status 429;
+      proxy_pass http://gatekeeper;
+      proxy_set_header X-Request-Id $request_id;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto https;
+    }
+  }
+}</code></pre>
+    <div class="code-label mt-2">Certificado de desarrollo (una vez)</div>
+<pre><code class="language-bash">mkdir -p nginx/certs &amp;&amp; openssl req -x509 -nodes -newkey rsa:2048 \
+  -keyout nginx/certs/key.pem -out nginx/certs/cert.pem -days 365 -subj "/CN=localhost"</code></pre>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 20 Offloading prueba -->
+<section class="slide" data-sec="Seguridad · Gateway Offloading">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-flask-vial c-seg me-2"></i>Gateway Offloading · prueba empírica</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-7" data-anim="fadeInLeft" data-delay="100">
+    <div class="code-label">tests/06-offloading.sh</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+TOKEN=$(./tests/token.sh); H="Authorization: Bearer $TOKEN"
+
+echo "== 1. HTTP redirige a HTTPS =="
+curl -s -o /dev/null -w "%{http_code} -&gt; %{redirect_url}\n" http://localhost/productos/1
+
+echo "== 2. Versión TLS negociada =="
+curl -skv https://localhost/productos/1 -H "$H" 2&gt;&amp;1 | grep -E "SSL connection|TLSv"
+
+echo "== 3. Cabeceras agregadas por el gateway =="
+curl -skI https://localhost/productos/1 -H "$H" \
+  | grep -Ei "strict-transport|x-content-type|x-frame|server"
+
+echo "== 4. Compresión =="
+curl -sk -H "$H" -H "Accept-Encoding: gzip" -D - -o /dev/null \
+  https://localhost/productos/1 | grep -i content-encoding
+
+echo "== 5. Ráfaga de 60 requests -&gt; límite de tasa =="
+for i in $(seq 1 60); do
+  curl -sk -o /dev/null -w "%{http_code}\n" https://localhost/productos/1 -H "$H" &amp;
+done | sort | uniq -c
+wait
+
+echo "== 6. La API no contiene código TLS =="
+grep -rniE "https\.createServer|ssl|helmet" api/src || echo "OK: nada de TLS en la API"</code></pre>
+   </div>
+   <div class="col-lg-5" data-anim="fadeInRight" data-delay="250">
+    <div class="cardx bl-seg">
+     <h4>Salida esperada</h4>
+<pre><code class="language-plaintext">301 -&gt; https://localhost/productos/1
+* SSL connection using TLSv1.3
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: DENY
+server: nginx            ← sin versión
+content-encoding: gzip
+     30 200
+     30 429
+OK: nada de TLS en la API</code></pre>
+     <p class="mt-2 mb-0">La prueba 6 es la que demuestra el <i>offloading</i>: la responsabilidad <b>salió</b> del servicio. El conteo exacto de <code>429</code> depende de la velocidad de la ráfaga (burst 20 + tasa 10/s).</p>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 21 External Config -->
+<section class="slide" data-sec="Modificabilidad · External Configuration Store">
+ <div class="slide-inner">
+  <span class="tag t-mod" data-anim="fadeIn"><i class="fa-solid fa-code-branch me-1"></i>Modificabilidad y despliegue</span>
+  <h2 class="title mt-2" data-anim="fadeInDown">External Configuration Store</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-4" data-anim="fadeInLeft" data-delay="100">
+    <div class="cardx bl-mod">
+     <h4>¿Cómo logra modificabilidad?</h4>
+     <p>La configuración sale del paquete desplegado y pasa a un <b>almacén externo</b> compartido. Cambiar TTLs, umbrales del breaker o <i>feature flags</i> <b>no requiere recompilar, reconstruir la imagen ni redesplegar</b>. Todas las réplicas leen la misma fuente.</p>
+     <div class="mermaid-box mt-2">
+<pre class="mermaid">
+sequenceDiagram
+  participant Op as Operador
+  participant CS as config-server
+  participant A as api x N
+  A->>CS: GET /config/api al arrancar
+  loop cada 10 s
+    A->>CS: GET /config/api
+    CS-->>A: json
+  end
+  Op->>CS: edita api.json
+  A->>CS: GET /config/api
+  CS-->>A: nuevo valor
+  Note over A: aplica sin reiniciar
+</pre>
+     </div>
+     <div class="warn small mt-2"><b>Trade-off:</b> nueva dependencia en runtime. Si el store cae, la API sigue con el <b>último valor conocido</b>. Los secretos van a un vault, no aquí.</div>
+    </div>
+   </div>
+   <div class="col-lg-4" data-anim="fadeInUp" data-delay="200">
+    <div class="code-label">api/src/config.js</div>
+<pre><code class="language-javascript">// Valores por defecto (si el store no responde)
+export const config = {
+  cacheEnabled: true,
+  cacheTtl: 60,
+  cb: { failureThreshold: 3, resetTimeout: 10000, timeout: 2000 }
+};
+
+export async function cargarConfig() {
+  try {
+    const r = await fetch(`${process.env.CONFIG_URL}/config/api`,
+      { signal: AbortSignal.timeout(1500) });
+    const nueva = await r.json();
+    Object.assign(config, nueva);   // muta: todos ven el cambio
+    console.log('[config] aplicada', nueva);
+  } catch (e) {
+    console.warn('[config] store no disponible, uso último valor');
+  }
+}
+
+await cargarConfig();
+setInterval(cargarConfig, 10_000);</code></pre>
+    <div class="code-label mt-2">config-server/index.js</div>
+<pre><code class="language-javascript">import express from 'express';
+import { readFile } from 'node:fs/promises';
+const app = express();
+app.get('/config/:svc', async (req, res) =&gt; {
+  const svc = req.params.svc.replace(/[^\w-]/g, '');
+  try { res.json(JSON.parse(await readFile(`/config/${svc}.json`, 'utf8'))); }
+  catch { res.status(404).json({}); }
+});
+app.listen(8888);</code></pre>
+   </div>
+   <div class="col-lg-4" data-anim="fadeInRight" data-delay="300">
+    <div class="code-label">config/api.json (volumen montado)</div>
+<pre><code class="language-json">{
+  "cacheEnabled": true,
+  "cacheTtl": 60
+}</code></pre>
+    <div class="code-label mt-2">tests/07-external-config.sh</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+API=https://localhost; TOKEN=$(./tests/token.sh)
+API_C=$(docker compose ps -q api | head -1)
+INICIO=$(docker inspect -f '{{.State.StartedAt}}' $API_C)
+
+hdr() { curl -sk -D - -o /dev/null $API/productos/7 \
+  -H "Authorization: Bearer $TOKEN" | grep -i x-cache; }
+
+echo "Antes:";  hdr; hdr                  # MISS, HIT
+
+echo "== Desactivo la caché en el store =="
+echo '{"cacheEnabled":false,"cacheTtl":60}' &gt; config/api.json
+sleep 11
+echo "Después:"; hdr                      # BYPASS
+
+FIN=$(docker inspect -f '{{.State.StartedAt}}' $API_C)
+[ "$INICIO" = "$FIN" ] &amp;&amp; echo "OK: el contenedor NO se reinició"
+
+echo '{"cacheEnabled":true,"cacheTtl":60}' &gt; config/api.json</code></pre>
+    <div class="note small mt-2">Alternativas "de verdad": Consul, etcd, Spring Cloud Config, Azure App Configuration. Un config-server mínimo alcanza para demostrar el patrón.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 22 Estrategias -->
+<section class="slide" data-sec="Modificabilidad · Estrategias">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-code-branch c-mod me-2"></i>Estrategias de despliegue</h2>
+  <p class="subtitle" data-anim="fadeIn">Aparecen junto al grupo 4. Complementan al patrón elegido; todas reducen el riesgo de introducir una versión nueva.</p>
+  <div class="row g-3">
+   <div class="col-md-6 col-xl-3" data-anim="flipInY" data-delay="100"><div class="cardx bl-mod">
+    <h4><i class="fa-solid fa-circle-half-stroke c-mod me-2"></i>Blue/green</h4>
+    <p>Dos entornos idénticos. Se despliega en <i>green</i>, se prueba y se <b>cambia el tráfico de golpe</b>. El rollback es volver a <i>blue</i>.</p>
+    <div class="small c-muted">En Compose: <code>api-blue</code> y <code>api-green</code>; nginx cambia el <code>upstream</code> + <code>nginx -s reload</code>.</div>
+   </div></div>
+   <div class="col-md-6 col-xl-3" data-anim="flipInY" data-delay="200"><div class="cardx bl-mod">
+    <h4><i class="fa-solid fa-arrows-rotate c-mod me-2"></i>Rolling upgrade</h4>
+    <p>Se reemplazan las instancias <b>de a una</b>; siempre hay réplicas atendiendo. Requiere compatibilidad entre versiones.</p>
+    <div class="small c-muted">Swarm/K8s: <code>update_config: parallelism: 1</code>. Se apoya en los health checks.</div>
+   </div></div>
+   <div class="col-md-6 col-xl-3" data-anim="flipInY" data-delay="300"><div class="cardx bl-mod">
+    <h4><i class="fa-solid fa-dove c-mod me-2"></i>Canary</h4>
+    <p>Una fracción pequeña del tráfico (p. ej. 10 %) va a la versión nueva. Se observan errores y latencia antes de ampliar.</p>
+    <div class="small c-muted">nginx: <code>split_clients</code> o <code>weight=</code> en el upstream.</div>
+   </div></div>
+   <div class="col-md-6 col-xl-3" data-anim="flipInY" data-delay="400"><div class="cardx bl-mod">
+    <h4><i class="fa-solid fa-flask c-mod me-2"></i>A/B testing</h4>
+    <p>Dos variantes <b>funcionales</b> a segmentos de usuarios para medir cuál cumple mejor un objetivo de negocio. No es de riesgo técnico.</p>
+    <div class="small c-muted">Feature flag por usuario, que puede venir del External Configuration Store.</div>
+   </div></div>
+  </div>
+  <div class="code-label mt-3" data-anim="fadeIn" data-delay="500">Ejemplo canary en nginx</div>
+<pre data-anim="fadeIn" data-delay="500"><code class="language-nginx">upstream gatekeeper {
+  server gatekeeper-v1:4000 weight=9;
+  server gatekeeper-v2:4000 weight=1;   # ~10 % del tráfico a la versión nueva
+}</code></pre>
+ </div>
+</section>
+
+<!-- ============================================================ 23 docker-compose -->
+<section class="slide" data-sec="Parte 2 · Despliegue">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-brands fa-docker c-acc me-2"></i>docker-compose.yaml completo</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-8" data-anim="fadeInLeft" data-delay="100">
+<pre><code class="language-yaml">services:
+  nginx:                                   # Gateway Offloading
+    image: nginx:1.27-alpine
+    ports: ["80:80", "443:443"]            # ÚNICO punto expuesto
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on: [gatekeeper]
+    networks: [publica]
+
+  gatekeeper:                              # Gatekeeper
+    build: ./gatekeeper
+    environment: { JWT_SECRET: ${JWT_SECRET} }
+    networks: [publica, interna]
+
+  api:                                     # host de confianza
+    build: ./api
+    deploy: { replicas: 2 }
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/pedidos
+      REDIS_URL: redis://redis:6379
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+      PAGOS_URL: http://pagos-mock:5000
+      CONFIG_URL: http://config-server:8888
+    healthcheck:                           # Health Endpoint Monitoring
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health/ready"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      redis:    { condition: service_started }
+      config-server: { condition: service_started }
+    networks: [interna]
+
+  worker:                                  # Competing Consumers
+    build: ./worker
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/pedidos
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+    restart: on-failure
+    networks: [interna]
+
+  postgres:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: app, POSTGRES_PASSWORD: app, POSTGRES_DB: pedidos }
+    volumes: [./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d pedidos"]
+      interval: 5s
+      retries: 10
+    networks: [interna]
+
+  redis:                                   # Cache-Aside
+    image: redis:7-alpine
+    networks: [interna]
+
+  rabbitmq:                                # Queue-Based Load Leveling
+    image: rabbitmq:3.13-management-alpine
+    ports: ["15672:15672"]                 # solo para observar en las pruebas
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      retries: 10
+    networks: [interna]
+
+  pagos-mock:                              # dependencia externa simulada
+    build: ./pagos-mock
+    networks: [interna]
+
+  config-server:                           # External Configuration Store
+    build: ./config-server
+    volumes: [./config:/config:ro]
+    networks: [interna]
+
+networks:
+  publica: {}
+  interna: { internal: true }              # sin salida ni entrada externa</code></pre>
+   </div>
+   <div class="col-lg-4" data-anim="fadeInRight" data-delay="250">
+    <div class="cardx bl-acc">
+     <h4><i class="fa-solid fa-folder-tree c-acc me-2"></i>Estructura del repo</h4>
+<pre><code class="language-plaintext">tfu-ut4/
+├─ docker-compose.yaml
+├─ .env                 # JWT_SECRET
+├─ README.md            # cómo levantar y probar
+├─ nginx/  (nginx.conf, certs/)
+├─ gatekeeper/
+├─ api/src/
+│  ├─ index.js  health.js  config.js
+│  ├─ productos.js  pedidos.js
+│  └─ pagos.js  resilience.js
+├─ worker/
+├─ pagos-mock/
+├─ config-server/
+├─ config/api.json
+├─ db/init.sql
+└─ tests/
+   ├─ token.sh
+   ├─ 01-health.sh … 07-external-config.sh
+   └─ run-all.sh</code></pre>
+     <div class="note small mt-2"><code>internal: true</code> sobre la red <code>interna</code> es lo que garantiza que la API no tenga ruta desde el host. Es parte de la evidencia del Gatekeeper.</div>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 24 Scripts -->
+<section class="slide" data-sec="Parte 2 · Pruebas">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-terminal c-acc me-2"></i>Levantar y ejecutar todas las pruebas</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-lg-6" data-anim="fadeInLeft" data-delay="100">
+    <div class="code-label">tests/token.sh: genera un JWT de prueba</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# Usa el mismo secreto que el gatekeeper (.env)
+source .env
+docker run --rm -e S="$JWT_SECRET" node:20-alpine node -e "
+const c=require('crypto'),b=o=&gt;Buffer.from(JSON.stringify(o)).toString('base64url');
+const h=b({alg:'HS256',typ:'JWT'}),
+      p=b({sub:'tester',rol:'cliente',exp:Math.floor(Date.now()/1e3)+3600});
+const s=c.createHmac('sha256',process.env.S).update(h+'.'+p).digest('base64url');
+console.log(h+'.'+p+'.'+s)"</code></pre>
+    <div class="code-label mt-3">tests/run-all.sh</div>
+<pre><code class="language-bash">#!/usr/bin/env bash
+set -e
+docker compose up -d --build --wait
+for t in tests/0*.sh; do
+  echo -e "\n\033[1;36m######## $t ########\033[0m"
+  bash "$t" | tee "tests/out/$(basename $t .sh).log"
+done</code></pre>
+   </div>
+   <div class="col-lg-6" data-anim="fadeInRight" data-delay="250">
+    <div class="cardx bl-acc">
+     <h4><i class="fa-solid fa-play c-acc me-2"></i>Secuencia para el profesor (README)</h4>
+     <div class="step"><div class="n c-acc">1</div><div><code>cp .env.example .env</code></div></div>
+     <div class="step"><div class="n c-acc">2</div><div>Generar certificados (comando <code>openssl</code> de la diapositiva de Offloading)</div></div>
+     <div class="step"><div class="n c-acc">3</div><div><code>docker compose up -d --build --wait</code></div></div>
+     <div class="step"><div class="n c-acc">4</div><div><code>bash tests/run-all.sh</code></div></div>
+     <div class="step"><div class="n c-acc">5</div><div>Colección Postman exportada en <code>postman/</code> (opcional pero muy valorado)</div></div>
+     <div class="warn small"><b>Windows:</b> los scripts <code>.sh</code> se corren desde Git Bash o WSL. Si el grupo trabaja en PowerShell, agregar equivalentes <code>.ps1</code> o aclararlo en el README. Requisitos: <code>curl</code>, <code>jq</code>, <code>hey</code>.</div>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 25 Documento Parte 1 -->
+<section class="slide" data-sec="Parte 1 · Documento">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-file-pen c-acc me-2"></i>Parte 1: plantilla por patrón</h2>
+  <p class="subtitle" data-anim="fadeIn">Repetir esta estructura 7 veces (o 6). Coherencia total con el código y los scripts.</p>
+  <div class="row g-3">
+   <div class="col-lg-5" data-anim="fadeInLeft" data-delay="100">
+    <div class="cardx bl-acc">
+     <div class="step"><div class="n c-acc">1</div><div><b>Contexto y problema</b>: qué parte de <i>su</i> app y qué riesgo.</div></div>
+     <div class="step"><div class="n c-acc">2</div><div><b>Escenario de calidad</b> (las 6 partes, con medida numérica).</div></div>
+     <div class="step"><div class="n c-acc">3</div><div><b>Solución</b>: el patrón y por qué ese y no otro.</div></div>
+     <div class="step"><div class="n c-acc">4</div><div><b>UML</b>: al menos un diagrama donde <i>se vea</i> el patrón (estado, secuencia, despliegue…).</div></div>
+     <div class="step"><div class="n c-acc">5</div><div><b>Cómo logra el atributo</b>: el mecanismo, no la definición de libro.</div></div>
+     <div class="step"><div class="n c-acc">6</div><div><b>Trade-offs</b>: qué se pierde (latencia, consistencia, complejidad).</div></div>
+     <div class="step mb-0"><div class="n c-acc">7</div><div><b>Experimento</b>: hipótesis, procedimiento (script), métrica, resultado esperado vs. obtenido.</div></div>
+    </div>
+   </div>
+   <div class="col-lg-7" data-anim="fadeInRight" data-delay="250">
+    <table class="tbl">
+     <thead><tr><th>Patrón</th><th>Hipótesis</th><th>Métrica</th></tr></thead>
+     <tbody>
+      <tr><td class="c-disp">Health Endpoint</td><td>Una dependencia caída se detecta en ≤ 30 s</td><td>Tiempo hasta <code>unhealthy</code></td></tr>
+      <tr><td class="c-disp">Circuit Breaker</td><td>Con pagos caído, la API responde rápido y el resto no se degrada</td><td>p95 de latencia en <code>/pagos</code> y <code>/productos</code></td></tr>
+      <tr><td class="c-rend">Cache-Aside</td><td>Las lecturas repetidas no tocan la base</td><td>req/s y latencia media, con/sin caché</td></tr>
+      <tr><td class="c-rend">Load Leveling</td><td>Ante picos, el POST responde en ms y no hay errores</td><td>Latencia del POST, % de 5xx, profundidad de cola</td></tr>
+      <tr><td class="c-seg">Gatekeeper</td><td>Ninguna petición inválida llega a la API</td><td>Códigos 401/400/413; API sin ruta</td></tr>
+      <tr><td class="c-seg">Offloading</td><td>TLS y límites se aplican fuera de la API</td><td>Cabeceras, 301, nº de 429</td></tr>
+      <tr><td class="c-mod">Ext. Config</td><td>Un cambio se aplica sin redeploy</td><td>Tiempo de propagación; <code>StartedAt</code> sin cambios</td></tr>
+     </tbody>
+    </table>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 26 Microservicios -->
+<section class="slide" data-sec="Aclaración · Microservicios">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-cubes c-acc me-2"></i>¿Mi app cuenta como microservicios?</h2>
+  <p class="subtitle" data-anim="fadeIn">Solo si la partición es de <b>dominio de primer nivel</b>. Cada servicio es dueño de una capacidad de negocio y de sus datos.</p>
+  <div class="row g-3">
+   <div class="col-lg-6" data-anim="fadeInLeft" data-delay="100">
+    <div class="cardx" style="border-left:4px solid var(--seg)">
+     <h4 class="c-seg"><i class="fa-solid fa-xmark me-2"></i>Partición técnica (NO cuenta)</h4>
+     <div class="mermaid-box">
+<pre class="mermaid">
+flowchart LR
+  F[frontend] --> B[backend con TODO el dominio] --> D[(base)]
+</pre>
+     </div>
+     <p class="mt-2 mb-0">Tres contenedores, pero un único servicio de negocio dividido por <b>capas</b>. → <b>7 patrones</b>.</p>
+    </div>
+   </div>
+   <div class="col-lg-6" data-anim="fadeInRight" data-delay="250">
+    <div class="cardx" style="border-left:4px solid var(--disp)">
+     <h4 class="c-disp"><i class="fa-solid fa-check me-2"></i>Partición de dominio (cuenta)</h4>
+     <div class="mermaid-box">
+<pre class="mermaid">
+flowchart LR
+  GW[gateway] --> CA[catálogo] --> D1[(db catálogo)]
+  GW --> PE[pedidos] --> D2[(db pedidos)]
+  GW --> PA[pagos] --> D3[(db pagos)]
+</pre>
+     </div>
+     <p class="mt-2 mb-0">Cada servicio = un subdominio con su propia base. → pueden omitir el grupo 4: <b>6 patrones</b>.</p>
+    </div>
+   </div>
+  </div>
+  <div class="note mt-3" data-anim="fadeIn" data-delay="400"><i class="fa-solid fa-circle-info me-1"></i> La solución de referencia de esta presentación es <b>un monolito modular</b> con contenedores de infraestructura (gateway, cola, caché). Por eso incluye el patrón del grupo 4.</div>
+ </div>
+</section>
+
+<!-- ============================================================ 27 Errores -->
+<section class="slide" data-sec="Errores frecuentes">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-bug c-seg me-2"></i>Errores frecuentes que restan puntos</h2>
+  <div class="row g-3 mt-1">
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="50"><div class="cardx"><h4><i class="fa-solid fa-ghost c-seg me-2"></i>Patrón "de papel"</h4><p class="mb-0">Está en el documento pero no en el código, o el código no se ejecuta en ningún endpoint.</p></div></div>
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="150"><div class="cardx"><h4><i class="fa-solid fa-eye-slash c-seg me-2"></i>Prueba que no prueba</h4><p class="mb-0">"Hago un GET y da 200". Hay que <b>provocar la condición</b> (caída, pico, ataque) y <b>medir</b>.</p></div></div>
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="250"><div class="cardx"><h4><i class="fa-solid fa-diagram-project c-seg me-2"></i>UML genérico</h4><p class="mb-0">Copiar el diagrama del catálogo de Microsoft. El UML debe tener <b>sus</b> clases, servicios y nodos.</p></div></div>
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="350"><div class="cardx"><h4><i class="fa-solid fa-clone c-seg me-2"></i>Contar doble</h4><p class="mb-0">Competing Consumers en dos grupos, o Rate Limiting + Throttling siendo el mismo <code>limit_req</code>.</p></div></div>
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="450"><div class="cardx"><h4><i class="fa-solid fa-door-open c-seg me-2"></i>Gatekeeper con puerta trasera</h4><p class="mb-0">La API sigue con <code>ports: 3000:3000</code> publicado. El gatekeeper no sirve de nada.</p></div></div>
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="550"><div class="cardx"><h4><i class="fa-solid fa-laptop c-seg me-2"></i>"En mi máquina anda"</h4><p class="mb-0">Rutas absolutas, imágenes locales, pasos manuales no documentados. Probar en una máquina limpia.</p></div></div>
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="650"><div class="cardx"><h4><i class="fa-solid fa-comment-slash c-seg me-2"></i>Ignorar la retroalimentación</h4><p class="mb-0">El enunciado pide incorporar las devoluciones de la TFU anterior. Indiquen qué cambiaron.</p></div></div>
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="750"><div class="cardx"><h4><i class="fa-solid fa-scale-unbalanced c-seg me-2"></i>Sin trade-offs</h4><p class="mb-0">Todo patrón tiene un costo. No mencionarlo muestra que no se analizó.</p></div></div>
+   <div class="col-md-6 col-xl-4" data-anim="fadeInUp" data-delay="850"><div class="cardx"><h4><i class="fa-solid fa-key c-seg me-2"></i>Secretos en el repo</h4><p class="mb-0">Commitear <code>.env</code> real o claves privadas. Usar <code>.env.example</code>.</p></div></div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 28 QUIZ -->
+<section class="slide" data-sec="Autoevaluación">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-circle-question c-acc me-2"></i>Autoevaluación</h2>
+  <div class="d-flex justify-content-between align-items-center mb-3" data-anim="fadeIn">
+   <span class="subtitle mb-0" id="qaCounter">Pregunta 1 de 8</span>
+   <span class="tag t-acc" id="qaScore">Puntaje: 0</span>
+  </div>
+  <div class="cardx" id="qaBox" data-anim="fadeInUp" data-delay="150" style="max-width:950px">
+   <h4 id="qaQ" class="mb-3" style="font-size:1.35rem"></h4>
+   <div id="qaOpts"></div>
+  </div>
+ </div>
+</section>
+
+<!-- ============================================================ 29 CHECKLIST -->
+<section class="slide" data-sec="Cierre">
+ <div class="slide-inner">
+  <h2 class="title" data-anim="fadeInDown"><i class="fa-solid fa-square-check c-disp me-2"></i>Checklist antes de entregar</h2>
+  <div class="d-flex align-items-center gap-3 mb-3" data-anim="fadeIn">
+   <div class="progress flex-grow-1" style="height:10px;background:#162034"><div id="chkBar" class="progress-bar" style="width:0%;background:var(--disp)"></div></div>
+   <span class="mono c-muted" id="chkTxt">0/12</span>
+  </div>
+  <div class="row g-2" id="chkList" data-anim="fadeInUp" data-delay="100"></div>
+ </div>
+</section>
+
+<!-- barra de navegación -->
+<div class="progress-x" id="prog"></div>
+<div class="navbar-x">
+ <span class="sec-name" id="secName"></span>
+ <div class="d-flex align-items-center gap-2">
+  <button class="btn-n" id="prevBtn" title="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+  <span class="mono small" id="counter">1 / 1</span>
+  <button class="btn-n" id="nextBtn" title="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+  <button class="btn-n" id="fsBtn" title="Pantalla completa (F)"><i class="fa-solid fa-expand"></i></button>
+ </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+/* ---------------- Tema SweetAlert ---------------- */
+const SW = Swal.mixin({
+  background:'#111827', color:'#e6e9ef', confirmButtonColor:'#38bdf8',
+  showClass:{popup:'animate__animated animate__zoomIn animate__faster'},
+  hideClass:{popup:'animate__animated animate__zoomOut animate__faster'}
+});
+
+/* ---------------- Mermaid ---------------- */
+mermaid.initialize({
+  startOnLoad:false, theme:'dark', securityLevel:'loose',
+  themeVariables:{ background:'#0f1522', primaryColor:'#1b2a44', primaryTextColor:'#e6e9ef',
+    primaryBorderColor:'#38bdf8', lineColor:'#8b95a7', secondaryColor:'#1f2a3d',
+    tertiaryColor:'#162034', fontFamily:'Outfit, sans-serif', fontSize:'15px',
+    noteBkgColor:'#2a2414', noteTextColor:'#f7e5c4', noteBorderColor:'#f59e0b',
+    actorBkg:'#1b2a44', actorBorder:'#38bdf8', actorTextColor:'#e6e9ef',
+    signalColor:'#c9d1dd', signalTextColor:'#e6e9ef', labelBoxBkgColor:'#1f2a3d', labelTextColor:'#e6e9ef' }
+});
+
+/* ---------------- Highlight + botón copiar ---------------- */
+document.querySelectorAll('pre > code').forEach(code => {
+  hljs.highlightElement(code);
+  const pre = code.parentElement;
+  const wrap = document.createElement('div'); wrap.className = 'code-wrap';
+  pre.parentNode.insertBefore(wrap, pre); wrap.appendChild(pre);
+  if (pre.dataset.anim) { wrap.dataset.anim = pre.dataset.anim; wrap.dataset.delay = pre.dataset.delay || 0; delete pre.dataset.anim; }
+  const b = document.createElement('button'); b.className = 'copy-btn';
+  b.innerHTML = '<i class="fa-regular fa-copy"></i> copiar';
+  b.onclick = () => navigator.clipboard.writeText(code.innerText).then(() => {
+    b.innerHTML = '<i class="fa-solid fa-check"></i> copiado';
+    setTimeout(() => b.innerHTML = '<i class="fa-regular fa-copy"></i> copiar', 1500);
+  });
+  wrap.appendChild(b);
+});
+
+/* ---------------- Navegación ---------------- */
+const slides = [...document.querySelectorAll('.slide')];
+let cur = 0;
+function animateSlide(s){
+  s.querySelectorAll('[data-anim]').forEach(el => {
+    const a = 'animate__' + el.dataset.anim;
+    el.classList.remove('animate__animated', a);
+    void el.offsetWidth;
+    el.style.animationDelay = (el.dataset.delay || 0) + 'ms';
+    el.classList.add('animate__animated', a);
+  });
+}
+async function renderMermaid(s){
+  const nodes = [...s.querySelectorAll('pre.mermaid:not([data-processed])')];
+  if (nodes.length) { try { await mermaid.run({ nodes }); } catch(e){ console.error(e); } }
+}
+function go(i){
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  slides[cur].classList.remove('active');
+  cur = i;
+  const s = slides[cur];
+  s.classList.add('active'); s.scrollTop = 0;
+  renderMermaid(s).then(() => animateSlide(s));
+  document.getElementById('counter').textContent = `${cur + 1} / ${slides.length}`;
+  document.getElementById('secName').textContent = s.dataset.sec || '';
+  document.getElementById('prog').style.width = ((cur + 1) / slides.length * 100) + '%';
+  // En vistas previas embebidas (iframe srcdoc) la History API no está permitida
+  try { history.replaceState(null, '', '#' + (cur + 1)); } catch (e) { /* se ignora */ }
+}
+document.addEventListener('keydown', e => {
+  if (Swal.isVisible()) return;
+  if (['ArrowRight','PageDown'].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  if (['ArrowLeft','PageUp'].includes(e.key))   { e.preventDefault(); go(cur - 1); }
+  if (e.key === 'Home') go(0);
+  if (e.key === 'End')  go(slides.length - 1);
+  if (e.key.toLowerCase() === 'f') toggleFs();
+});
+document.getElementById('nextBtn').onclick = () => go(cur + 1);
+document.getElementById('prevBtn').onclick = () => go(cur - 1);
+function toggleFs(){ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+document.getElementById('fsBtn').onclick = toggleFs;
+
+/* ---------------- Catálogo de patrones ---------------- */
+const PAT = {
+ 'Bulkhead':['disp','Aísla recursos (pools de conexiones, hilos, contenedores) por consumidor o dependencia, como los compartimentos estancos de un barco. Si uno se inunda, los demás siguen operando.','Pool de conexiones separado para pagos vs. catálogo; límites de CPU/memoria por contenedor.'],
+ 'Circuit Breaker':['disp','Ante fallas persistentes de una dependencia, deja de llamarla durante un tiempo y falla rápido. Evita agotar recursos esperando timeouts y la propagación en cascada.','Estados CLOSED → OPEN → HALF_OPEN.'],
+ 'Competing Consumers':['disp','Varios consumidores leen de la misma cola. Si uno cae, los otros siguen (disponibilidad) y se escala el procesamiento (rendimiento).','<code>docker compose up --scale worker=4</code>'],
+ 'Event Sourcing':['disp','Persiste la secuencia de eventos en lugar del estado actual. El estado se reconstruye reproduciendo eventos: permite auditoría, reconstrucción y reproceso ante fallas.','Tabla <code>eventos_pedido</code> (CREADO, PAGADO, ENVIADO) en vez de una columna estado.'],
+ 'Health Endpoint Monitoring':['disp','Endpoints que agentes externos consultan para verificar que la instancia y sus dependencias funcionan.','<code>/health/live</code> y <code>/health/ready</code> + healthcheck de Docker.'],
+ 'Rate Limiting':['disp','Limita cuántas operaciones envía un cliente (o el sistema a un servicio) por unidad de tiempo, para no saturar ni ser bloqueado.','<code>limit_req</code> en nginx; token bucket en el cliente.'],
+ 'Retry':['disp','Reintenta operaciones que fallaron por causas transitorias, con espera creciente (backoff exponencial) y aleatoriedad (jitter).','Combinar con Circuit Breaker para no reintentar contra un servicio caído.'],
+ 'Throttling':['disp','Controla el consumo de recursos degradando el servicio de forma controlada cuando se alcanza un umbral: rechazar (429), encolar o desactivar funciones no críticas.','Si CPU &gt; 80 %, deshabilitar reportes pesados.'],
+ 'Cache-Aside':['rend','La app carga datos en caché bajo demanda: lee de caché; ante MISS lee de la base, guarda y responde. Invalida al escribir.','Redis con TTL; cabecera X-Cache HIT/MISS.'],
+ 'Queue-Based Load Leveling':['rend','Una cola entre la tarea y el servicio actúa de buffer y suaviza los picos de carga. El servicio procesa a su propio ritmo.','POST encola y responde 202; workers consumen.'],
+ 'Publisher/Subscriber':['rend','Un emisor publica eventos a un canal y múltiples suscriptores los reciben de forma asincrónica, sin conocerse entre sí.','Exchange fanout en RabbitMQ: "pedido.creado" → stock, mail, analítica.'],
+ 'Asynchronous Request-Reply':['rend','Desacopla el procesamiento del front: responde 202 con una URL de estado que el cliente consulta (polling) hasta tener el resultado.','<code>202 + Location: /pedidos/{id}</code>'],
+ 'CQRS':['rend','Separa el modelo de escritura (comandos) del de lectura (consultas), y cada uno se optimiza y escala por separado.','Escritura en Postgres normalizado; lectura en una vista desnormalizada o réplica.'],
+ 'Materialized View':['rend','Precalcula vistas con los datos en el formato que necesitan las consultas, cuando el almacenamiento original no es eficiente para esa consulta.','Tabla <code>ventas_por_dia</code> actualizada por un worker.'],
+ 'Gatekeeper':['seg','Host dedicado que actúa de intermediario: valida y sanea las solicitudes y las reenvía a un host de confianza no expuesto.','Contenedor gatekeeper; la API solo en red interna.'],
+ 'Federated Identity':['seg','Delega la autenticación en un proveedor de identidad externo (IdP). La app confía en los tokens que emite.','Keycloak / Auth0 / Entra ID con OpenID Connect.'],
+ 'Gateway Offloading':['seg','Traslada funciones transversales (TLS, certificados, auth, rate limiting, compresión) a un gateway, para simplificar los servicios.','nginx termina TLS y agrega cabeceras de seguridad.'],
+ 'Sidecar':['seg','Despliega componentes auxiliares en un proceso/contenedor aparte junto a la app, compartiendo ciclo de vida: proxy, logs, mTLS, monitoreo.','Contenedor envoy o un agente de logs al lado de la API.'],
+ 'Valet Key':['seg','Entrega al cliente un token o URL firmada con permisos restringidos y temporales para acceder directo a un recurso (p. ej. un blob), sin pasar por la app.','URL prefirmada de MinIO/S3 válida 5 minutos.'],
+ 'Deployment Stamps':['mod','Despliega múltiples copias independientes ("sellos") de la solución completa, cada una para un grupo de clientes o región.','Un compose por tenant/región con su propia base.'],
+ 'External Configuration Store':['mod','Saca la configuración del paquete de despliegue a un almacén centralizado, para cambiarla sin redeploy y compartirla entre instancias.','config-server, Consul, App Configuration.'],
+ 'Messaging Bridge':['mod','Conecta sistemas de mensajería incompatibles, traduciendo mensajes entre ellos para integrarlos sin modificarlos.','Puente RabbitMQ ↔ Kafka.'],
+ 'Strangler Fig':['mod','Migra un sistema legado de forma incremental: un proxy enruta funcionalidades una a una hacia la nueva implementación hasta "estrangular" la vieja.','nginx: <code>/pedidos</code> al nuevo servicio, el resto al legado.'],
+ 'Blue/green deployment':['mod','Dos entornos idénticos; se cambia todo el tráfico de uno a otro. Rollback instantáneo.',''],
+ 'Rolling upgrade':['mod','Actualiza instancias gradualmente, una a la vez, manteniendo el servicio activo.',''],
+ 'Canary testing':['mod','Expone la versión nueva a un porcentaje pequeño del tráfico y amplía si las métricas son buenas.',''],
+ 'A/B testing':['mod','Compara dos variantes funcionales en segmentos de usuarios para decidir según una métrica de negocio.','']
+};
+const GN = {disp:['Disponibilidad','#22c55e'],rend:['Rendimiento','#f59e0b'],seg:['Seguridad','#ef4444'],mod:['Modificabilidad / Despliegue','#a78bfa']};
+document.querySelectorAll('.chip[data-p]').forEach(ch => ch.addEventListener('click', () => {
+  const [g, def, ej] = PAT[ch.dataset.p];
+  SW.fire({
+    title: ch.dataset.p,
+    html: `<span class="tag" style="color:${GN[g][1]};border:1px solid ${GN[g][1]}">${GN[g][0]}</span>
+           <p class="mt-3 text-start">${def}</p>
+           ${ej ? `<p class="text-start small" style="color:#8b95a7"><i class="fa-solid fa-wrench me-1"></i>Ejemplo: ${ej}</p>` : ''}`,
+    confirmButtonText: 'Entendido', confirmButtonColor: GN[g][1]
+  });
+}));
+
+/* ---------------- Quiz ---------------- */
+const QA = [
+ {q:'Un grupo tiene tres contenedores: frontend, backend y base de datos. ¿Puede omitir el patrón del grupo 4?',
+  o:['Sí, porque al estar en contenedores separados ya cumplen la definición de microservicio del curso','Sí, siempre que cada contenedor tenga su propio Dockerfile','No: es una partición técnica, no de dominio','No, porque se necesitan al menos cinco contenedores'],c:2,
+  e:'La nota al pie exige partición de dominio de primer nivel. Separar por capas es partición técnica.'},
+ {q:'En un Circuit Breaker, ¿qué ocurre mientras el circuito está OPEN?',
+  o:['Falla rápido sin llamar al servicio','Reintenta con backoff exponencial hasta que el servicio responda correctamente','Encola todas las peticiones y las reenvía cuando el servicio vuelve','Deja pasar una única petición de prueba'],c:0,
+  e:'En OPEN se corta la llamada. La petición de prueba es propia de HALF_OPEN, cuando vence el resetTimeout.'},
+ {q:'¿Por qué conviene que Retry envuelva al Circuit Breaker (retry(breaker.fire)) y no al revés?',
+  o:['Porque Retry es más rápido','Es indistinto, el resultado es el mismo','Porque así el breaker cuenta cada reintento como una única falla y nunca llega a abrirse','Para cortar los reintentos apenas el circuito se abre'],c:3,
+  e:'Si el breaker está abierto, Retry ve CIRCUIT_OPEN y no insiste contra un servicio caído.'},
+ {q:'En Cache-Aside, ¿quién carga los datos en la caché?',
+  o:['La base de datos, mediante triggers que replican cada cambio hacia Redis','La aplicación, ante un MISS','Redis, consultando periódicamente la base','El gateway nginx'],c:1,
+  e:'"Aside" porque la caché está al costado: la aplicación la gestiona explícitamente.'},
+ {q:'Queue-Based Load Leveling mejora el rendimiento principalmente porque…',
+  o:['desacopla la tasa de llegada de la tasa de procesamiento','hace que cada pedido individual se procese más rápido','elimina la necesidad de una base de datos','reemplaza al balanceador de carga en todos los escenarios de alta concurrencia'],c:0,
+  e:'Cada pedido no se procesa más rápido, pero el sistema absorbe picos sin saturarse y responde enseguida (202).'},
+ {q:'¿Cuál es la evidencia más convincente de que el Gatekeeper funciona?',
+  o:['Mostrar en el documento el código del middleware de validación JWT con comentarios explicativos','Medir el tiempo de respuesta con hey','Que la API no sea alcanzable directamente y que se rechacen tokens y payloads inválidos','Que docker compose ps muestre el contenedor gatekeeper'],c:2,
+  e:'La prueba empírica debe provocar el ataque y mostrar el rechazo, además de la imposibilidad de saltear el gatekeeper.'},
+ {q:'¿Qué responsabilidad se le quita a la API con Gateway Offloading?',
+  o:['La lógica de negocio de pedidos','La persistencia en PostgreSQL','El consumo de la cola de mensajes','TLS, cabeceras de seguridad y límite de tasa'],c:3,
+  e:'Se trasladan funciones transversales de infraestructura, no lógica de dominio.'},
+ {q:'¿Cómo se demuestra empíricamente un External Configuration Store?',
+  o:['Haciendo rebuild de la imagen con un .env nuevo y volviendo a levantar','Cambiando un valor en el store y observando el nuevo comportamiento sin reiniciar el contenedor','Leyendo variables de entorno al arrancar el proceso','Guardando la configuración en el código fuente versionado en Git junto con la aplicación'],c:1,
+  e:'La clave es "sin redeploy": el StartedAt del contenedor no cambia y el comportamiento sí.'}
+];
+let qi = 0, score = 0;
+function renderQ(){
+  const q = QA[qi];
+  document.getElementById('qaCounter').textContent = `Pregunta ${qi + 1} de ${QA.length}`;
+  document.getElementById('qaScore').textContent = `Puntaje: ${score}`;
+  document.getElementById('qaQ').textContent = q.q;
+  const box = document.getElementById('qaOpts'); box.innerHTML = '';
+  q.o.forEach((t, i) => {
+    const b = document.createElement('button'); b.className = 'qa-opt';
+    b.innerHTML = `<span class="l">${'ABCD'[i]}</span>${t}`;
+    b.onclick = () => answer(i); box.appendChild(b);
+  });
+}
+function answer(i){
+  const q = QA[qi], ok = i === q.c;
+  if (ok) score++;
+  SW.fire({
+    icon: ok ? 'success' : 'error',
+    title: ok ? '¡Correcto!' : 'No exactamente',
+    html: `${ok ? '' : `<p>Respuesta correcta: <b>${'ABCD'[q.c]}) ${q.o[q.c]}</b></p>`}<p style="color:#c9d1dd">${q.e}</p>`,
+    confirmButtonText: qi < QA.length - 1 ? 'Siguiente' : 'Ver resultado'
+  }).then(() => {
+    qi++;
+    if (qi < QA.length) { renderQ(); animateSlide(slides[cur]); }
+    else {
+      const pct = Math.round(score / QA.length * 100);
+      SW.fire({
+        icon: pct >= 75 ? 'success' : 'info',
+        title: `${score} / ${QA.length}`,
+        html: pct >= 75 ? 'Tienen claros los conceptos de la unidad.' : 'Repasen los patrones donde fallaron antes de documentar.',
+        confirmButtonText: 'Reiniciar quiz'
+      }).then(() => { qi = 0; score = 0; renderQ(); });
+    }
+  });
+}
+renderQ();
+
+/* ---------------- Checklist ---------------- */
+const CHK = [
+ 'Elegimos 2 de disponibilidad, 2 de rendimiento, 2 de seguridad y 1 del grupo 4',
+ 'Ningún patrón cuenta en dos grupos a la vez',
+ 'Incorporamos la retroalimentación de la TFU anterior (y lo indicamos)',
+ 'Cada patrón tiene escenario de calidad con medida numérica',
+ 'Cada patrón tiene al menos un diagrama UML propio de nuestra app',
+ 'Explicamos el mecanismo y los trade-offs de cada patrón',
+ 'La app es una API REST probable con curl / Postman',
+ 'docker compose up --build levanta todo en una máquina limpia',
+ 'Solo el gateway publica puertos; la API está en red interna',
+ 'Hay un script de prueba por patrón que provoca la condición y mide',
+ 'README con requisitos, pasos y resultados esperados',
+ 'Sin secretos reales en el repositorio (.env.example)'
+];
+const list = document.getElementById('chkList');
+CHK.forEach((t, i) => {
+  const col = document.createElement('div'); col.className = 'col-lg-6';
+  col.innerHTML = `<label class="check-item"><input type="checkbox" data-i="${i}"><span>${t}</span></label>`;
+  list.appendChild(col);
+});
+let celebrated = false;
+list.addEventListener('change', e => {
+  e.target.closest('.check-item').classList.toggle('done', e.target.checked);
+  const n = list.querySelectorAll('input:checked').length;
+  document.getElementById('chkBar').style.width = (n / CHK.length * 100) + '%';
+  document.getElementById('chkTxt').textContent = `${n}/${CHK.length}`;
+  if (n === CHK.length && !celebrated) {
+    celebrated = true;
+    SW.fire({ icon:'success', title:'¡Listos para entregar!', text:'Último paso: correr run-all.sh en una máquina que no sea la de desarrollo.', confirmButtonColor:'#22c55e' });
+  }
+});
+
+/* ---------------- Inicio ---------------- */
+let start = NaN;
+try { start = parseInt(location.hash.slice(1)) - 1; } catch (e) { /* sin hash disponible */ }
+slides[0].classList.add('active');
+go(isNaN(start) ? 0 : start);
+</script>
+</body>
+</html>
