@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UT5 · TA1 · Layered — Sistema de reservas del gimnasio</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a2e; --card:#18223a; --line:#2a3858;
+  --txt:#e6ecf7; --muted:#93a1bd;
+  --lime:#c6f432; --cyan:#22d3ee; --violet:#a78bfa; --amber:#fbbf24; --pink:#f472b6; --red:#f87171;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font-family:'Space Grotesk',system-ui,sans-serif;overflow:hidden}
+body{background:radial-gradient(1200px 600px at 85% -10%,rgba(198,244,50,.08),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(34,211,238,.08),transparent 60%),var(--bg)}
+code,pre,.mono{font-family:'Fira Code',monospace}
+.slide{position:absolute;inset:0;padding:3.2rem 4.5rem 5rem;display:none;overflow-y:auto}
+.slide.active{display:block}
+.kicker{font-family:'Fira Code',monospace;color:var(--lime);font-size:.9rem;letter-spacing:.12em;text-transform:uppercase}
+h1,h2,h3{font-weight:700;letter-spacing:-.02em}
+h2{font-size:2.3rem;margin:.3rem 0 1.4rem}
+h2 i{color:var(--lime)}
+.lead2{color:var(--muted);font-size:1.15rem}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem;height:100%}
+.box h5{font-weight:700}
+.box.lime{border-left:4px solid var(--lime)}.box.cyan{border-left:4px solid var(--cyan)}
+.box.violet{border-left:4px solid var(--violet)}.box.amber{border-left:4px solid var(--amber)}
+.box.pink{border-left:4px solid var(--pink)}.box.red{border-left:4px solid var(--red)}
+.tag{display:inline-block;font-family:'Fira Code',monospace;font-size:.78rem;padding:.15rem .55rem;border-radius:6px;background:#22304d;color:var(--cyan);margin:.15rem .2rem .15rem 0}
+.hl{color:var(--lime);font-weight:600}
+.quote{border-left:3px solid var(--cyan);padding:.6rem 1rem;background:rgba(34,211,238,.06);border-radius:0 10px 10px 0;color:#cfe9f2}
+ul.clean{list-style:none;padding-left:0}
+ul.clean li{padding:.35rem 0 .35rem 1.7rem;position:relative}
+ul.clean li::before{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;left:0;color:var(--lime)}
+ul.x li::before{content:"\f00d";color:var(--red)}
+table.t{width:100%;border-collapse:separate;border-spacing:0 6px}
+table.t th{color:var(--muted);font-weight:500;font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;padding:.3rem .8rem}
+table.t td{background:var(--card);padding:.7rem .9rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}
+table.t td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+table.t td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+/* portada */
+.cover{display:flex;flex-direction:column;justify-content:center;height:100%}
+.cover h1{font-size:4.2rem;line-height:1.02}
+.cover h1 span{color:var(--lime)}
+.badge-big{font-family:'Fira Code';background:#1d2a45;color:var(--cyan);padding:.4rem .8rem;border-radius:8px;margin-right:.5rem}
+/* capas */
+.layer{border-radius:12px;padding:1rem 1.3rem;margin-bottom:.6rem;cursor:pointer;border:1px solid transparent;transition:.25s;position:relative}
+.layer:hover{transform:translateX(6px)}
+.layer.sel{border-color:var(--txt)}
+.layer h5{margin:0;font-weight:700}
+.layer small{color:rgba(255,255,255,.75)}
+.L1{background:linear-gradient(90deg,#155e75,#0e3a4a)}
+.L2{background:linear-gradient(90deg,#4c1d95,#2e1260)}
+.L3{background:linear-gradient(90deg,#854d0e,#4f2e07)}
+.L4{background:linear-gradient(90deg,#3f6212,#243a0a)}
+.arrow-down{text-align:center;color:var(--muted);margin:-.35rem 0 -.2rem;font-size:.85rem}
+.comp{display:inline-block;background:#0f172a;border:1px solid var(--line);padding:.35rem .7rem;border-radius:8px;margin:.25rem;font-family:'Fira Code';font-size:.85rem}
+/* estrellas */
+.rating-row{display:flex;align-items:center;justify-content:space-between;padding:.45rem .8rem;border-bottom:1px dashed var(--line)}
+.stars i{color:#334155;margin-left:2px}.stars i.on{color:var(--amber)}
+.rel-yes{color:var(--lime);font-size:.8rem}.rel-no{color:var(--muted);font-size:.8rem}
+/* alternativas */
+.alt{cursor:pointer;transition:.2s}
+.alt:hover{transform:translateY(-4px);border-color:var(--lime)}
+/* svg */
+#deploySvg{width:100%;height:auto;max-height:60vh}
+.svg-wrap{background:#0d1426;border:1px solid var(--line);border-radius:14px;padding:.6rem}
+/* código */
+pre.code{background:#0a0f1d;border:1px solid var(--line);border-radius:12px;padding:1rem 1.2rem;color:#d7e3ff;font-size:.86rem;max-height:60vh;overflow:auto;position:relative}
+.k{color:var(--pink)}.s{color:var(--lime)}.c{color:#64748b}.st{color:var(--amber)}
+.copy-btn{position:absolute;top:.6rem;right:.6rem}
+/* nav */
+#nav{position:fixed;bottom:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(11,16,32,.85);backdrop-filter:blur(6px);border-top:1px solid var(--line);z-index:10}
+#progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--cyan),var(--lime));transition:width .3s;z-index:11}
+.btn-nav{background:#1d2a45;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.35rem .9rem}
+.btn-nav:hover{background:#26375a;color:#fff}
+.btn-lime{background:var(--lime);color:#111;font-weight:700;border:none;border-radius:10px;padding:.6rem 1.2rem}
+.btn-lime:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;border:1px solid var(--cyan);color:var(--cyan);border-radius:10px;padding:.45rem 1rem}
+.btn-ghost:hover{background:rgba(34,211,238,.1);color:var(--cyan)}
+#counter{font-family:'Fira Code';color:var(--muted);font-size:.9rem}
+#toc{max-height:60vh;overflow:auto;text-align:left}
+#toc a{display:block;color:var(--txt);text-decoration:none;padding:.3rem .5rem;border-radius:6px}
+#toc a:hover{background:#26375a}
+.swal2-popup{background:#141d33 !important;color:var(--txt) !important;border:1px solid var(--line)}
+.swal2-title{color:var(--txt) !important}
+.swal2-html-container{color:#cbd5e1 !important}
+.swal2-radio{background:transparent !important;flex-direction:column;align-items:flex-start !important}
+.swal2-radio label{margin:.35rem 0 !important;color:var(--txt);text-align:left;font-size:1rem}
+.check-item{cursor:pointer;user-select:none}
+.check-item.done{color:var(--lime);text-decoration:line-through;text-decoration-color:rgba(198,244,50,.5)}
+@media (max-width:900px){.slide{padding:2rem 1.3rem 5rem}.cover h1{font-size:2.6rem}h2{font-size:1.7rem}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<!-- ============ 1. PORTADA ============ -->
+<section class="slide" data-title="Portada">
+  <div class="cover">
+    <div class="kicker animate__animated animate__fadeInDown">ANDIS · UT5 Estilos de arquitectura · Trabajo de aplicación 1</div>
+    <h1 class="mt-3 animate__animated animate__fadeInUp">Layered<br><span>Architecture</span></h1>
+    <p class="lead2 mt-3 animate__animated animate__fadeIn animate__delay-1s" style="max-width:760px">
+      Resolvemos el caso del <b>sistema de reservas de un gimnasio local</b>: por qué el estilo en capas es el más adecuado
+      (Parte 1) y cómo se ve su <b>diagrama de despliegue UML</b> (Parte 2).
+    </p>
+    <div class="mt-4 animate__animated animate__fadeIn animate__delay-1s">
+      <span class="badge-big"><i class="fa-solid fa-layer-group"></i> Monolito en capas</span>
+      <span class="badge-big"><i class="fa-solid fa-server"></i> UML Deployment</span>
+      <span class="badge-big"><i class="fa-solid fa-dumbbell"></i> Caso: gimnasio</span>
+    </div>
+    <p class="mt-5 text-secondary mono small"><i class="fa-regular fa-keyboard"></i> ← → para navegar · <b>T</b> para índice</p>
+  </div>
+</section>
+
+<section class="slide" data-title="La consigna">
+  <div class="kicker">Ejercicio 1</div>
+  <h2><i class="fa-solid fa-clipboard-list"></i> El caso: reservas para un gimnasio</h2>
+  <p class="lead2">Gestionar membresías, reservar clases y hacer pagos simples <b>desde un sitio web único</b>.</p>
+  <div class="row g-3 mt-1">
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box cyan">
+      <h5><i class="fa-solid fa-gears text-info"></i> Requerimientos funcionales</h5>
+      <ul class="clean small mb-0">
+        <li>ABM y listados de socios y clases</li>
+        <li>Gestión del calendario de reservas</li>
+        <li>Integración básica con pasarela de pagos</li>
+        <li>Autenticación y roles simples</li>
+      </ul></div></div>
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box lime">
+      <h5><i class="fa-solid fa-gauge-high" style="color:var(--lime)"></i> No funcionales</h5>
+      <ul class="clean small mb-0">
+        <li>Simplicidad de desarrollo</li>
+        <li>Bajo costo de mantenimiento y operación</li>
+        <li>Tiempos de entrega cortos</li>
+        <li>Tráfico bajo a medio</li>
+      </ul></div></div>
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box amber">
+      <h5><i class="fa-solid fa-lock" style="color:var(--amber)"></i> Restricciones</h5>
+      <ul class="clean small mb-0">
+        <li>Equipo pequeño</li>
+        <li>Un único artefacto desplegable</li>
+        <li>Base de datos relacional compartida</li>
+        <li>Hosting común, sin colas ni orquestadores</li>
+      </ul></div></div>
+  </div>
+  <div class="row g-3 mt-2">
+    <div class="col-md-6"><div class="box violet"><b>Parte 1.</b> Justificar por qué el estilo de arquitectura es el más adecuado para este contexto.</div></div>
+    <div class="col-md-6"><div class="box pink"><b>Parte 2.</b> Diagrama de despliegue UML: qué componentes tiene la solución y cómo se distribuyen <i>o no</i>.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Teoría: estilo en capas">
+  <div class="kicker">Conceptos · Teórico 2.7.1</div>
+  <h2><i class="fa-solid fa-book-open"></i> Estilo en capas (n-tier)</h2>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="quote mb-3" data-anim="fadeIn">Organiza los componentes en <b>niveles o capas lógicas</b>, cada una con roles bien definidos —presentación, lógica de negocio—. Cada capa <b>solo interactúa con la inmediatamente inferior</b>, lo que facilita la <i>separation of concerns</i>.</div>
+      <div class="row g-3">
+        <div class="col-6"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-cube"></i> Monolítico</h5><p class="small mb-0">Una sola unidad de despliegue; los componentes interactúan en el mismo proceso.</p></div></div>
+        <div class="col-6"><div class="box lime"><h5 class="h6"><i class="fa-solid fa-star"></i> El más común</h5><p class="small mb-0">Elección predeterminada por su simplicidad, familiaridad y bajo costo.</p></div></div>
+        <div class="col-6"><div class="box amber"><h5 class="h6"><i class="fa-solid fa-door-closed"></i> Capas cerradas</h5><p class="small mb-0">La capa superior solo habla con la inmediata. Aíslan cambios.</p></div></div>
+        <div class="col-6"><div class="box pink"><h5 class="h6"><i class="fa-solid fa-door-open"></i> Capas abiertas</h5><p class="small mb-0">Se pueden "atravesar": la capa de arriba llega directo a la de abajo.</p></div></div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="box">
+        <h6 class="text-secondary mono small mb-3">VARIANTES DE DESPLIEGUE DEL TEÓRICO</h6>
+        <div class="mb-3"><span class="tag">Fig. 1</span> Todas las capas + BD en <b>una</b> unidad (BD embebida).</div>
+        <div class="mb-3"><span class="tag">Fig. 2</span> BD en una unidad de despliegue <b>separada</b>. <span class="hl">← nuestro caso</span></div>
+        <div class="mb-3"><span class="tag">Fig. 3</span> Presentación y BD separadas del resto (cliente delgado).</div>
+        <div><span class="tag">Fig. 4</span> Capa <code>Services Layer</code> <b>abierta</b> con componentes compartidos.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Anti-patrones del estilo en capas">
+  <div class="kicker">Conceptos · Richards &amp; Ford</div>
+  <h2><i class="fa-solid fa-skull-crossbones"></i> Anti-patrones a conocer</h2>
+  <div class="row g-4">
+    <div class="col-md-6" data-anim="fadeInLeft"><div class="box red">
+      <h5><i class="fa-solid fa-sink"></i> Architecture sinkhole</h5>
+      <p class="small">Una solicitud atraviesa todas las capas sin que ninguna haga nada más que pasarla a la siguiente.</p>
+      <p class="small mb-0"><b>Regla 80/20:</b> si le pasa a una minoría de las solicitudes, es aceptable; si le pasa a la mayoría, el estilo en capas probablemente no es el adecuado.</p>
+    </div></div>
+    <div class="col-md-6" data-anim="fadeInRight"><div class="box amber">
+      <h5><i class="fa-solid fa-cloud-rain"></i> Big ball of mud</h5>
+      <p class="small">Código sin estructura reconocible: todo depende de todo y nadie sabe dónde va cada cosa.</p>
+      <p class="small mb-0">En una arquitectura en capas aparece cuando se empiezan a saltear capas (por ejemplo, una vista que ejecuta SQL directamente).</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Cómo leer las características">
+  <div class="kicker">Conceptos · Características de arquitectura</div>
+  <h2><i class="fa-solid fa-star-half-stroke"></i> Cómo leer las características</h2>
+  <p class="lead2 small">Richards &amp; Ford califican cada estilo de 1 a 5 estrellas en cada característica. Las estrellas son <b>relativas entre estilos</b>: 5 es lo mejor (en costo, 5 = más barato). Para justificar un estilo, se buscan muchas estrellas en las características que son <span class="hl">drivers</span> del caso.</p>
+  <div class="row g-3">
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box lime"><h5 class="h6"><i class="fa-solid fa-coins"></i> Costo total</h5><p class="small mb-0">Desarrollo, infraestructura y operación.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box lime"><h5 class="h6"><i class="fa-solid fa-feather"></i> Simplicidad</h5><p class="small mb-0">Qué tan fácil es entenderlo y construirlo.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-cubes"></i> Modularidad</h5><p class="small mb-0">Cuánto se divide en partes independientes.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-vial"></i> Testeabilidad</h5><p class="small mb-0">Facilidad para probar el todo y las partes.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-seedling"></i> Evolutividad</h5><p class="small mb-0">Facilidad para incorporar cambios y funcionalidades nuevas.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-rocket"></i> Facilidad de despliegue</h5><p class="small mb-0">Qué tan fácil y seguro es desplegar un cambio.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box violet"><h5 class="h6"><i class="fa-solid fa-circle-check"></i> Confiabilidad</h5><p class="small mb-0">Que funcione correctamente de forma consistente.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box violet"><h5 class="h6"><i class="fa-solid fa-gauge-high"></i> Rendimiento</h5><p class="small mb-0">Tiempo de respuesta y capacidad de procesamiento.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box amber"><h5 class="h6"><i class="fa-solid fa-arrow-up-right-dots"></i> Escalabilidad</h5><p class="small mb-0">Crecer en usuarios o carga sostenida.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box amber"><h5 class="h6"><i class="fa-solid fa-wave-square"></i> Elasticidad</h5><p class="small mb-0">Responder a picos repentinos de carga.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box red"><h5 class="h6"><i class="fa-solid fa-life-ring"></i> Tolerancia a fallos</h5><p class="small mb-0">Seguir funcionando si falla una parte.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Los estilos de un vistazo">
+  <div class="kicker">Conceptos · Teórico 2.7</div>
+  <h2><i class="fa-solid fa-shapes"></i> Los estilos de arquitectura de un vistazo</h2>
+  <p class="lead2 small">Para descartar alternativas hay que conocerlas. Una línea por estilo, según el teórico de ANDIS.</p>
+  <div class="row g-4">
+    <div class="col-lg-5"><div class="box lime">
+      <h5><i class="fa-solid fa-cube"></i> Monolíticos <span class="tag">una unidad de despliegue</span></h5>
+      <p class="small"><b>Layered:</b> capas lógicas con roles definidos; cada capa usa la inmediata inferior.</p>
+      <p class="small"><b>Pipes &amp; Filters:</b> filtros independientes que transforman datos, conectados por tuberías, de la entrada a la salida.</p>
+      <p class="small mb-0"><b>Microkernel:</b> núcleo mínimo más plug-ins; típico de aplicaciones de producto instaladas en el cliente.</p>
+    </div></div>
+    <div class="col-lg-7"><div class="box cyan">
+      <h5><i class="fa-solid fa-network-wired"></i> Distribuidos <span class="tag">ojo con las falacias de la computación distribuida</span></h5>
+      <p class="small"><b>Service-Based:</b> pocos servicios de dominio; distribuido pero sin el costo y la complejidad de microservicios o eventos.</p>
+      <p class="small"><b>Event-Driven:</b> componentes independientes que procesan eventos de forma asíncrona; alta escalabilidad y rendimiento.</p>
+      <p class="small"><b>Space-Based:</b> datos replicados en memoria entre unidades de procesamiento que se inician y detienen según la carga.</p>
+      <p class="small"><b>Orchestration-Driven SOA:</b> servicios empresariales coordinados por un motor de orquestación; nació en grandes corporaciones de fines de los 90.</p>
+      <p class="small mb-0"><b>Microservicios:</b> cada servicio es una unidad separada con su propia base de datos, comunicado por API livianas.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="¿Clean o Layered?">
+  <div class="kicker">Conceptos · Comparación</div>
+  <h2><i class="fa-solid fa-code-compare"></i> ¿Clean Architecture o Layered?</h2>
+  <p class="lead2">El título de la tarea lo dice: <span class="hl">TA1 – LAYERED</span>. Clean Architecture no es la respuesta pedida, pero sirve para comparar.</p>
+  <div class="row g-3 mt-2">
+    <div class="col-md-6" data-anim="fadeInLeft"><div class="box lime">
+      <h5><i class="fa-solid fa-layer-group"></i> Layered (2.7.1)</h5>
+      <ul class="clean small">
+        <li>Estilo <b>monolítico</b>: una unidad de despliegue</li>
+        <li>Capas <b>técnicas</b>: presentación, negocio, persistencia, BD</li>
+        <li>Cada capa usa solo la <b>inmediatamente inferior</b></li>
+        <li>Elección predeterminada por <b>simplicidad, familiaridad y bajo costo</b></li>
+      </ul></div></div>
+    <div class="col-md-6" data-anim="fadeInRight"><div class="box violet">
+      <h5><i class="fa-regular fa-circle-dot"></i> Clean Architecture (2.7.9)</h5>
+      <ul class="clean small">
+        <li>Círculos concéntricos con el <b>dominio en el centro</b></li>
+        <li>Regla de dependencias: solo <b>hacia adentro</b></li>
+        <li>Inversión de dependencias, ports, DTO, presenters</li>
+        <li>Más piezas y más abstracciones que mantener</li>
+      </ul></div></div>
+  </div>
+  <div class="quote mt-3 small"><i class="fa-solid fa-lightbulb"></i> Ojo: en Layered la dependencia va de <b>arriba hacia abajo</b> y el negocio termina dependiendo de la persistencia; en Clean, la persistencia (gateway) depende del núcleo. Para un equipo chico, con entregas cortas y un CRUD con reservas, las capas clásicas resuelven sin sobreingeniería.</div>
+</section>
+
+<section class="slide" data-title="Teoría: despliegue UML">
+  <div class="kicker">Conceptos · Teórico 2.3.4</div>
+  <h2><i class="fa-solid fa-sitemap"></i> Diagrama de despliegue UML: elementos</h2>
+  <p class="lead2 small">Modela la <b>arquitectura física</b>: nodos, los artefactos desplegados en ellos y las rutas de comunicación.</p>
+  <div class="row g-3">
+    <div class="col-md-4" data-anim="fadeIn"><div class="box cyan"><span class="tag">«node» / «device»</span><p class="small mb-0 mt-2">Recurso computacional (hardware). <code>«device»</code> es un nodo físico: servidor, PC, móvil.</p></div></div>
+    <div class="col-md-4" data-anim="fadeIn"><div class="box violet"><span class="tag">«executionEnvironment»</span><p class="small mb-0 mt-2">Nodo de software que aloja artefactos: SO, servidor web, runtime, SGBD, navegador.</p></div></div>
+    <div class="col-md-4" data-anim="fadeIn"><div class="box amber"><span class="tag">«artifact»</span><p class="small mb-0 mt-2">Elemento físico desplegado: ejecutable, paquete, script, esquema de BD.</p></div></div>
+    <div class="col-md-4" data-anim="fadeIn"><div class="box pink"><span class="tag">«deploymentSpec»</span><p class="small mb-0 mt-2">Archivo de configuración del artefacto (p. ej. <code>.env</code>, <code>web.xml</code>).</p></div></div>
+    <div class="col-md-4" data-anim="fadeIn"><div class="box lime"><span class="tag">ruta de comunicación</span><p class="small mb-0 mt-2">Asociación entre nodos, con protocolo (<code>HTTPS</code>, <code>TCP/IP</code>) y multiplicidad.</p></div></div>
+    <div class="col-md-4" data-anim="fadeIn"><div class="box"><span class="tag">«deploy» / «manifest»</span><p class="small mb-0 mt-2"><code>«deploy»</code>: el nodo soporta el artefacto (o se dibuja contenido). <code>«manifest»</code>: el artefacto materializa un componente.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Las capas del gimnasio">
+  <div class="kicker">Resolución · Parte 1 · Aplicando el estilo</div>
+  <h2><i class="fa-solid fa-dumbbell"></i> Las capas del sistema del gimnasio</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="layer L1" data-layer="0"><h5><i class="fa-solid fa-desktop"></i> Presentation Layer</h5><small>«closed» · vistas web y controladores</small></div>
+      <div class="arrow-down"><i class="fa-solid fa-arrow-down"></i> solo llama hacia abajo</div>
+      <div class="layer L2" data-layer="1"><h5><i class="fa-solid fa-briefcase"></i> Business Layer</h5><small>«closed» · reglas del gimnasio</small></div>
+      <div class="arrow-down"><i class="fa-solid fa-arrow-down"></i></div>
+      <div class="layer L3" data-layer="2"><h5><i class="fa-solid fa-database"></i> Persistence Layer</h5><small>«closed» · acceso a datos e integración</small></div>
+      <div class="arrow-down"><i class="fa-solid fa-arrow-down"></i></div>
+      <div class="layer L4" data-layer="3"><h5><i class="fa-solid fa-hard-drive"></i> Database Layer</h5><small>MySQL relacional compartida</small></div>
+    </div>
+    <div class="col-lg-7">
+      <div class="box" id="layerDetail">
+        <p class="text-secondary"><i class="fa-solid fa-hand-pointer"></i> Hacé clic en una capa para ver sus componentes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Parte 1: drivers → decisión">
+  <div class="kicker">Resolución · Parte 1 · Justificación</div>
+  <h2><i class="fa-solid fa-diagram-project"></i> Cada driver, ¿cómo lo resuelve Layered?</h2>
+  <table class="t small">
+    <thead><tr><th style="width:28%">Driver del caso</th><th style="width:12%">Tipo</th><th>Cómo lo satisface el estilo en capas</th></tr></thead>
+    <tbody>
+      <tr data-anim="fadeInUp"><td><b>Un único artefacto desplegable</b></td><td><span class="tag">restricción</span></td><td>Layered es <b>monolítico</b> por definición: todas las capas viajan juntas en una unidad de despliegue. Los estilos distribuidos no cumplen esta restricción.</td></tr>
+      <tr data-anim="fadeInUp"><td><b>Hosting común sin colas ni orquestadores</b></td><td><span class="tag">restricción</span></td><td>Alcanza con un servidor web + runtime + SGBD. No necesita brokers de mensajería (event-driven) ni contenedores orquestados (microservicios).</td></tr>
+      <tr data-anim="fadeInUp"><td><b>BD relacional compartida</b></td><td><span class="tag">restricción</span></td><td>Encaja con la <code>Database Layer</code>: una sola base, accedida solo desde la capa de persistencia.</td></tr>
+      <tr data-anim="fadeInUp"><td><b>Equipo pequeño</b></td><td><span class="tag">restricción</span></td><td>Estilo <b>familiar</b>: lo conocen la mayoría de los desarrolladores y los frameworks web (MVC) ya lo proponen. Poca curva de aprendizaje.</td></tr>
+      <tr data-anim="fadeInUp"><td><b>Simplicidad y entregas cortas</b></td><td><span class="tag">no funcional</span></td><td>Pocas piezas, llamadas locales en proceso, un solo build. Ideal para un CRUD con calendario y pagos.</td></tr>
+      <tr data-anim="fadeInUp"><td><b>Bajo costo de mantenimiento y operación</b></td><td><span class="tag">no funcional</span></td><td>Un servidor, un despliegue, un log, un backup. Es el estilo de <b>menor costo</b> según Richards &amp; Ford.</td></tr>
+      <tr data-anim="fadeInUp"><td><b>Tráfico bajo a medio</b></td><td><span class="tag">no funcional</span></td><td>Las debilidades del estilo (escalabilidad, elasticidad) <b>no son críticas</b> con esta carga.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-title="Características del estilo">
+  <div class="kicker">Resolución · Parte 1 · Trade-offs</div>
+  <h2><i class="fa-solid fa-scale-balanced"></i> Las debilidades no pesan acá</h2>
+  <p class="lead2 small">Puntajes del estilo en capas según Richards &amp; Ford (2020), base del teórico. Se marca si el atributo es un <span class="hl">driver del caso</span>.</p>
+  <div class="row g-4">
+    <div class="col-lg-7"><div class="box" id="ratings"></div></div>
+    <div class="col-lg-5">
+      <div class="box lime mb-3"><h5 class="h6"><i class="fa-solid fa-thumbs-up"></i> Fuerte justo donde importa</h5><p class="small mb-0">Costo y simplicidad tienen el máximo puntaje, y son exactamente los no funcionales que pide el gimnasio.</p></div>
+      <div class="box red"><h5 class="h6"><i class="fa-solid fa-triangle-exclamation"></i> Débil donde no importa</h5><p class="small mb-0">Escalabilidad, elasticidad y tolerancia a fallos son bajas. Con tráfico bajo a medio y un solo gimnasio, es un trade-off aceptable.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Estilos descartados">
+  <div class="kicker">Resolución · Parte 1 · Alternativas</div>
+  <h2><i class="fa-solid fa-filter-circle-xmark"></i> ¿Por qué no otro estilo?</h2>
+  <p class="lead2 small">Hacé clic en cada tarjeta para ver qué driver lo descarta.</p>
+  <div class="row g-3" id="altGrid"></div>
+</section>
+
+<section class="slide" data-title="Riesgos y mitigaciones">
+  <div class="kicker">Resolución · Parte 1 · Riesgos</div>
+  <h2><i class="fa-solid fa-shield-halved"></i> Riesgos del estilo y cómo mitigarlos</h2>
+  <div class="row g-3">
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box red">
+      <h5 class="h6"><i class="fa-solid fa-sink"></i> Architecture sinkhole</h5>
+      <p class="small">Solicitudes que atraviesan capas sin lógica (p. ej., listar clases: controlador → servicio → repositorio sin hacer nada).</p>
+      <p class="small mb-0"><b>Mitigación:</b> aceptarlo si es minoría (regla 80/20); si crece, abrir alguna capa de forma explícita.</p></div></div>
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box amber">
+      <h5 class="h6"><i class="fa-solid fa-cloud-rain"></i> Big ball of mud</h5>
+      <p class="small">Con el tiempo se saltean capas (una vista que hace SQL directo) y se pierde la separación.</p>
+      <p class="small mb-0"><b>Mitigación:</b> capas <b>cerradas</b>, revisión de código y paquetes por capa (<code>/presentation</code>, <code>/business</code>, <code>/persistence</code>).</p></div></div>
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box violet">
+      <h5 class="h6"><i class="fa-solid fa-arrow-trend-up"></i> Crecimiento</h5>
+      <p class="small">Si el gimnasio se vuelve cadena con mucho tráfico, el monolito escala solo replicándose entero.</p>
+      <p class="small mb-0"><b>Mitigación:</b> dentro de cada capa, separar por módulo (socios, clases, reservas, pagos) para facilitar una futura migración a service-based.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Respuesta modelo · Parte 1">
+  <div class="kicker">Resolución · Parte 1 · Respuesta modelo</div>
+  <h2><i class="fa-solid fa-pen-nib"></i> Cómo lo redactaríamos</h2>
+  <div class="box lime" style="font-size:1.02rem;line-height:1.65">
+    <p>El estilo más adecuado es la <b>arquitectura en capas (layered)</b>. Es un estilo monolítico, por lo que cumple directamente la restricción de <b>un único artefacto desplegable</b> y puede ejecutarse en un <b>hosting común</b> sin colas ni orquestadores, a diferencia de los estilos distribuidos (event-driven, microservicios, service-based) que requieren infraestructura adicional o varias unidades de despliegue.</p>
+    <p>Sus principales fortalezas —<b>simplicidad, familiaridad y bajo costo</b>— coinciden con los no funcionales prioritarios: simplicidad de desarrollo, bajo costo de mantenimiento y operación y tiempos de entrega cortos. Además, un <b>equipo pequeño</b> lo puede adoptar sin curva de aprendizaje, ya que es el estilo predeterminado de la mayoría de los frameworks web.</p>
+    <p>La organización en capas de presentación, negocio, persistencia y base de datos separa responsabilidades: la <b>base de datos relacional compartida</b> se accede solo desde la capa de persistencia, y la integración con la <b>pasarela de pagos</b> queda encapsulada en un componente de esa capa.</p>
+    <p class="mb-0">Sus debilidades —baja escalabilidad, elasticidad y tolerancia a fallos— son aceptables porque el sistema tiene <b>tráfico bajo a medio</b>. Para evitar que el código se degrade, las capas se definen <b>cerradas</b>.</p>
+  </div>
+  <button class="btn-ghost mt-3" onclick="copyText('respuesta1')"><i class="fa-regular fa-copy"></i> Copiar respuesta</button>
+</section>
+
+<section class="slide" data-title="Parte 2: diagrama de despliegue">
+  <div class="kicker">Resolución · Parte 2 · Diagrama</div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center">
+    <h2 class="mb-2"><i class="fa-solid fa-server"></i> Diagrama de despliegue UML</h2>
+    <div class="btn-group mb-2">
+      <button class="btn-nav" id="vA" onclick="drawDeploy('A')"><i class="fa-solid fa-cube"></i> BD en el mismo servidor</button>
+      <button class="btn-nav" id="vB" onclick="drawDeploy('B')"><i class="fa-solid fa-cubes"></i> BD en servidor del hosting</button>
+    </div>
+  </div>
+  <div class="svg-wrap"><svg id="deploySvg" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  <p class="small text-secondary mt-2 mb-0"><i class="fa-solid fa-circle-info"></i> Tecnologías de ejemplo (PHP + Apache + MySQL); el diagrama vale igual con Node.js, Java, .NET, etc. Pasá el mouse sobre los elementos.</p>
+</section>
+
+<section class="slide" data-title="Lectura del diagrama">
+  <div class="kicker">Resolución · Parte 2 · ¿Qué se distribuye y qué no?</div>
+  <h2><i class="fa-solid fa-magnifying-glass"></i> Lectura del diagrama</h2>
+  <table class="t small">
+    <thead><tr><th>Elemento</th><th>Estereotipo</th><th>Qué representa</th></tr></thead>
+    <tbody>
+      <tr><td>PC / móvil del socio · PC de recepción</td><td><span class="tag">«device»</span></td><td>Clientes. Solo tienen el <b>navegador</b> (<code>«executionEnvironment»</code>); no se instala nada.</td></tr>
+      <tr><td>Servidor de hosting</td><td><span class="tag">«device»</span></td><td>El único servidor que paga el gimnasio.</td></tr>
+      <tr><td>Linux + Apache · PHP 8</td><td><span class="tag">«executionEnvironment»</span></td><td>SO, servidor web y runtime donde corre la aplicación.</td></tr>
+      <tr><td><code>gimnasio-app</code></td><td><span class="tag">«artifact»</span></td><td><b>El único artefacto desplegable.</b> Manifiesta las capas de presentación, negocio y persistencia. <span class="hl">Las capas NO se distribuyen.</span></td></tr>
+      <tr><td><code>.env</code></td><td><span class="tag">«deploymentSpec»</span></td><td>Credenciales de BD, claves de la pasarela, roles.</td></tr>
+      <tr><td>MySQL 8 · <code>gimnasio_db</code></td><td><span class="tag">«executionEnvironment»</span> <span class="tag">«artifact»</span></td><td>Database Layer: es la <b>única separación física</b> (como en la Fig. 2 del teórico).</td></tr>
+      <tr><td>Pasarela de pagos</td><td><span class="tag">«node»</span></td><td>Sistema <b>externo</b> (no es nuestro). Se llama por HTTPS/REST y avisa el resultado por <i>webhook</i>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-title="Dentro del artefacto">
+  <div class="kicker">Resolución · Parte 2 · Zoom al artefacto</div>
+  <h2><i class="fa-solid fa-box-open"></i> Qué hay dentro de <code>gimnasio-app</code></h2>
+  <p class="lead2 small">El diagrama de despliegue muestra un artefacto; este zoom muestra los componentes que manifiesta, ordenados por capa y por módulo.</p>
+  <div class="table-responsive">
+  <table class="t small text-center">
+    <thead><tr><th class="text-start">Capa \ módulo</th><th>Socios</th><th>Clases</th><th>Reservas</th><th>Pagos</th><th>Auth</th></tr></thead>
+    <tbody>
+      <tr><td class="text-start"><b style="color:var(--cyan)">Presentation</b></td><td><span class="comp">SociosController</span></td><td><span class="comp">ClasesController</span></td><td><span class="comp">CalendarioController</span></td><td><span class="comp">PagosController</span></td><td><span class="comp">LoginController</span></td></tr>
+      <tr><td class="text-start"><b style="color:var(--violet)">Business</b></td><td><span class="comp">SocioService</span></td><td><span class="comp">ClaseService</span></td><td><span class="comp">ReservaService</span></td><td><span class="comp">PagoService</span></td><td><span class="comp">AuthService</span></td></tr>
+      <tr><td class="text-start"><b style="color:var(--amber)">Persistence</b></td><td><span class="comp">SocioRepository</span></td><td><span class="comp">ClaseRepository</span></td><td><span class="comp">ReservaRepository</span></td><td><span class="comp">PasarelaClient</span><br><span class="comp">PagoRepository</span></td><td><span class="comp">UsuarioRepository</span></td></tr>
+      <tr><td class="text-start"><b style="color:var(--lime)">Database</b></td><td colspan="5"><span class="comp">gimnasio_db: socios · clases · reservas · pagos · usuarios · roles</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="quote small mt-2"><i class="fa-solid fa-route"></i> Ejemplo: <b>reservar una clase</b> → <code>CalendarioController</code> → <code>ReservaService</code> (valida cupo y membresía vigente) → <code>ReservaRepository</code> → <code>gimnasio_db</code>. Todo en el mismo proceso: llamadas locales, sin red.</div>
+</section>
+
+<section class="slide" data-title="El diagrama en PlantUML">
+  <div class="kicker">Resolución · Parte 2 · Para entregar</div>
+  <h2><i class="fa-solid fa-code"></i> El diagrama en PlantUML</h2>
+  <p class="lead2 small">Pegalo en <code>plantuml.com</code> o en la extensión de VS Code para generar la imagen.</p>
+  <pre class="code" id="pumlCode"><button class="btn-nav copy-btn" onclick="copyText('puml')"><i class="fa-regular fa-copy"></i></button><span class="k">@startuml</span>
+<span class="c">' UT5 TA1 - Sistema de reservas del gimnasio - Layered</span>
+<span class="k">node</span> <span class="s">"PC / móvil del socio"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as pcSocio {
+  <span class="k">node</span> <span class="s">"Navegador web"</span> <span class="st">&lt;&lt;executionEnvironment&gt;&gt;</span> as nav1
+}
+<span class="k">node</span> <span class="s">"PC de recepción"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as pcRecep {
+  <span class="k">node</span> <span class="s">"Navegador web"</span> <span class="st">&lt;&lt;executionEnvironment&gt;&gt;</span> as nav2
+}
+<span class="k">node</span> <span class="s">"Servidor de hosting"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as srv {
+  <span class="k">node</span> <span class="s">"Linux + Apache"</span> <span class="st">&lt;&lt;executionEnvironment&gt;&gt;</span> as os {
+    <span class="k">node</span> <span class="s">"PHP 8"</span> <span class="st">&lt;&lt;executionEnvironment&gt;&gt;</span> as rt {
+      <span class="k">artifact</span> <span class="s">"gimnasio-app"</span> <span class="st">&lt;&lt;artifact&gt;&gt;</span> as app
+      <span class="k">artifact</span> <span class="s">".env"</span> <span class="st">&lt;&lt;deploymentSpec&gt;&gt;</span> as cfg
+    }
+  }
+  <span class="k">node</span> <span class="s">"MySQL 8"</span> <span class="st">&lt;&lt;executionEnvironment&gt;&gt;</span> as mysql {
+    <span class="k">artifact</span> <span class="s">"gimnasio_db"</span> <span class="st">&lt;&lt;artifact&gt;&gt;</span> as schema
+  }
+}
+<span class="k">node</span> <span class="s">"Pasarela de pagos (externa)"</span> <span class="st">&lt;&lt;node&gt;&gt;</span> as pay
+
+<span class="k">component</span> <span class="s">"Presentation Layer"</span> as P
+<span class="k">component</span> <span class="s">"Business Layer"</span> as B
+<span class="k">component</span> <span class="s">"Persistence Layer"</span> as D
+app ..&gt; P : <span class="st">&lt;&lt;manifest&gt;&gt;</span>
+app ..&gt; B : <span class="st">&lt;&lt;manifest&gt;&gt;</span>
+app ..&gt; D : <span class="st">&lt;&lt;manifest&gt;&gt;</span>
+cfg ..&gt; app
+
+nav1 <span class="s">"*"</span> -- <span class="s">"1"</span> os : HTTPS
+nav2 <span class="s">"*"</span> -- <span class="s">"1"</span> os : HTTPS
+rt -- mysql : TCP/IP :3306
+rt -- pay : HTTPS/REST + webhook
+<span class="k">@enduml</span></pre>
+</section>
+
+<section class="slide" data-title="Quiz">
+  <div class="kicker">Cierre · Autoevaluación</div>
+  <h2><i class="fa-solid fa-circle-question"></i> Quiz: ¿quedó claro?</h2>
+  <p class="lead2">6 preguntas sobre el estilo en capas y el diagrama de despliegue.</p>
+  <button class="btn-lime mt-2" onclick="startQuiz()"><i class="fa-solid fa-play"></i> Comenzar quiz</button>
+  <div id="quizResult" class="mt-4"></div>
+</section>
+
+<section class="slide" data-title="Checklist de entrega">
+  <div class="kicker">Cierre</div>
+  <h2><i class="fa-solid fa-list-check"></i> Checklist antes de entregar</h2>
+  <p class="lead2 small">Hacé clic en cada ítem para marcarlo.</p>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="box lime">
+      <h5 class="h6">Parte 1</h5>
+      <ul class="clean small mb-0">
+        <li class="check-item">Nombro el estilo: <b>Layered</b> (monolítico)</li>
+        <li class="check-item">Relaciono cada <b>restricción</b> con el estilo</li>
+        <li class="check-item">Relaciono los <b>no funcionales</b> con sus fortalezas</li>
+        <li class="check-item">Reconozco las <b>debilidades</b> y por qué son aceptables</li>
+        <li class="check-item">Menciono al menos un estilo <b>descartado</b> y por qué</li>
+      </ul></div></div>
+    <div class="col-md-6"><div class="box pink">
+      <h5 class="h6">Parte 2</h5>
+      <ul class="clean small mb-0">
+        <li class="check-item">Uso estereotipos UML: <code>«device»</code>, <code>«executionEnvironment»</code>, <code>«artifact»</code></li>
+        <li class="check-item"><b>Un solo artefacto</b> de aplicación con todas las capas</li>
+        <li class="check-item">BD como ambiente de ejecución con su esquema</li>
+        <li class="check-item">Pasarela de pagos como nodo <b>externo</b></li>
+        <li class="check-item">Rutas de comunicación con <b>protocolo</b> y multiplicidad</li>
+      </ul></div></div>
+  </div>
+  <p class="mt-4 text-secondary small mono">Fuentes: ANDIS_Conceptos 2.7.1 Layered Architecture, 2.3.4 Diagramas de despliegue UML · Richards &amp; Ford (2020), Fundamentals of Software Architecture.</p>
+</section>
+
+<!-- NAV -->
+<div id="nav">
+  <button class="btn-nav" onclick="go(cur-1)"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn-nav" onclick="showToc()"><i class="fa-solid fa-list"></i> Índice</button>
+    <span id="counter"></span>
+  </div>
+  <button class="btn-nav" onclick="go(cur+1)"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+
+<textarea id="respuesta1" style="display:none">El estilo más adecuado es la arquitectura en capas (layered). Es un estilo monolítico, por lo que cumple directamente la restricción de un único artefacto desplegable y puede ejecutarse en un hosting común sin colas ni orquestadores, a diferencia de los estilos distribuidos (event-driven, microservicios, service-based) que requieren infraestructura adicional o varias unidades de despliegue.
+
+Sus principales fortalezas —simplicidad, familiaridad y bajo costo— coinciden con los no funcionales prioritarios: simplicidad de desarrollo, bajo costo de mantenimiento y operación y tiempos de entrega cortos. Además, un equipo pequeño lo puede adoptar sin curva de aprendizaje, ya que es el estilo predeterminado de la mayoría de los frameworks web.
+
+La organización en capas de presentación, negocio, persistencia y base de datos separa responsabilidades: la base de datos relacional compartida se accede solo desde la capa de persistencia, y la integración con la pasarela de pagos queda encapsulada en un componente de esa capa.
+
+Sus debilidades —baja escalabilidad, elasticidad y tolerancia a fallos— son aceptables porque el sistema tiene tráfico bajo a medio. Para evitar que el código se degrade, las capas se definen cerradas.</textarea>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+/* ================= NAVEGACIÓN ================= */
+const slides=[...document.querySelectorAll('.slide')];
+let cur=0;
+function go(n){
+  if(n<0||n>=slides.length)return;
+  const dir=n>cur?'animate__fadeInRight':'animate__fadeInLeft';
+  slides[cur].classList.remove('active');
+  cur=n;
+  const s=slides[cur];
+  s.classList.add('active');
+  s.classList.remove('animate__animated','animate__fadeInRight','animate__fadeInLeft');
+  void s.offsetWidth;
+  s.classList.add('animate__animated',dir);
+  s.querySelectorAll('[data-anim]').forEach((el,i)=>{
+    el.classList.remove('animate__animated','animate__'+el.dataset.anim);
+    el.style.animationDelay=(i*0.08)+'s';
+    void el.offsetWidth;
+    el.classList.add('animate__animated','animate__'+el.dataset.anim);
+  });
+  document.getElementById('counter').textContent=(cur+1)+' / '+slides.length;
+  document.getElementById('progress').style.width=((cur+1)/slides.length*100)+'%';
+  s.scrollTop=0;
+  try{history.replaceState(null,'','#'+(cur+1));}catch(e){}
+}
+document.addEventListener('keydown',e=>{
+  if(Swal.isVisible())return;
+  if(['ArrowRight','PageDown'].includes(e.key)||(e.key===' '&&e.target===document.body)){e.preventDefault();go(cur+1)}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1)}
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(slides.length-1);
+  if(e.key.toLowerCase()==='t')showToc();
+});
+function showToc(){
+  const html='<div id="toc">'+slides.map((s,i)=>`<a href="#" onclick="Swal.close();go(${i});return false;"><span class="mono text-secondary me-2">${String(i+1).padStart(2,'0')}</span>${s.dataset.title}</a>`).join('')+'</div>';
+  Swal.fire({title:'Índice',html,showConfirmButton:false,showCloseButton:true,width:520});
+}
+function copyText(which){
+  let txt;
+  if(which==='puml'){const pre=document.getElementById('pumlCode').cloneNode(true);pre.querySelector('button').remove();txt=pre.textContent;}
+  else txt=document.getElementById(which).value;
+  const ok=()=>Swal.fire({toast:true,position:'top-end',icon:'success',title:'Copiado',showConfirmButton:false,timer:1500});
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    let done=false;try{done=document.execCommand('copy');}catch(e){}ta.remove();
+    done?ok():Swal.fire({title:'Copiá manualmente',html:'<textarea style="width:100%;height:260px;font-family:Fira Code;font-size:12px">'+txt.replace(/</g,'&lt;')+'</textarea>',confirmButtonColor:'#22d3ee',width:720});};
+  try{navigator.clipboard.writeText(txt).then(ok,fallback);}catch(e){fallback();}
+}
+
+/* ================= CAPAS ================= */
+const layers=[
+  {t:'Presentation Layer',c:'var(--cyan)',d:'Recibe las solicitudes HTTP del navegador, valida formato y muestra vistas (HTML/Bootstrap). No contiene reglas del gimnasio.',
+   comps:['SociosController','ClasesController','CalendarioController','PagosController','LoginController','Vistas / plantillas']},
+  {t:'Business Layer',c:'var(--violet)',d:'Reglas del gimnasio: cupo máximo por clase, membresía vigente para reservar, cancelación con anticipación, roles (socio, recepción, admin).',
+   comps:['SocioService','ClaseService','ReservaService','PagoService','AuthService']},
+  {t:'Persistence Layer',c:'var(--amber)',d:'Acceso a datos y a sistemas externos. Encapsula el SQL y la API de la pasarela de pagos para que el negocio no dependa de sus detalles.',
+   comps:['SocioRepository','ClaseRepository','ReservaRepository','PagoRepository','UsuarioRepository','PasarelaClient']},
+  {t:'Database Layer',c:'var(--lime)',d:'Base de datos relacional compartida (p. ej. MySQL). En el despliegue es la única parte separada físicamente de la aplicación.',
+   comps:['socios','membresias','clases','reservas','pagos','usuarios','roles']}
+];
+document.querySelectorAll('.layer').forEach(el=>el.addEventListener('click',()=>{
+  document.querySelectorAll('.layer').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  const L=layers[el.dataset.layer];
+  document.getElementById('layerDetail').innerHTML=
+   `<h4 class="animate__animated animate__fadeIn" style="color:${L.c}">${L.t}</h4>
+    <p class="animate__animated animate__fadeIn">${L.d}</p>
+    <div class="animate__animated animate__fadeInUp">${L.comps.map(c=>`<span class="comp">${c}</span>`).join('')}</div>`;
+}));
+
+/* ================= RATINGS ================= */
+const ratings=[
+  ['Costo total',5,true],['Simplicidad',5,true],['Confiabilidad',3,false],['Rendimiento',2,false],
+  ['Testeabilidad',2,false],['Facilidad de despliegue',1,false],['Modularidad',1,false],
+  ['Escalabilidad',1,false],['Elasticidad',1,false],['Tolerancia a fallos',1,false],['Evolutividad',1,false]
+];
+document.getElementById('ratings').innerHTML=ratings.map(([n,v,d])=>
+ `<div class="rating-row"><span>${n} ${d?'<span class="rel-yes"><i class="fa-solid fa-bullseye"></i> driver</span>':''}</span>
+  <span class="stars">${[1,2,3,4,5].map(i=>`<i class="fa-solid fa-star ${i<=v?'on':''}"></i>`).join('')}</span></div>`).join('');
+
+/* ================= ALTERNATIVAS ================= */
+const alts=[
+  {n:'Microservicios',i:'fa-cubes-stacked',why:'Necesita muchas unidades de despliegue, orquestador y equipos autónomos. Viola “único artefacto”, “sin orquestadores” y “equipo pequeño”; además, sube mucho el costo.'},
+  {n:'Event-Driven',i:'fa-bolt',why:'Se basa en brokers o colas de mensajes. El hosting <b>no tiene colas</b>. También es más complejo de probar y depurar.'},
+  {n:'Service-Based',i:'fa-boxes-stacked',why:'Divide el sistema en varios servicios desplegados por separado. Rompe la restricción de <b>un único artefacto desplegable</b>.'},
+  {n:'Space-Based',i:'fa-memory',why:'Pensado para tráfico muy alto y variable, con grids de datos en memoria. Acá el tráfico es bajo a medio: sobreingeniería y costo alto.'},
+  {n:'Microkernel',i:'fa-puzzle-piece',why:'Es monolítico, pero su valor está en los <b>plug-ins</b> para extender un núcleo. No hay requerimiento de extensibilidad por plug-ins.'},
+  {n:'Pipes & Filters',i:'fa-filter',why:'Sirve para procesar datos en etapas secuenciales (ETL, compiladores). Un sistema interactivo de ABM y reservas no encaja.'}
+];
+document.getElementById('altGrid').innerHTML=alts.map((a,k)=>
+ `<div class="col-md-4" data-anim="zoomIn"><div class="box alt text-center" onclick="showAlt(${k})">
+   <i class="fa-solid ${a.i} fa-2x mb-2" style="color:var(--red)"></i><h5 class="h6 mb-0">${a.n}</h5></div></div>`).join('');
+function showAlt(k){Swal.fire({icon:'error',title:alts[k].n+': descartado',html:alts[k].why,confirmButtonColor:'#22d3ee'})}
+
+/* ================= DIAGRAMA DESPLIEGUE ================= */
+const svgNS='http://www.w3.org/2000/svg';
+function cube(x,y,w,h,stereo,name,stroke,fill,tip){
+  const d=12;
+  return `<g class="uml" data-tip="${tip||''}">
+   <polygon points="${x},${y+d} ${x+d},${y} ${x+w},${y} ${x+w-d},${y+d}" fill="${fill}" stroke="${stroke}" stroke-width="1.4" opacity=".75"/>
+   <polygon points="${x+w-d},${y+d} ${x+w},${y} ${x+w},${y+h-d} ${x+w-d},${y+h}" fill="${fill}" stroke="${stroke}" stroke-width="1.4" opacity=".6"/>
+   <rect x="${x}" y="${y+d}" width="${w-d}" height="${h-d}" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/>
+   <text x="${x+(w-d)/2}" y="${y+d+17}" text-anchor="middle" fill="${stroke}" font-family="Fira Code" font-size="11">«${stereo}»</text>
+   <text x="${x+(w-d)/2}" y="${y+d+34}" text-anchor="middle" fill="#e6ecf7" font-family="Space Grotesk" font-weight="700" font-size="14">${name}</text></g>`;
+}
+function artifact(x,y,w,h,stereo,name,stroke,lines,tip){
+  const lx=x+w-22,ly=y+8;
+  return `<g class="uml" data-tip="${tip||''}">
+   <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="#1f1a0e" stroke="${stroke}" stroke-width="1.4"/>
+   <path d="M${lx} ${ly} h9 l5 5 v13 h-14 z M${lx+9} ${ly} v5 h5" fill="none" stroke="${stroke}" stroke-width="1.2"/>
+   <text x="${x+10}" y="${y+18}" fill="${stroke}" font-family="Fira Code" font-size="11">«${stereo}»</text>
+   <text x="${x+10}" y="${y+36}" fill="#e6ecf7" font-family="Fira Code" font-weight="600" font-size="13">${name}</text>
+   ${(lines||[]).map((l,i)=>`<text x="${x+10}" y="${y+56+i*15}" fill="#cbd5e1" font-family="Fira Code" font-size="10.5">${l}</text>`).join('')}</g>`;
+}
+function link(x1,y1,x2,y2,label,lx,ly,dashed,m1,m2){
+  return `<g><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#94a3b8" stroke-width="1.6" ${dashed?'stroke-dasharray="6 4"':''}/>
+   ${label?`<rect x="${lx-4}" y="${ly-13}" width="${label.length*6.6+8}" height="18" rx="4" fill="#0d1426"/><text x="${lx}" y="${ly}" fill="#c6f432" font-family="Fira Code" font-size="11">${label}</text>`:''}
+   ${m1?`<text x="${x1+6}" y="${y1+16}" fill="#94a3b8" font-family="Fira Code" font-size="11">${m1}</text>`:''}
+   ${m2?`<text x="${x2-14}" y="${y2+16}" fill="#94a3b8" font-family="Fira Code" font-size="11">${m2}</text>`:''}</g>`;
+}
+const C={dev:'#22d3ee',env:'#a78bfa',art:'#fbbf24',spec:'#f472b6',ext:'#f87171'};
+function drawDeploy(v){
+  document.getElementById('vA').style.borderColor=v==='A'?'var(--lime)':'';
+  document.getElementById('vB').style.borderColor=v==='B'?'var(--lime)':'';
+  let s='';
+  // clientes
+  s+=cube(20,90,230,140,'device','PC / móvil del socio',C.dev,'#10263a','Dispositivo del socio: solo usa el navegador para reservar y pagar.');
+  s+=cube(40,160,180,60,'executionEnvironment','Navegador web',C.env,'#1c1a3a','Ambiente de ejecución del cliente. No se instala nada.');
+  s+=cube(20,380,230,140,'device','PC de recepción',C.dev,'#10263a','Recepción y administración: ABM de socios y clases.');
+  s+=cube(40,450,180,60,'executionEnvironment','Navegador web',C.env,'#1c1a3a','Mismo sitio web, otro rol.');
+  // servidor
+  const srvH = v==='A'?600:380;
+  s+=cube(320,20,440,srvH,'device','Servidor de hosting',C.dev,'#0f2233','Servidor del hosting común. Sin colas ni orquestadores.');
+  s+=cube(340,80,400,280,'executionEnvironment','Linux + Apache',C.env,'#1a1838','Sistema operativo y servidor web.');
+  s+=cube(360,140,360,205,'executionEnvironment','PHP 8 (runtime)',C.env,'#221f45','Runtime donde corre la aplicación (podría ser Node.js, JVM, .NET).');
+  s+=artifact(378,195,320,92,'artifact','gimnasio-app',C.art,['«manifest» Presentation Layer','«manifest» Business Layer','«manifest» Persistence Layer'],'ÚNICO artefacto desplegable: contiene las tres capas de la aplicación.');
+  s+=artifact(378,295,150,40,'deploymentSpec','.env',C.spec,[],'Configuración: credenciales de BD, claves de la pasarela.');
+  s+=`<line x1="528" y1="315" x2="560" y2="287" stroke="#f472b6" stroke-dasharray="4 3"/>`;
+  // BD
+  const dbx=340, dby= v==='A'?400:450, dbw=400;
+  if(v==='B') s+=cube(320,430,440,190,'device','Servidor MySQL del hosting',C.dev,'#0f2233','Variante: la BD vive en otro servidor que provee el hosting (Fig. 2 del teórico).');
+  s+=cube(dbx, v==='A'?dby:dby+30, dbw, v==='A'?200:140,'executionEnvironment','MySQL 8',C.env,'#1a1838','SGBD relacional compartido: Database Layer.');
+  s+=artifact(360, v==='A'?dby+58:dby+80, 340, v==='A'?120:70,'artifact','gimnasio_db (esquema)',C.art, v==='A'?['socios · membresias · clases','reservas · pagos','usuarios · roles']:['socios · clases · reservas · pagos · usuarios'],'Esquema relacional de la aplicación.');
+  // externo
+  s+=cube(810,240,175,120,'node','Pasarela de pagos',C.ext,'#2a1216','Sistema EXTERNO (p. ej. Mercado Pago). No lo desplegamos nosotros.');
+  s+=`<text x="890" y="345" text-anchor="middle" fill="#f87171" font-family="Fira Code" font-size="10">(externa)</text>`;
+  // rutas
+  s+=link(250,165,340,165,'HTTPS',262,155,false,'*','1');
+  s+=link(250,450,340,300,'HTTPS',258,395,false,'*','1');
+  if(v==='A') s+=link(540,345,540,412,'TCP/IP :3306',548,385,false);
+  else s+=link(540,345,540,442,'TCP/IP :3306',548,425,false);
+  s+=link(740,250,810,290,'HTTPS/REST',772,250,false);
+  s+=link(810,320,740,320,'webhook',748,338,true);
+  document.getElementById('deploySvg').innerHTML=s;
+  document.querySelectorAll('#deploySvg .uml').forEach(g=>{
+    g.style.cursor='help';
+    const t=document.createElementNS(svgNS,'title');t.textContent=g.dataset.tip;g.prepend(t);
+  });
+}
+drawDeploy('A');
+
+/* ================= QUIZ ================= */
+const quiz=[
+  {q:'¿Qué restricción del caso descarta directamente un estilo Event-Driven?',o:['Equipo pequeño','Tráfico bajo a medio','Hosting común sin colas ni orquestadores','Base de datos relacional compartida'],a:2,
+   e:'Event-Driven depende de un broker o cola de mensajes, y el hosting no lo ofrece.'},
+  {q:'Con capas cerradas, la capa de presentación…',o:['Solo invoca a la capa inmediatamente inferior (negocio)','Puede consultar la BD si es más rápido','Depende directamente de la persistencia','No tiene dependencias'],a:0,
+   e:'Capa cerrada = solo se comunica con la capa inmediata. Así se aíslan los cambios.'},
+  {q:'En un diagrama de despliegue UML, ¿qué representa «executionEnvironment»?',o:['Un archivo generado por el build','Un dispositivo de hardware','Un archivo de configuración','Software que aloja artefactos: SO, servidor web, runtime o SGBD'],a:3,
+   e:'Es un tipo de nodo que modela un entorno de software, normalmente contenido en un «device».'},
+  {q:'¿Cuántos artefactos de aplicación desplegables tiene la solución?',o:['Uno por capa','Uno solo, con todas las capas adentro','Uno por caso de uso','Dos: frontend y backend'],a:1,
+   e:'La restricción pide un único artefacto: las capas son lógicas, no se distribuyen.'},
+  {q:'¿En qué característica puntúa bajo Layered, pero no afecta a este caso?',o:['Escalabilidad / elasticidad','Costo total','Simplicidad','Familiaridad para el equipo'],a:0,
+   e:'Con tráfico bajo a medio, la baja escalabilidad no es un problema.'},
+  {q:'¿Dónde se ubica el componente que llama a la pasarela de pagos?',o:['En el navegador, desde la presentación','En triggers de la base de datos','En la capa de persistencia/integración, usado por el negocio','En un microservicio aparte'],a:2,
+   e:'PasarelaClient encapsula la API externa en la capa de persistencia; PagoService lo usa.'}
+];
+async function startQuiz(){
+  let score=0;
+  for(let i=0;i<quiz.length;i++){
+    const Q=quiz[i];const opts={};Q.o.forEach((o,k)=>opts[k]=o);
+    const r=await Swal.fire({title:`Pregunta ${i+1} de ${quiz.length}`,text:Q.q,input:'radio',inputOptions:opts,
+      confirmButtonText:'Responder',confirmButtonColor:'#22d3ee',showCancelButton:true,cancelButtonText:'Salir',
+      inputValidator:v=>v===null||v===''?'Elegí una opción':undefined,
+      showClass:{popup:'animate__animated animate__fadeInUp animate__faster'}});
+    if(!r.isConfirmed){document.getElementById('quizResult').innerHTML='';return;}
+    const ok=Number(r.value)===Q.a; if(ok)score++;
+    await Swal.fire({icon:ok?'success':'error',title:ok?'¡Correcto!':'No exactamente',
+      html:(ok?'':`Respuesta correcta: <b>${Q.o[Q.a]}</b><br><br>`)+Q.e,confirmButtonColor:'#c6f432',confirmButtonText:'<span style="color:#111">Seguir</span>'});
+  }
+  const pct=Math.round(score/quiz.length*100);
+  Swal.fire({icon:pct>=67?'success':'info',title:`${score} / ${quiz.length}`,text:pct>=67?'¡Listo para entregar!':'Repasá las slides de teoría y volvé a intentar.',confirmButtonColor:'#22d3ee'});
+  document.getElementById('quizResult').innerHTML=`<div class="box ${pct>=67?'lime':'amber'} animate__animated animate__bounceIn" style="max-width:420px"><h4 class="mb-0"><i class="fa-solid fa-trophy"></i> Resultado: ${score}/${quiz.length} (${pct}%)</h4></div>`;
+}
+
+/* ================= CHECKLIST ================= */
+document.querySelectorAll('.check-item').forEach(li=>li.addEventListener('click',()=>li.classList.toggle('done')));
+
+/* ================= INICIO ================= */
+let start=NaN;try{start=parseInt(location.hash.slice(1))-1;}catch(e){}
+slides[0].classList.add('active');
+go(isNaN(start)?0:Math.min(Math.max(start,0),slides.length-1));
+</script>
+</body>
+</html>
