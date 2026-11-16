@@ -25,7 +25,8 @@ h1,h2,h3{font-weight:700;letter-spacing:-.02em}
 h2{font-size:2.3rem;margin:.3rem 0 1.4rem}
 h2 i{color:var(--lime)}
 .lead2{color:var(--muted);font-size:1.15rem}
-.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem;height:100%}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem}
+.row>[class*=col]>.box:only-child{height:100%}
 .box h5{font-weight:700}
 .box.lime{border-left:4px solid var(--lime)}.box.cyan{border-left:4px solid var(--cyan)}
 .box.violet{border-left:4px solid var(--violet)}.box.amber{border-left:4px solid var(--amber)}
@@ -110,6 +111,7 @@ pre.code{background:#0a0f1d;border:1px solid var(--line);border-radius:12px;padd
 .step.on{opacity:1;border-color:var(--lime)}
 .step .num{flex:0 0 34px;height:34px;border-radius:50%;background:#1d2a45;display:flex;align-items:center;justify-content:center;font-family:'Fira Code';color:var(--lime);font-weight:600}
 .step.fail{border-color:var(--red)}
+.t.tight td{padding:.38rem .8rem}
 </style>
 </head>
 <body>
@@ -166,31 +168,265 @@ pre.code{background:#0a0f1d;border:1px solid var(--line);border-radius:12px;padd
   </div>
 </section>
 
-<section class="slide" data-title="Teoría: microkernel">
-  <div class="kicker">Conceptos · Teórico 2.7.3 + Richards &amp; Ford</div>
-  <h2><i class="fa-solid fa-book-open"></i> Estilo microkernel (micronúcleo)</h2>
+<section class="slide" data-title="Estilos de arquitectura: qué son">
+  <div class="kicker">Conceptos · Teórico 2.7</div>
+  <h2><i class="fa-solid fa-compass-drafting"></i> ¿Qué es un estilo de arquitectura?</h2>
   <div class="row g-4">
     <div class="col-lg-7">
-      <div class="quote mb-3" data-anim="fadeIn">Estilo <b>monolítico</b> adecuado para <b>aplicaciones basadas en productos</b>: empaquetadas, disponibles para descargar e instalar como una única implementación, generalmente en el sitio del cliente.</div>
-      <div class="row g-3">
-        <div class="col-6"><div class="box violet"><h5 class="h6"><i class="fa-solid fa-microchip"></i> Núcleo <span class="tag">«core»</span></h5><p class="small mb-0">Funcionalidad mínima para que el sistema funcione. Debe ser estable y cambiar poco.</p></div></div>
-        <div class="col-6"><div class="box lime"><h5 class="h6"><i class="fa-solid fa-puzzle-piece"></i> Plug-ins <span class="tag">«plugin»</span></h5><p class="small mb-0">Componentes independientes que agregan o especializan funcionalidad. No dependen entre sí.</p></div></div>
-        <div class="col-6"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-address-book"></i> Registro</h5><p class="small mb-0">El núcleo sabe qué plug-ins hay, su nombre, versión, contrato y cómo acceder a ellos.</p></div></div>
-        <div class="col-6"><div class="box amber"><h5 class="h6"><i class="fa-solid fa-file-signature"></i> Contratos</h5><p class="small mb-0">Interfaz estándar entre núcleo y plug-in: datos de entrada, salida y formato. Si cambian, se rompen los plug-ins.</p></div></div>
-      </div>
+      <p>Un <b>estilo de arquitectura</b> es la forma <b>macro</b> de organizar una aplicación: define su <b>topología</b> (qué piezas hay y cómo se conectan) y las <b>características típicas</b> que resultan de esa organización.</p>
+      <p>Un <b>patrón de arquitectura</b>, en cambio, es una solución reusable a un problema recurrente <i>dentro</i> de esa topología, con sus fuerzas, consecuencias y trade-offs.</p>
+      <div class="quote mb-3">Los estilos describen <b>cómo se estructura</b> un sistema; los patrones describen <b>cómo resolver</b> problemas dentro de esa estructura.</div>
+      <p class="mb-0">Elegir un estilo es elegir un conjunto de <b>trade-offs</b>: ningún estilo es bueno en todo. Por eso se justifica comparando las características del estilo con los <b>drivers</b> del caso: requerimientos no funcionales y restricciones.</p>
+    </div>
+    <div class="col-lg-5">
+      <div class="box lime mb-3"><h5 class="h6"><i class="fa-solid fa-cube"></i> Monolíticos</h5>
+        <p class="small mb-0">Una sola <b>unidad de despliegue</b>: los componentes interactúan <b>localmente, dentro del mismo proceso</b>. Más simples y baratos, pero escalan y toleran fallos peor. Layered, Pipes &amp; Filters y <b>Microkernel</b>.</p></div>
+      <div class="box cyan"><h5 class="h6"><i class="fa-solid fa-network-wired"></i> Distribuidos</h5>
+        <p class="small mb-0">Varios componentes desplegados por separado que se comunican por <b>invocación remota</b> o <b>mensajería</b>. Hay que tener en cuenta las <b>falacias de la computación distribuida</b>: la red no es confiable, la latencia no es cero, el ancho de banda no es infinito…</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Los estilos de un vistazo">
+  <div class="kicker">Conceptos · Teórico 2.7 · Los estilos</div>
+  <h2><i class="fa-solid fa-shapes"></i> Los estilos de arquitectura de un vistazo</h2>
+  <p class="lead2 small">Para descartar alternativas hay que conocerlas. Una línea por estilo, según el teórico de ANDIS.</p>
+  <div class="row g-4">
+    <div class="col-lg-5"><div class="box lime">
+      <h5><i class="fa-solid fa-cube"></i> Monolíticos <span class="tag">una unidad de despliegue</span></h5>
+      <p class="small"><b>Layered:</b> capas lógicas con roles definidos; cada capa usa la inmediata inferior.</p>
+      <p class="small"><b>Pipes &amp; Filters:</b> filtros independientes que transforman datos, conectados por tuberías, de la entrada a la salida.</p>
+      <p class="small mb-0"><b>Microkernel:</b> núcleo mínimo más plug-ins; típico de aplicaciones de producto instaladas en el cliente.</p>
+    </div></div>
+    <div class="col-lg-7"><div class="box cyan">
+      <h5><i class="fa-solid fa-network-wired"></i> Distribuidos <span class="tag">ojo con las falacias de la computación distribuida</span></h5>
+      <p class="small"><b>Service-Based:</b> pocos servicios de dominio; distribuido pero sin el costo y la complejidad de microservicios o eventos.</p>
+      <p class="small"><b>Event-Driven:</b> componentes independientes que procesan eventos de forma asíncrona; alta escalabilidad y rendimiento.</p>
+      <p class="small"><b>Space-Based:</b> datos replicados en memoria entre unidades de procesamiento que se inician y detienen según la carga.</p>
+      <p class="small"><b>Orchestration-Driven SOA:</b> servicios empresariales coordinados por un motor de orquestación; nació en grandes corporaciones de fines de los 90.</p>
+      <p class="small mb-0"><b>Microservicios:</b> cada servicio es una unidad separada con su propia base de datos, comunicado por API livianas.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Microkernel: definición">
+  <div class="kicker">Conceptos · Teórico 2.7.3 + Richards &amp; Ford</div>
+  <h2><i class="fa-solid fa-microchip"></i> Microkernel: definición y origen</h2>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <p>El estilo <b>microkernel</b> (también llamado <b>arquitectura de plug-ins</b>) divide la aplicación en dos tipos de componentes:</p>
+      <ul class="clean">
+        <li>un <b>núcleo</b> (<code>«core»</code>) con la funcionalidad mínima para que el sistema funcione, y</li>
+        <li><b>plug-ins</b> (<code>«plugin»</code>): componentes independientes que agregan, especializan o extienden esa funcionalidad.</li>
+      </ul>
+      <p>El teórico lo define como un estilo <b>monolítico</b>, adecuado para <b>aplicaciones basadas en productos</b>: empaquetadas, disponibles para descargar e instalar como una única implementación, generalmente <b>en el sitio del cliente</b>.</p>
+      <p class="mb-0">También se usa en <b>aplicaciones de negocio</b> a medida cuando hay un proceso general estable con muchas variantes (por ejemplo, reglas que cambian según el país o el cliente).</p>
+    </div>
+    <div class="col-lg-5">
+      <div class="box violet mb-3"><h5 class="h6"><i class="fa-solid fa-memory"></i> ¿Por qué "microkernel"?</h5>
+        <p class="small mb-0">El nombre viene de los <b>sistemas operativos</b>: un micronúcleo deja en el kernel solo lo esencial (planificación, memoria, comunicación) y saca los drivers y sistemas de archivos a módulos separados. La aplicación copia la idea: núcleo mínimo y todo lo demás afuera.</p></div>
+      <div class="box amber"><h5 class="h6"><i class="fa-solid fa-circle-exclamation"></i> Monolítico ≠ un solo archivo</h5>
+        <p class="small mb-0">El núcleo y los plug-ins pueden ser <b>archivos distintos</b> (un .exe y varias .dll), pero en ejecución forman <b>una sola unidad</b>: un proceso, un despliegue. Por eso se dice que tiene <b>un único cuanto de arquitectura</b>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="El núcleo (core system)">
+  <div class="kicker">Conceptos · El núcleo</div>
+  <h2><i class="fa-solid fa-microchip"></i> El núcleo: la funcionalidad mínima y el "camino feliz"</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <p>Hay dos formas complementarias de definir qué va en el núcleo:</p>
+      <div class="box violet mb-3"><h5 class="h6">1. Lo mínimo para funcionar</h5><p class="small mb-0">En Eclipse, el núcleo es un editor de texto básico: abrir, editar y guardar. Todo lo que lo convierte en un IDE (lenguajes, depuración, Git) son plug-ins.</p></div>
+      <div class="box cyan mb-3"><h5 class="h6">2. El camino feliz (<i>happy path</i>)</h5><p class="small mb-0">El núcleo contiene el <b>flujo general</b> del proceso, con poco o nada de procesamiento particular. Las <b>variaciones</b> se delegan en plug-ins.</p></div>
+      <p class="small mb-0"><b>Beneficio:</b> se elimina la complejidad ciclomática (los <code>if/else</code> encadenados) del núcleo y el código volátil queda aislado. Internamente, el núcleo puede organizarse en capas o como monolito modular.</p>
+    </div>
+    <div class="col-lg-7">
+      <p class="small text-secondary mb-1">Ejemplo de Richards &amp; Ford: una empresa de reciclaje que evalúa dispositivos electrónicos usados.</p>
+<pre class="code"><span class="c">// SIN microkernel: el núcleo conoce cada modelo</span>
+<span class="k">public decimal</span> Evaluar(Dispositivo d)
+{
+    <span class="k">if</span> (d.Modelo == <span class="s">"iPhone 6s"</span>)      { <span class="c">/* 40 líneas de reglas */</span> }
+    <span class="k">else if</span> (d.Modelo == <span class="s">"Galaxy S5"</span>) { <span class="c">/* otras 40 líneas */</span> }
+    <span class="k">else if</span> (d.Modelo == <span class="s">"Pixel 3"</span>)   { <span class="c">/* … */</span> }
+    <span class="c">// cada modelo nuevo obliga a tocar y redesplegar el núcleo</span>
+}
+
+<span class="c">// CON microkernel: el núcleo solo recorre el camino feliz</span>
+<span class="k">public decimal</span> Evaluar(Dispositivo d)
+{
+    <span class="k">var</span> plugin = registro.Buscar(d.Modelo);  <span class="c">// ¿quién sabe evaluarlo?</span>
+    <span class="k">return</span> plugin.Evaluar(d);                <span class="c">// la variación vive en el plug-in</span>
+}</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Los plug-ins">
+  <div class="kicker">Conceptos · Los plug-ins</div>
+  <h2><i class="fa-solid fa-puzzle-piece"></i> Los plug-ins</h2>
+  <p>Son componentes <b>autónomos e independientes</b> que contienen procesamiento especializado, funcionalidades adicionales o código a medida que mejora o extiende el núcleo. Sirven para <b>aislar el código volátil</b>: lo que más cambia queda fuera del núcleo.</p>
+  <div class="row g-3">
+    <div class="col-md-6 col-xl-3" data-anim="fadeInUp"><div class="box lime"><h5 class="h6"><i class="fa-solid fa-link-slash"></i> Independientes entre sí</h5><p class="small mb-0">Un plug-in no debería depender de otro. Si dependen, deja de poder agregarse o quitarse por separado y el sistema se vuelve frágil.</p></div></div>
+    <div class="col-md-6 col-xl-3" data-anim="fadeInUp"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-hammer"></i> En compilación</h5><p class="small mb-0">Se incluyen al compilar. Agregar o cambiar uno obliga a <b>recompilar y redesplegar</b> toda la aplicación. Más simple.</p></div></div>
+    <div class="col-md-6 col-xl-3" data-anim="fadeInUp"><div class="box violet"><h5 class="h6"><i class="fa-solid fa-bolt"></i> En tiempo de ejecución</h5><p class="small mb-0">Se agregan y quitan <b>con la aplicación funcionando</b>, sin redesplegar el núcleo. Se apoyan en frameworks como OSGi (Java) o la carga dinámica de ensamblados (.NET).</p></div></div>
+    <div class="col-md-6 col-xl-3" data-anim="fadeInUp"><div class="box amber"><h5 class="h6"><i class="fa-solid fa-box"></i> Granularidad</h5><p class="small mb-0">Un plug-in puede ser una biblioteca compartida (JAR, DLL), o un paquete o <i>namespace</i> dentro del mismo código, por ejemplo <code>App.Plugins.Evaluacion.IPhone</code>.</p></div></div>
+  </div>
+  <div class="quote small mt-3"><i class="fa-solid fa-lightbulb"></i> La regla práctica: si una funcionalidad <b>varía</b> (por cliente, país, modelo, lenguaje) o es <b>opcional</b>, es candidata a plug-in. Si es imprescindible para el flujo general, va al núcleo.</div>
+</section>
+
+<section class="slide" data-title="Conexión núcleo ↔ plug-in">
+  <div class="kicker">Conceptos · Cómo se comunican</div>
+  <h2><i class="fa-solid fa-plug"></i> Conexión entre el núcleo y los plug-ins</h2>
+  <div class="row g-4">
+    <div class="col-lg-6" data-anim="fadeInLeft"><div class="box lime">
+      <h5><i class="fa-solid fa-arrow-right-arrow-left"></i> Punto a punto (lo habitual)</h5>
+      <p class="small">El núcleo invoca un método o función del plug-in, normalmente de una <b>clase de entrada</b>, dentro del <b>mismo proceso</b>.</p>
+      <ul class="clean small mb-0">
+        <li>Rápido: no hay red ni serialización</li>
+        <li>Simple de desplegar y depurar</li>
+        <li>El sistema sigue siendo monolítico</li>
+      </ul>
+    </div></div>
+    <div class="col-lg-6" data-anim="fadeInRight"><div class="box amber">
+      <h5><i class="fa-solid fa-cloud"></i> Acceso remoto</h5>
+      <p class="small">El plug-in corre como un servicio aparte y el núcleo lo llama por <b>REST</b> o <b>mensajería</b>. El núcleo sigue siendo una unidad, pero el sistema pasa a ser <b>distribuido</b>.</p>
+      <ul class="clean small mb-2">
+        <li>Mayor desacoplamiento</li>
+        <li>El plug-in escala por separado; con mensajería puede ser asíncrono</li>
+      </ul>
+      <ul class="clean x small mb-0">
+        <li>Despliegue y mantenimiento más difíciles</li>
+        <li>Un plug-in remoto puede no responder (fallas de red)</li>
+        <li>Más difícil de probar</li>
+      </ul>
+    </div></div>
+  </div>
+  <div class="quote small mt-3"><i class="fa-solid fa-scale-balanced"></i> La elección es un trade-off: se usa acceso remoto solo cuando sus beneficios (escalar o aislar un plug-in) justifican el costo de distribuir.</div>
+</section>
+
+<section class="slide" data-title="Los datos en microkernel">
+  <div class="kicker">Conceptos · Acceso a datos</div>
+  <h2><i class="fa-solid fa-database"></i> ¿Quién accede a la base de datos?</h2>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <p>Los plug-ins <b>no suelen conectarse directamente</b> a la base de datos central compartida. El núcleo es el responsable de esa base: obtiene los datos que el plug-in necesita y <b>se los pasa</b> a través del contrato.</p>
+      <p>Así se evita que un cambio en el esquema de la base rompa a todos los plug-ins, y el plug-in sigue siendo independiente: solo conoce su contrato.</p>
+      <p class="mb-0">Un plug-in sí puede tener su <b>propio almacenamiento</b>, al que solo accede él. Por ejemplo, el plug-in de evaluación de un modelo puede guardar sus reglas en una base embebida o un archivo propio.</p>
     </div>
     <div class="col-lg-5">
       <div class="box">
-        <h6 class="text-secondary mono small mb-3">EJEMPLOS CONOCIDOS</h6>
-        <p class="small"><i class="fa-solid fa-code" style="color:var(--cyan)"></i> <b>Eclipse, VS Code, IntelliJ</b>: editor base y extensiones de lenguaje, linters y depuradores. <span class="hl">← nuestro caso</span></p>
-        <p class="small"><i class="fa-solid fa-globe" style="color:var(--cyan)"></i> <b>Navegadores</b>: el visor más las extensiones.</p>
-        <p class="small mb-3"><i class="fa-solid fa-rotate" style="color:var(--cyan)"></i> <b>Jenkins</b>: núcleo de CI y plug-ins para cada herramienta.</p>
-        <h6 class="text-secondary mono small mb-2">CONEXIÓN NÚCLEO ↔ PLUG-IN</h6>
-        <p class="small mb-1"><span class="tag">punto a punto</span> llamada en el mismo proceso (lo habitual).</p>
-        <p class="small mb-0"><span class="tag">remota</span> REST o mensajería; agrega distribución y complejidad.</p>
+        <div class="d-flex flex-column gap-2 small">
+          <div class="text-center p-2 rounded" style="background:#1e1b4b;border:1px solid var(--violet)"><b>«core»</b> núcleo</div>
+          <div class="text-center text-secondary"><i class="fa-solid fa-arrows-up-down"></i> el núcleo lee y escribe</div>
+          <div class="text-center p-2 rounded" style="background:#243a0a;border:1px solid #65a30d"><i class="fa-solid fa-database"></i> BD central</div>
+          <div class="text-center text-secondary mt-2"><i class="fa-solid fa-arrow-down"></i> le pasa los datos por el contrato</div>
+          <div class="d-flex gap-2">
+            <div class="flex-fill text-center p-2 rounded" style="background:#1f2f0a;border:1px solid #65a30d">«plugin» A<br><span class="text-secondary">sin BD</span></div>
+            <div class="flex-fill text-center p-2 rounded" style="background:#1f2f0a;border:1px solid #65a30d">«plugin» B<br><span class="text-secondary"><i class="fa-solid fa-database"></i> BD propia</span></div>
+          </div>
+          <div class="text-center mt-1" style="color:var(--red)"><i class="fa-solid fa-ban"></i> plug-in → BD central directo</div>
+        </div>
       </div>
     </div>
   </div>
+</section>
+
+<section class="slide" data-title="El registro de plug-ins">
+  <div class="kicker">Conceptos · El registro</div>
+  <h2><i class="fa-solid fa-address-book"></i> El registro de plug-ins</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <p>El núcleo necesita saber <b>qué plug-ins hay disponibles y cómo usarlos</b>, sin conocerlos de antemano. Esa información vive en el <b>registro</b>.</p>
+      <p class="mb-2">Para cada plug-in, el registro guarda:</p>
+      <ul class="clean small">
+        <li><b>Nombre o identificador</b> y versión</li>
+        <li><b>Contrato</b> que implementa (qué datos recibe y devuelve)</li>
+        <li><b>Detalles de acceso</b>: una referencia en memoria si es punto a punto, o la URL y el protocolo si es remoto</li>
+      </ul>
+      <p class="small mb-0"><b>Implementación:</b> puede ser tan simple como un diccionario dentro del núcleo, o tan compleja como una herramienta de registro y descubrimiento (Apache ZooKeeper, Consul) cuando los plug-ins son remotos.</p>
+    </div>
+    <div class="col-lg-7">
+<pre class="code"><span class="c">// Registro simple, punto a punto, dentro del núcleo</span>
+<span class="k">public record</span> PluginEntry(
+    <span class="k">string</span> Id,          <span class="c">// "evaluador-iphone6s"</span>
+    Version Version,    <span class="c">// 1.2.0</span>
+    <span class="k">string</span> Contrato,    <span class="c">// "IEvaluador"</span>
+    IEvaluador Acceso); <span class="c">// referencia en memoria</span>
+
+<span class="k">public sealed class</span> PluginRegistry
+{
+    <span class="k">private readonly</span> Dictionary&lt;<span class="k">string</span>, PluginEntry&gt; _plugins = <span class="k">new</span>();
+
+    <span class="k">public void</span> Registrar(PluginEntry e) =&gt; _plugins[e.Id] = e;
+    <span class="k">public void</span> Quitar(<span class="k">string</span> id)         =&gt; _plugins.Remove(id);
+    <span class="k">public</span> PluginEntry? Buscar(<span class="k">string</span> id)  =&gt; _plugins.GetValueOrDefault(id);
+}</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Contratos y adaptadores">
+  <div class="kicker">Conceptos · Los contratos</div>
+  <h2><i class="fa-solid fa-file-contract"></i> Contratos y adaptadores</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <p>El <b>contrato</b> es el acuerdo entre el núcleo y los plug-ins. Define:</p>
+      <ul class="clean small">
+        <li>el <b>comportamiento</b> esperado (qué operación se invoca),</li>
+        <li>los <b>datos de entrada</b> que envía el núcleo, y</li>
+        <li>los <b>datos de salida</b> que devuelve el plug-in.</li>
+      </ul>
+      <p class="small">Suele ser <b>estándar</b> para todos los plug-ins de un mismo tipo, y se implementa como interfaces y objetos, o como XML o JSON si el acceso es remoto.</p>
+      <div class="box amber"><h5 class="h6"><i class="fa-solid fa-right-left"></i> Contratos a medida → adaptador</h5><p class="small mb-0">Cuando un plug-in de <b>terceros</b> trae su propio contrato y no se puede modificar, se escribe un <b>adaptador</b> (patrón Adapter) que lo traduce al contrato estándar. El núcleo nunca se entera.</p></div>
+    </div>
+    <div class="col-lg-7">
+<pre class="code"><span class="c">// Contrato estándar que define el núcleo</span>
+<span class="k">public record</span> Dispositivo(<span class="k">string</span> Modelo, <span class="k">int</span> Antiguedad, <span class="k">bool</span> PantallaRota);
+<span class="k">public record</span> Evaluacion(<span class="k">decimal</span> Valor, <span class="k">string</span> Detalle);
+
+<span class="k">public interface</span> IEvaluador
+{
+    Evaluacion Evaluar(Dispositivo d);
+}
+
+<span class="c">// Plug-in de un tercero, con OTRO contrato (no lo podemos cambiar)</span>
+<span class="k">public class</span> CotizadorExterno
+{
+    <span class="k">public double</span> Cotizar(<span class="k">string</span> json) { <span class="c">/* … */</span> }
+}
+
+<span class="c">// Adaptador: traduce el contrato del tercero al estándar</span>
+<span class="k">public sealed class</span> CotizadorExternoAdapter(CotizadorExterno ext) : IEvaluador
+{
+    <span class="k">public</span> Evaluacion Evaluar(Dispositivo d)
+    {
+        <span class="k">var</span> valor = ext.Cotizar(JsonSerializer.Serialize(d));
+        <span class="k">return new</span>((<span class="k">decimal</span>)valor, <span class="s">"Cotizado por proveedor externo"</span>);
+    }
+}</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Ejemplos reales">
+  <div class="kicker">Conceptos · Dónde se usa</div>
+  <h2><i class="fa-solid fa-globe"></i> Ejemplos de microkernel en el mundo real</h2>
+  <div class="row g-4">
+    <div class="col-lg-6"><div class="box cyan">
+      <h5><i class="fa-solid fa-box-open"></i> Aplicaciones de producto</h5>
+      <p class="small"><b>Eclipse, VS Code, IntelliJ:</b> editor como núcleo; lenguajes, depuradores, temas y control de versiones como extensiones.</p>
+      <p class="small"><b>Navegadores (Chrome, Firefox):</b> el visor de páginas es el núcleo; las extensiones agregan funciones.</p>
+      <p class="small"><b>Jenkins:</b> núcleo de integración continua; cada herramienta (Git, Maven, Docker) llega como plug-in.</p>
+      <p class="small mb-0"><b>Jira, PMD:</b> núcleo de gestión o análisis con reglas y funciones extensibles.</p>
+    </div></div>
+    <div class="col-lg-6"><div class="box violet">
+      <h5><i class="fa-solid fa-briefcase"></i> Aplicaciones de negocio</h5>
+      <p class="small"><b>Procesamiento de siniestros de seguros:</b> el flujo de un reclamo es igual en todos lados, pero las reglas cambian según la jurisdicción. Cada jurisdicción es un plug-in; agregar una no toca el núcleo.</p>
+      <p class="small mb-0"><b>Software de declaración de impuestos:</b> el núcleo maneja el formulario principal y el cálculo general; cada formulario anexo o regla particular es un plug-in que se activa si corresponde.</p>
+    </div></div>
+  </div>
+  <div class="quote small mt-3"><i class="fa-solid fa-magnifying-glass"></i> El patrón común: un <b>proceso general estable</b> y muchas <b>variantes o extensiones</b> que cambian a otro ritmo.</div>
 </section>
 
 <section class="slide" data-title="Cómo leer las características">
@@ -212,41 +448,216 @@ pre.code{background:#0a0f1d;border:1px solid var(--line);border-radius:12px;padd
   </div>
 </section>
 
-<section class="slide" data-title="Los estilos de un vistazo">
-  <div class="kicker">Conceptos · Teórico 2.7</div>
-  <h2><i class="fa-solid fa-shapes"></i> Los estilos de arquitectura de un vistazo</h2>
-  <p class="lead2 small">Para descartar alternativas hay que conocerlas. Una línea por estilo, según el teórico de ANDIS.</p>
-  <div class="row g-4">
-    <div class="col-lg-5"><div class="box lime">
-      <h5><i class="fa-solid fa-cube"></i> Monolíticos <span class="tag">una unidad de despliegue</span></h5>
-      <p class="small"><b>Layered:</b> capas lógicas con roles definidos; cada capa usa la inmediata inferior.</p>
-      <p class="small"><b>Pipes &amp; Filters:</b> filtros independientes que transforman datos, conectados por tuberías, de la entrada a la salida.</p>
-      <p class="small mb-0"><b>Microkernel:</b> núcleo mínimo más plug-ins; típico de aplicaciones de producto instaladas en el cliente.</p>
-    </div></div>
-    <div class="col-lg-7"><div class="box cyan">
-      <h5><i class="fa-solid fa-network-wired"></i> Distribuidos <span class="tag">ojo con las falacias de la computación distribuida</span></h5>
-      <p class="small"><b>Service-Based:</b> pocos servicios de dominio; distribuido pero sin el costo y la complejidad de microservicios o eventos.</p>
-      <p class="small"><b>Event-Driven:</b> componentes independientes que procesan eventos de forma asíncrona; alta escalabilidad y rendimiento.</p>
-      <p class="small"><b>Space-Based:</b> datos replicados en memoria entre unidades de procesamiento que se inician y detienen según la carga.</p>
-      <p class="small"><b>Orchestration-Driven SOA:</b> servicios empresariales coordinados por un motor de orquestación; nació en grandes corporaciones de fines de los 90.</p>
-      <p class="small mb-0"><b>Microservicios:</b> cada servicio es una unidad separada con su propia base de datos, comunicado por API livianas.</p>
-    </div></div>
+<section class="slide" data-title="Características del microkernel">
+  <div class="kicker">Conceptos · Características del estilo</div>
+  <h2><i class="fa-solid fa-star"></i> Características del microkernel y por qué</h2>
+  <p class="lead2 small mb-2">Puntajes de Richards &amp; Ford. Partición: <b>técnica y de dominio</b> (cada plug-in puede representar un dominio). Cuantos de arquitectura: <b>1</b>.</p>
+  <table class="t small tight">
+    <thead><tr><th style="width:22%">Característica</th><th style="width:14%">Puntaje</th><th>Por qué</th></tr></thead>
+    <tbody id="mkWhy"></tbody>
+  </table>
+</section>
+
+<section class="slide" data-title="Cuándo usarlo y cuándo no">
+  <div class="kicker">Conceptos · Criterio de elección</div>
+  <h2><i class="fa-solid fa-signs-post"></i> Cuándo usar microkernel y cuándo no</h2>
+  <div class="row g-3">
+    <div class="col-md-6" data-anim="fadeInLeft"><div class="box lime">
+      <h5 class="h6"><i class="fa-solid fa-check"></i> Conviene cuando…</h5>
+      <ul class="clean small mb-0">
+        <li>Es un <b>producto</b> que se instala y se configura distinto según el cliente</li>
+        <li>Hay un <b>proceso general estable</b> y muchas variantes (reglas, modelos, países)</li>
+        <li>Se necesita que <b>terceros</b> puedan extender el sistema</li>
+        <li>Se quiere agregar funcionalidad <b>sin tocar ni redesplegar</b> el núcleo</li>
+        <li>El presupuesto y el equipo piden un estilo <b>simple y barato</b></li>
+      </ul></div></div>
+    <div class="col-md-6" data-anim="fadeInRight"><div class="box red">
+      <h5 class="h6"><i class="fa-solid fa-xmark"></i> No conviene cuando…</h5>
+      <ul class="clean x small mb-0">
+        <li>Se necesita <b>alta escalabilidad o elasticidad</b> (muchos usuarios, picos de carga)</li>
+        <li>Una falla no puede afectar al resto: <b>tolerancia a fallos</b> alta</li>
+        <li>No se puede separar un núcleo de sus variantes: todo es "núcleo"</li>
+        <li>Los plug-ins necesitarían <b>comunicarse mucho entre sí</b></li>
+        <li>El contrato cambia todo el tiempo y rompería los plug-ins</li>
+      </ul></div></div>
+  </div>
+  <div class="box mt-3">
+    <h5 class="h6"><i class="fa-solid fa-code-compare"></i> Frente a Layered</h5>
+    <table class="t small mb-0">
+      <thead><tr><th></th><th>Layered</th><th>Microkernel</th></tr></thead>
+      <tbody>
+        <tr><td>Partición</td><td>Técnica (presentación, negocio, persistencia)</td><td>Técnica y de dominio (cada plug-in)</td></tr>
+        <tr><td>Agregar funcionalidad</td><td>Modificar varias capas y redesplegar todo</td><td>Agregar un plug-in, sin tocar el núcleo</td></tr>
+        <tr><td>Despliegue y pruebas</td><td>Todo junto</td><td>Cada plug-in por separado</td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
-<section class="slide" data-title="Teoría: despliegue UML">
+<section class="slide" data-title="Carga dinámica de plug-ins">
+  <div class="kicker">Conceptos · Plug-ins en tiempo de ejecución</div>
+  <h2><i class="fa-solid fa-bolt"></i> Carga y descarga dinámica</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <p>Para agregar un plug-in <b>sin reiniciar</b>, el núcleo carga su código mientras se está ejecutando, y para quitarlo lo descarga de memoria.</p>
+      <p class="small">Cada plug-in se carga en un <b>contexto aislado</b>: en Java, un <code>ClassLoader</code> propio (u OSGi, que gestiona todo el ciclo de vida); en .NET, un <code>AssemblyLoadContext</code> "coleccionable", que se puede descargar.</p>
+      <h6 class="mono small text-secondary mt-3">CICLO DE VIDA (inspirado en OSGi)</h6>
+      <div class="d-flex flex-wrap align-items-center gap-1 small">
+        <span class="comp">Instalado</span><i class="fa-solid fa-arrow-right text-secondary"></i>
+        <span class="comp">Resuelto</span><i class="fa-solid fa-arrow-right text-secondary"></i>
+        <span class="comp" style="border-color:var(--lime)">Activo</span><i class="fa-solid fa-arrow-right text-secondary"></i>
+        <span class="comp">Detenido</span><i class="fa-solid fa-arrow-right text-secondary"></i>
+        <span class="comp">Desinstalado</span>
+      </div>
+      <p class="small mt-2 mb-0"><b>Resuelto</b> significa que se verificó que sus dependencias (por ejemplo, la versión de la API del núcleo) están disponibles.</p>
+    </div>
+    <div class="col-lg-7">
+<pre class="code"><span class="c">// .NET 8: cargar un plug-in en un contexto aislado</span>
+<span class="k">var</span> ctx = <span class="k">new</span> AssemblyLoadContext(<span class="s">"lang-python"</span>, isCollectible: <span class="k">true</span>);
+<span class="k">var</span> asm = ctx.LoadFromAssemblyPath(rutaDll);
+
+<span class="c">// buscar la clase de entrada que implementa el contrato</span>
+<span class="k">var</span> tipo = asm.GetTypes()
+              .First(t =&gt; <span class="k">typeof</span>(IPlugin).IsAssignableFrom(t));
+<span class="k">var</span> plugin = (IPlugin)Activator.CreateInstance(tipo)!;
+
+plugin.Activate(core);           <span class="c">// pasa a "Activo"</span>
+registro.Registrar(plugin);
+
+<span class="c">// descarga dinámica</span>
+plugin.Deactivate();
+registro.Quitar(plugin.Id);
+ctx.Unload();                    <span class="c">// libera el código de memoria</span></pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Versionado semántico">
+  <div class="kicker">Conceptos · Compatibilidad entre versiones</div>
+  <h2><i class="fa-solid fa-code-branch"></i> Versionado semántico y compatibilidad</h2>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p>Con <b>versionado semántico</b> (SemVer), el número de versión <code>MAYOR.MENOR.PARCHE</code> comunica qué tipo de cambio hubo:</p>
+      <table class="t small">
+        <tbody>
+          <tr><td><code style="color:var(--red)">MAYOR</code></td><td>Cambios <b>incompatibles</b> en el contrato: los plug-ins viejos pueden romperse.</td></tr>
+          <tr><td><code style="color:var(--amber)">MENOR</code></td><td>Funcionalidad nueva <b>compatible</b> hacia atrás.</td></tr>
+          <tr><td><code style="color:var(--lime)">PARCHE</code></td><td>Correcciones compatibles.</td></tr>
+        </tbody>
+      </table>
+      <p class="small mb-0">Cada plug-in declara qué versión de la API del núcleo necesita, por ejemplo <code>&gt;=2.3.0 &lt;3.0.0</code>: "cualquier 2.x desde la 2.3". Antes de activarlo, el núcleo lo verifica. Para no romper plug-ins viejos al subir de versión mayor, el núcleo puede mantener el contrato anterior con un <b>adaptador</b>.</p>
+    </div>
+    <div class="col-lg-6">
+      <div class="box">
+        <h6 class="mono small text-secondary">PROBALO</h6>
+        <p class="small">El plug-in <code>lang-python 1.4.0</code> requiere la API del núcleo <code>&gt;=2.3.0 &lt;3.0.0</code>. ¿Con qué versión del núcleo funciona?</p>
+        <div class="d-flex flex-wrap gap-2 mb-3" id="semverBtns"></div>
+        <div id="semverOut" class="small"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Firma digital de paquetes">
+  <div class="kicker">Conceptos · Catálogo firmado</div>
+  <h2><i class="fa-solid fa-file-signature"></i> Firma digital de paquetes</h2>
+  <p>Un plug-in es <b>código de terceros</b> que va a correr dentro del IDE. La firma digital permite comprobar <b>quién lo publicó</b> y que <b>nadie lo modificó</b> en el camino.</p>
+  <div class="row g-3 align-items-stretch">
+    <div class="col-md-5" data-anim="fadeInLeft"><div class="box violet">
+      <h5 class="h6"><i class="fa-solid fa-user-pen"></i> El publicador</h5>
+      <ol class="small mb-0">
+        <li>Calcula el <b>hash</b> del paquete (por ejemplo, SHA-256): una "huella" que cambia si cambia un solo byte.</li>
+        <li>Firma ese hash con su <b>clave privada</b>, que solo él tiene. El resultado es el archivo <code>.sig</code>.</li>
+        <li>Publica <code>.plugin</code> + <code>.sig</code> en el catálogo.</li>
+      </ol></div></div>
+    <div class="col-md-2 d-flex align-items-center justify-content-center"><i class="fa-solid fa-arrow-right fa-2x" style="color:var(--lime)"></i></div>
+    <div class="col-md-5" data-anim="fadeInRight"><div class="box cyan">
+      <h5 class="h6"><i class="fa-solid fa-laptop-code"></i> El IDE</h5>
+      <ol class="small mb-0">
+        <li>Descarga el paquete y la firma.</li>
+        <li>Recalcula el hash del paquete.</li>
+        <li>Verifica la firma con la <b>clave pública</b> confiable del publicador. Si no coincide, el plug-in se rechaza.</li>
+      </ol></div></div>
+  </div>
+  <div class="row g-3 mt-1">
+    <div class="col-md-6"><div class="box lime"><p class="small mb-0"><i class="fa-solid fa-check"></i> <b>Garantiza:</b> integridad (no fue alterado) y autenticidad (viene de quien dice).</p></div></div>
+    <div class="col-md-6"><div class="box red"><p class="small mb-0"><i class="fa-solid fa-triangle-exclamation"></i> <b>No garantiza</b> que el código sea bueno o seguro: solo quién lo firmó. Por eso el catálogo además revisa lo que publica.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Testeo aislado">
+  <div class="kicker">Conceptos · Facilidad de testeo</div>
+  <h2><i class="fa-solid fa-vial"></i> Testear aislando componentes</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <p>Como cada plug-in solo depende del <b>contrato</b>, se puede probar sin el sistema completo, reemplazando al núcleo por un <b>doble de prueba</b>.</p>
+      <ul class="clean small">
+        <li><b>Stub:</b> devuelve respuestas fijas.</li>
+        <li><b>Fake:</b> implementación simple que funciona de verdad (por ejemplo, en memoria).</li>
+        <li><b>Mock:</b> verifica que se lo llamó como se esperaba.</li>
+      </ul>
+      <p class="small">Y al revés: el núcleo se prueba con <b>plug-ins falsos</b>, sin depender de ningún lenguaje real.</p>
+      <div class="box amber"><p class="small mb-0"><b>Pruebas de contrato:</b> un conjunto de tests que <b>todo</b> plug-in de un tipo debe pasar. Si un plug-in nuevo los pasa, cumple el contrato y el núcleo lo puede usar.</p></div>
+    </div>
+    <div class="col-lg-7">
+<pre class="code"><span class="c">// xUnit: el linter se prueba sin abrir el IDE</span>
+<span class="k">public sealed class</span> FakeCore : ICoreApi
+{
+    <span class="k">public</span> List&lt;<span class="k">string</span>&gt; Salida { <span class="k">get</span>; } = <span class="k">new</span>();
+    <span class="c">// … resto de ICoreApi con implementaciones mínimas</span>
+}
+
+<span class="k">public class</span> LongLineLinterTests
+{
+    [Fact]
+    <span class="k">public void</span> Analyze_LineaDe100Caracteres_DevuelveUnaAdvertencia()
+    {
+        <span class="k">var</span> linter = <span class="k">new</span> LongLineLinter(maxLength: 80);
+        linter.Activate(<span class="k">new</span> FakeCore());
+
+        <span class="k">var</span> diags = linter.Analyze(<span class="k">new</span> SourceFile(<span class="s">"a.py"</span>, <span class="k">new string</span>(<span class="s">'x'</span>, 100)));
+
+        Assert.Single(diags);
+    }
+}</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Despliegue UML: elementos">
   <div class="kicker">Conceptos · Teórico 2.3.4</div>
   <h2><i class="fa-solid fa-sitemap"></i> Diagrama de despliegue UML: elementos</h2>
-  <p class="lead2 small">Modela la <b>arquitectura física</b>: nodos, los artefactos desplegados en ellos y las rutas de comunicación.</p>
-  <div class="row g-3">
-    <div class="col-md-4" data-anim="fadeIn"><div class="box cyan"><span class="tag">«node» / «device»</span><p class="small mb-0 mt-2">Recurso computacional. <code>«device»</code> es hardware: servidor, PC, móvil.</p></div></div>
-    <div class="col-md-4" data-anim="fadeIn"><div class="box violet"><span class="tag">«executionEnvironment»</span><p class="small mb-0 mt-2">Nodo de software que aloja artefactos: SO, runtime, servidor web, SGBD.</p></div></div>
-    <div class="col-md-4" data-anim="fadeIn"><div class="box amber"><span class="tag">«artifact»</span><p class="small mb-0 mt-2">Elemento físico desplegado: ejecutable, paquete, script, esquema.</p></div></div>
-    <div class="col-md-4" data-anim="fadeIn"><div class="box pink"><span class="tag">«deploymentSpec»</span><p class="small mb-0 mt-2">Archivo de configuración de un artefacto.</p></div></div>
-    <div class="col-md-4" data-anim="fadeIn"><div class="box lime"><span class="tag">ruta de comunicación</span><p class="small mb-0 mt-2">Asociación entre nodos, con protocolo (<code>HTTPS</code>, <code>TCP/IP</code>) y multiplicidad.</p></div></div>
-    <div class="col-md-4" data-anim="fadeIn"><div class="box"><span class="tag">«deploy» / «manifest»</span><p class="small mb-0 mt-2"><code>«deploy»</code>: el nodo soporta el artefacto (o se dibuja contenido). <code>«manifest»</code>: el artefacto materializa un componente.</p></div></div>
+  <p class="small">Modela la <b>arquitectura física</b>: dónde corre cada pieza de software, en qué hardware y cómo se comunican esos nodos. Muestra los nodos, los artefactos almacenados en cada uno y las rutas de comunicación.</p>
+  <table class="t small">
+    <thead><tr><th style="width:24%">Elemento</th><th style="width:22%">Notación</th><th>Significado</th></tr></thead>
+    <tbody>
+      <tr><td><b>Nodo</b></td><td>Cubo con <code>«node»</code></td><td>Recurso computacional donde se despliegan artefactos. Los nodos pueden contener otros nodos.</td></tr>
+      <tr><td><b>Dispositivo</b></td><td>Cubo con <code>«device»</code></td><td>Nodo de <b>hardware</b>: servidor, PC, móvil.</td></tr>
+      <tr><td><b>Ambiente de ejecución</b></td><td>Cubo con <code>«executionEnvironment»</code></td><td>Nodo de <b>software</b> que aloja artefactos: SO, runtime, servidor web, SGBD. Suele ir dentro de un dispositivo.</td></tr>
+      <tr><td><b>Artefacto</b></td><td>Rectángulo con <code>«artifact»</code> e ícono de hoja</td><td>Elemento físico que se despliega: ejecutable, biblioteca, script, esquema de BD.</td></tr>
+      <tr><td><b>Especificación de despliegue</b></td><td>Rectángulo con <code>«deploymentSpec»</code></td><td>Archivo de configuración de un artefacto; sus atributos son los parámetros.</td></tr>
+      <tr><td><b>Ruta de comunicación</b></td><td>Línea entre nodos, con etiqueta</td><td>Cómo intercambian mensajes los nodos: protocolo (<code>HTTPS</code>, <code>TCP/IP</code>) y multiplicidad.</td></tr>
+      <tr><td><b>Despliegue / manifestación</b></td><td>Dependencia <code>«deploy»</code> / <code>«manifest»</code></td><td><code>«deploy»</code>: el nodo soporta el artefacto (o se dibuja adentro). <code>«manifest»</code>: el artefacto materializa un componente.</td></tr>
+      <tr><td><b>Instancia</b></td><td><u><code>nombre : Tipo</code></u></td><td>Una ocurrencia concreta de un nodo o artefacto: el nombre va antes del tipo, separado por <code>:</code> y subrayado.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-title="Cómo se lee un diagrama de despliegue">
+  <div class="kicker">Conceptos · Lectura de un diagrama</div>
+  <h2><i class="fa-solid fa-glasses"></i> Cómo se lee un diagrama de despliegue</h2>
+  <div class="row g-4">
+    <div class="col-lg-7"><div class="svg-wrap"><svg id="miniSvg" viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:58vh"></svg></div></div>
+    <div class="col-lg-5">
+      <p class="small text-secondary">Ejemplo genérico: una aplicación de escritorio que usa un motor de base de datos en otro equipo.</p>
+      <ol class="small">
+        <li class="mb-2"><b>Anidamiento = despliegue.</b> Lo que está dentro de un nodo está desplegado en él: <code>app.exe</code> corre en .NET 8, que corre en Windows, que corre en la notebook.</li>
+        <li class="mb-2"><b>Cada línea entre nodos es una comunicación por red</b>, con su protocolo. Si dos piezas están en el mismo nodo y proceso, se llaman localmente.</li>
+        <li class="mb-2"><b>La multiplicidad</b> (<code>*</code>, <code>1</code>) dice cuántas instancias participan: muchas notebooks, un servidor.</li>
+        <li class="mb-0"><b>"Distribuir"</b> es poner componentes en nodos distintos conectados por red. Un estilo monolítico tiene su aplicación en un solo ambiente de ejecución.</li>
+      </ol>
+    </div>
   </div>
-  <div class="quote small mt-3"><i class="fa-solid fa-lightbulb"></i> En microkernel, el teórico usa los estereotipos <code>«core»</code> para el núcleo y <code>«plugin»</code> para los complementos; los vamos a usar sobre los artefactos.</div>
 </section>
 
 <section class="slide" data-title="Anatomía del IDE">
@@ -353,7 +764,7 @@ pre.code{background:#0a0f1d;border:1px solid var(--line);border-radius:12px;padd
 <section class="slide" data-title="Características del estilo">
   <div class="kicker">Resolución · Parte 1 · Trade-offs</div>
   <h2><i class="fa-solid fa-scale-balanced"></i> Fortalezas y debilidades</h2>
-  <p class="lead2 small">Puntajes del estilo microkernel según Richards &amp; Ford (2020). Se marcan los atributos que son <span class="hl">drivers del caso</span>.</p>
+  <p class="lead2 small">Los mismos puntajes que vimos en los conceptos, ahora marcando cuáles son <span class="hl">drivers del caso</span> del IDE.</p>
   <div class="row g-4">
     <div class="col-lg-7"><div class="box" id="ratings"></div></div>
     <div class="col-lg-5">
@@ -767,5 +1178,57 @@ let start=NaN;try{start=parseInt(location.hash.slice(1))-1;}catch(e){}
 slides[0].classList.add('active');
 go(isNaN(start)?0:Math.min(Math.max(start,0),slides.length-1));
 </script>
+<script>
+/* ===== Características: por qué ===== */
+const mkWhy=[
+ ['Costo total',5,'Monolito: un solo despliegue, sin infraestructura distribuida (brokers, orquestadores, red).'],
+ ['Simplicidad',4,'Pocas piezas y llamadas locales; algo más que Layered por registro, contratos y carga.'],
+ ['Modularidad',3,'La funcionalidad variable se separa en plug-ins independientes; el núcleo sigue siendo un solo bloque.'],
+ ['Evolutividad',3,'Se cambian funciones con plug-ins sin tocar el núcleo; cambiar el contrato afecta a todos.'],
+ ['Testeabilidad',3,'Cada plug-in se prueba aislado contra su contrato. El núcleo se sigue probando como un todo.'],
+ ['Facilidad de despliegue',3,'Un plug-in se despliega por separado (incluso en ejecución). Un cambio en el núcleo obliga a redesplegar todo.'],
+ ['Confiabilidad',3,'Los cambios quedan aislados en plug-ins, lo que reduce el riesgo de romper el resto.'],
+ ['Rendimiento',3,'Suelen ser aplicaciones chicas, y se pueden quitar los plug-ins que no se usan.'],
+ ['Escalabilidad',1,'Un solo cuanto de arquitectura: para atender más carga hay que replicar la aplicación entera.'],
+ ['Elasticidad',1,'Por la misma razón, no puede crecer y achicarse rápido ante picos de carga.'],
+ ['Tolerancia a fallos',1,'Todo corre en un proceso: un plug-in defectuoso puede tirar la aplicación completa.']
+];
+document.getElementById('mkWhy').innerHTML=mkWhy.map(([n,v,w])=>
+ `<tr><td><b>${n}</b></td><td><span class="stars">${[1,2,3,4,5].map(i=>`<i class="fa-solid fa-star ${i<=v?'on':''}"></i>`).join('')}</span></td><td>${w}</td></tr>`).join('');
+
+/* ===== SemVer ===== */
+const semverCases=[
+ ['2.2.0',false,'2.2.0 es <b>menor</b> que 2.3.0: le falta funcionalidad de la API que el plug-in usa. Se rechaza.'],
+ ['2.3.0',true,'Cumple el mínimo exacto. Compatible.'],
+ ['2.9.1',true,'Misma versión mayor (2) y posterior a 2.3.0: solo agregó cosas compatibles. Compatible.'],
+ ['3.0.0',false,'Cambió la versión <b>mayor</b>: puede haber cambios incompatibles en el contrato. Se rechaza, salvo que el núcleo ofrezca un adaptador del contrato 2.x.']
+];
+document.getElementById('semverBtns').innerHTML=semverCases.map((c,i)=>
+ `<button class="btn-nav mono" onclick="checkSemver(${i})">núcleo ${c[0]}</button>`).join('');
+function checkSemver(i){
+  const [v,ok,why]=semverCases[i];
+  document.getElementById('semverOut').innerHTML=
+   `<div class="box ${ok?'lime':'red'} animate__animated animate__fadeIn"><b><i class="fa-solid ${ok?'fa-circle-check':'fa-circle-xmark'}"></i> Núcleo ${v}: ${ok?'compatible':'incompatible'}</b><br>${why}</div>`;
+}
+
+/* ===== Mini diagrama de lectura ===== */
+(function(){
+  const badge=(x,y,n)=>`<circle cx="${x}" cy="${y}" r="11" fill="#c6f432"/><text x="${x}" y="${y+4}" text-anchor="middle" fill="#111" font-family="Fira Code" font-weight="700" font-size="12">${n}</text>`;
+  let s='';
+  s+=cube(20,30,290,330,'device','Notebook del vendedor',C.dev,'#0f2233','Dispositivo de hardware.');
+  s+=cube(36,88,258,260,'executionEnvironment','Windows 11',C.env,'#16162f','Ambiente de ejecución: sistema operativo.');
+  s+=cube(52,146,226,186,'executionEnvironment','.NET 8',C.env,'#1e1b40','Ambiente de ejecución: runtime.');
+  s+=artifact(70,204,190,50,'artifact','app.exe',C.art,[],'Artefacto: el ejecutable de la aplicación.');
+  s+=artifact(70,264,190,46,'deploymentSpec','appsettings.json',C.spec,[],'Configuración del artefacto.');
+  s+=cube(380,70,250,240,'device','Servidor de BD',C.dev,'#0f2233','Otro dispositivo de hardware.');
+  s+=cube(396,128,218,170,'executionEnvironment','PostgreSQL 16',C.env,'#1a1838','SGBD.');
+  s+=artifact(414,190,180,50,'artifact','ventas_db',C.art,[],'Esquema de la base de datos.');
+  s+=link(310,200,380,200,'TCP/IP :5432',304,188,false,'*','1');
+  s+=badge(268,198,1)+badge(345,160,2)+badge(345,242,3)+badge(372,62,4);
+  document.getElementById('miniSvg').innerHTML=s;
+  document.querySelectorAll('#miniSvg .uml').forEach(g=>{g.style.cursor='help';const t=document.createElementNS(svgNS,'title');t.textContent=g.dataset.tip;g.prepend(t);});
+})();
+</script>
+
 </body>
 </html>
