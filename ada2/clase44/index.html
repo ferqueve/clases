@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UT5 · TA3 · Event-Driven — Plataforma de pedidos en tiempo real</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a2e; --card:#18223a; --line:#2a3858;
+  --txt:#e6ecf7; --muted:#93a1bd;
+  --lime:#c6f432; --cyan:#22d3ee; --violet:#a78bfa; --amber:#fbbf24; --pink:#f472b6; --red:#f87171;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font-family:'Space Grotesk',system-ui,sans-serif;overflow:hidden}
+body{background:radial-gradient(1200px 600px at 85% -10%,rgba(198,244,50,.08),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(34,211,238,.08),transparent 60%),var(--bg)}
+code,pre,.mono{font-family:'Fira Code',monospace}
+.slide{position:absolute;inset:0;padding:3.2rem 4.5rem 5rem;display:none;overflow-y:auto}
+.slide.active{display:block}
+.kicker{font-family:'Fira Code',monospace;color:var(--lime);font-size:.9rem;letter-spacing:.12em;text-transform:uppercase}
+h1,h2,h3{font-weight:700;letter-spacing:-.02em}
+h2{font-size:2.3rem;margin:.3rem 0 1.4rem}
+h2 i{color:var(--lime)}
+.lead2{color:var(--muted);font-size:1.15rem}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem}
+.row>[class*=col]>.box:only-child{height:100%}
+.box h5{font-weight:700}
+.box.lime{border-left:4px solid var(--lime)}.box.cyan{border-left:4px solid var(--cyan)}
+.box.violet{border-left:4px solid var(--violet)}.box.amber{border-left:4px solid var(--amber)}
+.box.pink{border-left:4px solid var(--pink)}.box.red{border-left:4px solid var(--red)}
+.tag{display:inline-block;font-family:'Fira Code',monospace;font-size:.78rem;padding:.15rem .55rem;border-radius:6px;background:#22304d;color:var(--cyan);margin:.15rem .2rem .15rem 0}
+.hl{color:var(--lime);font-weight:600}
+.quote{border-left:3px solid var(--cyan);padding:.6rem 1rem;background:rgba(34,211,238,.06);border-radius:0 10px 10px 0;color:#cfe9f2}
+ul.clean{list-style:none;padding-left:0}
+ul.clean li{padding:.35rem 0 .35rem 1.7rem;position:relative}
+ul.clean li::before{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;left:0;color:var(--lime)}
+ul.x li::before{content:"\f00d";color:var(--red)}
+table.t{width:100%;border-collapse:separate;border-spacing:0 6px}
+table.t th{color:var(--muted);font-weight:500;font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;padding:.3rem .8rem}
+table.t td{background:var(--card);padding:.7rem .9rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}
+table.t td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+table.t td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+/* portada */
+.cover{display:flex;flex-direction:column;justify-content:center;height:100%}
+.cover h1{font-size:4.2rem;line-height:1.02}
+.cover h1 span{color:var(--lime)}
+.badge-big{font-family:'Fira Code';background:#1d2a45;color:var(--cyan);padding:.4rem .8rem;border-radius:8px;margin-right:.5rem}
+/* capas */
+.layer{border-radius:12px;padding:1rem 1.3rem;margin-bottom:.6rem;cursor:pointer;border:1px solid transparent;transition:.25s;position:relative}
+.layer:hover{transform:translateX(6px)}
+.layer.sel{border-color:var(--txt)}
+.layer h5{margin:0;font-weight:700}
+.layer small{color:rgba(255,255,255,.75)}
+.L1{background:linear-gradient(90deg,#155e75,#0e3a4a)}
+.L2{background:linear-gradient(90deg,#4c1d95,#2e1260)}
+.L3{background:linear-gradient(90deg,#854d0e,#4f2e07)}
+.L4{background:linear-gradient(90deg,#3f6212,#243a0a)}
+.arrow-down{text-align:center;color:var(--muted);margin:-.35rem 0 -.2rem;font-size:.85rem}
+.comp{display:inline-block;background:#0f172a;border:1px solid var(--line);padding:.35rem .7rem;border-radius:8px;margin:.25rem;font-family:'Fira Code';font-size:.85rem}
+/* estrellas */
+.rating-row{display:flex;align-items:center;justify-content:space-between;padding:.45rem .8rem;border-bottom:1px dashed var(--line)}
+.stars i{color:#334155;margin-left:2px}.stars i.on{color:var(--amber)}
+.rel-yes{color:var(--lime);font-size:.8rem}.rel-no{color:var(--muted);font-size:.8rem}
+/* alternativas */
+.alt{cursor:pointer;transition:.2s}
+.alt:hover{transform:translateY(-4px);border-color:var(--lime)}
+/* svg */
+#deploySvg{width:100%;height:auto;max-height:60vh}
+.svg-wrap{background:#0d1426;border:1px solid var(--line);border-radius:14px;padding:.6rem}
+/* código */
+pre.code{background:#0a0f1d;border:1px solid var(--line);border-radius:12px;padding:1rem 1.2rem;color:#d7e3ff;font-size:.86rem;max-height:60vh;overflow:auto;position:relative}
+.k{color:var(--pink)}.s{color:var(--lime)}.c{color:#64748b}.st{color:var(--amber)}
+.copy-btn{position:absolute;top:.6rem;right:.6rem}
+/* nav */
+#nav{position:fixed;bottom:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(11,16,32,.85);backdrop-filter:blur(6px);border-top:1px solid var(--line);z-index:10}
+#progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--cyan),var(--lime));transition:width .3s;z-index:11}
+.btn-nav{background:#1d2a45;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.35rem .9rem}
+.btn-nav:hover{background:#26375a;color:#fff}
+.btn-lime{background:var(--lime);color:#111;font-weight:700;border:none;border-radius:10px;padding:.6rem 1.2rem}
+.btn-lime:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;border:1px solid var(--cyan);color:var(--cyan);border-radius:10px;padding:.45rem 1rem}
+.btn-ghost:hover{background:rgba(34,211,238,.1);color:var(--cyan)}
+#counter{font-family:'Fira Code';color:var(--muted);font-size:.9rem}
+#toc{max-height:60vh;overflow:auto;text-align:left}
+#toc a{display:block;color:var(--txt);text-decoration:none;padding:.3rem .5rem;border-radius:6px}
+#toc a:hover{background:#26375a}
+.swal2-popup{background:#141d33 !important;color:var(--txt) !important;border:1px solid var(--line)}
+.swal2-title{color:var(--txt) !important}
+.swal2-html-container{color:#cbd5e1 !important}
+.swal2-radio{background:transparent !important;flex-direction:column;align-items:flex-start !important}
+.swal2-radio label{margin:.35rem 0 !important;color:var(--txt);text-align:left;font-size:1rem}
+.check-item{cursor:pointer;user-select:none}
+.check-item.done{color:var(--lime);text-decoration:line-through;text-decoration-color:rgba(198,244,50,.5)}
+@media (max-width:900px){.slide{padding:2rem 1.3rem 5rem}.cover h1{font-size:2.6rem}h2{font-size:1.7rem}}
+</style>
+<style>
+/* ---- extras event-driven ---- */
+.lane{display:flex;align-items:center;gap:.6rem;margin-bottom:.45rem}
+.lane .lbl{flex:0 0 150px;font-size:.82rem;color:var(--muted)}
+.lane .bar{height:22px;border-radius:6px;width:0;transition:width .6s ease;display:flex;align-items:center;padding-left:.4rem;font-family:'Fira Code';font-size:.72rem;color:#111;white-space:nowrap;overflow:hidden}
+.ev{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:26px;padding:0 .35rem;border-radius:7px;font-family:'Fira Code';font-size:.72rem;margin:.15rem;color:#111;font-weight:600}
+.cg{background:#0f172a;border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;min-height:74px;transition:.3s}
+.cg.down{opacity:.35;border-style:dashed;border-color:var(--red)}
+.cg h6{font-size:.8rem;margin-bottom:.3rem}
+.part{background:#0f172a;border:1px solid var(--line);border-radius:8px;padding:.4rem .5rem;min-height:66px;font-family:'Fira Code';font-size:.72rem}
+.part.hit{border-color:var(--lime);box-shadow:0 0 0 2px rgba(198,244,50,.25)}
+.flow-step{display:flex;gap:.8rem;align-items:flex-start;padding:.5rem .8rem;border-radius:12px;background:var(--card);border:1px solid var(--line);margin-bottom:.45rem;opacity:.3;transition:.3s}
+.flow-step.on{opacity:1;border-color:var(--lime)}
+.flow-step.bad.on{border-color:var(--red)}
+.flow-step .num{flex:0 0 30px;height:30px;border-radius:50%;background:#1d2a45;display:flex;align-items:center;justify-content:center;font-family:'Fira Code';color:var(--lime);font-weight:600;font-size:.85rem}
+.t.tight td{padding:.38rem .8rem}
+.pill{display:inline-block;border-radius:999px;padding:.1rem .55rem;font-size:.75rem;font-family:'Fira Code'}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<!-- ===================== PORTADA ===================== -->
+<section class="slide" data-title="Portada">
+  <div class="cover">
+    <div class="kicker animate__animated animate__fadeInDown">ANDIS · UT5 Estilos de arquitectura · Trabajo de aplicación 3</div>
+    <h1 class="mt-3 animate__animated animate__fadeInUp">Event-Driven<br><span>Architecture</span></h1>
+    <p class="lead2 mt-3 animate__animated animate__fadeIn animate__delay-1s" style="max-width:800px">
+      Los conceptos para diseñar una <b>plataforma de pedidos en tiempo real</b>: eventos, brokers, publicación y suscripción,
+      particiones, idempotencia y consistencia eventual. Después, la resolución: por qué event-driven (Parte 1) y su
+      <b>diagrama de despliegue UML</b> (Parte 2).
+    </p>
+    <div class="mt-4 animate__animated animate__fadeIn animate__delay-1s">
+      <span class="badge-big"><i class="fa-solid fa-bolt"></i> Eventos</span>
+      <span class="badge-big"><i class="fa-solid fa-tower-broadcast"></i> Broker</span>
+      <span class="badge-big"><i class="fa-solid fa-server"></i> UML Deployment</span>
+    </div>
+    <p class="mt-5 text-secondary mono small"><i class="fa-regular fa-keyboard"></i> ← → para navegar · <b>T</b> para índice</p>
+  </div>
+</section>
+
+<!-- ===================== CONSIGNA ===================== -->
+<section class="slide" data-title="La consigna">
+  <div class="kicker">Ejercicio 1</div>
+  <h2><i class="fa-solid fa-clipboard-list"></i> El caso: pedidos en tiempo real</h2>
+  <p class="lead2"><b>Productores</b> generan pedidos desde un carrito de compras; <b>consumidores</b> procesan pagos, modifican el inventario, hacen la logística de envíos y mandan notificaciones.</p>
+  <div class="row g-3 mt-1">
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box cyan">
+      <h5><i class="fa-solid fa-gears text-info"></i> Requerimientos funcionales</h5>
+      <ul class="clean small mb-0">
+        <li>Publicación y suscripción a eventos de dominio</li>
+        <li>Más de un consumidor del mismo tipo (por ejemplo, varios procesadores de pago)</li>
+      </ul></div></div>
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box lime">
+      <h5><i class="fa-solid fa-gauge-high" style="color:var(--lime)"></i> No funcionales</h5>
+      <ul class="clean small mb-0">
+        <li>Alto desempeño</li>
+        <li>Alta escalabilidad</li>
+        <li>Tolerancia a fallos</li>
+        <li>Consistencia eventual</li>
+      </ul></div></div>
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box amber">
+      <h5><i class="fa-solid fa-lock" style="color:var(--amber)"></i> Restricción</h5>
+      <ul class="clean small mb-0">
+        <li>Usar un <b>broker de mensajes</b> con <b>claves de partición</b> e <b>idempotencia</b></li>
+      </ul></div></div>
+  </div>
+  <div class="row g-3 mt-2">
+    <div class="col-md-6"><div class="box violet"><b>Parte 1.</b> Justificar por qué event-driven es el estilo más adecuado para este contexto.</div></div>
+    <div class="col-md-6"><div class="box pink"><b>Parte 2.</b> Diagrama de despliegue UML: qué componentes tiene la solución y cómo se distribuyen <i>o no</i>.</div></div>
+  </div>
+  <div class="quote small mt-3"><i class="fa-solid fa-route"></i> <b>Mapa de la presentación:</b> primero los conceptos (slides 3 a 23), después la resolución, y al final el quiz y el checklist.</div>
+</section>
+
+<section class="slide" data-title="Estilos de arquitectura: qué son">
+  <div class="kicker">Conceptos · Teórico 2.7</div>
+  <h2><i class="fa-solid fa-compass-drafting"></i> ¿Qué es un estilo de arquitectura?</h2>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <p>Un <b>estilo de arquitectura</b> es la forma <b>macro</b> de organizar una aplicación: define su <b>topología</b> (qué piezas hay y cómo se conectan) y las <b>características típicas</b> que resultan de esa organización.</p>
+      <p>Un <b>patrón de arquitectura</b>, en cambio, es una solución reusable a un problema recurrente <i>dentro</i> de esa topología, con sus fuerzas, consecuencias y trade-offs.</p>
+      <div class="quote mb-3">Los estilos describen <b>cómo se estructura</b> un sistema; los patrones describen <b>cómo resolver</b> problemas dentro de esa estructura.</div>
+      <p class="mb-0">Elegir un estilo es elegir un conjunto de <b>trade-offs</b>: ningún estilo es bueno en todo. Por eso se justifica comparando las características del estilo con los <b>drivers</b> del caso: requerimientos no funcionales y restricciones.</p>
+    </div>
+    <div class="col-lg-5">
+      <div class="box lime mb-3"><h5 class="h6"><i class="fa-solid fa-cube"></i> Monolíticos</h5>
+        <p class="small mb-0">Una sola <b>unidad de despliegue</b>: los componentes interactúan <b>localmente, dentro del mismo proceso</b>. Más simples y baratos, pero escalan y toleran fallos peor. Layered, Pipes &amp; Filters y Microkernel.</p></div>
+      <div class="box cyan"><h5 class="h6"><i class="fa-solid fa-network-wired"></i> Distribuidos</h5>
+        <p class="small mb-0">Varios componentes desplegados por separado que se comunican por <b>invocación remota</b> o <b>mensajería</b>. Service-Based, <b>Event-Driven</b>, Space-Based, SOA y Microservicios. Hay que tener en cuenta las <b>falacias de la computación distribuida</b> (próximas slides).</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Los estilos de un vistazo">
+  <div class="kicker">Conceptos · Teórico 2.7 · Los estilos</div>
+  <h2><i class="fa-solid fa-shapes"></i> Los estilos de arquitectura de un vistazo</h2>
+  <p class="lead2 small">Para descartar alternativas hay que conocerlas. Una línea por estilo, según el teórico de ANDIS.</p>
+  <div class="row g-4">
+    <div class="col-lg-5"><div class="box lime">
+      <h5><i class="fa-solid fa-cube"></i> Monolíticos <span class="tag">una unidad de despliegue</span></h5>
+      <p class="small"><b>Layered:</b> capas lógicas con roles definidos; cada capa usa la inmediata inferior.</p>
+      <p class="small"><b>Pipes &amp; Filters:</b> filtros independientes que transforman datos, conectados por tuberías, de la entrada a la salida.</p>
+      <p class="small mb-0"><b>Microkernel:</b> núcleo mínimo más plug-ins; típico de aplicaciones de producto instaladas en el cliente.</p>
+    </div></div>
+    <div class="col-lg-7"><div class="box cyan">
+      <h5><i class="fa-solid fa-network-wired"></i> Distribuidos <span class="tag">ojo con las falacias de la computación distribuida</span></h5>
+      <p class="small"><b>Service-Based:</b> pocos servicios de dominio; distribuido pero sin el costo y la complejidad de microservicios o eventos.</p>
+      <p class="small"><b>Event-Driven:</b> componentes independientes que procesan eventos de forma asíncrona; alta escalabilidad y rendimiento.</p>
+      <p class="small"><b>Space-Based:</b> datos replicados en memoria entre unidades de procesamiento que se inician y detienen según la carga.</p>
+      <p class="small"><b>Orchestration-Driven SOA:</b> servicios empresariales coordinados por un motor de orquestación; nació en grandes corporaciones de fines de los 90.</p>
+      <p class="small mb-0"><b>Microservicios:</b> cada servicio es una unidad separada con su propia base de datos, comunicado por API livianas.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ===================== FALACIAS ===================== -->
+<section class="slide" data-title="Falacias de la computación distribuida">
+  <div class="kicker">Conceptos · Sistemas distribuidos</div>
+  <h2><i class="fa-solid fa-triangle-exclamation"></i> Las 8 falacias de la computación distribuida</h2>
+  <p class="small">Una <b>falacia</b> es algo que se cree cierto pero no lo es. Quien construye su primera aplicación distribuida suele suponer estas ocho cosas. Todas resultan falsas a largo plazo, y event-driven es un estilo <b>distribuido</b>: hay que diseñar sabiendo que son falsas.</p>
+  <div class="row g-2" id="fallacies"></div>
+  <p class="small text-secondary mt-2 mb-0"><i class="fa-solid fa-hand-pointer"></i> Hacé clic en cada falacia para ver qué implica en una plataforma de pedidos.</p>
+</section>
+
+<!-- ===================== SYNC vs ASYNC ===================== -->
+<section class="slide" data-title="Comunicación sincrónica y asincrónica">
+  <div class="kicker">Conceptos · Formas de comunicarse</div>
+  <h2><i class="fa-solid fa-right-left"></i> Sincrónica vs asincrónica</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="box cyan mb-3"><h5 class="h6"><i class="fa-solid fa-phone"></i> Sincrónica (petición/respuesta)</h5>
+        <p class="small mb-0">Quien llama <b>espera</b> la respuesta para seguir, como una llamada telefónica. Ejemplos: REST, RPC. Si el otro está caído o lento, quien llama también queda bloqueado.</p></div>
+      <div class="box lime mb-3"><h5 class="h6"><i class="fa-solid fa-envelope"></i> Asincrónica (enviar y seguir)</h5>
+        <p class="small mb-0">Quien envía deja el mensaje y <b>sigue trabajando</b>, como un correo. El receptor lo procesa cuando puede. No necesitan estar disponibles al mismo tiempo.</p></div>
+      <p class="small mb-0">La mensajería asincrónica es una solución pragmática a los problemas de los sistemas distribuidos: <b>reconoce la latencia</b> de las comunicaciones remotas y <b>baja el acoplamiento</b> entre las partes.</p>
+    </div>
+    <div class="col-lg-7"><div class="box">
+      <h6 class="mono small text-secondary">PROBALO: CONFIRMAR UN PEDIDO</h6>
+      <p class="small">El cliente aprieta "Comprar". Hay que cobrar, reservar stock, preparar el envío y notificar.</p>
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn-nav" onclick="runTimeline('sync')"><i class="fa-solid fa-phone"></i> Sincrónico</button>
+        <button class="btn-lime" style="padding:.35rem .9rem" onclick="runTimeline('async')"><i class="fa-solid fa-envelope"></i> Asincrónico</button>
+      </div>
+      <div id="timeline"></div>
+      <div id="timelineOut" class="small mt-2"></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ===================== EVENTOS ===================== -->
+<section class="slide" data-title="Eventos, comandos y mensajes">
+  <div class="kicker">Conceptos · El evento</div>
+  <h2><i class="fa-solid fa-bolt"></i> ¿Qué es un evento?</h2>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p>Un <b>evento del dominio</b> es la representación de <b>algo que sucedió</b> en el dominio y que a los expertos les interesa: un objeto del modelo que registra un hecho discreto.</p>
+      <table class="t small">
+        <thead><tr><th></th><th>Evento</th><th>Comando</th></tr></thead>
+        <tbody>
+          <tr><td><b>Qué expresa</b></td><td>Algo que <b>ya pasó</b></td><td>Algo que <b>se pide</b> que pase</td></tr>
+          <tr><td><b>Nombre</b></td><td>En pasado: <code>PedidoCreado</code></td><td>En imperativo: <code>CobrarPedido</code></td></tr>
+          <tr><td><b>Destinatarios</b></td><td>Cero, uno o muchos; el emisor no los conoce</td><td>Uno, que el emisor conoce</td></tr>
+          <tr><td><b>¿Se puede rechazar?</b></td><td>No: es un hecho, es inmutable</td><td>Sí</td></tr>
+        </tbody>
+      </table>
+      <p class="small mb-0">Un <b>mensaje</b> es el paquete de datos que viaja por el canal; puede transportar un evento o un comando. No confundir con el <b>evento del negocio</b> (análisis de requerimientos): algo que pasa afuera y hace que el trabajo responda.</p>
+    </div>
+    <div class="col-lg-6">
+      <p class="small text-secondary mb-1">Un evento típico: datos del negocio más metadatos para procesarlo bien.</p>
+<pre class="code">{
+  <span class="s">"eventId"</span>: <span class="st">"7f3c2a9e-…"</span>,       <span class="c">// único → idempotencia</span>
+  <span class="s">"type"</span>: <span class="st">"PedidoCreado"</span>,
+  <span class="s">"occurredAt"</span>: <span class="st">"2026-11-16T15:58:00Z"</span>,
+  <span class="s">"key"</span>: <span class="st">"pedido-1042"</span>,        <span class="c">// clave de partición</span>
+  <span class="s">"schemaVersion"</span>: 1,
+  <span class="s">"correlationId"</span>: <span class="st">"c-88d1…"</span>,   <span class="c">// rastrea todo el flujo</span>
+  <span class="s">"data"</span>: {
+    <span class="s">"pedidoId"</span>: 1042,
+    <span class="s">"clienteId"</span>: 77,
+    <span class="s">"items"</span>: [ { <span class="s">"sku"</span>: <span class="st">"ZAP-41"</span>, <span class="s">"cant"</span>: 1 } ],
+    <span class="s">"total"</span>: 2350.00
+  }
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MENSAJERÍA Y BROKER ===================== -->
+<section class="slide" data-title="Mensajería y broker">
+  <div class="kicker">Conceptos · Teórico 2.13.4 Messaging</div>
+  <h2><i class="fa-solid fa-tower-broadcast"></i> Mensajería y broker de mensajes</h2>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p>La <b>mensajería</b> permite integrar aplicaciones construidas de forma independiente transfiriendo paquetes de datos de forma <b>frecuente, inmediata, confiable y asíncrona</b>.</p>
+      <ul class="clean small">
+        <li><b>Remitente y receptor:</b> quien envía y quien recibe el mensaje.</li>
+        <li><b>Canal de mensajes</b> (<i>message channel</i>): conecta al remitente con el receptor.</li>
+        <li><b>Enrutador</b> (<i>message router</i>): decide a qué receptor va cada mensaje.</li>
+        <li><b>Traductor</b> (<i>message translator</i>): convierte el mensaje al formato que necesita el receptor.</li>
+        <li><b>Endpoint</b>: el código de la aplicación que se conecta al sistema de mensajería para enviar y recibir.</li>
+      </ul>
+    </div>
+    <div class="col-lg-6">
+      <div class="box violet mb-3"><h5 class="h6"><i class="fa-solid fa-building-columns"></i> El broker</h5>
+        <p class="small mb-0">Es el <b>servidor intermediario</b> que implementa los canales: recibe, guarda y entrega los mensajes. Remitente y receptor solo conocen al broker, no se conocen entre sí. Ejemplos: <b>Apache Kafka</b>, <b>RabbitMQ</b>, Azure Service Bus, Amazon SNS/SQS.</p></div>
+      <div class="box lime"><h5 class="h6"><i class="fa-solid fa-link-slash"></i> Qué se gana</h5>
+        <ul class="clean small mb-0">
+          <li>Los dos lados <b>no necesitan estar disponibles al mismo tiempo</b>: el broker guarda el mensaje.</li>
+          <li><b>Varias aplicaciones</b> pueden recibir el mismo mensaje.</li>
+          <li>Si llegan más pedidos de los que se pueden procesar, el broker <b>absorbe el pico</b> (nivelación de carga con colas).</li>
+        </ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PUB/SUB vs COLAS ===================== -->
+<section class="slide" data-title="Publicar/suscribir y colas">
+  <div class="kicker">Conceptos · Patrones de canal</div>
+  <h2><i class="fa-solid fa-satellite-dish"></i> Publicar/suscribir vs punto a punto</h2>
+  <div class="row g-4">
+    <div class="col-lg-6" data-anim="fadeInLeft"><div class="box cyan">
+      <h5><i class="fa-solid fa-arrow-right"></i> Punto a punto (cola)</h5>
+      <p class="small">Cada mensaje lo procesa <b>un solo</b> receptor. Si hay varios escuchando la misma cola, <b>compiten</b> y se reparten los mensajes.</p>
+      <div class="d-flex align-items-center gap-2 small flex-wrap">
+        <span class="comp">Emisor</span><i class="fa-solid fa-arrow-right text-secondary"></i>
+        <span class="comp" style="border-color:var(--cyan)">cola</span><i class="fa-solid fa-arrow-right text-secondary"></i>
+        <span class="comp">Receptor A <b>o</b> B</span>
+      </div>
+      <p class="small mt-2 mb-0">Uso típico: <b>comandos</b> y reparto de trabajo.</p>
+    </div></div>
+    <div class="col-lg-6" data-anim="fadeInRight"><div class="box lime">
+      <h5><i class="fa-solid fa-share-nodes"></i> Publicar/suscribir (tópico)</h5>
+      <p class="small">El publicador envía a un <b>tópico</b>; <b>cada suscriptor recibe su propia copia</b>. El publicador no sabe quiénes ni cuántos son.</p>
+      <div class="d-flex align-items-center gap-2 small flex-wrap">
+        <span class="comp">Publicador</span><i class="fa-solid fa-arrow-right text-secondary"></i>
+        <span class="comp" style="border-color:var(--lime)">tópico</span><i class="fa-solid fa-arrow-right text-secondary"></i>
+        <span class="comp">Pagos <b>y</b> Inventario <b>y</b> Notificaciones</span>
+      </div>
+      <p class="small mt-2 mb-0">Uso típico: <b>eventos</b>. Agregar un suscriptor nuevo no toca al publicador.</p>
+    </div></div>
+  </div>
+  <div class="quote small mt-3"><i class="fa-solid fa-lightbulb"></i> Los brokers modernos combinan los dos: un tópico con <b>grupos de consumidores</b>. Entre grupos funciona como pub/sub (cada grupo recibe todo) y dentro de un grupo como cola (las instancias se reparten el trabajo). Es lo que pide la consigna: <b>varios procesadores de pago</b>.</div>
+</section>
+
+<!-- ===================== EDA DEFINICIÓN ===================== -->
+<section class="slide" data-title="Event-driven: definición">
+  <div class="kicker">Conceptos · Teórico 2.7.5 + Richards &amp; Ford</div>
+  <h2><i class="fa-solid fa-bolt"></i> Arquitectura dirigida por eventos</h2>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <p>Estilo <b>distribuido</b>, ampliamente usado para crear aplicaciones <b>altamente escalables y de alto rendimiento</b>. Se basa en <b>componentes de procesamiento de eventos</b> que operan de manera <b>independiente</b> y procesan los eventos de forma <b>asíncrona</b>.</p>
+      <p>En lugar de que un componente llame a otro y espere, cada componente <b>reacciona</b> a lo que pasó y, al terminar, <b>anuncia</b> lo que hizo con un nuevo evento.</p>
+      <div class="quote small mb-0">Contraste con el modelo <b>basado en peticiones</b> (<i>request-based</i>): ahí un orquestador recibe la solicitud y llama, en orden y esperando, a cada componente. Sirve para consultas y flujos deterministas; event-driven sirve para reaccionar a hechos con alto volumen.</div>
+    </div>
+    <div class="col-lg-5">
+      <div class="box">
+        <h6 class="mono small text-secondary mb-2">PIEZAS DEL ESTILO</h6>
+        <p class="small"><span class="tag">evento iniciador</span> el que dispara todo el flujo: <code>PedidoCreado</code>.</p>
+        <p class="small"><span class="tag">eventos de procesamiento</span> los que generan los procesadores al terminar: <code>PagoAprobado</code>, <code>StockReservado</code>.</p>
+        <p class="small"><span class="tag">procesador de eventos</span> <code>«processor»</code> componente independiente que reacciona a eventos.</p>
+        <p class="small"><span class="tag">canal de eventos</span> el tópico o la cola en el broker.</p>
+        <p class="small mb-0"><span class="tag">orquestador / mediador</span> <code>«orchestrator»</code> solo en la topología con mediador (siguiente slide). El teórico usa estos dos estereotipos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TOPOLOGÍAS ===================== -->
+<section class="slide" data-title="Topologías: broker y mediador">
+  <div class="kicker">Conceptos · Dos topologías</div>
+  <h2><i class="fa-solid fa-diagram-project"></i> Topología broker vs topología mediador</h2>
+  <div class="row g-3">
+    <div class="col-lg-6" data-anim="fadeInLeft"><div class="box lime">
+      <h5><i class="fa-solid fa-people-arrows"></i> Broker (coreografía)</h5>
+      <p class="small">No hay coordinador central. Cada procesador escucha eventos, hace su parte y <b>publica</b> un nuevo evento. El flujo surge de esa cadena, como una coreografía donde cada bailarín conoce sus pasos.</p>
+      <ul class="clean small mb-2"><li>Muy desacoplado</li><li>Mejor escalabilidad, rendimiento y tolerancia a fallos</li></ul>
+      <ul class="clean x small mb-0"><li>Nadie controla el flujo completo</li><li>Manejo de errores y reintentos más difícil</li><li>Difícil saber en qué estado está un pedido</li></ul>
+    </div></div>
+    <div class="col-lg-6" data-anim="fadeInRight"><div class="box violet">
+      <h5><i class="fa-solid fa-user-tie"></i> Mediador (orquestación)</h5>
+      <p class="small">Un <b>mediador</b> (<code>«orchestrator»</code>) recibe el evento iniciador y envía, en orden, los pasos a cada procesador (<code>«processor»</code>). Como un director de orquesta.</p>
+      <ul class="clean small mb-2"><li>Control del flujo y del estado</li><li>Mejor manejo de errores y recuperación</li><li>Mejor consistencia de datos</li></ul>
+      <ul class="clean x small mb-0"><li>Más acoplamiento con el mediador</li><li>El mediador puede ser un cuello de botella</li><li>Menor escalabilidad y rendimiento</li></ul>
+    </div></div>
+  </div>
+  <div class="quote small mt-3"><i class="fa-solid fa-scale-balanced"></i> La plantilla del teórico dibuja la topología con mediador (<code>«orchestrator»</code> y <code>«processor»</code>). La elección es un trade-off: más <b>control</b> (mediador) o más <b>escalabilidad y tolerancia a fallos</b> (broker). Se pueden combinar: broker para lo general, mediador para un flujo crítico.</div>
+</section>
+
+<!-- ===================== CONSUMIDORES COMPETIDORES ===================== -->
+<section class="slide" data-title="Consumidores competidores">
+  <div class="kicker">Conceptos · Escalar consumidores</div>
+  <h2><i class="fa-solid fa-users-gear"></i> Grupos de consumidores y consumidores competidores</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <p class="small">Un <b>grupo de consumidores</b> es un conjunto de instancias del mismo tipo de procesador que comparten el trabajo:</p>
+      <ul class="clean small">
+        <li><b>Entre grupos:</b> cada grupo recibe <b>todos</b> los eventos (pub/sub).</li>
+        <li><b>Dentro de un grupo:</b> cada evento lo procesa <b>una sola</b> instancia (consumidores competidores).</li>
+        <li><b>Escalar</b> es agregar instancias al grupo.</li>
+        <li><b>Si una instancia cae</b>, el broker reparte su trabajo entre las demás (<i>rebalanceo</i>): tolerancia a fallos.</li>
+      </ul>
+      <p class="small mb-0 text-secondary">En Kafka el trabajo se reparte por partición (lo vemos en la próxima slide).</p>
+    </div>
+    <div class="col-lg-7"><div class="box">
+      <h6 class="mono small text-secondary">PROBALO</h6>
+      <div class="d-flex flex-wrap gap-2 mb-2">
+        <button class="btn-lime" style="padding:.35rem .9rem" onclick="cgPublish()"><i class="fa-solid fa-paper-plane"></i> Publicar PedidoCreado</button>
+        <button class="btn-nav" onclick="cgToggle()"><i class="fa-solid fa-power-off"></i> <span id="cgBtn">Apagar Pagos-B</span></button>
+        <button class="btn-nav" onclick="cgReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div class="small mb-1"><b style="color:var(--amber)">Grupo "pagos"</b> <span class="text-secondary">· 3 instancias compiten</span></div>
+      <div class="row g-2 mb-2">
+        <div class="col-4"><div class="cg" id="cgA"><h6>Pagos-A</h6><div></div></div></div>
+        <div class="col-4"><div class="cg" id="cgB"><h6>Pagos-B</h6><div></div></div></div>
+        <div class="col-4"><div class="cg" id="cgC"><h6>Pagos-C</h6><div></div></div></div>
+      </div>
+      <div class="row g-2">
+        <div class="col-6"><div class="small mb-1"><b style="color:var(--cyan)">Grupo "inventario"</b> <span class="text-secondary">· 1 instancia</span></div><div class="cg" id="cgInv"><div></div></div></div>
+        <div class="col-6"><div class="small mb-1"><b style="color:var(--pink)">Grupo "notificaciones"</b> <span class="text-secondary">· 1 instancia</span></div><div class="cg" id="cgNot"><div></div></div></div>
+      </div>
+      <div id="cgOut" class="small mt-2 text-secondary"></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ===================== PARTICIONES ===================== -->
+<section class="slide" data-title="Particiones y claves de partición">
+  <div class="kicker">Conceptos · Restricción: claves de partición</div>
+  <h2><i class="fa-solid fa-table-columns"></i> Particiones y claves de partición</h2>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <p class="small">Un tópico se divide en <b>particiones</b>: secuencias ordenadas e independientes de eventos. Permiten <b>paralelismo</b>: cada partición la atiende una instancia del grupo.</p>
+      <p class="small">Al publicar se indica una <b>clave</b>. El broker calcula <code>hash(clave) mod N</code> y así <b>la misma clave siempre va a la misma partición</b>.</p>
+      <ul class="clean small">
+        <li><b>Orden garantizado</b> solo <b>dentro</b> de una partición. Con clave = <code>pedidoId</code>, los eventos de un pedido se procesan en orden.</li>
+        <li><b>Límite de escala:</b> en un grupo no puede haber más instancias activas que particiones.</li>
+        <li><b>Clave caliente:</b> si una clave concentra muchos eventos, su partición se satura. Hay que elegir claves que repartan bien.</li>
+      </ul>
+    </div>
+    <div class="col-lg-7"><div class="box">
+      <h6 class="mono small text-secondary">PROBALO · TÓPICO "pedidos" CON 6 PARTICIONES</h6>
+      <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
+        <input id="pkInput" class="form-control form-control-sm mono" style="max-width:200px;background:#0a0f1d;color:var(--txt);border-color:var(--line)" value="pedido-1042">
+        <button class="btn-lime" style="padding:.3rem .8rem" onclick="pkSend()"><i class="fa-solid fa-paper-plane"></i> Publicar con esta clave</button>
+      </div>
+      <div class="d-flex flex-wrap gap-1 mb-2">
+        <button class="btn-nav small" onclick="pkQuick('pedido-1042')">pedido-1042</button>
+        <button class="btn-nav small" onclick="pkQuick('pedido-1043')">pedido-1043</button>
+        <button class="btn-nav small" onclick="pkQuick('pedido-2001')">pedido-2001</button>
+        <button class="btn-nav small" onclick="pkQuick('pedido-7')">pedido-7</button>
+      </div>
+      <div class="row g-2" id="parts"></div>
+      <div id="pkOut" class="small mt-2"></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ===================== GARANTÍAS DE ENTREGA ===================== -->
+<section class="slide" data-title="Garantías de entrega">
+  <div class="kicker">Conceptos · ¿Cuántas veces llega un mensaje?</div>
+  <h2><i class="fa-solid fa-truck-fast"></i> Garantías de entrega</h2>
+  <div class="row g-3">
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box red">
+      <h5 class="h6">A lo sumo una vez<br><span class="pill" style="background:#3b1218;color:var(--red)">at-most-once</span></h5>
+      <p class="small mb-0">Se confirma antes de procesar. Si el consumidor se cae a la mitad, el mensaje <b>se pierde</b>. Aceptable para métricas, nunca para un pago.</p></div></div>
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box lime">
+      <h5 class="h6">Al menos una vez<br><span class="pill" style="background:#243a0a;color:var(--lime)">at-least-once</span></h5>
+      <p class="small mb-0">Se confirma <b>después</b> de procesar. Si se cae antes de confirmar, el broker lo <b>reenvía</b>: nada se pierde, pero puede llegar <b>duplicado</b>. Es lo más usado.</p></div></div>
+    <div class="col-md-4" data-anim="fadeInUp"><div class="box violet">
+      <h5 class="h6">Exactamente una vez<br><span class="pill" style="background:#2e1260;color:var(--violet)">exactly-once</span></h5>
+      <p class="small mb-0">Lo ideal, pero caro y limitado: algunos brokers lo ofrecen solo dentro de su propio ecosistema. En la práctica se logra el <b>efecto</b> con al-menos-una-vez + <b>idempotencia</b>.</p></div></div>
+  </div>
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6"><div class="box">
+      <h5 class="h6"><i class="fa-solid fa-check-double"></i> Confirmación (<i>ack</i> / <i>offset</i>)</h5>
+      <p class="small mb-0">El consumidor le avisa al broker que terminó con un mensaje. En Kafka se guarda el <b>offset</b>: la posición hasta donde se leyó cada partición. Si el consumidor reinicia, sigue desde ahí.</p></div></div>
+    <div class="col-lg-6"><div class="box amber">
+      <h5 class="h6"><i class="fa-solid fa-code-merge"></i> El problema de la doble escritura</h5>
+      <p class="small mb-0">Guardar en la base <b>y</b> publicar el evento son dos operaciones; si falla una, quedan inconsistentes. Solución habitual: <b>outbox transaccional</b>: el evento se guarda en una tabla en la misma transacción y otro proceso lo publica.</p></div></div>
+  </div>
+</section>
+
+<!-- ===================== IDEMPOTENCIA ===================== -->
+<section class="slide" data-title="Idempotencia">
+  <div class="kicker">Conceptos · Restricción: idempotencia</div>
+  <h2><i class="fa-solid fa-equals"></i> Idempotencia</h2>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p class="small">Una operación es <b>idempotente</b> si ejecutarla una vez o muchas deja el sistema en el <b>mismo estado</b>. Con entrega al-menos-una-vez los duplicados <b>van a llegar</b>: cada consumidor tiene que tolerarlos.</p>
+      <ul class="clean small">
+        <li><b>Registro de eventos procesados:</b> guardar el <code>eventId</code> y descartar si ya está.</li>
+        <li><b>Operaciones idempotentes por naturaleza:</b> "estado = PAGADO" sí; "saldo = saldo − 100" no.</li>
+        <li><b>Clave de idempotencia hacia afuera:</b> la pasarela de pagos recibe <code>pedidoId</code> y no cobra dos veces.</li>
+        <li><b>Productor idempotente:</b> el broker descarta reenvíos del mismo productor.</li>
+      </ul>
+<pre class="code" style="max-height:34vh"><span class="k">public async</span> Task Handle(PedidoCreado e)
+{
+    <span class="k">if</span> (<span class="k">await</span> db.YaProcesado(e.EventId)) <span class="k">return</span>;  <span class="c">// duplicado</span>
+    <span class="k">var</span> r = <span class="k">await</span> pasarela.Cobrar(e.PedidoId, e.Total,
+                 idempotencyKey: <span class="s">$"pedido-{e.PedidoId}"</span>);
+    <span class="k">await</span> db.GuardarJuntos(e.EventId, r);  <span class="c">// misma transacción</span>
+}</pre>
+    </div>
+    <div class="col-lg-6"><div class="box">
+      <h6 class="mono small text-secondary">PROBALO · EL BROKER REENVÍA EL MISMO EVENTO</h6>
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="idemOn" checked onchange="idemReset()">
+        <label class="form-check-label small" for="idemOn">Consumidor idempotente</label>
+      </div>
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn-lime" style="padding:.35rem .9rem" onclick="idemDeliver()"><i class="fa-solid fa-envelope-open-text"></i> Entregar PedidoCreado (eventId e-1042)</button>
+        <button class="btn-nav" onclick="idemReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div class="small mb-1">Entregas recibidas: <b id="idemDeliv">0</b></div>
+      <div class="small mb-1">Cobros a la tarjeta del cliente:</div>
+      <div id="idemCharges" class="mb-2"></div>
+      <div id="idemOut" class="small"></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ===================== CONSISTENCIA ===================== -->
+<section class="slide" data-title="Consistencia fuerte y eventual">
+  <div class="kicker">Conceptos · BASE y teorema de Brewer</div>
+  <h2><i class="fa-solid fa-hourglass-half"></i> Consistencia fuerte vs consistencia eventual</h2>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="box cyan mb-3"><h5 class="h6">Consistencia fuerte</h5><p class="small mb-0">Toda lectura devuelve el <b>último valor escrito</b>: todos ven los mismos datos en el mismo orden. Es lo que dan las transacciones <b>ACID</b> en una sola base de datos.</p></div>
+      <div class="box lime mb-3"><h5 class="h6">Consistencia eventual</h5><p class="small mb-0">Forma de consistencia débil: si no hay nuevas actualizaciones, <b>eventualmente</b> todas las lecturas devuelven el último valor. El tiempo hasta lograrlo es la <b>ventana de inconsistencia</b>. El ejemplo clásico es el DNS.</p></div>
+      <div class="box violet"><h5 class="h6">BASE vs ACID</h5><p class="small mb-0"><b>B</b>asic <b>A</b>vailability, <b>S</b>oft state, <b>E</b>ventual consistency: sistemas que priorizan la <b>disponibilidad</b> y aceptan inconsistencias temporales.</p></div>
+    </div>
+    <div class="col-lg-6">
+      <div class="box amber mb-3"><h5 class="h6"><i class="fa-solid fa-triangle"></i> Teorema de Brewer (CAP)</h5><p class="small mb-0">Entre consistencia fuerte (C), alta disponibilidad (A) y tolerancia a la partición de red (P), solo se pueden garantizar <b>dos a la vez</b>. En un sistema distribuido las particiones de red pasan, así que, cuando ocurren, hay que elegir entre C y A. Event-driven elige <b>A</b> y acepta consistencia eventual.</p></div>
+      <div class="box">
+        <h6 class="mono small text-secondary">EN LA PLATAFORMA DE PEDIDOS</h6>
+        <p class="small mb-1"><b>t0</b> · el cliente compra → se publica <code>PedidoCreado</code></p>
+        <p class="small mb-1"><b>t0 + 80 ms</b> · Inventario todavía muestra el stock anterior <span class="pill" style="background:#3b2a07;color:var(--amber)">ventana de inconsistencia</span></p>
+        <p class="small mb-1"><b>t0 + 200 ms</b> · Inventario procesa el evento y descuenta el stock</p>
+        <p class="small mb-0"><b>t0 + 1 s</b> · Pagos, Inventario y Logística coinciden <span class="pill" style="background:#243a0a;color:var(--lime)">consistente</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SAGAS Y FALLOS ===================== -->
+<section class="slide" data-title="Sagas, compensaciones y DLQ">
+  <div class="kicker">Conceptos · Cuando algo sale mal</div>
+  <h2><i class="fa-solid fa-life-ring"></i> Sagas, compensaciones y colas de mensajes muertos</h2>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p class="small">Sin una transacción ACID que abarque todos los servicios, <b>no se puede hacer rollback</b> de un pedido que ya pasó por varios procesadores.</p>
+      <div class="box lime mb-3"><h5 class="h6"><i class="fa-solid fa-scroll"></i> Saga</h5><p class="small mb-0">Una transacción larga dividida en <b>pasos locales</b>, cada uno con su <b>acción compensatoria</b> que deshace su efecto. En la topología broker la saga es <b>coreografiada</b>: cada procesador reacciona al evento de fallo y compensa lo suyo.</p></div>
+      <div class="box">
+        <p class="small mb-1"><b>Ejemplo:</b> el pago se rechaza después de reservar stock.</p>
+        <p class="small mb-0"><code>PagoRechazado</code> → Inventario <b>libera la reserva</b> (compensa) → Notificaciones avisa al cliente → Pedidos marca el pedido como cancelado.</p>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="box amber mb-3"><h5 class="h6"><i class="fa-solid fa-rotate-right"></i> Reintentos</h5><p class="small mb-0">Ante un error <b>transitorio</b> (la pasarela no responde), se reintenta con espera creciente (<i>backoff</i>). Los reintentos solo son seguros si el consumidor es <b>idempotente</b>.</p></div>
+      <div class="box red mb-3"><h5 class="h6"><i class="fa-solid fa-skull"></i> Dead letter queue (DLQ)</h5><p class="small mb-0">Un mensaje que falla siempre (<i>poison message</i>, por ejemplo con datos corruptos) bloquearía su partición. Después de N intentos se mueve a una <b>cola de mensajes muertos</b> para revisarlo aparte, y el resto sigue fluyendo.</p></div>
+      <div class="box cyan"><h5 class="h6"><i class="fa-solid fa-magnifying-glass-chart"></i> Observabilidad</h5><p class="small mb-0">Con el <code>correlationId</code> en cada evento se puede reconstruir el recorrido completo de un pedido entre todos los procesadores.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Cómo leer las características">
+  <div class="kicker">Conceptos · Características de arquitectura</div>
+  <h2><i class="fa-solid fa-star-half-stroke"></i> Cómo leer las características</h2>
+  <p class="lead2 small">Richards &amp; Ford califican cada estilo de 1 a 5 estrellas en cada característica. Las estrellas son <b>relativas entre estilos</b>: 5 es lo mejor (en costo, 5 = más barato). Para justificar un estilo, se buscan muchas estrellas en las características que son <span class="hl">drivers</span> del caso.</p>
+  <div class="row g-3">
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box lime"><h5 class="h6"><i class="fa-solid fa-coins"></i> Costo total</h5><p class="small mb-0">Desarrollo, infraestructura y operación.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box lime"><h5 class="h6"><i class="fa-solid fa-feather"></i> Simplicidad</h5><p class="small mb-0">Qué tan fácil es entenderlo y construirlo.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-cubes"></i> Modularidad</h5><p class="small mb-0">Cuánto se divide en partes independientes.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-vial"></i> Testeabilidad</h5><p class="small mb-0">Facilidad para probar el todo y las partes.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-seedling"></i> Evolutividad</h5><p class="small mb-0">Facilidad para incorporar cambios y funcionalidades nuevas.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-rocket"></i> Facilidad de despliegue</h5><p class="small mb-0">Qué tan fácil y seguro es desplegar un cambio.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box violet"><h5 class="h6"><i class="fa-solid fa-circle-check"></i> Confiabilidad</h5><p class="small mb-0">Que funcione correctamente de forma consistente.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box violet"><h5 class="h6"><i class="fa-solid fa-gauge-high"></i> Rendimiento</h5><p class="small mb-0">Tiempo de respuesta y capacidad de procesamiento.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box amber"><h5 class="h6"><i class="fa-solid fa-arrow-up-right-dots"></i> Escalabilidad</h5><p class="small mb-0">Crecer en usuarios o carga sostenida.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box amber"><h5 class="h6"><i class="fa-solid fa-wave-square"></i> Elasticidad</h5><p class="small mb-0">Responder a picos repentinos de carga.</p></div></div>
+    <div class="col-md-4 col-xl-3" data-anim="fadeIn"><div class="box red"><h5 class="h6"><i class="fa-solid fa-life-ring"></i> Tolerancia a fallos</h5><p class="small mb-0">Seguir funcionando si falla una parte.</p></div></div>
+  </div>
+</section>
+
+<!-- ===================== CARACTERÍSTICAS EDA ===================== -->
+<section class="slide" data-title="Características del event-driven">
+  <div class="kicker">Conceptos · Características del estilo</div>
+  <h2><i class="fa-solid fa-star"></i> Características del event-driven y por qué</h2>
+  <p class="lead2 small mb-2">Puntajes de Richards &amp; Ford. Partición: <b>técnica</b>. Cuantos de arquitectura: <b>de uno a muchos</b> (según cuánto se comparta, por ejemplo una base de datos).</p>
+  <table class="t small tight">
+    <thead><tr><th style="width:22%">Característica</th><th style="width:14%">Puntaje</th><th>Por qué</th></tr></thead>
+    <tbody id="edaWhy"></tbody>
+  </table>
+</section>
+
+<!-- ===================== CUÁNDO USAR ===================== -->
+<section class="slide" data-title="Cuándo usarlo y cuándo no">
+  <div class="kicker">Conceptos · Criterio de elección</div>
+  <h2><i class="fa-solid fa-signs-post"></i> Cuándo usar event-driven y cuándo no</h2>
+  <div class="row g-3">
+    <div class="col-md-6" data-anim="fadeInLeft"><div class="box lime">
+      <h5 class="h6"><i class="fa-solid fa-check"></i> Conviene cuando…</h5>
+      <ul class="clean small mb-0">
+        <li>Hay <b>mucho volumen</b> y picos de carga</li>
+        <li>Varias partes tienen que <b>reaccionar al mismo hecho</b></li>
+        <li>Se necesita <b>alta disponibilidad</b>: que una parte caída no frene a las demás</li>
+        <li>El negocio <b>tolera consistencia eventual</b></li>
+        <li>Se quiere sumar consumidores nuevos <b>sin tocar</b> a los productores</li>
+      </ul></div></div>
+    <div class="col-md-6" data-anim="fadeInRight"><div class="box red">
+      <h5 class="h6"><i class="fa-solid fa-xmark"></i> No conviene cuando…</h5>
+      <ul class="clean x small mb-0">
+        <li>Se necesita <b>consistencia fuerte</b> inmediata en todo el flujo</li>
+        <li>El usuario necesita una <b>respuesta sincrónica</b> con el resultado final</li>
+        <li>El equipo es chico o el presupuesto bajo: es el estilo <b>más complejo</b></li>
+        <li>El flujo es simple y de poco volumen: sería sobreingeniería</li>
+        <li>Se necesita mucho <b>control del flujo</b> paso a paso (ahí, mediador u orquestación)</li>
+      </ul></div></div>
+  </div>
+  <div class="quote small mt-3"><i class="fa-solid fa-code-compare"></i> Comparalo con las TA anteriores: el gimnasio (TA1) pedía simplicidad y bajo costo → monolito. Acá los drivers son desempeño, escala y tolerancia a fallos → hay que pagar el costo de distribuir.</div>
+</section>
+
+<section class="slide" data-title="Despliegue UML: elementos">
+  <div class="kicker">Conceptos · Teórico 2.3.4</div>
+  <h2><i class="fa-solid fa-sitemap"></i> Diagrama de despliegue UML: elementos</h2>
+  <p class="small">Modela la <b>arquitectura física</b>: dónde corre cada pieza de software, en qué hardware y cómo se comunican esos nodos. Muestra los nodos, los artefactos almacenados en cada uno y las rutas de comunicación.</p>
+  <table class="t small">
+    <thead><tr><th style="width:24%">Elemento</th><th style="width:22%">Notación</th><th>Significado</th></tr></thead>
+    <tbody>
+      <tr><td><b>Nodo</b></td><td>Cubo con <code>«node»</code></td><td>Recurso computacional donde se despliegan artefactos. Los nodos pueden contener otros nodos.</td></tr>
+      <tr><td><b>Dispositivo</b></td><td>Cubo con <code>«device»</code></td><td>Nodo de <b>hardware</b>: servidor, PC, móvil.</td></tr>
+      <tr><td><b>Ambiente de ejecución</b></td><td>Cubo con <code>«executionEnvironment»</code></td><td>Nodo de <b>software</b> que aloja artefactos: SO, runtime, servidor web, SGBD. Suele ir dentro de un dispositivo.</td></tr>
+      <tr><td><b>Artefacto</b></td><td>Rectángulo con <code>«artifact»</code> e ícono de hoja</td><td>Elemento físico que se despliega: ejecutable, biblioteca, script, esquema de BD.</td></tr>
+      <tr><td><b>Especificación de despliegue</b></td><td>Rectángulo con <code>«deploymentSpec»</code></td><td>Archivo de configuración de un artefacto; sus atributos son los parámetros.</td></tr>
+      <tr><td><b>Ruta de comunicación</b></td><td>Línea entre nodos, con etiqueta</td><td>Cómo intercambian mensajes los nodos: protocolo (<code>HTTPS</code>, <code>TCP/IP</code>) y multiplicidad.</td></tr>
+      <tr><td><b>Despliegue / manifestación</b></td><td>Dependencia <code>«deploy»</code> / <code>«manifest»</code></td><td><code>«deploy»</code>: el nodo soporta el artefacto (o se dibuja adentro). <code>«manifest»</code>: el artefacto materializa un componente.</td></tr>
+      <tr><td><b>Instancia</b></td><td><u><code>nombre : Tipo</code></u></td><td>Una ocurrencia concreta de un nodo o artefacto: el nombre va antes del tipo, separado por <code>:</code> y subrayado.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide" data-title="Cómo se lee un diagrama de despliegue">
+  <div class="kicker">Conceptos · Lectura de un diagrama</div>
+  <h2><i class="fa-solid fa-glasses"></i> Cómo se lee un diagrama de despliegue</h2>
+  <div class="row g-4">
+    <div class="col-lg-7"><div class="svg-wrap"><svg id="miniSvg" viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:58vh"></svg></div></div>
+    <div class="col-lg-5">
+      <p class="small text-secondary">Ejemplo genérico: una aplicación de escritorio que usa un motor de base de datos en otro equipo.</p>
+      <ol class="small">
+        <li class="mb-2"><b>Anidamiento = despliegue.</b> Lo que está dentro de un nodo está desplegado en él: <code>app.exe</code> corre en .NET 8, que corre en Windows, que corre en la notebook.</li>
+        <li class="mb-2"><b>Cada línea entre nodos es una comunicación por red</b>, con su protocolo. Si dos piezas están en el mismo nodo y proceso, se llaman localmente.</li>
+        <li class="mb-2"><b>La multiplicidad</b> (<code>*</code>, <code>1</code>) dice cuántas instancias participan: muchas notebooks, un servidor.</li>
+        <li class="mb-0"><b>"Distribuir"</b> es poner componentes en nodos distintos conectados por red. Un estilo monolítico tiene su aplicación en un solo ambiente de ejecución; uno distribuido, como event-driven, en muchos.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== RÉPLICAS EN UML ===================== -->
+<section class="slide" data-title="Réplicas y clústeres en UML">
+  <div class="kicker">Conceptos · Despliegue distribuido</div>
+  <h2><i class="fa-solid fa-clone"></i> Cómo dibujar réplicas y clústeres</h2>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <p class="small">En un sistema distribuido hay <b>varias instancias</b> del mismo nodo. UML ofrece formas de mostrarlo sin dibujar cada copia:</p>
+      <ul class="clean small">
+        <li><b>Multiplicidad en el nodo:</b> un número o rango en la esquina, por ejemplo <code>3</code> o <code>2..*</code> instancias.</li>
+        <li><b>Instancias con nombre:</b> <u><code>pagos-a : NodoPagos</code></u>, <u><code>pagos-b : NodoPagos</code></u>, cuando importa distinguirlas.</li>
+        <li><b>Multiplicidad en las rutas:</b> <code>*</code> clientes contra <code>1</code> servicio, o <code>2..*</code> procesadores contra un clúster.</li>
+        <li><b>Estereotipos propios</b> como <code>«cluster»</code> para agrupar nodos que actúan como uno solo (por ejemplo, los 3 nodos del broker).</li>
+      </ul>
+    </div>
+    <div class="col-lg-6">
+      <div class="box">
+        <h6 class="mono small text-secondary">¿QUÉ TIENE QUE SER VISIBLE EN EL DIAGRAMA DE ESTA TAREA?</h6>
+        <ul class="clean small mb-0">
+          <li>Qué nodos son <b>independientes</b> entre sí (se distribuyen)</li>
+          <li>Que hay <b>más de una instancia</b> de los procesadores de pago</li>
+          <li>Que el broker es un <b>clúster</b> (sin punto único de falla)</li>
+          <li>Qué base de datos es de <b>cada</b> procesador</li>
+          <li>Por dónde viajan los eventos: <b>todo pasa por el broker</b>; los procesadores no se llaman entre sí</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== RESOLUCIÓN: EVENTOS DEL DOMINIO ===================== -->
+<section class="slide" data-title="Los eventos del dominio">
+  <div class="kicker">Resolución · Parte 1 · Aplicando el estilo</div>
+  <h2><i class="fa-solid fa-list-ul"></i> Catálogo de eventos de la plataforma</h2>
+  <table class="t small tight">
+    <thead><tr><th>Evento</th><th>Lo publica</th><th>Lo consumen</th><th>Clave de partición</th></tr></thead>
+    <tbody>
+      <tr><td><code>PedidoCreado</code> <span class="tag">iniciador</span></td><td>Pedidos (carrito)</td><td>Pagos · Inventario · Notificaciones</td><td><code>pedidoId</code></td></tr>
+      <tr><td><code>StockReservado</code> / <code>StockInsuficiente</code></td><td>Inventario</td><td>Pedidos · Notificaciones</td><td><code>pedidoId</code></td></tr>
+      <tr><td><code>PagoAprobado</code></td><td>Pagos</td><td>Inventario (confirma) · Logística · Notificaciones · Pedidos</td><td><code>pedidoId</code></td></tr>
+      <tr><td><code>PagoRechazado</code></td><td>Pagos</td><td>Inventario (libera) · Notificaciones · Pedidos</td><td><code>pedidoId</code></td></tr>
+      <tr><td><code>EnvioDespachado</code></td><td>Logística</td><td>Notificaciones · Pedidos</td><td><code>pedidoId</code></td></tr>
+      <tr><td><code>EnvioEntregado</code></td><td>Logística</td><td>Notificaciones · Pedidos</td><td><code>pedidoId</code></td></tr>
+    </tbody>
+  </table>
+  <div class="quote small mt-2"><i class="fa-solid fa-key"></i> Todos usan <code>pedidoId</code> como clave: los eventos de un mismo pedido caen en la misma partición y se procesan <b>en orden</b>, mientras que pedidos distintos se procesan <b>en paralelo</b>.</div>
+</section>
+
+<!-- ===================== RESOLUCIÓN: FLUJO ===================== -->
+<section class="slide" data-title="El flujo coreografiado">
+  <div class="kicker">Resolución · Parte 1 · Topología broker</div>
+  <h2><i class="fa-solid fa-people-arrows"></i> El flujo de un pedido, paso a paso</h2>
+  <div class="row g-4">
+    <div class="col-lg-7" id="flow"></div>
+    <div class="col-lg-5"><div class="box">
+      <h6 class="mono small text-secondary">SIMULADOR</h6>
+      <button class="btn-lime w-100 mb-2" onclick="runFlow(true)"><i class="fa-solid fa-circle-check"></i> Pago aprobado</button>
+      <button class="btn-ghost w-100 mb-3" onclick="runFlow(false)"><i class="fa-solid fa-circle-xmark"></i> Pago rechazado (saga)</button>
+      <p class="small mb-1"><b>Elegimos la topología broker:</b> los drivers son desempeño, escalabilidad y tolerancia a fallos, justo donde el broker gana.</p>
+      <p class="small mb-0 text-secondary">Lo que pierde (control del flujo y manejo de errores) se compensa con sagas coreografiadas, reintentos, DLQ y el <code>correlationId</code>.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ===================== RESOLUCIÓN: TRAZABILIDAD ===================== -->
+<section class="slide" data-title="Parte 1: drivers → decisión">
+  <div class="kicker">Resolución · Parte 1 · Justificación</div>
+  <h2><i class="fa-solid fa-diagram-project"></i> Cada driver, ¿cómo lo resuelve event-driven?</h2>
+  <table class="t small tight">
+    <thead><tr><th style="width:26%">Driver del caso</th><th style="width:12%">Tipo</th><th>Cómo lo satisface el estilo</th></tr></thead>
+    <tbody>
+      <tr><td><b>Publicación y suscripción a eventos de dominio</b></td><td><span class="tag">funcional</span></td><td>Es el mecanismo central: Pedidos publica <code>PedidoCreado</code> y cada procesador se suscribe a los eventos que le interesan.</td></tr>
+      <tr><td><b>Varios consumidores del mismo tipo</b></td><td><span class="tag">funcional</span></td><td>Grupos de consumidores: varias instancias de Pagos compiten por los eventos y se reparten la carga.</td></tr>
+      <tr><td><b>Alto desempeño</b></td><td><span class="tag">no funcional</span></td><td>Procesamiento asincrónico y en paralelo: el cliente no espera a que terminen pago, stock y envío.</td></tr>
+      <tr><td><b>Alta escalabilidad</b></td><td><span class="tag">no funcional</span></td><td>Cada procesador escala por separado agregando instancias, hasta la cantidad de particiones.</td></tr>
+      <tr><td><b>Tolerancia a fallos</b></td><td><span class="tag">no funcional</span></td><td>Los procesadores no se llaman entre sí: si uno cae, los eventos esperan en el broker y el grupo se rebalancea. El broker es un clúster replicado.</td></tr>
+      <tr><td><b>Consistencia eventual</b></td><td><span class="tag">no funcional</span></td><td>Es la consistencia natural del estilo: cada procesador actualiza su propia base y el sistema converge; los fallos se resuelven con sagas.</td></tr>
+      <tr><td><b>Broker con claves de partición</b></td><td><span class="tag">restricción</span></td><td>Clave = <code>pedidoId</code>: orden por pedido y paralelismo entre pedidos.</td></tr>
+      <tr><td><b>Idempotencia</b></td><td><span class="tag">restricción</span></td><td>Entrega al-menos-una-vez + consumidores idempotentes (<code>eventId</code> procesados) + clave de idempotencia en la pasarela.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===================== RESOLUCIÓN: CARACTERÍSTICAS ===================== -->
+<section class="slide" data-title="Características vs drivers">
+  <div class="kicker">Resolución · Parte 1 · Trade-offs</div>
+  <h2><i class="fa-solid fa-scale-balanced"></i> Fuerte donde el caso lo necesita</h2>
+  <p class="lead2 small">Los puntajes que vimos en los conceptos, marcando los <span class="hl">drivers del caso</span>.</p>
+  <div class="row g-4">
+    <div class="col-lg-7"><div class="box" id="ratings"></div></div>
+    <div class="col-lg-5">
+      <div class="box lime mb-3"><h5 class="h6"><i class="fa-solid fa-thumbs-up"></i> Lo que gana</h5><p class="small mb-0">Máximo puntaje en <b>desempeño, escalabilidad y tolerancia a fallos</b>: los tres no funcionales del caso.</p></div>
+      <div class="box red"><h5 class="h6"><i class="fa-solid fa-triangle-exclamation"></i> Lo que paga</h5><p class="small mb-0"><b>Simplicidad</b> mínima y <b>testeabilidad</b> baja: flujos asincrónicos, no deterministas y difíciles de depurar. El caso no pide simplicidad ni bajo costo, así que es un precio aceptable.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== RESOLUCIÓN: ALTERNATIVAS ===================== -->
+<section class="slide" data-title="Estilos descartados">
+  <div class="kicker">Resolución · Parte 1 · Alternativas</div>
+  <h2><i class="fa-solid fa-filter-circle-xmark"></i> ¿Por qué no otro estilo?</h2>
+  <p class="lead2 small">Hacé clic en cada tarjeta para ver qué driver lo descarta.</p>
+  <div class="row g-3" id="altGrid"></div>
+</section>
+
+<!-- ===================== RESOLUCIÓN: RIESGOS ===================== -->
+<section class="slide" data-title="Riesgos y mitigaciones">
+  <div class="kicker">Resolución · Parte 1 · Riesgos</div>
+  <h2><i class="fa-solid fa-shield-halved"></i> Riesgos del estilo y cómo mitigarlos</h2>
+  <div class="row g-3">
+    <div class="col-md-6 col-xl-4" data-anim="fadeInUp"><div class="box red"><h5 class="h6"><i class="fa-solid fa-copy"></i> Eventos duplicados</h5><p class="small mb-0"><b>Mitigación:</b> consumidores idempotentes y clave de idempotencia en la pasarela de pagos.</p></div></div>
+    <div class="col-md-6 col-xl-4" data-anim="fadeInUp"><div class="box amber"><h5 class="h6"><i class="fa-solid fa-shuffle"></i> Eventos fuera de orden</h5><p class="small mb-0"><b>Mitigación:</b> clave de partición <code>pedidoId</code>; versión del pedido en el evento para descartar eventos viejos.</p></div></div>
+    <div class="col-md-6 col-xl-4" data-anim="fadeInUp"><div class="box violet"><h5 class="h6"><i class="fa-solid fa-skull"></i> Mensajes venenosos</h5><p class="small mb-0"><b>Mitigación:</b> reintentos con backoff y DLQ para no bloquear la partición.</p></div></div>
+    <div class="col-md-6 col-xl-4" data-anim="fadeInUp"><div class="box cyan"><h5 class="h6"><i class="fa-solid fa-eye-slash"></i> Flujo difícil de seguir</h5><p class="small mb-0"><b>Mitigación:</b> <code>correlationId</code>, trazas distribuidas y un estado del pedido que Pedidos va actualizando con cada evento.</p></div></div>
+    <div class="col-md-6 col-xl-4" data-anim="fadeInUp"><div class="box pink"><h5 class="h6"><i class="fa-solid fa-file-code"></i> Cambios en el formato de los eventos</h5><p class="small mb-0"><b>Mitigación:</b> <code>schemaVersion</code>, cambios compatibles hacia atrás y registro de esquemas.</p></div></div>
+    <div class="col-md-6 col-xl-4" data-anim="fadeInUp"><div class="box lime"><h5 class="h6"><i class="fa-solid fa-user-clock"></i> El cliente ve datos viejos</h5><p class="small mb-0"><b>Mitigación:</b> diseñar la interfaz para la consistencia eventual: "Pedido recibido, estamos procesando el pago".</p></div></div>
+  </div>
+</section>
+
+<!-- ===================== RESOLUCIÓN: RESPUESTA ===================== -->
+<section class="slide" data-title="Respuesta modelo · Parte 1">
+  <div class="kicker">Resolución · Parte 1 · Respuesta modelo</div>
+  <h2><i class="fa-solid fa-pen-nib"></i> Cómo lo redactaríamos</h2>
+  <div class="box lime" style="font-size:.98rem;line-height:1.6">
+    <p>El estilo <b>event-driven</b> es el más adecuado porque el problema es, en esencia, una cadena de reacciones a hechos del dominio: un pedido creado desencadena pago, actualización de inventario, logística y notificaciones. Los requerimientos funcionales piden explícitamente <b>publicación y suscripción a eventos de dominio</b> y <b>varios consumidores del mismo tipo</b>, que se resuelven con tópicos y grupos de consumidores en el broker.</p>
+    <p>Sus características coinciden con los no funcionales: es el estilo con mejor <b>desempeño</b>, <b>escalabilidad</b> y <b>tolerancia a fallos</b>, porque los procesadores trabajan de forma asíncrona, en paralelo y sin llamarse entre sí; cada uno escala agregando instancias y, si uno falla, los eventos esperan en el broker. La <b>consistencia eventual</b> que pide el caso es la consistencia propia del estilo, y los fallos parciales se resuelven con sagas y compensaciones.</p>
+    <p class="mb-0">La restricción del <b>broker con claves de partición</b> se cumple usando el <code>pedidoId</code> como clave, lo que garantiza el orden de los eventos de cada pedido y el paralelismo entre pedidos; la de <b>idempotencia</b>, con entrega al-menos-una-vez y consumidores que descartan eventos ya procesados. Se elige la <b>topología broker</b> porque maximiza estas características. Su costo —baja simplicidad y testeabilidad— es aceptable porque el caso no prioriza ni simplicidad ni bajo costo.</p>
+  </div>
+  <button class="btn-ghost mt-3" onclick="copyText('respuesta1')"><i class="fa-regular fa-copy"></i> Copiar respuesta</button>
+</section>
+
+<!-- ===================== RESOLUCIÓN: DIAGRAMA ===================== -->
+<section class="slide" data-title="Parte 2: diagrama de despliegue">
+  <div class="kicker">Resolución · Parte 2 · Diagrama</div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center">
+    <h2 class="mb-2"><i class="fa-solid fa-server"></i> Diagrama de despliegue UML</h2>
+    <div class="btn-group mb-2">
+      <button class="btn-nav" id="vA" onclick="drawDeploy('A')"><i class="fa-solid fa-people-arrows"></i> Topología broker</button>
+      <button class="btn-nav" id="vB" onclick="drawDeploy('B')"><i class="fa-solid fa-user-tie"></i> Variante: con mediador</button>
+    </div>
+  </div>
+  <div class="svg-wrap"><svg id="deploySvg" viewBox="0 0 1160 700" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  <p class="small text-secondary mt-2 mb-0" id="variantNote"></p>
+</section>
+
+<!-- ===================== RESOLUCIÓN: LECTURA ===================== -->
+<section class="slide" data-title="Lectura del diagrama">
+  <div class="kicker">Resolución · Parte 2 · ¿Qué se distribuye y qué no?</div>
+  <h2><i class="fa-solid fa-magnifying-glass"></i> Lectura del diagrama</h2>
+  <table class="t small tight">
+    <thead><tr><th>Elemento</th><th>Estereotipo</th><th>Qué representa</th></tr></thead>
+    <tbody>
+      <tr><td>Dispositivo del cliente</td><td><span class="tag">«device»</span></td><td>Navegador o app móvil con el carrito. Habla por HTTPS solo con el servicio de Pedidos.</td></tr>
+      <tr><td>Nodos de Pedidos <code>2..*</code></td><td><span class="tag">«device»</span></td><td>El <b>productor</b>: recibe la compra, guarda el pedido y publica <code>PedidoCreado</code> (con outbox). Tiene su propia base.</td></tr>
+      <tr><td>Clúster del broker <code>3</code></td><td><span class="tag">«cluster»</span></td><td>Tres nodos con los tópicos particionados y replicados: si uno cae, los otros siguen. Incluye la DLQ.</td></tr>
+      <tr><td><code>topics.yaml</code></td><td><span class="tag">«deploymentSpec»</span></td><td>Tópicos, cantidad de particiones, factor de replicación, retención.</td></tr>
+      <tr><td>Nodos de Pagos <code>3</code>, Inventario, Logística, Notificaciones <code>2..*</code></td><td><span class="tag">«device»</span> <span class="tag">«processor»</span></td><td><b>Procesadores independientes, cada uno en sus propios nodos</b> y con su propia base. Solo se comunican a través del broker.</td></tr>
+      <tr><td>Pasarela de pagos · proveedor de email/SMS</td><td><span class="tag">«node»</span></td><td>Sistemas externos, llamados por HTTPS con clave de idempotencia.</td></tr>
+    </tbody>
+  </table>
+  <div class="quote small mt-2"><i class="fa-solid fa-lightbulb"></i> A diferencia de las TA1 y TA2, acá <b>todo se distribuye</b>: cada procesador es una unidad de despliegue separada, con varias instancias. Lo que <b>no</b> se distribuye entre procesadores es la base de datos: cada uno tiene la suya.</div>
+</section>
+
+<!-- ===================== RESOLUCIÓN: PLANTUML ===================== -->
+<section class="slide" data-title="El diagrama en PlantUML">
+  <div class="kicker">Resolución · Parte 2 · Para entregar</div>
+  <h2><i class="fa-solid fa-code"></i> El diagrama en PlantUML</h2>
+  <p class="lead2 small">Pegalo en <code>plantuml.com</code> o en la extensión de VS Code para generar la imagen.</p>
+  <pre class="code" id="pumlCode"><button class="btn-nav copy-btn" onclick="copyText('puml')"><i class="fa-regular fa-copy"></i></button><span class="k">@startuml</span>
+<span class="c">' UT5 TA3 - Plataforma de pedidos - Event-Driven (topología broker)</span>
+<span class="k">node</span> <span class="s">"Dispositivo del cliente"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as cli {
+  <span class="k">node</span> <span class="s">"Navegador / app"</span> <span class="st">&lt;&lt;executionEnvironment&gt;&gt;</span> as nav
+}
+<span class="k">node</span> <span class="s">"Nodo de Pedidos (2..*)"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as nPed {
+  <span class="k">artifact</span> <span class="s">"pedidos-api"</span> as ped
+  <span class="k">database</span> <span class="s">"pedidos_db + outbox"</span> as dbPed
+}
+<span class="k">node</span> <span class="s">"Clúster del broker (3 nodos)"</span> <span class="st">&lt;&lt;cluster&gt;&gt;</span> as brk {
+  <span class="k">node</span> <span class="s">"Kafka"</span> <span class="st">&lt;&lt;executionEnvironment&gt;&gt;</span> as kafka {
+    <span class="k">artifact</span> <span class="s">"pedidos (12 particiones)"</span> as tPed
+    <span class="k">artifact</span> <span class="s">"pagos"</span> as tPag
+    <span class="k">artifact</span> <span class="s">"inventario"</span> as tInv
+    <span class="k">artifact</span> <span class="s">"envios"</span> as tEnv
+    <span class="k">artifact</span> <span class="s">"dlq"</span> as tDlq
+    <span class="k">artifact</span> <span class="s">"topics.yaml"</span> <span class="st">&lt;&lt;deploymentSpec&gt;&gt;</span> as cfg
+  }
+}
+<span class="k">node</span> <span class="s">"Nodo de Pagos (3)"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as nPag {
+  <span class="k">artifact</span> <span class="s">"pagos-processor"</span> <span class="st">&lt;&lt;processor&gt;&gt;</span> as pPag
+  <span class="k">database</span> <span class="s">"pagos_db"</span> as dbPag
+}
+<span class="k">node</span> <span class="s">"Nodo de Inventario (2..*)"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as nInv {
+  <span class="k">artifact</span> <span class="s">"inventario-processor"</span> <span class="st">&lt;&lt;processor&gt;&gt;</span> as pInv
+  <span class="k">database</span> <span class="s">"inventario_db"</span> as dbInv
+}
+<span class="k">node</span> <span class="s">"Nodo de Logística (2..*)"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as nLog {
+  <span class="k">artifact</span> <span class="s">"logistica-processor"</span> <span class="st">&lt;&lt;processor&gt;&gt;</span> as pLog
+  <span class="k">database</span> <span class="s">"logistica_db"</span> as dbLog
+}
+<span class="k">node</span> <span class="s">"Nodo de Notificaciones (2..*)"</span> <span class="st">&lt;&lt;device&gt;&gt;</span> as nNot {
+  <span class="k">artifact</span> <span class="s">"notificaciones-processor"</span> <span class="st">&lt;&lt;processor&gt;&gt;</span> as pNot
+}
+<span class="k">node</span> <span class="s">"Pasarela de pagos (externa)"</span> <span class="st">&lt;&lt;node&gt;&gt;</span> as pay
+<span class="k">node</span> <span class="s">"Proveedor email/SMS (externo)"</span> <span class="st">&lt;&lt;node&gt;&gt;</span> as msg
+
+nav <span class="s">"*"</span> -- <span class="s">"1"</span> nPed : HTTPS
+nPed -- brk : TCP (protocolo Kafka)
+brk -- nPag : TCP
+brk -- nInv : TCP
+brk -- nLog : TCP
+brk -- nNot : TCP
+nPag -- pay : HTTPS + idempotency key
+nNot -- msg : HTTPS
+<span class="k">@enduml</span></pre>
+</section>
+
+<!-- ===================== QUIZ ===================== -->
+<section class="slide" data-title="Quiz">
+  <div class="kicker">Cierre · Autoevaluación</div>
+  <h2><i class="fa-solid fa-circle-question"></i> Quiz: ¿quedó claro?</h2>
+  <p class="lead2">8 preguntas sobre los conceptos y la resolución.</p>
+  <button class="btn-lime mt-2" onclick="startQuiz()"><i class="fa-solid fa-play"></i> Comenzar quiz</button>
+  <div id="quizResult" class="mt-4"></div>
+</section>
+
+<!-- ===================== CHECKLIST ===================== -->
+<section class="slide" data-title="Checklist de entrega">
+  <div class="kicker">Cierre</div>
+  <h2><i class="fa-solid fa-list-check"></i> Checklist antes de entregar</h2>
+  <p class="lead2 small">Hacé clic en cada ítem para marcarlo.</p>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="box lime">
+      <h5 class="h6">Parte 1</h5>
+      <ul class="clean small mb-0">
+        <li class="check-item">Nombro el estilo y la <b>topología</b> elegida (broker o mediador) y por qué</li>
+        <li class="check-item">Explico pub/sub y <b>grupos de consumidores</b> (varios procesadores de pago)</li>
+        <li class="check-item">Relaciono <b>desempeño, escalabilidad y tolerancia a fallos</b> con el estilo</li>
+        <li class="check-item">Explico la <b>consistencia eventual</b> y cómo se manejan los fallos (sagas)</li>
+        <li class="check-item">Uso la <b>clave de partición</b> y la <b>idempotencia</b> de forma concreta</li>
+        <li class="check-item">Reconozco el costo: <b>simplicidad y testeabilidad</b> bajas</li>
+      </ul></div></div>
+    <div class="col-md-6"><div class="box pink">
+      <h5 class="h6">Parte 2</h5>
+      <ul class="clean small mb-0">
+        <li class="check-item">Cada procesador en <b>su propio nodo</b>, con estereotipo <code>«processor»</code></li>
+        <li class="check-item">Multiplicidad que muestre <b>varias instancias</b> de Pagos</li>
+        <li class="check-item">Broker como <b>clúster</b> con sus tópicos y su configuración</li>
+        <li class="check-item">Una <b>base de datos por procesador</b></li>
+        <li class="check-item">Rutas de comunicación con <b>protocolo</b>; los procesadores solo hablan con el broker</li>
+        <li class="check-item">Sistemas <b>externos</b> marcados (pasarela, email/SMS)</li>
+      </ul></div></div>
+  </div>
+  <p class="mt-4 text-secondary small mono">Fuentes: ANDIS_Conceptos 2.7.5 Event-Driven Architecture, 2.13.4 Messaging, 4 Conceptos (Evento del dominio, BASE, Teorema de Brewer, Falacias de la computación distribuida), 2.3.4 Diagramas de despliegue UML · Richards &amp; Ford (2020), Fundamentals of Software Architecture.</p>
+</section>
+
+<div id="nav">
+  <button class="btn-nav" onclick="go(cur-1)"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn-nav" onclick="showToc()"><i class="fa-solid fa-list"></i> Índice</button>
+    <span id="counter"></span>
+  </div>
+  <button class="btn-nav" onclick="go(cur+1)"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+
+<textarea id="respuesta1" style="display:none">El estilo event-driven es el más adecuado porque el problema es, en esencia, una cadena de reacciones a hechos del dominio: un pedido creado desencadena pago, actualización de inventario, logística y notificaciones. Los requerimientos funcionales piden explícitamente publicación y suscripción a eventos de dominio y varios consumidores del mismo tipo, que se resuelven con tópicos y grupos de consumidores en el broker.
+
+Sus características coinciden con los no funcionales: es el estilo con mejor desempeño, escalabilidad y tolerancia a fallos, porque los procesadores trabajan de forma asíncrona, en paralelo y sin llamarse entre sí; cada uno escala agregando instancias y, si uno falla, los eventos esperan en el broker. La consistencia eventual que pide el caso es la consistencia propia del estilo, y los fallos parciales se resuelven con sagas y compensaciones.
+
+La restricción del broker con claves de partición se cumple usando el pedidoId como clave, lo que garantiza el orden de los eventos de cada pedido y el paralelismo entre pedidos; la de idempotencia, con entrega al-menos-una-vez y consumidores que descartan eventos ya procesados. Se elige la topología broker porque maximiza estas características. Su costo —baja simplicidad y testeabilidad— es aceptable porque el caso no prioriza ni simplicidad ni bajo costo.</textarea>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+/* ================= NAVEGACIÓN ================= */
+const slides=[...document.querySelectorAll('.slide')];
+let cur=0;
+function go(n){
+  if(n<0||n>=slides.length)return;
+  const dir=n>cur?'animate__fadeInRight':'animate__fadeInLeft';
+  slides[cur].classList.remove('active');
+  cur=n;
+  const s=slides[cur];
+  s.classList.add('active');
+  s.classList.remove('animate__animated','animate__fadeInRight','animate__fadeInLeft');
+  void s.offsetWidth;
+  s.classList.add('animate__animated',dir);
+  s.querySelectorAll('[data-anim]').forEach((el,i)=>{
+    el.classList.remove('animate__animated','animate__'+el.dataset.anim);
+    el.style.animationDelay=(i*0.08)+'s';
+    void el.offsetWidth;
+    el.classList.add('animate__animated','animate__'+el.dataset.anim);
+  });
+  document.getElementById('counter').textContent=(cur+1)+' / '+slides.length;
+  document.getElementById('progress').style.width=((cur+1)/slides.length*100)+'%';
+  s.scrollTop=0;
+  try{history.replaceState(null,'','#'+(cur+1));}catch(e){}
+}
+document.addEventListener('keydown',e=>{
+  if(Swal.isVisible())return;
+  if(['ArrowRight','PageDown'].includes(e.key)||(e.key===' '&&e.target===document.body)){e.preventDefault();go(cur+1)}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1)}
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(slides.length-1);
+  if(e.key.toLowerCase()==='t')showToc();
+});
+function showToc(){
+  const html='<div id="toc">'+slides.map((s,i)=>`<a href="#" onclick="Swal.close();go(${i});return false;"><span class="mono text-secondary me-2">${String(i+1).padStart(2,'0')}</span>${s.dataset.title}</a>`).join('')+'</div>';
+  Swal.fire({title:'Índice',html,showConfirmButton:false,showCloseButton:true,width:520});
+}
+function copyText(which){
+  let txt;
+  if(which==='puml'){const pre=document.getElementById('pumlCode').cloneNode(true);pre.querySelector('button').remove();txt=pre.textContent;}
+  else txt=document.getElementById(which).value;
+  const ok=()=>Swal.fire({toast:true,position:'top-end',icon:'success',title:'Copiado',showConfirmButton:false,timer:1500});
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    let done=false;try{done=document.execCommand('copy');}catch(e){}ta.remove();
+    done?ok():Swal.fire({title:'Copiá manualmente',html:'<textarea style="width:100%;height:260px;font-family:Fira Code;font-size:12px">'+txt.replace(/</g,'&lt;')+'</textarea>',confirmButtonColor:'#22d3ee',width:720});};
+  try{navigator.clipboard.writeText(txt).then(ok,fallback);}catch(e){fallback();}
+}
+
+
+const svgNS='http://www.w3.org/2000/svg';
+function cube(x,y,w,h,stereo,name,stroke,fill,tip){
+  const d=12;
+  return `<g class="uml" data-tip="${tip||''}">
+   <polygon points="${x},${y+d} ${x+d},${y} ${x+w},${y} ${x+w-d},${y+d}" fill="${fill}" stroke="${stroke}" stroke-width="1.4" opacity=".75"/>
+   <polygon points="${x+w-d},${y+d} ${x+w},${y} ${x+w},${y+h-d} ${x+w-d},${y+h}" fill="${fill}" stroke="${stroke}" stroke-width="1.4" opacity=".6"/>
+   <rect x="${x}" y="${y+d}" width="${w-d}" height="${h-d}" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/>
+   <text x="${x+(w-d)/2}" y="${y+d+17}" text-anchor="middle" fill="${stroke}" font-family="Fira Code" font-size="11">«${stereo}»</text>
+   <text x="${x+(w-d)/2}" y="${y+d+34}" text-anchor="middle" fill="#e6ecf7" font-family="Space Grotesk" font-weight="700" font-size="14">${name}</text></g>`;
+}
+function artifact(x,y,w,h,stereo,name,stroke,lines,tip,fill){
+  const lx=x+w-22,ly=y+8;
+  return `<g class="uml" data-tip="${tip||''}">
+   <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${fill||'#1f1a0e'}" stroke="${stroke}" stroke-width="1.4"/>
+   <path d="M${lx} ${ly} h9 l5 5 v13 h-14 z M${lx+9} ${ly} v5 h5" fill="none" stroke="${stroke}" stroke-width="1.2"/>
+   <text x="${x+10}" y="${y+17}" fill="${stroke}" font-family="Fira Code" font-size="10.5">«${stereo}»</text>
+   <text x="${x+10}" y="${y+33}" fill="#e6ecf7" font-family="Fira Code" font-weight="600" font-size="12.5">${name}</text>
+   ${(lines||[]).map((l,i)=>`<text x="${x+10}" y="${y+50+i*14}" fill="#cbd5e1" font-family="Fira Code" font-size="10">${l}</text>`).join('')}</g>`;
+}
+function link(x1,y1,x2,y2,label,lx,ly,dashed,m1,m2,color){
+  return `<g><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color||'#94a3b8'}" stroke-width="1.6" ${dashed?'stroke-dasharray="6 4"':''}/>
+   ${label?`<rect x="${lx-4}" y="${ly-13}" width="${label.length*6.6+8}" height="18" rx="4" fill="#0d1426"/><text x="${lx}" y="${ly}" fill="#c6f432" font-family="Fira Code" font-size="11">${label}</text>`:''}
+   ${m1?`<text x="${x1+6}" y="${y1+16}" fill="#94a3b8" font-family="Fira Code" font-size="11">${m1}</text>`:''}
+   ${m2?`<text x="${x2-14}" y="${y2+16}" fill="#94a3b8" font-family="Fira Code" font-size="11">${m2}</text>`:''}</g>`;
+}
+
+const C={dev:'#22d3ee',env:'#a78bfa',art:'#fbbf24',spec:'#f472b6',proc:'#a3e635',orch:'#c4b5fd',ext:'#f87171',db:'#38bdf8'};
+/* ===== Falacias ===== */
+const fallacies=[
+ ['La red es confiable','Los mensajes pueden perderse o duplicarse. El broker persiste los eventos, se reintenta y los consumidores son idempotentes.'],
+ ['La latencia es cero','Cada salto remoto suma milisegundos. No se encadenan llamadas sincrónicas: se procesa de forma asincrónica y en paralelo.'],
+ ['El ancho de banda es infinito','Los eventos llevan solo los datos necesarios del pedido, no el catálogo entero.'],
+ ['La red es segura','Conexiones cifradas (TLS) y productores y consumidores autenticados en el broker.'],
+ ['La topología no cambia','Las instancias aparecen y desaparecen al escalar o caerse. Los consumidores no dependen de direcciones fijas: el broker rebalancea.'],
+ ['Hay un administrador','Hay muchos servicios y quizá varios equipos. Se necesitan monitoreo y trazas centralizados.'],
+ ['El costo de transporte es cero','Serializar, transmitir y mantener un clúster de broker cuesta. Formatos eficientes y presupuesto para la infraestructura.'],
+ ['La red es homogénea','Cada procesador puede estar en otro lenguaje o plataforma. Formato de evento estándar (JSON, Avro) con esquemas versionados.']
+];
+document.getElementById('fallacies').innerHTML=fallacies.map((f,i)=>
+ `<div class="col-md-6 col-xl-3"><div class="box alt" style="cursor:pointer" onclick="showFallacy(${i})"><span class="mono" style="color:var(--red)">${i+1}.</span> <b class="small">${f[0]}</b></div></div>`).join('');
+function showFallacy(i){Swal.fire({icon:'warning',title:'Falacia: '+fallacies[i][0].toLowerCase(),html:'<b>En la plataforma de pedidos:</b><br>'+fallacies[i][1],confirmButtonColor:'#22d3ee'})}
+
+/* ===== Timeline sync/async ===== */
+function runTimeline(mode){
+  const scale=1000;
+  const rows = mode==='sync'
+   ? [['Cobrar (pasarela)',0,400,'#fbbf24'],['Reservar stock',400,150,'#22d3ee'],['Preparar envío',550,300,'#a78bfa'],['Notificar',850,120,'#f472b6'],['Respuesta al cliente',970,25,'#c6f432']]
+   : [['Guardar y publicar',0,30,'#94a3b8'],['Respuesta al cliente',30,25,'#c6f432'],['Cobrar (pasarela)',30,400,'#fbbf24'],['Reservar stock',30,150,'#22d3ee'],['Notificar',30,120,'#f472b6'],['Preparar envío',430,300,'#a78bfa']];
+  document.getElementById('timeline').innerHTML=rows.map(r=>
+   `<div class="lane"><div class="lbl">${r[0]}</div><div style="position:relative;flex:1;height:22px;background:#0a0f1d;border-radius:6px"><div class="bar" style="position:absolute;left:${r[1]/scale*100}%;background:${r[3]}">${r[2]} ms</div></div></div>`).join('');
+  requestAnimationFrame(()=>document.querySelectorAll('#timeline .bar').forEach((b,i)=>setTimeout(()=>b.style.width=(rows[i][2]/scale*100)+'%',i*(mode==='sync'?250:80))));
+  document.getElementById('timelineOut').innerHTML = mode==='sync'
+   ? '<span style="color:var(--amber)"><i class="fa-solid fa-hourglass"></i> El cliente espera <b>~1 s</b>, la suma de todo. Si la pasarela se cae, <b>la compra falla</b>.</span>'
+   : '<span style="color:var(--lime)"><i class="fa-solid fa-bolt"></i> El cliente recibe respuesta en <b>~55 ms</b> ("pedido recibido"). El resto corre en paralelo; si la pasarela se cae, el evento espera en el broker.</span>';
+}
+
+/* ===== Grupos de consumidores ===== */
+let cgN=0,cgDown=false;const evColors=['#c6f432','#22d3ee','#fbbf24','#f472b6','#a78bfa','#38bdf8'];
+function chip(n){return `<span class="ev animate__animated animate__bounceIn" style="background:${evColors[n%evColors.length]}">#${n}</span>`}
+function cgPublish(){
+  cgN++;
+  const alive=cgDown?['A','C']:['A','B','C'];
+  const target=alive[(cgN-1)%alive.length];
+  document.querySelector('#cg'+target+' div').insertAdjacentHTML('beforeend',chip(cgN));
+  document.querySelector('#cgInv div').insertAdjacentHTML('beforeend',chip(cgN));
+  document.querySelector('#cgNot div').insertAdjacentHTML('beforeend',chip(cgN));
+  document.getElementById('cgOut').innerHTML=`Evento #${cgN}: en "pagos" lo procesa <b>solo Pagos-${target}</b>; "inventario" y "notificaciones" reciben <b>su propia copia</b>.`;
+}
+function cgToggle(){
+  cgDown=!cgDown;
+  document.getElementById('cgB').classList.toggle('down',cgDown);
+  document.getElementById('cgBtn').textContent=cgDown?'Encender Pagos-B':'Apagar Pagos-B';
+  document.getElementById('cgOut').innerHTML=cgDown
+   ? '<span style="color:var(--red)"><i class="fa-solid fa-plug-circle-xmark"></i> Pagos-B cayó.</span> El broker <b>rebalancea</b>: A y C se reparten su trabajo. No se pierde ningún evento.'
+   : '<span style="color:var(--lime)"><i class="fa-solid fa-plug-circle-check"></i> Pagos-B volvió.</span> El broker rebalancea otra vez entre las tres instancias.';
+}
+function cgReset(){cgN=0;cgDown=false;['A','B','C','Inv','Not'].forEach(k=>{document.querySelector('#cg'+k+' div').innerHTML='';});document.getElementById('cgB').classList.remove('down');document.getElementById('cgBtn').textContent='Apagar Pagos-B';document.getElementById('cgOut').innerHTML='';}
+
+/* ===== Particiones ===== */
+const NPART=6, owner=p=>['Pagos-A','Pagos-A','Pagos-B','Pagos-B','Pagos-C','Pagos-C'][p];
+document.getElementById('parts').innerHTML=[...Array(NPART).keys()].map(p=>
+ `<div class="col-4 col-md-2"><div class="part" id="p${p}"><div style="color:var(--muted)">P${p}</div><div style="color:var(--amber);font-size:.65rem">${owner(p)}</div><div class="evs"></div></div></div>`).join('');
+function hashKey(k){let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))>>>0;return h}
+let pkCount={};
+function pkSend(){
+  const k=document.getElementById('pkInput').value.trim()||'sin-clave';
+  const h=hashKey(k),p=h%NPART;
+  pkCount[k]=(pkCount[k]||0)+1;
+  document.querySelectorAll('.part').forEach(e=>e.classList.remove('hit'));
+  const el=document.getElementById('p'+p);el.classList.add('hit');
+  const color=evColors[Object.keys(pkCount).indexOf(k)%evColors.length];
+  el.querySelector('.evs').insertAdjacentHTML('beforeend',`<span class="ev animate__animated animate__bounceIn" style="background:${color};font-size:.62rem;min-width:0">${k.replace('pedido-','')}·${pkCount[k]}</span>`);
+  document.getElementById('pkOut').innerHTML=`<code>hash("${k}") = ${h}</code> → <code>${h} mod ${NPART} = ${p}</code>: va a la <b>partición ${p}</b>, que atiende <b>${owner(p)}</b>. ${pkCount[k]>1?'<span style="color:var(--lime)">Misma clave → misma partición: los eventos de este pedido quedan en orden.</span>':''}`;
+}
+function pkQuick(k){document.getElementById('pkInput').value=k;pkSend();}
+
+/* ===== Idempotencia ===== */
+let idemD=0,idemDone=false;
+function idemDeliver(){
+  idemD++;document.getElementById('idemDeliv').textContent=idemD;
+  const on=document.getElementById('idemOn').checked;
+  const out=document.getElementById('idemOut');
+  if(on&&idemDone){out.innerHTML=`<span style="color:var(--lime)"><i class="fa-solid fa-shield"></i> Entrega ${idemD}: <code>e-1042</code> ya estaba procesado → <b>se descarta</b>. El cliente pagó una sola vez.</span>`;return;}
+  idemDone=true;
+  document.getElementById('idemCharges').insertAdjacentHTML('beforeend',`<span class="ev animate__animated animate__bounceIn" style="background:${on||idemD===1?'#c6f432':'#f87171'}">$2.350</span>`);
+  out.innerHTML = idemD===1 ? '<i class="fa-solid fa-check"></i> Primera entrega: se cobra y se registra <code>e-1042</code> como procesado.'
+   : `<span style="color:var(--red)"><i class="fa-solid fa-triangle-exclamation"></i> Entrega ${idemD}: sin idempotencia <b>se vuelve a cobrar</b>. El cliente pagó ${idemD} veces el mismo pedido.</span>`;
+}
+function idemReset(){idemD=0;idemDone=false;document.getElementById('idemDeliv').textContent='0';document.getElementById('idemCharges').innerHTML='';document.getElementById('idemOut').innerHTML='';}
+
+/* ===== Características ===== */
+const edaRatings=[
+ ['Desempeño',5,true,'Procesamiento asincrónico y en paralelo: nadie espera a que termine el otro.'],
+ ['Escalabilidad',5,true,'Cada procesador escala por separado agregando instancias.'],
+ ['Tolerancia a fallos',5,true,'Los procesadores no se llaman entre sí: si uno cae, los eventos esperan en el broker.'],
+ ['Evolutividad',5,false,'Una funcionalidad nueva es un procesador nuevo suscripto a eventos existentes, sin tocar a los productores.'],
+ ['Modularidad',4,false,'Procesadores independientes con una responsabilidad; el acoplamiento queda en el formato de los eventos.'],
+ ['Elasticidad',3,false,'Se agregan instancias ante picos, pero lo limitan las particiones y los recursos compartidos.'],
+ ['Facilidad de despliegue',3,false,'Cada procesador se despliega por separado, pero son muchas piezas y los cambios de eventos hay que coordinarlos.'],
+ ['Confiabilidad',3,false,'Sin transacciones globales pueden quedar estados intermedios que hay que compensar.'],
+ ['Costo total',3,false,'Clúster de broker y muchos nodos: más caro que un monolito.'],
+ ['Testeabilidad',2,false,'Flujos asincrónicos y no deterministas: difíciles de reproducir y probar de punta a punta.'],
+ ['Simplicidad',1,false,'El más complejo: asincronía, duplicados, orden, fallos parciales y consistencia eventual.']
+];
+const stars=v=>`<span class="stars">${[1,2,3,4,5].map(i=>`<i class="fa-solid fa-star ${i<=v?'on':''}"></i>`).join('')}</span>`;
+document.getElementById('edaWhy').innerHTML=edaRatings.map(([n,v,d,w])=>`<tr><td><b>${n}</b></td><td>${stars(v)}</td><td>${w}</td></tr>`).join('');
+document.getElementById('ratings').innerHTML=edaRatings.map(([n,v,d])=>
+ `<div class="rating-row"><span>${n} ${d?'<span class="rel-yes"><i class="fa-solid fa-bullseye"></i> driver</span>':''}</span>${stars(v)}</div>`).join('');
+
+/* ===== Alternativas ===== */
+const alts=[
+ {n:'Layered',i:'fa-layer-group',why:'Monolito con llamadas sincrónicas: no escala por partes y una falla (por ejemplo, la pasarela) frena toda la compra. Contradice escalabilidad y tolerancia a fallos.'},
+ {n:'Microkernel',i:'fa-puzzle-piece',why:'Monolito pensado para productos extensibles con plug-ins. No aporta ni escalabilidad ni tolerancia a fallos, que son los drivers del caso.'},
+ {n:'Pipes & Filters',i:'fa-filter',why:'Flujo lineal de transformaciones. Acá varios consumidores reaccionan <b>al mismo hecho</b> en paralelo, y hay varias instancias del mismo tipo.'},
+ {n:'Service-Based',i:'fa-boxes-stacked',why:'Es distribuido, pero con pocos servicios grandes, base compartida y comunicación sincrónica típica. Escalabilidad y tolerancia a fallos medias. Sería razonable con menos volumen.'},
+ {n:'Microservicios',i:'fa-cubes-stacked',why:'Podría combinarse con eventos (es común), pero por sí solo no define la comunicación por pub/sub, broker y consistencia eventual que pide el caso, y tiene el costo más alto.'},
+ {n:'Space-Based',i:'fa-memory',why:'Resuelve picos extremos con datos replicados en memoria. Es más caro y complejo, y el caso pide pub/sub de eventos de dominio, no compartir el estado en memoria.'},
+ {n:'Orchestration SOA',i:'fa-sitemap',why:'Un orquestador central acopla todo y se vuelve cuello de botella: va en contra de escalabilidad y tolerancia a fallos.'}
+];
+document.getElementById('altGrid').innerHTML=alts.map((a,k)=>
+ `<div class="col-md-4 col-xl-3" data-anim="zoomIn"><div class="box alt text-center" onclick="showAlt(${k})"><i class="fa-solid ${a.i} fa-2x mb-2" style="color:var(--red)"></i><h5 class="h6 mb-0">${a.n}</h5></div></div>`).join('');
+function showAlt(k){Swal.fire({icon:'error',title:alts[k].n+': descartado',html:alts[k].why,confirmButtonColor:'#22d3ee'})}
+
+/* ===== Flujo ===== */
+const flowOk=[
+ ['Pedidos','El cliente confirma. Pedidos guarda el pedido y publica <code>PedidoCreado</code>. Responde "pedido recibido".'],
+ ['Inventario','Reacciona a <code>PedidoCreado</code>: reserva el stock y publica <code>StockReservado</code>. <span class="text-secondary">(en paralelo con Pagos)</span>'],
+ ['Pagos','Reacciona a <code>PedidoCreado</code>: cobra en la pasarela con clave de idempotencia y publica <code>PagoAprobado</code>.'],
+ ['Inventario · Logística','Con <code>PagoAprobado</code>, Inventario confirma la reserva y Logística prepara el envío; luego publica <code>EnvioDespachado</code>.'],
+ ['Notificaciones','Avisa al cliente en cada evento: recibido, pagado, despachado.'],
+ ['Pedidos','Actualiza el estado del pedido con cada evento: <b>Pagado → Despachado</b>. Sistema consistente.']
+];
+const flowBad=[
+ flowOk[0],flowOk[1],
+ ['Pagos','La pasarela rechaza la tarjeta: publica <code>PagoRechazado</code>.',1],
+ ['Inventario','<b>Compensación:</b> reacciona a <code>PagoRechazado</code> y libera la reserva de stock.',1],
+ ['Notificaciones','Avisa al cliente que el pago fue rechazado.',1],
+ ['Pedidos','Marca el pedido como <b>Cancelado</b>. La saga terminó y el sistema quedó consistente.',1]
+];
+function renderFlow(steps){document.getElementById('flow').innerHTML=steps.map((s,i)=>`<div class="flow-step ${s[2]?'bad':''}"><div class="num">${i+1}</div><div><b>${s[0]}</b><br><span class="small text-secondary">${s[1]}</span></div></div>`).join('');}
+renderFlow(flowOk);
+let flowRun=false;
+async function runFlow(ok){
+  if(flowRun)return;flowRun=true;
+  renderFlow(ok?flowOk:flowBad);
+  const els=[...document.querySelectorAll('#flow .flow-step')];
+  for(const e of els){await new Promise(r=>setTimeout(r,520));e.classList.add('on');}
+  flowRun=false;
+}
+
+/* ===== Diagrama de despliegue ===== */
+function mult(x,y,t){return `<rect x="${x-4}" y="${y-13}" width="${t.length*7.5+8}" height="18" rx="4" fill="#0d1426" stroke="#94a3b8" stroke-width=".8"/><text x="${x}" y="${y}" fill="#e6ecf7" font-family="Fira Code" font-size="11.5">${t}</text>`}
+function proc(x,y,w,h,name,n,proc,db,tip){
+  let s=cube(x,y,w,h,'device','Nodo de '+name,C.dev,'#0f2233',tip);
+  s+=mult(x+w-50,y+30,n);
+  s+=artifact(x+16,y+58,w-44,42,'processor',proc,C.proc,[],'Procesador de eventos independiente.','#16240a');
+  if(db) s+=artifact(x+16,y+108,w-44,40,'database',db,C.db,[],'Base de datos propia del procesador.','#0b1f2e');
+  return s;
+}
+function drawDeploy(v){
+  document.getElementById('vA').style.borderColor=v==='A'?'var(--lime)':'';
+  document.getElementById('vB').style.borderColor=v==='B'?'var(--lime)':'';
+  document.getElementById('variantNote').innerHTML = v==='A'
+   ? '<i class="fa-solid fa-circle-info"></i> Solución propuesta (topología broker): todo se distribuye; los procesadores solo se comunican a través del broker. Kafka y .NET son tecnologías de ejemplo. Pasá el mouse sobre los elementos.'
+   : '<i class="fa-solid fa-triangle-exclamation"></i> Variante con mediador: un <code>«orchestrator»</code> consume <code>PedidoCreado</code> y envía en orden los comandos a cada procesador. Más control del flujo, pero agrega acoplamiento y un posible cuello de botella.';
+  let s='';
+  // cliente
+  s+=cube(10,250,160,130,'device','Cliente',C.dev,'#0f2233','Navegador o app móvil con el carrito.');
+  s+=cube(24,305,132,62,'executionEnvironment','Navegador / app',C.env,'#1a1838','Ambiente de ejecución del cliente.');
+  // pedidos
+  s+=cube(200,200,250,280,'device','Nodo de Pedidos',C.dev,'#0f2233','Productor: recibe la compra y publica PedidoCreado.');
+  s+=mult(400,230,'2..*');
+  s+=cube(214,256,222,100,'executionEnvironment','Runtime (.NET 8)',C.env,'#1a1838','Runtime del servicio.');
+  s+=artifact(230,306,188,42,'artifact','pedidos-api',C.art,[],'API del carrito y productor de eventos.');
+  s+=cube(214,366,222,104,'executionEnvironment','PostgreSQL',C.env,'#1a1838','Base de datos de Pedidos.');
+  s+=artifact(230,416,188,42,'database','pedidos_db + outbox',C.db,[],'Pedidos y tabla outbox para publicar sin doble escritura.','#0b1f2e');
+  // broker
+  s+=cube(490,60,240,460,'cluster','Clúster del broker',C.orch,'#191533','Tres nodos de broker: tópicos particionados y replicados.');
+  s+=mult(690,90,'3');
+  s+=cube(504,116,212,392,'executionEnvironment','Kafka',C.env,'#1e1b40','Broker de mensajes (ejemplo: Apache Kafka).');
+  s+=artifact(520,168,180,52,'artifact','pedidos',C.art,['12 particiones · réplica 3'],'Tópico de eventos de pedidos, clave = pedidoId.');
+  s+=artifact(520,228,180,40,'artifact','pagos',C.art,[],'Tópico de eventos de pagos.');
+  s+=artifact(520,276,180,40,'artifact','inventario',C.art,[],'Tópico de eventos de inventario.');
+  s+=artifact(520,324,180,40,'artifact','envios',C.art,[],'Tópico de eventos de logística.');
+  s+=artifact(520,372,180,40,'artifact','dlq',C.ext,[],'Dead letter queue: mensajes que fallan siempre.','#2a1216');
+  s+=artifact(520,420,180,40,'deploymentSpec','topics.yaml',C.spec,[],'Particiones, replicación y retención de cada tópico.');
+  // procesadores
+  s+=proc(770,10,250,165,'Pagos','3','pagos-processor','pagos_db','Grupo de consumidores "pagos": 3 instancias compiten.');
+  s+=proc(770,185,250,165,'Inventario','2..*','inventario-processor','inventario_db','Reserva, confirma y libera stock.');
+  s+=proc(770,360,250,165,'Logística','2..*','logistica-processor','logistica_db','Prepara y sigue los envíos.');
+  s+=proc(770,535,250,115,'Notificaciones','2..*','notif-processor',null,'Envía email/SMS en cada evento.');
+  // externos
+  s+=cube(1045,40,110,110,'node','Pasarela',C.ext,'#2a1216','Sistema externo de pagos.');
+  s+=`<text x="1094" y="106" text-anchor="middle" fill="#e6ecf7" font-family="Space Grotesk" font-size="12">de pagos</text><text x="1094" y="124" text-anchor="middle" fill="#f87171" font-family="Fira Code" font-size="10">(externa)</text>`;
+  s+=cube(1045,560,110,110,'node','Email/SMS',C.ext,'#2a1216','Proveedor externo de mensajería.');
+  s+=`<text x="1094" y="626" text-anchor="middle" fill="#e6ecf7" font-family="Space Grotesk" font-size="12">proveedor</text><text x="1094" y="644" text-anchor="middle" fill="#f87171" font-family="Fira Code" font-size="10">(externo)</text>`;
+  // rutas
+  s+=link(170,320,200,320,'',0,0,false);
+  s+=`<text x="172" y="306" fill="#c6f432" font-family="Fira Code" font-size="10.5">HTTPS</text><text x="172" y="338" fill="#94a3b8" font-family="Fira Code" font-size="10.5">*</text><text x="190" y="338" fill="#94a3b8" font-family="Fira Code" font-size="10.5">1</text>`;
+  s+=link(450,300,490,300,'',0,0,false);
+  s+=`<text x="455" y="290" fill="#c6f432" font-family="Fira Code" font-size="10.5">TCP</text>`;
+  [92,267,442].forEach(y=>s+=link(730,Math.min(y,500),770,y,'',0,0,false));
+  s+=link(730,505,770,592,'',0,0,false);
+  s+=`<text x="734" y="180" fill="#c6f432" font-family="Fira Code" font-size="10.5">TCP</text>`;
+  s+=link(1020,95,1045,95,'',0,0,false);
+  s+=`<text x="1040" y="170" fill="#c6f432" font-family="Fira Code" font-size="10">HTTPS +</text><text x="1040" y="183" fill="#c6f432" font-family="Fira Code" font-size="10">idempotency</text><text x="1040" y="196" fill="#c6f432" font-family="Fira Code" font-size="10">key</text>`;
+  s+=link(1020,600,1045,610,'',0,0,false);
+  s+=`<text x="1048" y="552" fill="#c6f432" font-family="Fira Code" font-size="10">HTTPS</text>`;
+  if(v==='B'){
+    s+=cube(200,510,250,150,'device','Nodo mediador',C.dev,'#0f2233','Variante: mediador del flujo de pedidos.');
+    s+=mult(400,540,'2');
+    s+=artifact(216,570,206,52,'orchestrator','pedido-orchestrator',C.orch,['envía comandos en orden'],'Consume PedidoCreado y publica CobrarPedido, ReservarStock…','#231c45');
+    s+=link(450,585,490,500,'',0,0,false);
+    s+=`<text x="456" y="560" fill="#c6f432" font-family="Fira Code" font-size="10.5">TCP</text>`;
+  }
+  document.getElementById('deploySvg').innerHTML=s;
+  document.querySelectorAll('#deploySvg .uml').forEach(g=>{g.style.cursor='help';const t=document.createElementNS(svgNS,'title');t.textContent=g.dataset.tip;g.prepend(t);});
+}
+drawDeploy('A');
+
+/* ===== Mini diagrama de lectura ===== */
+(function(){
+  const badge=(x,y,n)=>`<circle cx="${x}" cy="${y}" r="11" fill="#c6f432"/><text x="${x}" y="${y+4}" text-anchor="middle" fill="#111" font-family="Fira Code" font-weight="700" font-size="12">${n}</text>`;
+  let s='';
+  s+=cube(20,30,290,330,'device','Notebook del vendedor',C.dev,'#0f2233','Dispositivo de hardware.');
+  s+=cube(36,88,258,260,'executionEnvironment','Windows 11',C.env,'#16162f','Ambiente de ejecución: sistema operativo.');
+  s+=cube(52,146,226,186,'executionEnvironment','.NET 8',C.env,'#1e1b40','Ambiente de ejecución: runtime.');
+  s+=artifact(70,204,190,50,'artifact','app.exe',C.art,[],'Artefacto: el ejecutable de la aplicación.');
+  s+=artifact(70,264,190,46,'deploymentSpec','appsettings.json',C.spec,[],'Configuración del artefacto.');
+  s+=cube(380,70,250,240,'device','Servidor de BD',C.dev,'#0f2233','Otro dispositivo de hardware.');
+  s+=cube(396,128,218,170,'executionEnvironment','PostgreSQL 16',C.env,'#1a1838','SGBD.');
+  s+=artifact(414,190,180,50,'artifact','ventas_db',C.art,[],'Esquema de la base de datos.');
+  s+=link(310,200,380,200,'TCP/IP :5432',304,188,false,'*','1');
+  s+=badge(268,198,1)+badge(345,160,2)+badge(345,242,3)+badge(372,62,4);
+  document.getElementById('miniSvg').innerHTML=s;
+  document.querySelectorAll('#miniSvg .uml').forEach(g=>{g.style.cursor='help';const t=document.createElementNS(svgNS,'title');t.textContent=g.dataset.tip;g.prepend(t);});
+})();
+
+/* ===== Quiz ===== */
+const quiz=[
+ {q:'¿Qué diferencia a un evento de un comando?',o:['El evento se puede rechazar','El comando no tiene destinatario','El evento describe algo que ya pasó y el emisor no conoce a sus consumidores','Son sinónimos'],a:2,e:'El evento es un hecho inmutable en pasado; el comando es un pedido a un destinatario conocido.'},
+ {q:'En un tópico con grupos de consumidores, ¿qué pasa con cada evento?',o:['Cada grupo recibe una copia y dentro del grupo lo procesa una sola instancia','Lo procesan todas las instancias de todos los grupos','Lo procesa un solo grupo','Se descarta si hay más de un grupo'],a:0,e:'Entre grupos es pub/sub; dentro de un grupo, consumidores competidores.'},
+ {q:'¿Por qué usar pedidoId como clave de partición?',o:['Para cifrar el evento','Para repartir los eventos al azar','Porque el broker no acepta otra clave','Para que los eventos de un pedido vayan a la misma partición y se procesen en orden'],a:3,e:'El orden se garantiza solo dentro de una partición; misma clave → misma partición.'},
+ {q:'Con entrega al-menos-una-vez, ¿qué deben garantizar los consumidores?',o:['Que respondan en menos de 100 ms','Idempotencia','Consistencia fuerte','Que sean sincrónicos'],a:1,e:'Los duplicados van a llegar; procesarlos dos veces no debe cambiar el resultado.'},
+ {q:'¿Qué es la ventana de inconsistencia?',o:['El tiempo que el broker está caído','El período entre una actualización y el momento en que todos ven el valor actualizado','Un error de la base de datos','La pantalla de error que ve el cliente'],a:1,e:'Es propia de la consistencia eventual.'},
+ {q:'¿Qué se gana con la topología broker frente a la de mediador?',o:['Más control del flujo','Mejor manejo de errores','Consistencia más fuerte','Más escalabilidad, rendimiento y tolerancia a fallos'],a:3,e:'A cambio se pierde control del flujo y se complica el manejo de errores.'},
+ {q:'El pago se rechaza después de reservar stock. ¿Qué hace la saga coreografiada?',o:['Inventario reacciona a PagoRechazado y libera la reserva','El broker borra los eventos anteriores','Se hace rollback de una transacción global','Nada: el stock queda reservado'],a:0,e:'Cada paso tiene su compensación; no hay transacción global.'},
+ {q:'En el diagrama propuesto, ¿cómo se comunican Pagos e Inventario?',o:['Por REST, uno llama al otro','Comparten la misma base de datos','Solo a través del broker, con eventos','Por archivos compartidos'],a:2,e:'Los procesadores no se conocen: publican y consumen eventos.'}
+];
+async function startQuiz(){
+  let score=0;
+  for(let i=0;i<quiz.length;i++){
+    const Q=quiz[i];const opts={};Q.o.forEach((o,k)=>opts[k]=o);
+    const r=await Swal.fire({title:`Pregunta ${i+1} de ${quiz.length}`,text:Q.q,input:'radio',inputOptions:opts,
+      confirmButtonText:'Responder',confirmButtonColor:'#22d3ee',showCancelButton:true,cancelButtonText:'Salir',
+      inputValidator:v=>v===null||v===''?'Elegí una opción':undefined,
+      showClass:{popup:'animate__animated animate__fadeInUp animate__faster'}});
+    if(!r.isConfirmed){document.getElementById('quizResult').innerHTML='';return;}
+    const ok=Number(r.value)===Q.a; if(ok)score++;
+    await Swal.fire({icon:ok?'success':'error',title:ok?'¡Correcto!':'No exactamente',
+      html:(ok?'':`Respuesta correcta: <b>${Q.o[Q.a]}</b><br><br>`)+Q.e,confirmButtonColor:'#c6f432',confirmButtonText:'<span style="color:#111">Seguir</span>'});
+  }
+  const pct=Math.round(score/quiz.length*100);
+  Swal.fire({icon:pct>=67?'success':'info',title:`${score} / ${quiz.length}`,text:pct>=67?'¡Listo para entregar!':'Repasá las slides de conceptos y volvé a intentar.',confirmButtonColor:'#22d3ee'});
+  document.getElementById('quizResult').innerHTML=`<div class="box ${pct>=67?'lime':'amber'} animate__animated animate__bounceIn" style="max-width:420px"><h4 class="mb-0"><i class="fa-solid fa-trophy"></i> Resultado: ${score}/${quiz.length} (${pct}%)</h4></div>`;
+}
+
+document.querySelectorAll('.check-item').forEach(li=>li.addEventListener('click',()=>li.classList.toggle('done')));
+let start=NaN;try{start=parseInt(location.hash.slice(1))-1;}catch(e){}
+slides[0].classList.add('active');
+go(isNaN(start)?0:Math.min(Math.max(start,0),slides.length-1));
+
+</script>
+</body>
+</html>

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dokku: tu propio PaaS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+/* Concepto: el servidor como un muelle (dock) de contenedores sobre agua oscura. Azul oceano, cian de ballena, ambar de baliza. */
+:root{
+  --bg:#06101c; --panel:#0c1b2d; --panel2:#102239; --line:#1b3452;
+  --ink:#e7eff9; --muted:#8fa5bf; --whale:#38bdf8; --whale-d:#0b6fa4; --sun:#fbbf24;
+  --ok:#34d399; --bad:#fb7185; --code:#040b14;
+  --f-display:'Unbounded',system-ui,sans-serif; --f-body:'IBM Plex Sans',system-ui,sans-serif; --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --bs-body-bg:var(--bg); --bs-body-color:var(--ink); --bs-border-color:var(--line);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 600px at 85% -10%,#0d2a47 0%,transparent 60%),var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1.05rem;overflow:hidden}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:500;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:clamp(1.35rem,2.6vw,2rem);margin:0 0 .35rem}
+h3{font-size:1.02rem}
+p{max-width:68ch}
+code{font-family:var(--f-mono);color:var(--sun);background:rgba(251,191,36,.09);padding:.08em .38em;border-radius:5px;font-size:.88em}
+a{color:var(--whale)}
+.muted{color:var(--muted)}
+
+/* barra superior */
+#hud{position:fixed;inset:0 0 auto 0;z-index:20;height:52px;display:flex;align-items:center;gap:1rem;padding:0 1rem;background:rgba(6,16,28,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);font-size:.85rem}
+#hud .brand{font-family:var(--f-display);font-weight:700;color:var(--whale);display:flex;align-items:center;gap:.5rem;white-space:nowrap}
+#hud .tag{color:var(--muted);white-space:nowrap}
+#hud .sp{flex:1}
+#hud .pts{font-family:var(--f-mono);color:var(--sun);white-space:nowrap}
+#hud .cnt{font-family:var(--f-mono);color:var(--muted);white-space:nowrap}
+#bar{position:fixed;top:52px;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--whale-d),var(--whale));z-index:21;transition:width .35s ease}
+
+/* escenario */
+#stage{position:fixed;inset:55px 0 58px 0;overflow-y:auto;overflow-x:hidden}
+.slide{display:none;min-height:100%;padding:2rem max(1.25rem,6vw) 2.5rem}
+.slide.active{display:block}
+.slide .wrap{max-width:1080px;margin:0 auto}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--whale);display:block;margin-bottom:.6rem}
+.lead2{font-size:1.15rem;color:#c7d6e8}
+
+/* navegacion inferior */
+#nav{position:fixed;inset:auto 0 0 0;height:58px;z-index:20;display:flex;align-items:center;justify-content:center;gap:.9rem;background:rgba(6,16,28,.92);border-top:1px solid var(--line)}
+#nav button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:.45rem 1rem;font-family:var(--f-body);font-weight:500;transition:.15s}
+#nav button:hover:not(:disabled){border-color:var(--whale);color:var(--whale)}
+#nav button:disabled{opacity:.35}
+#nav .hint{font-size:.78rem;color:var(--muted);font-family:var(--f-mono)}
+
+/* portada */
+.cover{display:flex;flex-direction:column;justify-content:center;min-height:100%}
+.cover h1{font-size:clamp(2.2rem,6vw,4.4rem);line-height:1.02;margin:.4rem 0 1rem;font-weight:700}
+.cover h1 em{font-style:normal;color:var(--whale)}
+.waves{position:relative;height:56px;margin:1.6rem 0 0;overflow:hidden;opacity:.8}
+.waves svg{position:absolute;left:0;width:200%;height:56px;animation:drift 14s linear infinite}
+.waves svg+svg{animation-duration:22s;opacity:.55;top:10px}
+@keyframes drift{to{transform:translateX(-50%)}}
+.chips{display:flex;flex-wrap:wrap;gap:.6rem;margin:1.2rem 0}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:.35rem .85rem;font-size:.85rem;color:#c7d6e8}
+.chip i{color:var(--whale);margin-right:.4rem}
+
+/* tarjetas */
+.cardx{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;height:100%}
+.cardx h3{margin:.1rem 0 .4rem;display:flex;align-items:center;gap:.6rem}
+.cardx h3 i{color:var(--whale);width:1.3rem;text-align:center}
+.cardx p{margin:0;color:#c1d1e4;font-size:.96rem}
+.cardx.warn{border-color:#5b4a1b;background:#1a1708}
+.cardx.warn h3 i{color:var(--sun)}
+.cardx.ok{border-color:#1b5a46;background:#08201a}
+.cardx.ok h3 i{color:var(--ok)}
+.note{border-left:3px solid var(--sun);background:rgba(251,191,36,.07);padding:.7rem 1rem;border-radius:0 10px 10px 0;margin:1rem 0;font-size:.95rem;max-width:80ch}
+.note.info{border-left-color:var(--whale);background:rgba(56,189,248,.07)}
+.note b{color:#fff}
+
+/* codigo */
+.code{background:var(--code);border:1px solid var(--line);border-radius:12px;margin:.9rem 0;overflow:hidden}
+.code .top{display:flex;align-items:center;gap:.5rem;padding:.4rem .8rem;background:#081628;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.code .top .dots{display:flex;gap:5px}.code .top .dots i{width:9px;height:9px;border-radius:50%;background:#26405f;display:block}
+.code .top .sp{flex:1}
+.code button.cp{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:7px;font-size:.72rem;padding:.12rem .55rem;font-family:var(--f-mono)}
+.code button.cp:hover{color:var(--whale);border-color:var(--whale)}
+.code pre{margin:0;padding:.85rem 1rem;overflow-x:auto;font-family:var(--f-mono);font-size:.88rem;line-height:1.65;color:#cfe2f7}
+.code .c{color:#6f8aa8}.code .p{color:var(--whale);user-select:none}.code .s{color:#9be3b8}.code .k{color:var(--sun)}
+
+/* diagrama de flujo */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:.4rem;margin:1.2rem 0}
+.flow .node{flex:1 1 130px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.8rem .7rem;text-align:center;font-size:.85rem;position:relative}
+.flow .node i{font-size:1.4rem;color:var(--whale);display:block;margin-bottom:.35rem}
+.flow .node b{display:block;font-family:var(--f-display);font-weight:500;font-size:.8rem;margin-bottom:.15rem}
+.flow .node span{color:var(--muted);font-size:.78rem}
+.flow .arr{display:flex;align-items:center;color:var(--whale);opacity:.7}
+.flow .node.lit{border-color:var(--whale);box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+
+/* tablas */
+.table{--bs-table-bg:transparent;--bs-table-color:var(--ink);--bs-table-border-color:var(--line);font-size:.93rem}
+.table thead th{font-family:var(--f-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--whale);border-bottom:1px solid var(--whale-d)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:.2rem .5rem}
+.tablewrap .table{margin:0}
+
+/* tabs y acordeon */
+.nav-tabs{border-color:var(--line)}
+.nav-tabs .nav-link{color:var(--muted);border:0;border-bottom:2px solid transparent;font-family:var(--f-body);font-weight:500}
+.nav-tabs .nav-link.active{background:transparent;color:var(--whale);border-bottom-color:var(--whale)}
+.nav-tabs .nav-link:hover{color:var(--ink)}
+.accordion{--bs-accordion-bg:var(--panel);--bs-accordion-border-color:var(--line);--bs-accordion-btn-bg:var(--panel);--bs-accordion-active-bg:var(--panel2);--bs-accordion-active-color:var(--whale);--bs-accordion-btn-color:var(--ink);--bs-accordion-color:#c1d1e4}
+.accordion-button:focus{box-shadow:0 0 0 3px rgba(56,189,248,.2)}
+.accordion-button{font-weight:500}
+
+/* ejercicios */
+.ex{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin-top:1rem}
+.ex.done{border-color:#1b5a46}
+.ex textarea{width:100%;background:var(--code);color:#cfe2f7;border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;font-family:var(--f-mono);font-size:.9rem;resize:vertical}
+.ex textarea:focus{outline:2px solid var(--whale);border-color:transparent}
+.ex .bar2{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem}
+.btnx{background:var(--whale);color:#03121f;border:0;border-radius:9px;padding:.45rem 1rem;font-weight:600}
+.btnx:hover{filter:brightness(1.1)}
+.btnx.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-weight:500}
+.btnx.ghost:hover{color:var(--sun);border-color:var(--sun)}
+.msg{font-size:.92rem;min-height:1.3rem}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.ptsbadge{font-family:var(--f-mono);color:var(--sun);font-size:.8rem}
+
+/* quiz */
+.q{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1rem 1.2rem;margin-bottom:.9rem}
+.q .qt{font-weight:600;margin-bottom:.6rem}
+.q .opts{display:grid;gap:.45rem}
+.q .opt{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:.55rem .8rem;color:var(--ink);font-size:.95rem;transition:.15s}
+.q .opt:hover:not(:disabled){border-color:var(--whale)}
+.q .opt:disabled{cursor:default}
+.q .opt.right{border-color:var(--ok);background:#0a2a20}
+.q .opt.wrong{border-color:var(--bad);background:#2a0f16}
+.q .opt b{font-family:var(--f-mono);color:var(--whale);margin-right:.5rem}
+
+/* lista de verificacion */
+.chk label{display:flex;gap:.7rem;align-items:flex-start;padding:.5rem .2rem;border-bottom:1px dashed var(--line);cursor:pointer}
+.chk input{margin-top:.3rem;accent-color:var(--whale)}
+.score{font-family:var(--f-display);font-size:clamp(2.6rem,7vw,4.5rem);color:var(--sun)}
+
+@media (max-width:640px){#hud .tag{display:none}#nav .hint{display:none}}
+@media (prefers-reduced-motion:reduce){.waves svg{animation:none}*{animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <span class="brand"><i class="fa-solid fa-anchor"></i> Dokku</span>
+  <span class="tag">Instalación y operación de un PaaS propio</span>
+  <span class="sp"></span>
+  <span class="pts"><i class="fa-solid fa-star"></i> <span id="pts">0</span> / 60</span>
+  <span class="cnt" id="cnt">1 / 1</span>
+</div>
+<div id="bar"></div>
+
+<main id="stage">
+
+<!-- 1 PORTADA -->
+<section class="slide active"><div class="wrap cover">
+  <span class="eyebrow">Cloud Computing · Modelos de servicio · PaaS</span>
+  <h1>Tu propio <em>Heroku</em><br>en un solo servidor</h1>
+  <p class="lead2">Dokku es una plataforma como servicio de código abierto. Subís el código con <code>git push</code> y la plataforma lo construye, lo ejecuta y lo publica. En esta presentación la instalamos paso a paso y aprendemos a operarla.</p>
+  <div class="chips">
+    <span class="chip"><i class="fa-solid fa-book-open"></i>Conceptos</span>
+    <span class="chip"><i class="fa-solid fa-terminal"></i>Instalación guiada</span>
+    <span class="chip"><i class="fa-solid fa-gears"></i>Operación diaria</span>
+    <span class="chip"><i class="fa-solid fa-flag-checkered"></i>5 ejercicios y control</span>
+  </div>
+  <div class="waves" aria-hidden="true">
+    <svg viewBox="0 0 1200 56" preserveAspectRatio="none"><path d="M0 28 Q 75 4 150 28 T 300 28 T 450 28 T 600 28 T 750 28 T 900 28 T 1050 28 T 1200 28 V56 H0Z" fill="#0b6fa4"/></svg>
+    <svg viewBox="0 0 1200 56" preserveAspectRatio="none"><path d="M0 34 Q 75 12 150 34 T 300 34 T 450 34 T 600 34 T 750 34 T 900 34 T 1050 34 T 1200 34 V56 H0Z" fill="#38bdf8"/></svg>
+  </div>
+  <p class="muted mt-3" style="font-size:.88rem"><i class="fa-regular fa-keyboard"></i> Navegá con las flechas ← → del teclado.</p>
+</div></section>
+
+<!-- 2 AGENDA -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Recorrido</span>
+  <h2>Lo que vamos a hacer</h2>
+  <p class="muted">Cuatro partes. Las dos del medio son prácticas.</p>
+  <div class="row g-3 mt-1">
+    <div class="col-md-6 col-lg-3"><div class="cardx"><h3><i class="fa-solid fa-lightbulb"></i>1 · Conceptos</h3><p>Qué es Dokku, cómo funciona un despliegue y en qué se diferencia de otras opciones.</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="cardx"><h3><i class="fa-solid fa-download"></i>2 · Instalación</h3><p>Requisitos, instalador, clave SSH y dominio.</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="cardx"><h3><i class="fa-solid fa-rocket"></i>3 · Primer despliegue</h3><p>Crear una aplicación, darle una base de datos y publicarla con git push.</p></div></div>
+    <div class="col-md-6 col-lg-3"><div class="cardx"><h3><i class="fa-solid fa-sliders"></i>4 · Operación</h3><p>Configuración, logs, escalado, servicios y problemas frecuentes.</p></div></div>
+  </div>
+  <div class="note info mt-4"><b>Contexto del curso.</b> Esto es PaaS en la práctica. En la presentación de PaaS vimos qué hace una plataforma por vos. Acá instalamos una y vemos esas piezas funcionando.</div>
+</div></section>
+
+<!-- 3 QUE ES -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Concepto</span>
+  <h2>¿Qué es Dokku?</h2>
+  <p class="lead2">Una plataforma como servicio extensible y de código abierto que se ejecuta en <b>un único servidor</b> de tu elección. Es una alternativa a Heroku que podés alojar vos mismo.</p>
+  <div class="row g-3 mt-1">
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-brands fa-git-alt"></i>Despliegue por git push</h3><p>Creás la aplicación al subir el código. No hace falta armar la imagen ni los contenedores a mano.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-cubes"></i>Dockerfile o buildpacks</h3><p>Si tu proyecto tiene Dockerfile, lo usa. Si no, detecta el lenguaje automáticamente con buildpacks.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-route"></i>Enrutamiento automático</h3><p>Con nginx dirige el tráfico web a los contenedores. También administra procesos en segundo plano y tareas cron.</p></div></div>
+  </div>
+  <div class="note mt-3"><b>La idea central.</b> Vos entregás el código. Dokku se ocupa de construir, ejecutar y publicar. Es el modelo de responsabilidad compartida de PaaS, pero con el servidor en tus manos.</div>
+</div></section>
+
+<!-- 4 FLUJO -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Concepto</span>
+  <h2>Qué pasa cuando hacés git push</h2>
+  <p class="muted">Cada paso lo hace Dokku por vos. Pulsá el botón para recorrerlos.</p>
+  <div class="flow" id="flow">
+    <div class="node"><i class="fa-solid fa-laptop-code"></i><b>git push</b><span>El código llega al servidor por SSH</span></div>
+    <div class="arr"><i class="fa-solid fa-chevron-right"></i></div>
+    <div class="node"><i class="fa-solid fa-magnifying-glass"></i><b>Detecta</b><span>Dockerfile o lenguaje del proyecto</span></div>
+    <div class="arr"><i class="fa-solid fa-chevron-right"></i></div>
+    <div class="node"><i class="fa-solid fa-hammer"></i><b>Construye</b><span>Instala dependencias y arma la imagen</span></div>
+    <div class="arr"><i class="fa-solid fa-chevron-right"></i></div>
+    <div class="node"><i class="fa-brands fa-docker"></i><b>Ejecuta</b><span>Inicia contenedores desde esa imagen</span></div>
+    <div class="arr"><i class="fa-solid fa-chevron-right"></i></div>
+    <div class="node"><i class="fa-solid fa-globe"></i><b>Publica</b><span>nginx enruta el tráfico web</span></div>
+  </div>
+  <button class="btnx" id="flowBtn"><i class="fa-solid fa-play"></i> Recorrer el flujo</button>
+  <div class="note info mt-3"><b>Idea clave.</b> Un nuevo <code>git push</code> repite el proceso y reemplaza la versión anterior. Desplegar es subir código, no operar servidores.</div>
+</div></section>
+
+<!-- 5 PIEZAS -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Concepto</span>
+  <h2>Las piezas que Dokku orquesta</h2>
+  <p class="muted">Dokku no reinventa nada: une herramientas conocidas.</p>
+  <div class="row g-3 mt-1">
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-brands fa-docker"></i>Docker</h3><p>Ejecuta cada aplicación en su propio contenedor, con las dependencias aisladas.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-network-wired"></i>nginx</h3><p>Recibe el tráfico y lo reparte según el dominio o el puerto de cada aplicación.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-boxes-packing"></i>Buildpacks</h3><p>Detectan el lenguaje y construyen la imagen sin que escribas un Dockerfile.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-key"></i>SSH y Git</h3><p>El canal de despliegue. Tu clave pública identifica a quién puede subir código.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-regular fa-clock"></i>cron</h3><p>Ejecuta tareas programadas de las aplicaciones.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-puzzle-piece"></i>Plugins</h3><p>Extienden Dokku: bases de datos (PostgreSQL, MySQL, Redis), certificados HTTPS y más.</p></div></div>
+  </div>
+</div></section>
+
+<!-- 6 COMPARATIVA -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Concepto</span>
+  <h2>Dónde se ubica Dokku</h2>
+  <div class="tablewrap mt-2"><table class="table align-middle">
+    <thead><tr><th>Opción</th><th>Quién administra el servidor</th><th>Cómo se publica</th><th>Cuándo conviene</th></tr></thead>
+    <tbody>
+      <tr><td><b>Heroku</b> (PaaS comercial)</td><td>El proveedor</td><td>git push</td><td>Querés cero operación y aceptás pagar por ello</td></tr>
+      <tr><td><b>Dokku</b> (PaaS propio)</td><td>Vos, en un único servidor</td><td>git push</td><td>Querés la experiencia de PaaS con costo y control propios</td></tr>
+      <tr><td><b>Docker Compose</b></td><td>Vos</td><td>Archivo que describís y ejecutás</td><td>Conjunto de contenedores que querés definir a mano</td></tr>
+      <tr><td><b>IaaS</b> (máquinas virtuales)</td><td>Vos, todo el sistema</td><td>Instalás y configurás vos</td><td>Necesitás control total del sistema</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note mt-3"><b>Límite a tener en cuenta.</b> Dokku corre en <b>un único servidor</b>. No reparte la carga entre varias máquinas por sí solo. Si el servidor cae, las aplicaciones caen. Es excelente para equipos chicos, pruebas y enseñanza.</div>
+</div></section>
+
+<!-- 7 REQUISITOS -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Instalación · antes de empezar</span>
+  <h2>Requisitos mínimos</h2>
+  <div class="row g-3 mt-1">
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-brands fa-ubuntu"></i>Ubuntu 20.04</h3><p>Instalación <b>limpia</b>. Es la que corresponde a la versión 0.32.0 que vamos a instalar.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-memory"></i>1 GB de RAM</h3><p>Como mínimo. Las aplicaciones y la base de datos también consumen memoria.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-hard-drive"></i>30 GB de disco</h3><p>Las imágenes de contenedores y los datos ocupan espacio rápido.</p></div></div>
+  </div>
+  <div class="note mt-4"><b>Convención del instructivo.</b> Todos los comandos se ejecutan como <b>root</b>. Para pasar a root: <code>sudo -i</code>.</div>
+  <div class="note info"><b>Si lo hacés en una máquina virtual.</b> Usá una VM limpia o un clon de la VM base, sin Apache ni NextCloud: Dokku instala nginx y necesita el puerto 80. Conectala en modo puente (bridge) para que tu PC pueda llegar a su IP.</div>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>servidor Ubuntu</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>sudo -i
+<span class="p"># </span>lsb_release -ds    <span class="c"># comprobar que es Ubuntu 20.04</span>
+<span class="p"># </span>free -h            <span class="c"># memoria disponible</span>
+<span class="p"># </span>df -h /            <span class="c"># espacio en disco</span></pre></div>
+</div></section>
+
+<!-- 8 INSTALAR -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Instalación · paso 1 de 3</span>
+  <h2>Descargar e instalar Dokku</h2>
+  <p>Descargamos el instalador de la versión estable y lo ejecutamos indicando la versión con <code>DOKKU_TAG</code>.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>wget -NP . https://dokku.com/install/v0.32.0/bootstrap.sh
+<span class="p"># </span>sudo DOKKU_TAG=v0.32.0 bash bootstrap.sh</pre></div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-hourglass-half"></i>Tarda de 5 a 10 minutos</h3><p>Depende de la conexión a Internet. Descarga Docker, nginx y los componentes de Dokku.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-thumbtack"></i>Fijar la versión</h3><p>Con <code>DOKKU_TAG</code> todos instalan la misma versión y los resultados son comparables.</p></div></div>
+  </div>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>verificar</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku version
+<span class="c"># dokku version 0.32.0</span></pre></div>
+</div></section>
+
+<!-- 9 SSH -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Instalación · paso 2 de 3</span>
+  <h2>La llave SSH: quién puede desplegar</h2>
+  <p>Dokku identifica a quien sube el código por su clave pública. Generamos el par de claves y registramos la pública en Dokku.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="c"># 1. Generar la clave (Enter a todo deja los valores por defecto)</span>
+<span class="p"># </span>ssh-keygen
+
+<span class="c"># 2. Asignarla al usuario "admin" de Dokku</span>
+<span class="p"># </span>cat ~/.ssh/id_rsa.pub | sudo dokku ssh-keys:add admin</pre></div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-user-lock"></i>Qué queda registrado</h3><p>El nombre <code>admin</code> es una etiqueta para esa clave dentro de Dokku. No es un usuario de Linux.</p></div></div>
+    <div class="col-md-6"><div class="cardx warn"><h3><i class="fa-solid fa-triangle-exclamation"></i>Si desplegás desde otra máquina</h3><p>Generá el par de claves en <b>esa</b> máquina y agregá su clave pública al servidor. Con la clave del propio servidor solo podrías desplegar desde él.</p></div></div>
+  </div>
+</div></section>
+
+<!-- 10 DOMINIO -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Instalación · paso 3 de 3</span>
+  <h2>El dominio global</h2>
+  <p>Dokku necesita saber con qué nombre publicar las aplicaciones. Hay tres opciones: elegí <b>una</b>.</p>
+  <ul class="nav nav-tabs mt-3" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#d1" type="button">Dominio propio</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#d2" type="button">Dirección IP</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#d3" type="button">sslip.io</button></li>
+  </ul>
+  <div class="tab-content pt-3">
+    <div class="tab-pane fade show active" id="d1">
+      <p>Cualquier dominio al que ya tengas acceso. Necesita un registro <b>A</b> o <b>CNAME</b> que apunte a la IP del servidor. El instructivo usa <code>dokku.me</code> como ejemplo.</p>
+      <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku domains:set-global dokku.me</pre></div>
+    </div>
+    <div class="tab-pane fade" id="d2">
+      <p>Usamos la IP de la máquina virtual. <b>Es la opción de la demo</b>: no necesita dominio ni DNS.</p>
+      <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku domains:set-global 192.168.5.186</pre></div>
+      <p class="muted mb-0">Cambiá la IP por la de tu servidor (<code>ip a</code> te la muestra). Al terminar el despliegue, Dokku informa la dirección y el puerto de la aplicación.</p>
+    </div>
+    <div class="tab-pane fade" id="d3">
+      <p>Con <b>sslip.io</b> obtenés subdominios como si tuvieras un dominio propio. Se logra agregando <code>.sslip.io</code> a la dirección IP.</p>
+      <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku domains:set-global 192.168.5.186.sslip.io</pre></div>
+    </div>
+  </div>
+  <div class="note info mt-3"><b>Para recordar.</b> La instalación ya terminó. Tenés una plataforma lista para recibir aplicaciones.</div>
+</div></section>
+
+<!-- 11 EJ 1 y 2 -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Ejercicios · instalación</span>
+  <h2>Ponelo en práctica</h2>
+  <p class="muted">Escribí el comando tal como lo ejecutarías. Se validan por patrón: no hace falta copiar el espaciado exacto.</p>
+
+  <div class="ex" data-id="e1" data-pts="8"
+    data-re="^\s*(sudo\s+)?DOKKU_TAG=v0\.32\.0\s+(sudo\s+)?bash\s+bootstrap\.sh\s*$"
+    data-hint="La variable DOKKU_TAG va antes de bash, y el script se llama bootstrap.sh. La versión es la 0.32.0 con una v adelante."
+    data-ok="Eso es. Fijar la versión con DOKKU_TAG hace que la instalación sea repetible.">
+    <h3 class="h6 mb-1">Ejercicio 1 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">El instalador <code>bootstrap.sh</code> ya está descargado. Escribí el comando que lo ejecuta instalando la versión <b>v0.32.0</b>.</p>
+    <textarea rows="2" spellcheck="false" placeholder="sudo ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+
+  <div class="ex" data-id="e2" data-pts="8"
+    data-re="^\s*cat\s+(~|\$HOME|/root)/\.ssh/id_rsa\.pub\s*\|\s*(sudo\s+)?dokku\s+ssh-keys:add\s+admin\s*$"
+    data-hint="Mostrá el archivo ~/.ssh/id_rsa.pub con cat y pasalo por una tubería (|) a dokku ssh-keys:add, con el nombre admin."
+    data-ok="Correcto. La tubería entrega la clave pública a Dokku, que la asocia al nombre admin.">
+    <h3 class="h6 mb-1">Ejercicio 2 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">Ya generaste la clave con <code>ssh-keygen</code>. Escribí el comando que la registra en Dokku con el nombre <code>admin</code>.</p>
+    <textarea rows="2" spellcheck="false" placeholder="cat ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+</div></section>
+
+<!-- 12 PRIMERA APP -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Primer despliegue · paso 1 de 4</span>
+  <h2>Traer el código y crear la aplicación</h2>
+  <p>Usamos una aplicación de ejemplo de Heroku, escrita en Ruby. En la máquina de trabajo clonamos el repositorio. En el servidor Dokku creamos la aplicación.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>máquina de trabajo</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>git clone https://github.com/heroku/ruby-getting-started</pre></div>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku apps:create ruby-getting-started</pre></div>
+  <div class="note info"><b>Dos máquinas, un solo recorrido.</b> En la demo ambas pueden ser la misma. Con dos máquinas, el <code>git clone</code> y el <code>git push</code> se hacen en tu PC y los comandos <code>dokku</code> en el servidor.</div>
+  <div class="note"><b>Esta aplicación necesita una base de datos.</b> Dokku no trae ninguna por defecto. En el siguiente paso instalamos el plugin de PostgreSQL.</div>
+</div></section>
+
+<!-- 13 SERVICIOS -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Primer despliegue · paso 2 de 4</span>
+  <h2>Una base de datos como servicio</h2>
+  <p>En PaaS los datos viven en un <b>servicio de apoyo</b>, separado de la aplicación. En Dokku se agrega con un plugin. Es la idea de «recurso conectable» de los 12 factores.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="c"># 1. Instalar el plugin de PostgreSQL (requiere root)</span>
+<span class="p"># </span>sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git
+
+<span class="c"># 2. Crear un servicio de PostgreSQL</span>
+<span class="p"># </span>dokku postgres:create railsdatabase</pre></div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-plug"></i>Plugins oficiales</h3><p>Hay plugins oficiales para otros almacenes de datos: MySQL, MongoDB, Redis y más. La lista completa está en el repositorio de Dokku.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-database"></i>Un servicio, un nombre</h3><p>El servicio se llama <code>railsdatabase</code>. Ese nombre lo usamos para enlazarlo a la aplicación.</p></div></div>
+  </div>
+</div></section>
+
+<!-- 14 LINK -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Primer despliegue · paso 3 de 4</span>
+  <h2>Enlazar el servicio con la aplicación</h2>
+  <p>Cada almacén de datos oficial ofrece un método de <b>enlace</b> (<i>link</i>) para vincularlo a una aplicación.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku postgres:link railsdatabase ruby-getting-started</pre></div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx ok"><h3><i class="fa-solid fa-link"></i>Qué hace el enlace</h3><p>Le entrega a la aplicación los datos de conexión como una <b>variable de entorno</b> (<code>DATABASE_URL</code>). El código no lleva contraseñas escritas.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-diagram-project"></i>Reglas de vinculación</h3><p>Un mismo servicio puede vincularse a <b>varias</b> aplicaciones. Cada aplicación admite un solo servicio de ese tipo.</p></div></div>
+  </div>
+  <div class="note info mt-3"><b>Conexión con los 12 factores.</b> Configuración en variables de entorno y servicios de apoyo conectables: dos principios que Dokku aplica solo.</div>
+</div></section>
+
+<!-- 15 EJ 3 -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Ejercicio · servicios de datos</span>
+  <h2>Una base para tu aplicación</h2>
+  <div class="ex" data-id="e3" data-pts="8"
+    data-re="^(?=[\s\S]*\bdokku\s+postgres:create\s+midb\b)(?=[\s\S]*\bdokku\s+postgres:link\s+midb\s+mi-app\b)[\s\S]*$"
+    data-hint="Dos comandos. Primero postgres:create con el nombre del servicio (midb). Después postgres:link con el servicio y la aplicación, en ese orden."
+    data-ok="Bien. Creaste el servicio y lo enlazaste: mi-app recibirá su cadena de conexión por variable de entorno.">
+    <h3 class="h6 mb-1">Ejercicio 3 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">El plugin de PostgreSQL ya está instalado y la aplicación <code>mi-app</code> existe. Escribí, en dos líneas, los comandos que <b>crean</b> el servicio <code>midb</code> y lo <b>enlazan</b> a <code>mi-app</code>.</p>
+    <textarea rows="3" spellcheck="false" placeholder="dokku ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+</div></section>
+
+<!-- 16 DEPLOY -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Primer despliegue · paso 4 de 4</span>
+  <h2>Desplegar: remote y push</h2>
+  <p>Entramos a la carpeta del proyecto y agregamos un <i>remote</i> de Git que apunta a Dokku. La aplicación se crea sobre la marcha en el servidor.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>máquina de trabajo</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>cd ruby-getting-started
+<span class="p">$ </span>git remote add dokku dokku@192.168.5.186:ruby-getting-started
+<span class="p">$ </span>git push dokku main</pre></div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx warn"><h3><i class="fa-solid fa-user"></i>El usuario debe ser <code>dokku</code></h3><p>En la dirección <code>dokku@IP:aplicación</code>, el usuario del remote tiene que ser <code>dokku</code>. Con otro, el push falla.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-code-branch"></i>La rama</h3><p>El ejemplo usa <code>main</code>. Si tu repositorio usa <code>master</code>, subí esa rama.</p></div></div>
+  </div>
+</div></section>
+
+<!-- 17 SALIDA -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Primer despliegue · resultado</span>
+  <h2>Cómo leer la salida del push</h2>
+  <p>Verás una serie de pasos que detectan el código y despliegan lo necesario. Al final, Dokku muestra la <b>ruta y el puerto</b> para entrar a la aplicación.</p>
+  <div class="accordion mt-3" id="acc">
+    <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#a1">1 · Recepción del código</button></h2>
+      <div id="a1" class="accordion-collapse collapse show" data-bs-parent="#acc"><div class="accordion-body">Dokku recibe el código por SSH y lo prepara para la construcción. Si falla aquí, revisá la clave SSH y el usuario del remote.</div></div></div>
+    <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a2">2 · Detección y construcción</button></h2>
+      <div id="a2" class="accordion-collapse collapse" data-bs-parent="#acc"><div class="accordion-body">Detecta el lenguaje de la aplicación (acá, Ruby) o usa el Dockerfile. Instala las dependencias y arma la imagen. Es el paso más largo.</div></div></div>
+    <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a3">3 · Despliegue de los contenedores</button></h2>
+      <div id="a3" class="accordion-collapse collapse" data-bs-parent="#acc"><div class="accordion-body">Inicia los contenedores con la imagen construida y verifica que respondan antes de enviarles tráfico.</div></div></div>
+    <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a4">4 · Publicación</button></h2>
+      <div id="a4" class="accordion-collapse collapse" data-bs-parent="#acc"><div class="accordion-body">nginx se configura para enrutar el tráfico. Dokku imprime la dirección de la aplicación: abrila en el navegador para comprobarla.</div></div></div>
+  </div>
+</div></section>
+
+<!-- 18 EJ 4 -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Ejercicio · despliegue</span>
+  <h2>Publicá tu aplicación</h2>
+  <div class="ex" data-id="e4" data-pts="8"
+    data-re="^(?=[\s\S]*\bgit\s+remote\s+add\s+dokku\s+dokku@192\.168\.5\.186:mi-app\b)(?=[\s\S]*\bgit\s+push\s+dokku\s+(main|master)\b)[\s\S]*$"
+    data-hint="Primero git remote add dokku seguido de dokku@IP:aplicación. Después git push dokku y la rama. El usuario antes de la arroba es dokku."
+    data-ok="Exacto. El remote se llama dokku, apunta al usuario dokku del servidor y el push dispara todo el proceso.">
+    <h3 class="h6 mb-1">Ejercicio 4 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">Estás dentro de la carpeta del proyecto. Escribí, en dos líneas, los comandos que agregan un remote llamado <code>dokku</code> hacia la aplicación <code>mi-app</code> en el servidor <code>192.168.5.186</code> y suben la rama <code>main</code>.</p>
+    <textarea rows="3" spellcheck="false" placeholder="git ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+</div></section>
+
+<!-- 19 OPERACION: apps y config -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Operación · administrar aplicaciones</span>
+  <h2>El día a día: aplicaciones y configuración</h2>
+  <p>Los comandos <code>dokku</code> se ejecutan en el servidor. También podés lanzarlos desde tu PC por SSH: <code>ssh dokku@IP apps:list</code>.</p>
+  <div class="tablewrap mt-2"><table class="table align-middle">
+    <thead><tr><th>Comando</th><th>Para qué sirve</th></tr></thead>
+    <tbody>
+      <tr><td><code>dokku apps:list</code></td><td>Lista las aplicaciones del servidor</td></tr>
+      <tr><td><code>dokku apps:create nombre</code></td><td>Crea una aplicación</td></tr>
+      <tr><td><code>dokku config:set app CLAVE=valor</code></td><td>Define una variable de entorno (y reinicia la app)</td></tr>
+      <tr><td><code>dokku config:show app</code></td><td>Muestra las variables de la aplicación</td></tr>
+      <tr><td><code>dokku logs app -t</code></td><td>Sigue los logs en vivo (<code>-t</code> = tail)</td></tr>
+      <tr><td><code>dokku domains:add app dominio</code></td><td>Agrega un dominio a la aplicación</td></tr>
+      <tr><td><code>dokku domains:report app</code></td><td>Muestra los dominios configurados</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note info mt-3"><b>Configuración fuera del código.</b> Las contraseñas y direcciones se guardan con <code>config:set</code>, no en el repositorio. Es el principio III de los 12 factores.</div>
+</div></section>
+
+<!-- 20 OPERACION: ps -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Operación · procesos y escalado</span>
+  <h2>Escalar, reiniciar y entrar al contenedor</h2>
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6">
+      <div class="code mt-0"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="c"># Ver procesos y su estado</span>
+<span class="p"># </span>dokku ps:report ruby-getting-started
+
+<span class="c"># Tener 2 procesos web</span>
+<span class="p"># </span>dokku ps:scale ruby-getting-started web=2
+
+<span class="c"># Reiniciar la aplicación</span>
+<span class="p"># </span>dokku ps:restart ruby-getting-started</pre></div>
+    </div>
+    <div class="col-lg-6">
+      <div class="code mt-0"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="c"># Ejecutar un comando puntual en la app</span>
+<span class="p"># </span>dokku run ruby-getting-started ls
+
+<span class="c"># Abrir una terminal dentro del contenedor</span>
+<span class="p"># </span>dokku enter ruby-getting-started</pre></div>
+    </div>
+  </div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-up-right-and-down-left-from-center"></i>Escalado horizontal</h3><p>Es el mismo concepto de los módulos de balanceo: más procesos iguales. Dokku los pone detrás de nginx.</p></div></div>
+    <div class="col-md-6"><div class="cardx warn"><h3><i class="fa-solid fa-triangle-exclamation"></i>Escalar tiene techo</h3><p>Todos los procesos corren en el <b>mismo servidor</b>. Si la memoria se agota, más procesos no ayudan.</p></div></div>
+  </div>
+</div></section>
+
+<!-- 21 EJ 5 -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Ejercicio · operación</span>
+  <h2>Operá tu aplicación</h2>
+  <div class="ex" data-id="e5" data-pts="8"
+    data-re="^(?=[\s\S]*\bdokku\s+config:set\s+mi-app\s+COLOR=azul\b)(?=[\s\S]*\bdokku\s+ps:scale\s+mi-app\s+web=2\b)[\s\S]*$"
+    data-hint="Dos comandos: config:set con la aplicación y CLAVE=valor, y ps:scale con la aplicación y web=2."
+    data-ok="Perfecto. Una variable de entorno y dos procesos web: configuración y escalado, sin tocar el código.">
+    <h3 class="h6 mb-1">Ejercicio 5 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">Escribí, en dos líneas, los comandos que definen en <code>mi-app</code> la variable de entorno <code>COLOR</code> con el valor <code>azul</code> y que la dejan con <b>2 procesos web</b>.</p>
+    <textarea rows="3" spellcheck="false" placeholder="dokku ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+</div></section>
+
+<!-- 22 OPERACION servicios y ciclo de vida -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Operación · servicios y ciclo de vida</span>
+  <h2>Servicios de datos, actualizaciones y bajas</h2>
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6"><div class="cardx">
+      <h3><i class="fa-solid fa-database"></i>Servicio PostgreSQL</h3>
+      <div class="code"><pre><span class="p"># </span>dokku postgres:list
+<span class="p"># </span>dokku postgres:info railsdatabase
+<span class="p"># </span>dokku postgres:logs railsdatabase
+<span class="p"># </span>dokku postgres:connect railsdatabase</pre></div>
+      <p>Para ver los servicios, su estado y los logs, o conectarte con el cliente de PostgreSQL.</p>
+    </div></div>
+    <div class="col-lg-6"><div class="cardx">
+      <h3><i class="fa-solid fa-recycle"></i>Actualizar y dar de baja</h3>
+      <div class="code"><pre><span class="c"># Actualizar: cambiá el código y subilo de nuevo</span>
+<span class="p">$ </span>git push dokku main
+
+<span class="c"># Desenlazar y borrar (con cuidado)</span>
+<span class="p"># </span>dokku postgres:unlink railsdatabase ruby-getting-started
+<span class="p"># </span>dokku apps:destroy ruby-getting-started</pre></div>
+      <p>Cada <code>git push</code> es un nuevo despliegue. Borrar pide confirmación.</p>
+    </div></div>
+  </div>
+  <div class="note warn mt-3"><b>Antes de destruir.</b> Borrar un servicio de datos elimina la información. En un entorno real se hacen respaldos antes de cualquier baja.</div>
+</div></section>
+
+<!-- 23 PROBLEMAS -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Operación · cuando algo falla</span>
+  <h2>Problemas frecuentes</h2>
+  <div class="tablewrap mt-2"><table class="table align-middle">
+    <thead><tr><th>Síntoma</th><th>Causa probable</th><th>Qué hacer</th></tr></thead>
+    <tbody>
+      <tr><td><code>Permission denied (publickey)</code></td><td>La clave pública no está registrada en Dokku</td><td>Repetir <code>ssh-keys:add</code> con la clave de la máquina desde la que desplegás</td></tr>
+      <tr><td>El push falla de entrada</td><td>El usuario del remote no es <code>dokku</code></td><td>Corregir con <code>git remote set-url dokku dokku@IP:app</code></td></tr>
+      <tr><td><code>src refspec main does not match</code></td><td>La rama no se llama <code>main</code></td><td>Subir la rama real, por ejemplo <code>git push dokku master</code></td></tr>
+      <tr><td>La app se despliega pero falla al abrir</td><td>Falta enlazar la base de datos</td><td>Revisar <code>postgres:link</code> y <code>dokku logs app</code></td></tr>
+      <tr><td>No se llega a la dirección desde la PC</td><td>La VM no está en modo puente o el puerto está bloqueado</td><td>Revisar la red de la VM y la IP con <code>ip a</code></td></tr>
+      <tr><td>La construcción se corta o va muy lenta</td><td>Poca memoria o poco disco</td><td>Revisar <code>free -h</code> y <code>df -h</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note info mt-3"><b>Primera herramienta de diagnóstico.</b> Siempre empezá por <code>dokku logs nombre-app</code>. Es lo primero que se mira en una plataforma.</div>
+</div></section>
+
+<!-- 24 QUIZ -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Control de conceptos</span>
+  <h2>¿Quedó claro?</h2>
+  <p class="muted">Cinco preguntas, 4 puntos cada una. Respondé y verás la explicación.</p>
+  <div id="quiz"></div>
+  <button class="btnx mt-2" id="quizEnd"><i class="fa-solid fa-flag-checkered"></i> Ver resultado final</button>
+</div></section>
+
+<!-- 25 CIERRE -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Cierre</span>
+  <h2>Checklist y puntaje</h2>
+  <div class="row g-4 mt-0">
+    <div class="col-lg-7">
+      <div class="chk">
+        <label><input type="checkbox"> Entiendo qué es Dokku y en qué se diferencia de Heroku, Compose e IaaS</label>
+        <label><input type="checkbox"> Puedo explicar qué pasa cuando hago <code>git push</code></label>
+        <label><input type="checkbox"> Instalé Dokku con el instalador y comprobé la versión</label>
+        <label><input type="checkbox"> Registré mi clave SSH y configuré el dominio global</label>
+        <label><input type="checkbox"> Creé una aplicación, la enlacé con PostgreSQL y la desplegué</label>
+        <label><input type="checkbox"> Sé cambiar variables, ver logs y escalar procesos</label>
+        <label><input type="checkbox"> Sé reconocer los problemas frecuentes y por dónde empezar a diagnosticar</label>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="cardx text-center">
+        <span class="eyebrow">Puntaje total</span>
+        <div class="score"><span id="scoreBig">0</span><small class="fs-4 muted"> / 60</small></div>
+        <p class="muted mx-auto" id="scoreDetail">Resolvé los ejercicios y el control para sumar puntos.</p>
+        <button class="btnx" id="scoreBtn"><i class="fa-solid fa-trophy"></i> Ver detalle</button>
+      </div>
+      <div class="note info mt-3"><b>Para seguir.</b> Probá desplegar tu propia aplicación (por ejemplo, el proyecto de Desarrollo web) y compará la experiencia con Docker Compose.</div>
+    </div>
+  </div>
+</div></section>
+
+</main>
+
+<div id="nav">
+  <button id="prev"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+  <span class="hint">← →</span>
+  <button id="next">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.8/sweetalert2.all.min.js"></script>
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var cur=0, stage=document.getElementById('stage');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var state={ex:{},quiz:{}}; var EX_TOTAL=40, QZ_TOTAL=20;
+
+  function show(n,dir){
+    n=Math.max(0,Math.min(slides.length-1,n));
+    var old=slides[cur]; old.classList.remove('active');
+    cur=n; var s=slides[cur]; s.classList.add('active');
+    stage.scrollTop=0;
+    var items=[].slice.call(s.querySelectorAll('.wrap > *'));
+    items.forEach(function(el,i){
+      el.classList.remove('animate__animated','animate__fadeInUp','animate__fadeInLeft');
+      if(!reduce){ void el.offsetWidth; el.style.setProperty('--animate-duration','.5s'); el.style.setProperty('--animate-delay',(Math.min(i,8)*0.06)+'s'); el.classList.add('animate__animated', dir<0?'animate__fadeInLeft':'animate__fadeInUp'); }
+    });
+    document.getElementById('bar').style.width=((cur+1)/slides.length*100)+'%';
+    document.getElementById('cnt').textContent=(cur+1)+' / '+slides.length;
+    document.getElementById('prev').disabled=cur===0;
+    document.getElementById('next').disabled=cur===slides.length-1;
+  }
+  document.getElementById('prev').onclick=function(){show(cur-1,-1)};
+  document.getElementById('next').onclick=function(){show(cur+1,1)};
+  document.addEventListener('keydown',function(e){
+    var t=e.target.tagName; if(t==='TEXTAREA'||t==='INPUT'||document.body.classList.contains('swal2-shown'))return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();show(cur+1,1)}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(cur-1,-1)}
+  });
+
+  /* copiar */
+  document.querySelectorAll('.code').forEach(function(box){
+    var b=box.querySelector('button.cp'); if(!b)return;
+    b.addEventListener('click',function(){
+      var pre=box.querySelector('pre'); var lines=pre.innerText.split('\n').filter(function(l){return !/^\s*#(?!\s)/.test(l)||true;});
+      var txt=lines.map(function(l){return l.replace(/^[#$]\s/,'').replace(/\s+#\s.*$/,'');}).filter(function(l){return l.trim()&&!/^\s*#/.test(l);}).join('\n');
+      function ok(){b.textContent='¡Copiado!';setTimeout(function(){b.textContent='Copiar'},1400)}
+      try{navigator.clipboard.writeText(txt).then(ok,function(){fallback()})}catch(e){fallback()}
+      function fallback(){var r=document.createRange();r.selectNodeContents(pre);var sel=getSelection();sel.removeAllRanges();sel.addRange(r);b.textContent='Seleccionado'}
+    });
+  });
+
+  /* flujo animado */
+  var flowBtn=document.getElementById('flowBtn');
+  flowBtn.addEventListener('click',function(){
+    var nodes=[].slice.call(document.querySelectorAll('#flow .node'));
+    nodes.forEach(function(n){n.classList.remove('lit')});
+    nodes.forEach(function(n,i){setTimeout(function(){
+      nodes.forEach(function(x){x.classList.remove('lit')}); n.classList.add('lit');
+      if(!reduce){n.classList.remove('animate__animated','animate__pulse');void n.offsetWidth;n.classList.add('animate__animated','animate__pulse')}
+    },i*900)});
+  });
+
+  /* puntos */
+  function total(){var t=0;for(var k in state.ex)t+=state.ex[k];for(var q in state.quiz)t+=state.quiz[q].pts;return t}
+  function refresh(){
+    var t=total(); document.getElementById('pts').textContent=t; document.getElementById('scoreBig').textContent=t;
+    var e=0;for(var k in state.ex)e+=state.ex[k]; var q=0;for(var z in state.quiz)q+=state.quiz[z].pts;
+    document.getElementById('scoreDetail').textContent='Ejercicios: '+e+' / '+EX_TOTAL+' · Control: '+q+' / '+QZ_TOTAL;
+  }
+  function norm(s){return s.replace(/\r/g,'').replace(/[ \t]+/g,' ').replace(/ ?\n ?/g,'\n').trim()}
+
+  /* ejercicios */
+  document.querySelectorAll('.ex').forEach(function(ex){
+    var id=ex.dataset.id, pts=+ex.dataset.pts, re=new RegExp(ex.dataset.re,'i'), hinted=false;
+    var ta=ex.querySelector('textarea'), msg=ex.querySelector('.msg');
+    ex.querySelector('.hint-btn').addEventListener('click',function(){
+      hinted=true; Swal.fire({icon:'info',title:'Pista',text:ex.dataset.hint,confirmButtonText:'Entendido',background:'#0c1b2d',color:'#e7eff9',confirmButtonColor:'#38bdf8'});
+    });
+    ex.querySelector('.chk-btn').addEventListener('click',function(){
+      if(state.ex[id]!==undefined){msg.className='msg ok';msg.textContent='Ya resuelto.';return}
+      var v=norm(ta.value);
+      if(!v){msg.className='msg bad';msg.textContent='Escribí el comando primero.';return}
+      if(re.test(v)){
+        var got=Math.max(pts-(hinted?2:0),1); state.ex[id]=got; ex.classList.add('done'); ta.readOnly=true;
+        msg.className='msg ok'; msg.innerHTML='<i class="fa-solid fa-circle-check"></i> Correcto: +'+got+' puntos';
+        Swal.fire({icon:'success',title:'¡Correcto!',text:ex.dataset.ok,confirmButtonText:'Seguir',background:'#0c1b2d',color:'#e7eff9',confirmButtonColor:'#38bdf8',timer:6000,timerProgressBar:true});
+        refresh();
+      }else{
+        msg.className='msg bad'; msg.innerHTML='<i class="fa-solid fa-circle-xmark"></i> Todavía no. Revisá el orden y los nombres, o pedí una pista.';
+        if(!reduce){ex.classList.remove('animate__animated','animate__headShake');void ex.offsetWidth;ex.classList.add('animate__animated','animate__headShake')}
+      }
+    });
+  });
+
+  /* quiz */
+  var Q=[
+   {q:'¿Qué dispara un despliegue en Dokku?',o:['Subir un archivo zip desde un panel web','Reiniciar el servidor','Un git push al remote «dokku»','Ejecutar docker build a mano'],c:2,w:'Dokku recibe el código por Git sobre SSH. Al llegar el push, detecta, construye, ejecuta y publica.'},
+   {q:'¿Qué hace dokku postgres:link?',o:['Entrega a la aplicación su cadena de conexión como variable de entorno','Instala el motor PostgreSQL dentro del contenedor de la aplicación, junto al código','Duplica los datos en otra aplicación','Publica el puerto 5432 en Internet'],c:0,w:'El enlace inyecta los datos de conexión (DATABASE_URL) como variable de entorno. El código no necesita contraseñas.'},
+   {q:'El push termina con «Permission denied (publickey)». ¿Cuál es la causa más probable?',o:['La aplicación no tiene Dockerfile','Falta el plugin de PostgreSQL','El remote apunta a la rama equivocada','La clave pública de quien despliega no fue registrada en el servidor'],c:3,w:'Dokku autentica por clave pública. Hay que registrarla con ssh-keys:add desde la clave de la máquina que despliega.'},
+   {q:'En el remote de Git, ¿qué usuario debe aparecer antes de la arroba?',o:['root','dokku','admin','ubuntu'],c:1,w:'El remote debe ser dokku@IP:aplicación. Con otro usuario el push falla. «admin» es solo la etiqueta de la clave.'},
+   {q:'¿Cuál es el requisito mínimo de memoria RAM del instructivo?',o:['512 MB','4 GB','1 GB','8 GB'],c:2,w:'Se pide al menos 1 GB de RAM, además de 30 GB de disco y Ubuntu 20.04 limpio.'}
+  ];
+  var qbox=document.getElementById('quiz');
+  Q.forEach(function(item,i){
+    var d=document.createElement('div'); d.className='q';
+    var h='<div class="qt">'+(i+1)+'. '+item.q+'</div><div class="opts">';
+    item.o.forEach(function(t,j){h+='<button class="opt" data-j="'+j+'"><b>'+'ABCD'[j]+'</b>'+t+'</button>'});
+    h+='</div>'; d.innerHTML=h; qbox.appendChild(d);
+    d.querySelectorAll('.opt').forEach(function(b){
+      b.addEventListener('click',function(){
+        if(state.quiz[i])return;
+        var j=+b.dataset.j, good=j===item.c;
+        state.quiz[i]={pts:good?4:0};
+        d.querySelectorAll('.opt').forEach(function(x,k){x.disabled=true;if(k===item.c)x.classList.add('right')});
+        if(!good)b.classList.add('wrong');
+        refresh();
+        Swal.fire({toast:true,position:'top-end',icon:good?'success':'error',title:good?'¡Correcto! +4':'No era esa',text:item.w,showConfirmButton:false,timer:5200,timerProgressBar:true,background:'#0c1b2d',color:'#e7eff9'});
+      });
+    });
+  });
+  function final(){
+    var t=total(),e=0,q=0;for(var k in state.ex)e+=state.ex[k];for(var z in state.quiz)q+=state.quiz[z].pts;
+    var icon=t>=50?'success':(t>=30?'info':'warning');
+    var msg=t>=50?'¡Dominás Dokku! Estás listo para desplegar tu propia aplicación.':(t>=30?'Buen avance. Repasá lo que falta y volvé a intentarlo.':'Repasá la presentación y probá los comandos en el servidor.');
+    Swal.fire({icon:icon,title:t+' / 60 puntos',html:'<div style="text-align:left;line-height:1.7">Ejercicios: <b>'+e+' / '+EX_TOTAL+'</b><br>Control de conceptos: <b>'+q+' / '+QZ_TOTAL+'</b><br><br>'+msg+'</div>',confirmButtonText:'Cerrar',background:'#0c1b2d',color:'#e7eff9',confirmButtonColor:'#38bdf8'});
+  }
+  document.getElementById('quizEnd').onclick=final;
+  document.getElementById('scoreBtn').onclick=final;
+
+  show(0,1); refresh();
+})();
+</script>
+</body>
+</html>

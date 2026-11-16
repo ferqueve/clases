@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dokku: apps Python</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+/* Concepto: el servidor como un muelle (dock) de contenedores sobre agua oscura. Azul oceano, cian de ballena, ambar de baliza. */
+:root{
+  --bg:#06101c; --panel:#0c1b2d; --panel2:#102239; --line:#1b3452;
+  --ink:#e7eff9; --muted:#8fa5bf; --whale:#38bdf8; --whale-d:#0b6fa4; --sun:#fbbf24;
+  --ok:#34d399; --bad:#fb7185; --code:#040b14;
+  --f-display:'Unbounded',system-ui,sans-serif; --f-body:'IBM Plex Sans',system-ui,sans-serif; --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --bs-body-bg:var(--bg); --bs-body-color:var(--ink); --bs-border-color:var(--line);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 600px at 85% -10%,#0d2a47 0%,transparent 60%),var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1.05rem;overflow:hidden}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:500;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:clamp(1.35rem,2.6vw,2rem);margin:0 0 .35rem}
+h3{font-size:1.02rem}
+p{max-width:68ch}
+code{font-family:var(--f-mono);color:var(--sun);background:rgba(251,191,36,.09);padding:.08em .38em;border-radius:5px;font-size:.88em}
+a{color:var(--whale)}
+.muted{color:var(--muted)}
+
+/* barra superior */
+#hud{position:fixed;inset:0 0 auto 0;z-index:20;height:52px;display:flex;align-items:center;gap:1rem;padding:0 1rem;background:rgba(6,16,28,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);font-size:.85rem}
+#hud .brand{font-family:var(--f-display);font-weight:700;color:var(--whale);display:flex;align-items:center;gap:.5rem;white-space:nowrap}
+#hud .tag{color:var(--muted);white-space:nowrap}
+#hud .sp{flex:1}
+#hud .pts{font-family:var(--f-mono);color:var(--sun);white-space:nowrap}
+#hud .cnt{font-family:var(--f-mono);color:var(--muted);white-space:nowrap}
+#bar{position:fixed;top:52px;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--whale-d),var(--whale));z-index:21;transition:width .35s ease}
+
+/* escenario */
+#stage{position:fixed;inset:55px 0 58px 0;overflow-y:auto;overflow-x:hidden}
+.slide{display:none;min-height:100%;padding:2rem max(1.25rem,6vw) 2.5rem}
+.slide.active{display:block}
+.slide .wrap{max-width:1080px;margin:0 auto}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--whale);display:block;margin-bottom:.6rem}
+.lead2{font-size:1.15rem;color:#c7d6e8}
+
+/* navegacion inferior */
+#nav{position:fixed;inset:auto 0 0 0;height:58px;z-index:20;display:flex;align-items:center;justify-content:center;gap:.9rem;background:rgba(6,16,28,.92);border-top:1px solid var(--line)}
+#nav button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:.45rem 1rem;font-family:var(--f-body);font-weight:500;transition:.15s}
+#nav button:hover:not(:disabled){border-color:var(--whale);color:var(--whale)}
+#nav button:disabled{opacity:.35}
+#nav .hint{font-size:.78rem;color:var(--muted);font-family:var(--f-mono)}
+
+/* portada */
+.cover{display:flex;flex-direction:column;justify-content:center;min-height:100%}
+.cover h1{font-size:clamp(2.2rem,6vw,4.4rem);line-height:1.02;margin:.4rem 0 1rem;font-weight:700}
+.cover h1 em{font-style:normal;color:var(--whale)}
+.waves{position:relative;height:56px;margin:1.6rem 0 0;overflow:hidden;opacity:.8}
+.waves svg{position:absolute;left:0;width:200%;height:56px;animation:drift 14s linear infinite}
+.waves svg+svg{animation-duration:22s;opacity:.55;top:10px}
+@keyframes drift{to{transform:translateX(-50%)}}
+.chips{display:flex;flex-wrap:wrap;gap:.6rem;margin:1.2rem 0}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:.35rem .85rem;font-size:.85rem;color:#c7d6e8}
+.chip i{color:var(--whale);margin-right:.4rem}
+
+/* tarjetas */
+.cardx{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;height:100%}
+.cardx h3{margin:.1rem 0 .4rem;display:flex;align-items:center;gap:.6rem}
+.cardx h3 i{color:var(--whale);width:1.3rem;text-align:center}
+.cardx p{margin:0;color:#c1d1e4;font-size:.96rem}
+.cardx.warn{border-color:#5b4a1b;background:#1a1708}
+.cardx.warn h3 i{color:var(--sun)}
+.cardx.ok{border-color:#1b5a46;background:#08201a}
+.cardx.ok h3 i{color:var(--ok)}
+.note{border-left:3px solid var(--sun);background:rgba(251,191,36,.07);padding:.7rem 1rem;border-radius:0 10px 10px 0;margin:1rem 0;font-size:.95rem;max-width:80ch}
+.note.info{border-left-color:var(--whale);background:rgba(56,189,248,.07)}
+.note b{color:#fff}
+
+/* codigo */
+.code{background:var(--code);border:1px solid var(--line);border-radius:12px;margin:.9rem 0;overflow:hidden}
+.code .top{display:flex;align-items:center;gap:.5rem;padding:.4rem .8rem;background:#081628;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.code .top .dots{display:flex;gap:5px}.code .top .dots i{width:9px;height:9px;border-radius:50%;background:#26405f;display:block}
+.code .top .sp{flex:1}
+.code button.cp{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:7px;font-size:.72rem;padding:.12rem .55rem;font-family:var(--f-mono)}
+.code button.cp:hover{color:var(--whale);border-color:var(--whale)}
+.code pre{margin:0;padding:.85rem 1rem;overflow-x:auto;font-family:var(--f-mono);font-size:.88rem;line-height:1.65;color:#cfe2f7}
+.code .c{color:#6f8aa8}.code .p{color:var(--whale);user-select:none}.code .s{color:#9be3b8}.code .k{color:var(--sun)}
+
+/* diagrama de flujo */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:.4rem;margin:1.2rem 0}
+.flow .node{flex:1 1 130px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.8rem .7rem;text-align:center;font-size:.85rem;position:relative}
+.flow .node i{font-size:1.4rem;color:var(--whale);display:block;margin-bottom:.35rem}
+.flow .node b{display:block;font-family:var(--f-display);font-weight:500;font-size:.8rem;margin-bottom:.15rem}
+.flow .node span{color:var(--muted);font-size:.78rem}
+.flow .arr{display:flex;align-items:center;color:var(--whale);opacity:.7}
+.flow .node.lit{border-color:var(--whale);box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+
+/* tablas */
+.table{--bs-table-bg:transparent;--bs-table-color:var(--ink);--bs-table-border-color:var(--line);font-size:.93rem}
+.table thead th{font-family:var(--f-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--whale);border-bottom:1px solid var(--whale-d)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:.2rem .5rem}
+.tablewrap .table{margin:0}
+
+/* tabs y acordeon */
+.nav-tabs{border-color:var(--line)}
+.nav-tabs .nav-link{color:var(--muted);border:0;border-bottom:2px solid transparent;font-family:var(--f-body);font-weight:500}
+.nav-tabs .nav-link.active{background:transparent;color:var(--whale);border-bottom-color:var(--whale)}
+.nav-tabs .nav-link:hover{color:var(--ink)}
+.accordion{--bs-accordion-bg:var(--panel);--bs-accordion-border-color:var(--line);--bs-accordion-btn-bg:var(--panel);--bs-accordion-active-bg:var(--panel2);--bs-accordion-active-color:var(--whale);--bs-accordion-btn-color:var(--ink);--bs-accordion-color:#c1d1e4}
+.accordion-button:focus{box-shadow:0 0 0 3px rgba(56,189,248,.2)}
+.accordion-button{font-weight:500}
+
+/* ejercicios */
+.ex{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.2rem;margin-top:1rem}
+.ex.done{border-color:#1b5a46}
+.ex textarea{width:100%;background:var(--code);color:#cfe2f7;border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;font-family:var(--f-mono);font-size:.9rem;resize:vertical}
+.ex textarea:focus{outline:2px solid var(--whale);border-color:transparent}
+.ex .bar2{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem}
+.btnx{background:var(--whale);color:#03121f;border:0;border-radius:9px;padding:.45rem 1rem;font-weight:600}
+.btnx:hover{filter:brightness(1.1)}
+.btnx.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-weight:500}
+.btnx.ghost:hover{color:var(--sun);border-color:var(--sun)}
+.msg{font-size:.92rem;min-height:1.3rem}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.ptsbadge{font-family:var(--f-mono);color:var(--sun);font-size:.8rem}
+
+/* quiz */
+.q{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1rem 1.2rem;margin-bottom:.9rem}
+.q .qt{font-weight:600;margin-bottom:.6rem}
+.q .opts{display:grid;gap:.45rem}
+.q .opt{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:.55rem .8rem;color:var(--ink);font-size:.95rem;transition:.15s}
+.q .opt:hover:not(:disabled){border-color:var(--whale)}
+.q .opt:disabled{cursor:default}
+.q .opt.right{border-color:var(--ok);background:#0a2a20}
+.q .opt.wrong{border-color:var(--bad);background:#2a0f16}
+.q .opt b{font-family:var(--f-mono);color:var(--whale);margin-right:.5rem}
+
+/* lista de verificacion */
+.chk label{display:flex;gap:.7rem;align-items:flex-start;padding:.5rem .2rem;border-bottom:1px dashed var(--line);cursor:pointer}
+.chk input{margin-top:.3rem;accent-color:var(--whale)}
+.score{font-family:var(--f-display);font-size:clamp(2.6rem,7vw,4.5rem);color:var(--sun)}
+
+@media (max-width:640px){#hud .tag{display:none}#nav .hint{display:none}}
+@media (prefers-reduced-motion:reduce){.waves svg{animation:none}*{animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <span class="brand"><i class="fa-solid fa-anchor"></i> Dokku</span>
+  <span class="tag">Práctica: desplegar aplicaciones Python</span>
+  <span class="sp"></span>
+  <span class="pts"><i class="fa-solid fa-star"></i> <span id="pts">0</span> / 60</span>
+  <span class="cnt" id="cnt">1 / 1</span>
+</div>
+<div id="bar"></div>
+
+<main id="stage">
+
+<!-- 1 PORTADA -->
+<section class="slide active"><div class="wrap cover">
+  <span class="eyebrow">Modelos y Servicios de Cloud Computing · Tarea grupal presencial</span>
+  <h1>Práctica con Dokku:<br><em>desplegar apps Python</em></h1>
+  <p class="lead2">Con Dokku ya instalado, cada grupo despliega dos aplicaciones Python: una a partir de un <b>fork</b> de django-ex y otra directamente desde un repositorio ajeno. Esta guía recorre el procedimiento, anticipa los problemas y define qué capturar para el informe.</p>
+  <div class="chips">
+    <span class="chip"><i class="fa-solid fa-code-fork"></i>Parte A · fork + Django</span>
+    <span class="chip"><i class="fa-brands fa-docker"></i>Parte B · Flask con Dockerfile</span>
+    <span class="chip"><i class="fa-solid fa-file-pdf"></i>Informe en PDF</span>
+    <span class="chip"><i class="fa-solid fa-flag-checkered"></i>5 ejercicios y control</span>
+  </div>
+  <div class="waves" aria-hidden="true">
+    <svg viewBox="0 0 1200 56" preserveAspectRatio="none"><path d="M0 28 Q 75 4 150 28 T 300 28 T 450 28 T 600 28 T 750 28 T 900 28 T 1050 28 T 1200 28 V56 H0Z" fill="#0b6fa4"/></svg>
+    <svg viewBox="0 0 1200 56" preserveAspectRatio="none"><path d="M0 34 Q 75 12 150 34 T 300 34 T 450 34 T 600 34 T 750 34 T 900 34 T 1050 34 T 1200 34 V56 H0Z" fill="#38bdf8"/></svg>
+  </div>
+  <p class="muted mt-3" style="font-size:.88rem"><i class="fa-regular fa-keyboard"></i> Navegá con las flechas ← → del teclado.</p>
+</div></section>
+
+<!-- 2 CONSIGNA -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">La consigna</span>
+  <h2>Qué se pide al grupo</h2>
+  <p class="muted">Dentro de un proyecto llamado <code>deploy-de-app-python</code>, con Dokku ya instalado:</p>
+  <div class="row g-3 mt-1">
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-code-fork"></i>Parte A · con fork</h3><p>Hacer un fork de <code>openshift/django-ex</code> en tu cuenta personal de GitHub, con el nombre <code>django-exarcc-nombregrupo</code>. Desde ese fork, desplegar la aplicación Python de ejemplo en Dokku usando la <b>ruta por defecto</b>.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-brands fa-github"></i>Parte B · sin fork</h3><p>Desplegar <code>jjasghar/cloud-native-python-example-app</code> <b>sin hacer un fork</b>, también con la ruta por defecto.</p></div></div>
+  </div>
+  <div class="cardx mt-3"><h3><i class="fa-solid fa-file-pdf"></i>Qué se entrega</h3>
+    <p>Un <b>PDF por grupo</b> con las configuraciones de lo pedido y los <b>nombres de todos los integrantes</b>. Incluí <b>imágenes de todo el procedimiento</b>, incluido el fork del proyecto.</p></div>
+  <div class="note info mt-3"><b>«Ruta por defecto».</b> Es la URL que Dokku asigna a la aplicación sin que configures dominios extra. Se ve al final del <code>git push</code>.</div>
+</div></section>
+
+<!-- 3 REQUISITOS -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Antes de empezar</span>
+  <h2>Lo que tiene que estar listo</h2>
+  <div class="row g-3 mt-1">
+    <div class="col-md-6"><div class="cardx ok"><h3><i class="fa-solid fa-anchor"></i>Dokku funcionando</h3><p>Instalado como en la presentación anterior: <code>dokku version</code> responde y el dominio global está configurado.</p></div></div>
+    <div class="col-md-6"><div class="cardx ok"><h3><i class="fa-solid fa-key"></i>Tu clave SSH registrada</h3><p>La clave pública de la máquina desde la que desplegás tiene que estar agregada con <code>ssh-keys:add</code>.</p></div></div>
+    <div class="col-md-6"><div class="cardx ok"><h3><i class="fa-brands fa-github"></i>Cuenta de GitHub</h3><p>Una cuenta personal para hacer el fork. Anotá el usuario: lo vas a usar en los comandos.</p></div></div>
+    <div class="col-md-6"><div class="cardx ok"><h3><i class="fa-brands fa-git-alt"></i>Git instalado</h3><p>En la máquina de trabajo: <code>git --version</code>. En Windows, usá Git Bash.</p></div></div>
+  </div>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>máquina de trabajo</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>git --version
+<span class="p">$ </span>ssh dokku@192.168.5.186 apps:list    <span class="c"># desde tu máquina: debería responder sin pedir contraseña</span></pre></div>
+  <div class="note"><b>Datos que vas a reemplazar en todos los comandos:</b> <code>TU-USUARIO</code> (GitHub), <code>grupo1</code> (nombre del grupo, en minúsculas y sin espacios) y la IP <code>192.168.5.186</code> (la de tu servidor Dokku).</div>
+</div></section>
+
+<!-- 4 ATENCION -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Atención · el repositorio cambió</span>
+  <h2>django-ex ya no tiene el código en master</h2>
+  <p class="lead2">Si hacés el fork con la configuración por defecto y desplegás <code>master</code>, Dokku no encuentra una aplicación Python: esa rama hoy es solo un README.</p>
+  <div class="tablewrap mt-2"><table class="table align-middle">
+    <thead><tr><th>Rama</th><th>Django</th><th>Pythons que soporta</th><th>Uso en esta práctica</th></tr></thead>
+    <tbody>
+      <tr><td><code>master</code></td><td>—</td><td>—</td><td><span class="text-danger">Solo un README orientativo</span></td></tr>
+      <tr><td><code>3.2.x</code></td><td>3.2 LTS</td><td>3.6 a 3.10</td><td>Antigua. Evitarla.</td></tr>
+      <tr><td><code>4.2.x</code></td><td>4.2 LTS</td><td>3.8 a 3.12</td><td><b>Usar esta</b></td></tr>
+    </tbody>
+  </table></div>
+  <div class="row g-3 mt-1">
+    <div class="col-md-6"><div class="cardx warn"><h3><i class="fa-solid fa-code-fork"></i>Al hacer el fork</h3><p>Desmarcá la opción <b>«Copy the master branch only»</b>. Así el fork incluye también la rama <code>4.2.x</code>.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-circle-info"></i>Dónde vive hoy</h3><p>El README indica que el proyecto se mantiene en <code>sclorg/django-ex</code>. La consigna pide <code>openshift/django-ex</code>, que sigue existiendo con las mismas ramas.</p></div></div>
+  </div>
+</div></section>
+
+<!-- 5 CAPTURAS -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Planificación</span>
+  <h2>Qué capturar a lo largo de la práctica</h2>
+  <p class="muted">Sacá las capturas mientras trabajás. Reconstruirlas al final es lo que más tiempo roba. En cada una tiene que verse el comando o la pantalla completa.</p>
+  <div class="tablewrap mt-2"><table class="table align-middle">
+    <thead><tr><th>#</th><th>Captura</th><th>Parte</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>El fork en GitHub, con el nombre <code>django-exarcc-grupo1</code> y tu usuario visibles</td><td>A</td></tr>
+      <tr><td>2</td><td>El <code>git clone</code> del fork y el cambio a la rama <code>4.2.x</code></td><td>A</td></tr>
+      <tr><td>3</td><td>El <code>Procfile</code> creado y el commit</td><td>A</td></tr>
+      <tr><td>4</td><td><code>dokku apps:create</code> y <code>git:set</code> en el servidor</td><td>A</td></tr>
+      <tr><td>5</td><td>La salida completa del <code>git push</code>, con la URL final</td><td>A</td></tr>
+      <tr><td>6</td><td>La aplicación funcionando en el navegador, con la URL visible</td><td>A</td></tr>
+      <tr><td>7</td><td>El <code>git clone</code> del repositorio ajeno y la lista de archivos</td><td>B</td></tr>
+      <tr><td>8</td><td>La salida completa del <code>git push</code> y la aplicación en el navegador</td><td>B</td></tr>
+      <tr><td>9</td><td><code>dokku apps:list</code> con las dos aplicaciones</td><td>A y B</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<!-- 6 A1 FORK -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Parte A · paso 1 de 5</span>
+  <h2>Hacer el fork en GitHub</h2>
+  <div class="row g-3 mt-1">
+    <div class="col-lg-7">
+      <div class="steps2">
+        <div class="cardx mb-2"><h3><i class="fa-solid fa-1"></i>Abrí el repositorio</h3><p>Entrá a <code>https://github.com/openshift/django-ex</code> con tu cuenta personal.</p></div>
+        <div class="cardx mb-2"><h3><i class="fa-solid fa-2"></i>Pulsá «Fork»</h3><p>En la pantalla de creación, cambiá el nombre a <code>django-exarcc-grupo1</code> (con el nombre de tu grupo).</p></div>
+        <div class="cardx mb-2"><h3><i class="fa-solid fa-3"></i>Desmarcá «Copy the master branch only»</h3><p>Es la casilla que impide que se copien las demás ramas. Si la dejás marcada, no tendrás <code>4.2.x</code>.</p></div>
+        <div class="cardx"><h3><i class="fa-solid fa-4"></i>Creá el fork y capturá</h3><p>Captura 1: la página del fork mostrando tu usuario y el nombre <code>django-exarcc-grupo1</code>.</p></div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="cardx warn"><h3><i class="fa-solid fa-triangle-exclamation"></i>Si ya lo hiciste con master solamente</h3>
+      <p>No hace falta borrarlo. En la página del fork, usá <b>Sync fork</b> y buscá la rama <code>4.2.x</code> en el selector de ramas. Si no aparece, borrá el fork y repetí sin la casilla marcada.</p></div>
+      <div class="note info mt-3"><b>Por qué se hace un fork.</b> En esta parte vas a agregar un archivo (el <code>Procfile</code>). Con el fork tenés un repositorio propio donde guardar el cambio.</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 7 A2 CLONAR -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Parte A · paso 2 de 5</span>
+  <h2>Clonar el fork y cambiar a la rama 4.2.x</h2>
+  <p>Creamos la carpeta del proyecto, clonamos <b>tu fork</b> (no el original) y pasamos a la rama con el código.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>máquina de trabajo</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>mkdir deploy-de-app-python
+<span class="p">$ </span>cd deploy-de-app-python
+<span class="p">$ </span>git clone https://github.com/TU-USUARIO/django-exarcc-grupo1.git
+<span class="p">$ </span>cd django-exarcc-grupo1
+<span class="p">$ </span>git checkout 4.2.x
+<span class="p">$ </span>ls</pre></div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-list-check"></i>Qué deberías ver</h3><p>Los archivos <code>manage.py</code>, <code>requirements.txt</code>, y las carpetas <code>project</code> y <code>welcome</code>. Es una aplicación Django.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-camera"></i>Captura 2</h3><p>El clone, el <code>git checkout 4.2.x</code> y el resultado de <code>ls</code>.</p></div></div>
+  </div>
+</div></section>
+
+<!-- 8 A3 PROCFILE -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Parte A · paso 3 de 5</span>
+  <h2>Decirle a Dokku cómo arrancar la aplicación</h2>
+  <p>El proyecto trae todo lo necesario para correr en OpenShift, pero no un <b>Procfile</b>. Sin él, el buildpack de Python instala las dependencias pero no sabe qué proceso web iniciar. Lo agregamos en la raíz del proyecto.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>máquina de trabajo · carpeta del fork</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>printf '%s\n' 'web: python manage.py migrate --noinput &amp;&amp; gunicorn project.wsgi --bind 0.0.0.0:$PORT --log-file -' &gt; Procfile
+<span class="p">$ </span>cat Procfile
+<span class="p">$ </span>git add Procfile
+<span class="p">$ </span>git commit -m "Agrega Procfile para Dokku"
+<span class="p">$ </span>git push origin 4.2.x</pre></div>
+  <div class="tablewrap mt-2"><table class="table align-middle">
+    <thead><tr><th>Parte del comando</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td><code>web:</code></td><td>Es el tipo de proceso que recibe tráfico HTTP</td></tr>
+      <tr><td><code>python manage.py migrate --noinput</code></td><td>Crea las tablas de la base de datos al arrancar. Sin esto, la página de bienvenida falla</td></tr>
+      <tr><td><code>gunicorn project.wsgi</code></td><td>Servidor de producción para Django (en el módulo <code>project/wsgi.py</code>)</td></tr>
+      <tr><td><code>--bind 0.0.0.0:$PORT</code></td><td>Escucha en el puerto que Dokku asigna en la variable <code>$PORT</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Fin de línea.</b> Creá el archivo con el comando de arriba o con un editor que use final de línea LF. En Windows, usá Git Bash.</div>
+</div></section>
+
+<!-- 9 A4 DEPLOY -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Parte A · paso 4 de 5</span>
+  <h2>Crear la aplicación en Dokku y desplegar</h2>
+  <p>Primero, en el <b>servidor Dokku</b>: creamos la aplicación y le decimos qué rama debe desplegar.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku apps:create django-exarcc-grupo1
+<span class="p"># </span>dokku git:set django-exarcc-grupo1 deploy-branch 4.2.x</pre></div>
+  <p>Después, en la <b>máquina de trabajo</b>, dentro de la carpeta del fork: agregamos el remote y subimos la rama.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>máquina de trabajo · carpeta del fork</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>git remote add dokku dokku@192.168.5.186:django-exarcc-grupo1
+<span class="p">$ </span>git push dokku 4.2.x</pre></div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-code-branch"></i>Por qué <code>git:set</code></h3><p>Dokku despliega una rama concreta. El valor por defecto no es <code>4.2.x</code>, así que se lo indicamos. Sin esto, el push termina sin construir nada.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-camera"></i>Capturas 4 y 5</h3><p>Los dos comandos del servidor y la <b>salida completa</b> del push, hasta la URL final.</p></div></div>
+  </div>
+</div></section>
+
+<!-- 10 A5 VERIFICAR -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Parte A · paso 5 de 5</span>
+  <h2>Comprobar y observar</h2>
+  <p>Abrí en el navegador la URL que mostró el push. Deberías ver la página de bienvenida de Django con el nombre del contenedor y un contador de visitas.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku logs django-exarcc-grupo1 -t     <span class="c"># Ctrl+C para salir</span>
+<span class="p"># </span>dokku ps:report django-exarcc-grupo1
+<span class="p"># </span>dokku apps:list</pre></div>
+  <div class="cardx mt-3"><h3><i class="fa-solid fa-flask"></i>Experimento para el informe</h3>
+    <p>Recargá la página varias veces y mirá cómo sube el contador. Después hacé un nuevo despliegue (<code>git commit --allow-empty -m "redeploy"</code> y <code>git push dokku 4.2.x</code>) y volvé a mirar el contador.</p></div>
+  <div class="note info"><b>¿Qué pasó con el contador?</b> Vuelve a cero. La aplicación guarda sus datos en un archivo SQLite <b>dentro del contenedor</b>, y cada despliegue crea un contenedor nuevo. Es lo que vimos en los 12 factores: el estado tiene que vivir afuera. Con un servicio como PostgreSQL enlazado, los datos sobrevivirían.</div>
+</div></section>
+
+<!-- 11 EJ 1 y 2 -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Ejercicios · parte A</span>
+  <h2>Ponelo en práctica</h2>
+  <p class="muted">Escribí el comando tal como lo ejecutarías. Se validan por patrón: no importa el espaciado exacto.</p>
+
+  <div class="ex" data-id="e1" data-pts="8"
+    data-re="^(?=[\s\S]*\bgit\s+clone\s+https://github\.com/[\w.-]+/django-exarcc-grupo1(\.git)?\b)(?=[\s\S]*\bgit\s+(checkout|switch)\s+4\.2\.x\b)[\s\S]*$"
+    data-hint="Dos comandos. git clone con la dirección de tu fork (https://github.com/usuario/django-exarcc-grupo1.git) y después git checkout con el nombre de la rama."
+    data-ok="Correcto. Clonaste tu fork, no el repositorio original, y estás en la rama que contiene la aplicación.">
+    <h3 class="h6 mb-1">Ejercicio 1 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">Tu usuario es <code>ana-dev</code> y tu fork se llama <code>django-exarcc-grupo1</code>. Escribí, en dos líneas, los comandos que lo <b>clonan</b> y <b>cambian a la rama 4.2.x</b>.</p>
+    <textarea rows="3" spellcheck="false" placeholder="git ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+
+  <div class="ex" data-id="e2" data-pts="8"
+    data-re="^\s*web:\s*python\s+manage\.py\s+migrate(\s+--noinput)?\s*&&\s*gunicorn\s+project\.wsgi(:application)?\s+(--bind|-b)[ =]0\.0\.0\.0:\$PORT\b.*$"
+    data-hint="Empieza con web:. Primero python manage.py migrate --noinput, después && y gunicorn project.wsgi con --bind 0.0.0.0:$PORT."
+    data-ok="Eso es un Procfile válido: migra la base al arrancar y levanta gunicorn en el puerto que asigna Dokku.">
+    <h3 class="h6 mb-1">Ejercicio 2 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">Escribí la <b>línea del Procfile</b> que, para el proyecto Django, ejecuta las migraciones y luego inicia <code>gunicorn</code> con el módulo <code>project.wsgi</code>, escuchando en <code>0.0.0.0</code> y el puerto de la variable <code>$PORT</code>.</p>
+    <textarea rows="2" spellcheck="false" placeholder="web: ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+</div></section>
+
+<!-- 12 EJ 3 -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Ejercicio · parte A</span>
+  <h2>La aplicación en el servidor</h2>
+  <div class="ex" data-id="e3" data-pts="8"
+    data-re="^(?=[\s\S]*\bdokku\s+apps:create\s+django-exarcc-grupo1\b)(?=[\s\S]*\bdokku\s+git:set\s+django-exarcc-grupo1\s+deploy-branch\s+4\.2\.x\b)[\s\S]*$"
+    data-hint="En el servidor: dokku apps:create con el nombre de la aplicación, y dokku git:set con el nombre, la propiedad deploy-branch y la rama."
+    data-ok="Bien. Creaste la aplicación y le indicaste qué rama desplegar, así que el push de 4.2.x dispara la construcción.">
+    <h3 class="h6 mb-1">Ejercicio 3 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">Estás en el servidor Dokku. Escribí, en dos líneas, los comandos que <b>crean</b> la aplicación <code>django-exarcc-grupo1</code> y que le indican que <b>la rama a desplegar es 4.2.x</b>.</p>
+    <textarea rows="3" spellcheck="false" placeholder="dokku ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+</div></section>
+
+<!-- 13 B1 CLONAR -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Parte B · paso 1 de 3</span>
+  <h2>Clonar sin fork y mirar qué trae</h2>
+  <p>Acá <b>no hay fork</b>: clonamos el repositorio original y solo lo enviamos a Dokku. No vamos a subir nada al repositorio ajeno.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>máquina de trabajo · carpeta deploy-de-app-python</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>cd ..
+<span class="p">$ </span>git clone https://github.com/jjasghar/cloud-native-python-example-app.git
+<span class="p">$ </span>cd cloud-native-python-example-app
+<span class="p">$ </span>ls
+<span class="p">$ </span>cat Procfile Dockerfile app.py</pre></div>
+  <div class="row g-3">
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-brands fa-python"></i>app.py</h3><p>Una aplicación <b>Flask</b> mínima. Responde en <code>/</code> y en <code>/healthz</code>, y escucha en el puerto <b>8080</b>.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-solid fa-file-lines"></i>Procfile</h3><p>Dice <code>web: python app.py</code>.</p></div></div>
+    <div class="col-md-4"><div class="cardx"><h3><i class="fa-brands fa-docker"></i>Dockerfile</h3><p>Parte de la imagen <code>python:3.7.7-slim</code>, instala las dependencias y expone el puerto 8080.</p></div></div>
+  </div>
+  <div class="note info"><b>Tiene Procfile y Dockerfile a la vez.</b> Dokku, ante un Dockerfile, construye con él y deja de lado a los buildpacks. Es el principal contraste con la parte A.</div>
+</div></section>
+
+<!-- 14 B2 DEPLOY -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Parte B · paso 2 de 3</span>
+  <h2>Crear la aplicación y desplegar</h2>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku apps:create cloud-native-python
+<span class="p"># </span>dokku git:set cloud-native-python deploy-branch master</pre></div>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>máquina de trabajo · carpeta del repositorio clonado</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p">$ </span>git remote add dokku dokku@192.168.5.186:cloud-native-python
+<span class="p">$ </span>git push dokku master</pre></div>
+  <div class="row g-3">
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-code-branch"></i>La rama es master</h3><p>El repositorio original usa <code>master</code>. Comprobalo con <code>git branch</code> si no estás seguro.</p></div></div>
+    <div class="col-md-6"><div class="cardx"><h3><i class="fa-solid fa-hourglass-half"></i>Va a tardar</h3><p>Se construye una imagen de Docker con varias dependencias (entre ellas numpy y pandas). Esperá a que termine el push.</p></div></div>
+  </div>
+  <div class="note warn"><b>No hagas <code>git push origin</code>.</b> El remote <code>origin</code> es el repositorio de otra persona. Solo usás el remote <code>dokku</code>.</div>
+</div></section>
+
+<!-- 15 B3 VERIFICAR -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Parte B · paso 3 de 3</span>
+  <h2>Comprobar y resolver los problemas probables</h2>
+  <p>Abrí la URL que mostró el push. Si todo salió bien, la página muestra el texto <code>KubeCon2023</code>. La ruta <code>/healthz</code> responde <code>ok</code>.</p>
+  <div class="code"><div class="top"><span class="dots"><i></i><i></i><i></i></span><span>root@servidor Dokku</span><span class="sp"></span><button class="cp">Copiar</button></div><pre><span class="p"># </span>dokku logs cloud-native-python
+<span class="p"># </span>dokku ports:report cloud-native-python
+<span class="p"># </span>dokku apps:list</pre></div>
+  <div class="row g-3">
+    <div class="col-lg-6"><div class="cardx warn"><h3><i class="fa-solid fa-bug"></i>La construcción falla en <code>apt-get</code></h3>
+    <p>La imagen base <code>python:3.7.7-slim</code> usa una versión de Debian muy antigua. Si el paso <code>apt-get update</code> da errores 404, cambiá <b>en tu copia local</b> la primera línea del Dockerfile a <code>FROM python:3.7-slim-bookworm</code>, hacé un commit y volvé a subir con <code>git push dokku master</code>.</p></div></div>
+    <div class="col-lg-6"><div class="cardx warn"><h3><i class="fa-solid fa-plug-circle-xmark"></i>Error 502 al abrir la página</h3>
+    <p>El contenedor arrancó pero nginx no encuentra el puerto. La aplicación escucha en <b>8080</b>. Verificá con <code>ports:report</code> y, si hace falta, mapealo: <code>dokku ports:set cloud-native-python http:80:8080</code>.</p></div></div>
+  </div>
+  <div class="note"><b>Para el informe.</b> Si tuviste que cambiar algo para que funcione, documentalo: qué falló, qué mensaje apareció y qué cambiaste.</div>
+</div></section>
+
+<!-- 16 COMPARACION -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Para reflexionar</span>
+  <h2>Dos aplicaciones, dos formas de construir</h2>
+  <div class="tablewrap mt-2"><table class="table align-middle">
+    <thead><tr><th></th><th>Parte A · django-ex</th><th>Parte B · cloud-native-python</th></tr></thead>
+    <tbody>
+      <tr><td><b>Cómo se construye</b></td><td>Buildpack de Python (detecta <code>requirements.txt</code>)</td><td>Dockerfile del propio repositorio</td></tr>
+      <tr><td><b>Quién decide el entorno</b></td><td>La plataforma (versión de Python, sistema base)</td><td>El autor de la aplicación (en la imagen)</td></tr>
+      <tr><td><b>Cómo se inicia</b></td><td>Procfile que agregamos</td><td><code>CMD</code> del Dockerfile</td></tr>
+      <tr><td><b>Puerto</b></td><td>Dokku lo entrega en <code>$PORT</code></td><td>Lo fija la imagen (<code>EXPOSE 8080</code>)</td></tr>
+      <tr><td><b>Qué tuviste que tocar</b></td><td>Agregar el Procfile y elegir la rama</td><td>Nada, salvo que haya problemas con la imagen base</td></tr>
+      <tr><td><b>Dónde guardás los cambios</b></td><td>En tu fork</td><td>En ningún repositorio propio</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note info mt-3"><b>Idea de fondo.</b> Un buildpack ahorra el trabajo del Dockerfile a cambio de aceptar las decisiones de la plataforma. Un Dockerfile da control total y también la responsabilidad de mantener la imagen.</div>
+</div></section>
+
+<!-- 17 EJ 4 y 5 -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Ejercicios · parte B</span>
+  <h2>Ponelo en práctica</h2>
+
+  <div class="ex" data-id="e4" data-pts="8"
+    data-re="^(?=[\s\S]*\bgit\s+remote\s+add\s+dokku\s+dokku@192\.168\.5\.186:cloud-native-python\b)(?=[\s\S]*\bgit\s+push\s+dokku\s+(master|main)\b)[\s\S]*$"
+    data-hint="Dos comandos: git remote add dokku con la dirección dokku@IP:aplicación, y git push dokku con la rama del repositorio (master)."
+    data-ok="Correcto. El remote se llama dokku, el usuario es dokku y solo se envía el código al servidor, sin tocar el repositorio original.">
+    <h3 class="h6 mb-1">Ejercicio 4 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">Ya clonaste <code>cloud-native-python-example-app</code> y creaste en Dokku la aplicación <code>cloud-native-python</code>. Escribí, en dos líneas, los comandos que agregan el remote <code>dokku</code> (servidor <code>192.168.5.186</code>) y suben la rama <code>master</code>.</p>
+    <textarea rows="3" spellcheck="false" placeholder="git ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+
+  <div class="ex" data-id="e5" data-pts="8"
+    data-re="^\s*(sudo\s+)?dokku\s+ports:set\s+cloud-native-python\s+http:80:8080\s*$"
+    data-hint="El comando es dokku ports:set, con el nombre de la aplicación y el mapeo en el formato protocolo:puerto-externo:puerto-del-contenedor."
+    data-ok="Perfecto. nginx recibe en el puerto 80 y entrega al 8080 del contenedor, que es donde escucha la aplicación.">
+    <h3 class="h6 mb-1">Ejercicio 5 <span class="ptsbadge">· 8 puntos</span></h3>
+    <p class="mb-2">La aplicación <code>cloud-native-python</code> da un error <b>502</b>. En los logs ves que escucha en el puerto <b>8080</b>. Escribí el comando que hace que el tráfico HTTP del <b>puerto 80</b> llegue al <b>puerto 8080</b> del contenedor.</p>
+    <textarea rows="2" spellcheck="false" placeholder="dokku ..."></textarea>
+    <div class="bar2"><button class="btnx chk-btn">Comprobar</button><button class="btnx ghost hint-btn">Pista (−2)</button><span class="msg" aria-live="polite"></span></div>
+  </div>
+</div></section>
+
+<!-- 18 PROBLEMAS -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Cuando algo falla</span>
+  <h2>Problemas frecuentes</h2>
+  <div class="tablewrap mt-2"><table class="table align-middle">
+    <thead><tr><th>Síntoma</th><th>Causa probable</th><th>Qué hacer</th></tr></thead>
+    <tbody>
+      <tr><td><code>Permission denied (publickey)</code></td><td>Tu clave pública no está en el servidor</td><td>Registrarla con <code>ssh-keys:add</code></td></tr>
+      <tr><td>El push se completa pero no se construye nada</td><td>La rama subida no coincide con <code>deploy-branch</code></td><td>Revisar <code>dokku git:report app</code> y repetir <code>git:set</code></td></tr>
+      <tr><td>«Unable to select a buildpack» o «No web process»</td><td>Se desplegó <code>master</code> de django-ex, o falta el Procfile</td><td>Subir la rama <code>4.2.x</code> con el Procfile</td></tr>
+      <tr><td>Django: «no such table» al abrir la página</td><td>No se ejecutaron las migraciones</td><td>Verificar que el Procfile incluya <code>migrate</code></td></tr>
+      <tr><td>Error 502 en la parte B</td><td>El puerto de la aplicación no coincide con el del proxy</td><td><code>dokku ports:set</code> (ejercicio 5)</td></tr>
+      <tr><td>La construcción falla instalando paquetes</td><td>Imagen base antigua o falta de memoria</td><td>Cambiar la imagen base local, y revisar <code>free -h</code></td></tr>
+      <tr><td><code>src refspec ... does not match</code></td><td>La rama no existe localmente</td><td>Comprobar con <code>git branch</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note info mt-3"><b>Siempre empezá por los logs.</b> <code>dokku logs nombre-app</code> es lo primero que se mira, y también la salida completa del push.</div>
+</div></section>
+
+<!-- 19 ENTREGA -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Entrega</span>
+  <h2>Cómo armar el PDF del grupo</h2>
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6">
+      <div class="cardx"><h3><i class="fa-solid fa-file-pdf"></i>Estructura sugerida</h3>
+        <ol class="mb-0 ps-3" style="color:#c1d1e4;font-size:.96rem;line-height:1.7">
+          <li><b>Portada:</b> proyecto <code>deploy-de-app-python</code>, grupo y <b>nombre de todos los integrantes</b>.</li>
+          <li><b>Parte A:</b> capturas 1 a 6 con una frase que explique cada una.</li>
+          <li><b>Parte B:</b> capturas 7 y 8 con su explicación.</li>
+          <li><b>Estado final:</b> captura 9 de <code>dokku apps:list</code>.</li>
+          <li><b>Problemas:</b> qué falló y cómo se resolvió, si corresponde.</li>
+          <li><b>Reflexión breve:</b> qué cambió entre los dos despliegues y por qué el contador de la parte A volvió a cero.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="chk">
+        <label><input type="checkbox"> El fork se llama <code>django-exarcc-nombregrupo</code> y se ve en una captura</label>
+        <label><input type="checkbox"> Desplegué la rama <code>4.2.x</code> con el Procfile</label>
+        <label><input type="checkbox"> La parte A abre en el navegador con la URL visible</label>
+        <label><input type="checkbox"> La parte B se desplegó sin fork, con el remote <code>dokku</code></label>
+        <label><input type="checkbox"> La parte B abre en el navegador con la URL visible</label>
+        <label><input type="checkbox"> Las capturas muestran todo el procedimiento, no solo el resultado</label>
+        <label><input type="checkbox"> El PDF lleva los nombres de todos los integrantes</label>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 20 QUIZ -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Control de conceptos</span>
+  <h2>¿Quedó claro?</h2>
+  <p class="muted">Cinco preguntas, 4 puntos cada una. Respondé y verás la explicación.</p>
+  <div id="quiz"></div>
+  <button class="btnx mt-2" id="quizEnd"><i class="fa-solid fa-flag-checkered"></i> Ver resultado final</button>
+</div></section>
+
+<!-- 21 CIERRE -->
+<section class="slide"><div class="wrap">
+  <span class="eyebrow">Cierre</span>
+  <h2>Puntaje</h2>
+  <div class="row g-4 mt-0 justify-content-center">
+    <div class="col-lg-6">
+      <div class="cardx text-center">
+        <span class="eyebrow">Puntaje total</span>
+        <div class="score"><span id="scoreBig">0</span><small class="fs-4 muted"> / 60</small></div>
+        <p class="muted mx-auto" id="scoreDetail">Resolvé los ejercicios y el control para sumar puntos.</p>
+        <button class="btnx" id="scoreBtn"><i class="fa-solid fa-trophy"></i> Ver detalle</button>
+      </div>
+      <div class="note info mt-3"><b>Para ir más lejos.</b> Enlazá un servicio PostgreSQL a la aplicación Django y cambiá su configuración para que lo use. Así los datos sobreviven a los despliegues.</div>
+    </div>
+  </div>
+</div></section>
+
+</main>
+
+<div id="nav">
+  <button id="prev"><i class="fa-solid fa-arrow-left"></i> Anterior</button>
+  <span class="hint">← →</span>
+  <button id="next">Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.8/sweetalert2.all.min.js"></script>
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var cur=0, stage=document.getElementById('stage');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var state={ex:{},quiz:{}}; var EX_TOTAL=40, QZ_TOTAL=20;
+
+  function show(n,dir){
+    n=Math.max(0,Math.min(slides.length-1,n));
+    var old=slides[cur]; old.classList.remove('active');
+    cur=n; var s=slides[cur]; s.classList.add('active');
+    stage.scrollTop=0;
+    var items=[].slice.call(s.querySelectorAll('.wrap > *'));
+    items.forEach(function(el,i){
+      el.classList.remove('animate__animated','animate__fadeInUp','animate__fadeInLeft');
+      if(!reduce){ void el.offsetWidth; el.style.setProperty('--animate-duration','.5s'); el.style.setProperty('--animate-delay',(Math.min(i,8)*0.06)+'s'); el.classList.add('animate__animated', dir<0?'animate__fadeInLeft':'animate__fadeInUp'); }
+    });
+    document.getElementById('bar').style.width=((cur+1)/slides.length*100)+'%';
+    document.getElementById('cnt').textContent=(cur+1)+' / '+slides.length;
+    document.getElementById('prev').disabled=cur===0;
+    document.getElementById('next').disabled=cur===slides.length-1;
+  }
+  document.getElementById('prev').onclick=function(){show(cur-1,-1)};
+  document.getElementById('next').onclick=function(){show(cur+1,1)};
+  document.addEventListener('keydown',function(e){
+    var t=e.target.tagName; if(t==='TEXTAREA'||t==='INPUT'||document.body.classList.contains('swal2-shown'))return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();show(cur+1,1)}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(cur-1,-1)}
+  });
+
+  /* copiar */
+  document.querySelectorAll('.code').forEach(function(box){
+    var b=box.querySelector('button.cp'); if(!b)return;
+    b.addEventListener('click',function(){
+      var pre=box.querySelector('pre'); var lines=pre.innerText.split('\n').filter(function(l){return !/^\s*#(?!\s)/.test(l)||true;});
+      var txt=lines.map(function(l){return l.replace(/^[#$]\s/,'').replace(/\s+#\s.*$/,'');}).filter(function(l){return l.trim()&&!/^\s*#/.test(l);}).join('\n');
+      function ok(){b.textContent='¡Copiado!';setTimeout(function(){b.textContent='Copiar'},1400)}
+      try{navigator.clipboard.writeText(txt).then(ok,function(){fallback()})}catch(e){fallback()}
+      function fallback(){var r=document.createRange();r.selectNodeContents(pre);var sel=getSelection();sel.removeAllRanges();sel.addRange(r);b.textContent='Seleccionado'}
+    });
+  });
+
+  /* puntos */
+  function total(){var t=0;for(var k in state.ex)t+=state.ex[k];for(var q in state.quiz)t+=state.quiz[q].pts;return t}
+  function refresh(){
+    var t=total(); document.getElementById('pts').textContent=t; document.getElementById('scoreBig').textContent=t;
+    var e=0;for(var k in state.ex)e+=state.ex[k]; var q=0;for(var z in state.quiz)q+=state.quiz[z].pts;
+    document.getElementById('scoreDetail').textContent='Ejercicios: '+e+' / '+EX_TOTAL+' · Control: '+q+' / '+QZ_TOTAL;
+  }
+  function norm(s){return s.replace(/\r/g,'').replace(/[ \t]+/g,' ').replace(/ ?\n ?/g,'\n').trim()}
+
+  /* ejercicios */
+  document.querySelectorAll('.ex').forEach(function(ex){
+    var id=ex.dataset.id, pts=+ex.dataset.pts, re=new RegExp(ex.dataset.re,'i'), hinted=false;
+    var ta=ex.querySelector('textarea'), msg=ex.querySelector('.msg');
+    ex.querySelector('.hint-btn').addEventListener('click',function(){
+      hinted=true; Swal.fire({icon:'info',title:'Pista',text:ex.dataset.hint,confirmButtonText:'Entendido',background:'#0c1b2d',color:'#e7eff9',confirmButtonColor:'#38bdf8'});
+    });
+    ex.querySelector('.chk-btn').addEventListener('click',function(){
+      if(state.ex[id]!==undefined){msg.className='msg ok';msg.textContent='Ya resuelto.';return}
+      var v=norm(ta.value);
+      if(!v){msg.className='msg bad';msg.textContent='Escribí el comando primero.';return}
+      if(re.test(v)){
+        var got=Math.max(pts-(hinted?2:0),1); state.ex[id]=got; ex.classList.add('done'); ta.readOnly=true;
+        msg.className='msg ok'; msg.innerHTML='<i class="fa-solid fa-circle-check"></i> Correcto: +'+got+' puntos';
+        Swal.fire({icon:'success',title:'¡Correcto!',text:ex.dataset.ok,confirmButtonText:'Seguir',background:'#0c1b2d',color:'#e7eff9',confirmButtonColor:'#38bdf8',timer:6000,timerProgressBar:true});
+        refresh();
+      }else{
+        msg.className='msg bad'; msg.innerHTML='<i class="fa-solid fa-circle-xmark"></i> Todavía no. Revisá el orden y los nombres, o pedí una pista.';
+        if(!reduce){ex.classList.remove('animate__animated','animate__headShake');void ex.offsetWidth;ex.classList.add('animate__animated','animate__headShake')}
+      }
+    });
+  });
+
+  /* quiz */
+  var Q=[
+   {q:'¿Por qué hay que desplegar la rama 4.2.x y no master?',o:['Porque master está protegida y no admite despliegues desde cuentas externas','En master solo queda un README: el código está en otras ramas','Porque Dokku solo acepta ramas cuyo nombre lleva números de versión','Porque 4.2.x es la única rama del proyecto que incluye un Dockerfile'],c:1,w:'El README de master indica que el código vive en ramas por versión de Django. Para esta práctica, la 4.2.x es la vigente.'},
+   {q:'¿Para qué sirve el Procfile que se agrega en la parte A?',o:['Define la versión de Django que se instala en el servidor','Instala las dependencias listadas en requirements.txt','Crea la base de datos PostgreSQL y la enlaza con la aplicación','Indica qué proceso web iniciar y cómo'],c:3,w:'Sin Procfile, el buildpack instala las dependencias pero no sabe qué proceso web ejecutar.'},
+   {q:'¿Por qué el contador de visitas vuelve a cero después de cada despliegue?',o:['SQLite vive dentro del contenedor, y cada despliegue crea uno nuevo','Porque Dokku borra el código fuente anterior antes de cada nuevo despliegue','Porque gunicorn reinicia todos los contadores al recibir una señal','Porque el fork de GitHub se sincroniza solo con el repositorio original'],c:0,w:'Los datos guardados dentro del contenedor se pierden al reemplazarlo. El estado debe vivir en un servicio externo.'},
+   {q:'En la parte B, ¿qué método de construcción usa Dokku?',o:['Siempre un buildpack de Python, porque detecta el archivo requirements.txt','El del Procfile, ignorando por completo el Dockerfile del repositorio','El Dockerfile que trae el repositorio','El que elija nginx según el contenido del repositorio'],c:2,w:'Cuando hay un Dockerfile, Dokku construye con él. El Procfile se ignora al ejecutar la imagen.'},
+   {q:'¿Por qué en la parte B no hace falta hacer un fork?',o:['Porque Dokku puede descargar el código directamente desde GitHub','No se sube nada al repositorio original; solo se envía el código al servidor','Porque la aplicación no usa Git para nada durante el despliegue','Porque el fork solo funciona con aplicaciones construidas con buildpacks'],c:1,w:'El fork sirve para guardar tus cambios en un repositorio propio. En B no hay cambios que guardar: el push va al remote dokku.'}
+  ];
+  var qbox=document.getElementById('quiz');
+  Q.forEach(function(item,i){
+    var d=document.createElement('div'); d.className='q';
+    var h='<div class="qt">'+(i+1)+'. '+item.q+'</div><div class="opts">';
+    item.o.forEach(function(t,j){h+='<button class="opt" data-j="'+j+'"><b>'+'ABCD'[j]+'</b>'+t+'</button>'});
+    h+='</div>'; d.innerHTML=h; qbox.appendChild(d);
+    d.querySelectorAll('.opt').forEach(function(b){
+      b.addEventListener('click',function(){
+        if(state.quiz[i])return;
+        var j=+b.dataset.j, good=j===item.c;
+        state.quiz[i]={pts:good?4:0};
+        d.querySelectorAll('.opt').forEach(function(x,k){x.disabled=true;if(k===item.c)x.classList.add('right')});
+        if(!good)b.classList.add('wrong');
+        refresh();
+        Swal.fire({toast:true,position:'top-end',icon:good?'success':'error',title:good?'¡Correcto! +4':'No era esa',text:item.w,showConfirmButton:false,timer:5200,timerProgressBar:true,background:'#0c1b2d',color:'#e7eff9'});
+      });
+    });
+  });
+  function final(){
+    var t=total(),e=0,q=0;for(var k in state.ex)e+=state.ex[k];for(var z in state.quiz)q+=state.quiz[z].pts;
+    var icon=t>=50?'success':(t>=30?'info':'warning');
+    var msg=t>=50?'¡Dominás Dokku! Estás listo para desplegar tu propia aplicación.':(t>=30?'Buen avance. Repasá lo que falta y volvé a intentarlo.':'Repasá la presentación y probá los comandos en el servidor.');
+    Swal.fire({icon:icon,title:t+' / 60 puntos',html:'<div style="text-align:left;line-height:1.7">Ejercicios: <b>'+e+' / '+EX_TOTAL+'</b><br>Control de conceptos: <b>'+q+' / '+QZ_TOTAL+'</b><br><br>'+msg+'</div>',confirmButtonText:'Cerrar',background:'#0c1b2d',color:'#e7eff9',confirmButtonColor:'#38bdf8'});
+  }
+  document.getElementById('quizEnd').onclick=final;
+  document.getElementById('scoreBtn').onclick=final;
+
+  show(0,1); refresh();
+})();
+</script>
+</body>
+</html>
