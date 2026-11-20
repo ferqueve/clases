@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANDIS 2 · Unidad 5 — Orchestration-driven SOA</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#070b14; --bg-1:#0d1424; --panel:#111a2e; --panel-2:#16223a;
+  --accent:#3ec1ff; --accent-2:#7b6bff; --accent-3:#ffb547; --ok:#3ee6a8; --bad:#ff6b6b;
+  --text:#e8edf7; --text-dim:#8fa0bd; --border:#22304d;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 700px at 15% -10%, rgba(62,193,255,.10), transparent 60%),radial-gradient(1000px 700px at 110% 10%, rgba(123,107,255,.12), transparent 55%),var(--bg-0);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden;}
+.mono{font-family:'JetBrains Mono',monospace}
+.blueprint{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;background-image:linear-gradient(rgba(62,193,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(62,193,255,.06) 1px, transparent 1px);background-size:42px 42px;}
+.progress-track{position:fixed;top:0;left:0;width:100%;height:4px;background:rgba(255,255,255,.06);z-index:50;}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .4s ease;box-shadow:0 0 12px var(--accent);}
+.hud{position:fixed;top:14px;right:18px;z-index:50;background:rgba(17,26,46,.85);border:1px solid var(--border);backdrop-filter:blur(6px);padding:7px 14px;border-radius:999px;font-size:.82rem;color:var(--text-dim);display:flex;align-items:center;gap:8px;}
+.hud .unit-tag{color:var(--accent);font-weight:700}
+.brand{position:fixed;top:14px;left:18px;z-index:50;font-size:.78rem;color:var(--text-dim);display:flex;align-items:center;gap:8px;letter-spacing:.03em;}
+.brand i{color:var(--accent-3)}
+.slides-container{position:relative;z-index:1;height:100vh;width:100vw;}
+.slide{position:absolute;inset:0;display:none;padding:90px 8vw 110px 8vw;overflow-y:auto;}
+.slide.active{display:block}
+.slide-inner{max-width:1180px;margin:0 auto;}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700;margin-bottom:14px;}
+h1.slide-title{font-size:clamp(1.9rem,3.4vw,3rem);font-weight:800;margin-bottom:.4rem;line-height:1.1;}
+h2.slide-title{font-size:clamp(1.5rem,2.6vw,2.2rem);font-weight:800;margin-bottom:.6rem;}
+.subtitle{color:var(--text-dim);font-size:1.05rem;max-width:820px;}
+.card-panel{background:linear-gradient(180deg, var(--panel), var(--panel-2));border:1px solid var(--border);border-radius:16px;padding:26px 28px;box-shadow:0 12px 30px rgba(0,0,0,.35);}
+.card-panel + .card-panel{margin-top:18px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:.76rem;font-weight:700;background:rgba(62,193,255,.12);color:var(--accent);border:1px solid rgba(62,193,255,.35);}
+.pill.amber{background:rgba(255,181,71,.14);color:var(--accent-3);border-color:rgba(255,181,71,.4)}
+.pill.ok{background:rgba(62,230,168,.12);color:var(--ok);border-color:rgba(62,230,168,.35)}
+.pill.bad{background:rgba(255,107,107,.12);color:#ff6b6b;border-color:rgba(255,107,107,.35)}
+.icon-tile{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(62,193,255,.12);color:var(--accent);font-size:1.3rem;border:1px solid rgba(62,193,255,.3);flex-shrink:0;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+ul.clean{list-style:none;margin:0;padding:0;}
+ul.clean li{position:relative;padding:6px 0 6px 26px;color:var(--text);font-size:.94rem;}
+ul.clean li::before{content:"\f105";font-family:"Font Awesome 6 Free";font-weight:900;color:var(--accent);position:absolute;left:2px;top:8px;font-size:.85rem;}
+ul.clean.bad li::before{content:"\f00d";color:var(--bad);}
+ul.clean.ok li::before{content:"\f00c";color:var(--ok);}
+.check-btn{border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#04101f;font-weight:800;padding:10px 22px;border-radius:10px;font-size:.9rem;box-shadow:0 8px 22px rgba(62,193,255,.25);cursor:pointer;}
+.check-btn:hover{filter:brightness(1.08);color:#04101f;}
+.sim-btn{border:1px solid var(--border);background:var(--panel-2);color:var(--text);font-weight:700;padding:8px 14px;border-radius:10px;font-size:.84rem;cursor:pointer;transition:.2s;}
+.sim-btn:hover{border-color:var(--accent);color:var(--accent);}
+.sim-btn.ok:hover{border-color:var(--ok);color:var(--ok);} .sim-btn.bad:hover{border-color:var(--bad);color:var(--bad);}
+.nav-controls{position:fixed;bottom:18px;left:0;right:0;z-index:50;display:flex;justify-content:center;gap:14px;align-items:center;}
+.nav-btn{width:46px;height:46px;border-radius:50%;border:1px solid var(--border);background:rgba(17,26,46,.9);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:1.1rem;backdrop-filter:blur(6px);}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+.nav-dots{display:flex;gap:6px;align-items:center;background:rgba(17,26,46,.9);border:1px solid var(--border);padding:8px 14px;border-radius:999px;}
+.nav-dots .dot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:.2s;}
+.nav-dots .dot.active{background:var(--accent);width:20px;border-radius:4px;}
+.footer-note{position:fixed;bottom:20px;right:22px;z-index:50;font-size:.72rem;color:var(--text-dim);font-family:'JetBrains Mono';}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+.tac-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.tac-grid.cols4{grid-template-columns:repeat(4,1fr);}
+@media (max-width:900px){.tac-grid,.tac-grid.cols4{grid-template-columns:1fr;}}
+.tac-tile{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:.2s;text-align:center;}
+.tac-tile:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 10px 24px rgba(62,193,255,.15);}
+.tac-tile i{font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block;}
+.tac-tile .tname{font-size:.86rem;font-weight:700;}
+.tac-tile .tsub{font-size:.72rem;color:var(--text-dim);margin-top:3px;}
+.example-box{background:rgba(62,193,255,.07);border:1px dashed rgba(62,193,255,.35);border-radius:12px;padding:14px 16px;margin-top:10px;font-size:.93rem;line-height:1.6;}
+.example-box .ex-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.example-box.amber{background:rgba(255,181,71,.07);border-color:rgba(255,181,71,.4);}
+.example-box.amber .ex-label{color:var(--accent-3);}
+.fig-img{max-width:100%;border-radius:12px;border:1px solid var(--border);background:#fff;padding:14px;display:block;margin:0 auto;}
+.fig-img.sm{max-width:520px;} .fig-img.md{max-width:680px;}
+.fig-cap{text-align:center;font-size:.78rem;color:var(--text-dim);margin-top:8px;}
+.compare-col{background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.compare-col h4{font-weight:800;font-size:1.02rem;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.link-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.link-row:last-child{border-bottom:none;}
+.link-row a{color:var(--text);text-decoration:none;font-weight:600;}
+.link-row a:hover{color:var(--accent);}
+.link-row .ext{margin-left:auto;color:var(--text-dim);font-size:.75rem;}
+.chain{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;}
+.chain .node{flex:1;min-width:190px;background:var(--panel-2);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.chain .node .lvl{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:800;}
+.chain .node .nm{font-size:1.1rem;font-weight:800;margin:4px 0;}
+.chain .node .ex{font-size:.82rem;color:var(--text-dim);line-height:1.5;}
+.chain .arrow{display:flex;align-items:center;color:var(--accent-3);font-size:1.3rem;}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:.86rem;}
+.tbl th{background:var(--panel-2);color:var(--accent);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;}
+.tbl td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;line-height:1.5;}
+.tbl td:first-child{font-weight:800;white-space:nowrap;}
+.tbl tr:hover td{background:rgba(62,193,255,.04);}
+.sim{background:#0a1020;border:1px solid var(--border);border-radius:14px;padding:16px;}
+.sim .log{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-dim);min-height:90px;max-height:150px;overflow-y:auto;margin-top:10px;line-height:1.7;}
+.state-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.state-box{flex:1;min-width:110px;text-align:center;padding:12px 8px;border-radius:12px;border:1px solid var(--border);background:var(--panel-2);font-weight:800;font-size:.9rem;opacity:.45;transition:.25s;}
+.state-box.on.closed{opacity:1;border-color:var(--ok);color:var(--ok);box-shadow:0 0 18px rgba(62,230,168,.25);}
+.state-box.on.open{opacity:1;border-color:var(--bad);color:var(--bad);box-shadow:0 0 18px rgba(255,107,107,.25);}
+.state-box.on.half{opacity:1;border-color:var(--accent-3);color:var(--accent-3);box-shadow:0 0 18px rgba(255,181,71,.25);}
+.lines{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.prov{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;}
+.prov .pn{font-weight:800;font-size:.85rem;margin-bottom:6px;}
+.prov .ln{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;}
+.prov .ln span{width:20px;height:20px;border-radius:5px;background:rgba(62,230,168,.25);border:1px solid var(--ok);}
+.prov .ln span.wait{background:rgba(255,107,107,.3);border-color:var(--bad);}
+.prov .ln span.free{background:transparent;border-color:var(--border);}
+.ev{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-size:.86rem;}
+.ev .n{font-family:'JetBrains Mono';color:var(--text-dim);font-size:.75rem;width:26px;}
+.ev .amt{margin-left:auto;font-family:'JetBrains Mono';font-weight:800;}
+.ev.dep .amt{color:var(--ok)} .ev.ret .amt{color:var(--bad)}
+.ev.snap{border-color:var(--accent-3);background:rgba(255,181,71,.08);}
+.vs{display:flex;gap:14px;align-items:flex-end;justify-content:center;margin:10px 0;}
+.srv{background:var(--panel-2);border:1px solid var(--accent);border-radius:8px;text-align:center;font-size:.7rem;padding:6px 10px;color:var(--accent);font-weight:700;}
+.qbar{display:flex;gap:4px;flex-wrap:wrap;min-height:26px;margin-top:8px;}
+.qbar span{width:20px;height:20px;border-radius:5px;background:var(--accent-3);opacity:.9;}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0;}
+.flow .bx{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.8rem;font-weight:700;text-align:center;}
+.flow .bx.w{border-color:var(--bad);color:var(--bad)} .flow .bx.r{border-color:var(--ok);color:var(--ok)} .flow .bx.m{border-color:var(--accent-3);color:var(--accent-3)}
+.flow .ar{color:var(--text-dim)}
+.subr.hit{border-color:var(--ok);box-shadow:0 0 14px rgba(62,230,168,.3)}
+.subr{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;font-size:.84rem;font-weight:700;transition:.2s;}
+.step{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;background:var(--panel-2);opacity:.45;transition:.25s;font-size:.84rem;line-height:1.5;}
+.step.on{opacity:1;border-color:var(--accent);box-shadow:0 0 14px rgba(62,193,255,.2);}
+.step .sn{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#04101f;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.impl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;}
+.impl div{background:rgba(255,107,107,.12);border:1px solid var(--bad);border-radius:6px;font-size:.62rem;text-align:center;padding:4px 2px;color:var(--bad);font-weight:700;}
+.impl.ok div{background:rgba(62,230,168,.12);border-color:var(--ok);color:var(--ok);}
+.zone{border:1px dashed var(--border);border-radius:12px;padding:10px;text-align:center;}
+.zone .zt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:6px;font-weight:800;}
+pre.code{background:#0a1020;border:1px solid var(--border);border-radius:12px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#cfe3ff;overflow-x:auto;margin:0;line-height:1.6;}
+.inst{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:8px 0;}
+.inst div{height:26px;border-radius:6px;border:1px solid var(--border);font-size:.6rem;display:flex;align-items:center;justify-content:center;font-weight:800;}
+.inst .v1{background:rgba(62,193,255,.18);border-color:var(--accent);color:var(--accent);}
+.inst .v2{background:rgba(62,230,168,.2);border-color:var(--ok);color:var(--ok);}
+.inst .off{background:rgba(255,107,107,.12);border-color:var(--bad);color:var(--bad);}
+.inst .idle{background:transparent;border-style:dashed;color:var(--text-dim);}
+.tbar{height:14px;border-radius:7px;background:var(--accent);overflow:hidden;margin-top:6px;border:1px solid var(--border);}
+.tbar div{height:100%;background:var(--ok);transition:width .3s;}
+.stamp{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px;}
+.stamp.down{border-color:var(--bad);background:rgba(255,107,107,.08);}
+.stamp .st{font-size:.72rem;font-weight:800;margin-bottom:6px;}
+.chip{display:inline-block;background:rgba(62,193,255,.15);border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 7px;font-size:.68rem;margin:2px;font-weight:700;}
+.stamp.down .chip{background:rgba(255,107,107,.15);border-color:var(--bad);color:var(--bad);}
+</style>
+</head>
+<body>
+<div class="blueprint"></div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+<div class="brand"><i class="fa-solid fa-diagram-project"></i> ANDIS 2 · Unidad 5</div>
+<div class="hud"><i class="fa-solid fa-layer-group"></i> <span class="unit-tag" id="hudCurrent">1</span>/<span id="hudTotal">0</span></div>
+<div class="slides-container" id="slidesContainer"></div>
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="nav-dots" id="navDots"></div>
+  <button class="nav-btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+<div class="footer-note">← → para navegar</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+<script>
+const SW={background:'#111a2e',color:'#e8edf7',confirmButtonColor:'#3ec1ff'};
+const slidesHTML=[];
+
+const NODE=(x,y,w,h,st,nm,col,arts)=>{const d=10;const c=col||'#3ec1ff';
+ return `<g><polygon points="${x},${y} ${x+d},${y-d} ${x+w+d},${y-d} ${x+w},${y}" fill="#16223a" stroke="${c}"/><polygon points="${x+w},${y} ${x+w+d},${y-d} ${x+w+d},${y+h-d} ${x+w},${y+h}" fill="#0e1729" stroke="${c}"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#111a2e" stroke="${c}"/><text x="${x+w/2}" y="${y+14}" text-anchor="middle" font-size="9" fill="#8fa0bd" font-style="italic">«${st}»</text><text x="${x+w/2}" y="${y+28}" text-anchor="middle" font-size="11" font-weight="700" fill="#e8edf7">${nm}</text>${(arts||[]).map((a,i)=>`<rect x="${x+8}" y="${y+36+i*20}" width="${w-16}" height="16" rx="3" fill="rgba(62,193,255,.10)" stroke="${c}" stroke-dasharray="3 2"/><text x="${x+w/2}" y="${y+48+i*20}" text-anchor="middle" font-size="9" fill="${c}">${a}</text>`).join('')}</g>`;};
+const LN=(x1,y1,x2,y2,lb,c)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c||'#7b6bff'}" stroke-width="1.6"/>${lb?`<text x="${(x1+x2)/2}" y="${(y1+y2)/2-4}" text-anchor="middle" font-size="9" fill="#ffb547">${lb}</text>`:''}`;
+
+// 0. Portada
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center" style="min-height:78vh;">
+  <div class="animate__animated animate__fadeInDown">
+    <span class="eyebrow"><i class="fa-solid fa-diagram-project"></i> Unidad 5 · Estilos de arquitectura</span>
+    <h1 class="slide-title">Orchestration-driven <span style="color:var(--accent)">Service-Oriented</span> Architecture</h1>
+    <p class="subtitle">SOA con orquestación y un ESB como coordinador central: servicios con contratos explícitos, flujos compuestos, compensaciones, gobernanza y cómo dibujarlo en un diagrama de despliegue UML. Base teórica para el práctico UT5-TA4.</p>
+    <div class="mt-3 d-flex gap-2 flex-wrap">
+      <span class="pill"><i class="fa-solid fa-file-contract"></i> Contratos</span>
+      <span class="pill"><i class="fa-solid fa-network-wired"></i> ESB</span>
+      <span class="pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Orquestación</span>
+      <span class="pill"><i class="fa-solid fa-rotate-left"></i> Compensaciones</span>
+      <span class="pill amber"><i class="fa-solid fa-scale-balanced"></i> Gobernanza</span>
+      <span class="pill amber"><i class="fa-solid fa-route"></i> Trazabilidad</span>
+      <span class="pill amber"><i class="fa-solid fa-server"></i> Diagrama de despliegue</span>
+    </div>
+  </div>
+</div>
+`);
+
+// 1. Qué es un estilo
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-sitemap"></i> Punto de partida</span>
+  <h2 class="slide-title">Un estilo de arquitectura no es un patrón</h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-puzzle-piece" style="color:var(--accent)"></i> Patrón</h4>
+      <p style="font-size:.92rem; line-height:1.7; margin:0;">Resuelve un <strong>problema puntual y recurrente</strong> dentro de un sistema (reintentar, cachear, aislar fallas). Se aplica en una parte.</p>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-city" style="color:var(--accent-3)"></i> Estilo</h4>
+      <p style="font-size:.92rem; line-height:1.7; margin:0;">Define la <strong>forma general del sistema</strong>: qué tipos de componentes hay, cómo se conectan y qué reglas cumplen. Condiciona <em>todo</em> el diseño.</p>
+    </div>
+  </div>
+  <div class="example-box mt-3" style="margin-top:14px;">
+    <div class="ex-label"><i class="fa-solid fa-house"></i> Analogía: urbanismo vs. mueble</div>
+    El estilo es como decidir que un barrio será de casas bajas con calles peatonales o de torres con avenidas. Los patrones son los muebles y las instalaciones que ponés adentro: importantes, pero no cambian el plano del barrio.
+  </div>
+  <div class="grid-3 mt-3" style="margin-top:14px;">
+    <div class="card-panel" style="margin-top:0;"><i class="fa-solid fa-tower-broadcast" style="color:var(--accent)"></i> <strong>Event-driven</strong><p style="font-size:.8rem; color:var(--text-dim); margin:6px 0 0;">Los componentes reaccionan a eventos publicados en un broker.</p></div>
+    <div class="card-panel" style="margin-top:0; border-color:var(--accent);"><i class="fa-solid fa-network-wired" style="color:var(--accent-3)"></i> <strong>SOA con orquestación</strong><p style="font-size:.8rem; color:var(--text-dim); margin:6px 0 0;">Servicios con contratos, coordinados por un orquestador central. <em>Es el de hoy.</em></p></div>
+    <div class="card-panel" style="margin-top:0;"><i class="fa-solid fa-cubes" style="color:var(--accent)"></i> <strong>Microservicios</strong><p style="font-size:.8rem; color:var(--text-dim); margin:6px 0 0;">Servicios pequeños y autónomos, con control descentralizado.</p></div>
+  </div>
+</div>
+`);
+
+// 2. SOA concepto
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-network-wired"></i> Concepto</span>
+  <h2 class="slide-title">SOA: capacidades de negocio ofrecidas como servicios</h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;">La <strong>Arquitectura Orientada a Servicios</strong> organiza el software como un conjunto de <strong>servicios</strong>: unidades que ofrecen una capacidad de negocio (por ejemplo "emitir una póliza") a través de un <strong>contrato</strong> explícito, independiente de cómo estén implementados.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;">Hay tres roles: el <strong>proveedor</strong> que publica el servicio, el <strong>consumidor</strong> que lo usa, y el <strong>registro</strong> donde se publican y se descubren los servicios y sus contratos.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-utensils"></i> Analogía: el menú de un restaurante</div>
+        El cliente no sabe cómo se cocina el plato: conoce el <strong>menú</strong> (contrato), pide, y recibe. La cocina puede cambiar de chef o de receta mientras el plato siga siendo el prometido.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-play" style="color:var(--accent)"></i> El triángulo SOA</h4>
+      <div class="flow" style="flex-direction:column; align-items:center; gap:6px;">
+        <div class="bx m">Registro de servicios</div>
+        <div style="display:flex; gap:40px; align-items:center;">
+          <div style="text-align:center; font-size:.7rem; color:var(--text-dim);">① publica<br>el contrato ↖</div>
+          <div style="text-align:center; font-size:.7rem; color:var(--text-dim);">↗ ② busca<br>el contrato</div>
+        </div>
+        <div style="display:flex; gap:20px; align-items:center;"><div class="bx r">Proveedor</div><span class="ar" style="font-size:.7rem;">← ③ invoca →</span><div class="bx w">Consumidor</div></div>
+      </div>
+      <div class="example-box amber" style="margin-top:10px; font-size:.84rem;">
+        <div class="ex-label"><i class="fa-solid fa-quote-left"></i> Ojo con el término</div>
+        "SOA" se usó para cosas muy distintas, desde "tengo servicios web" hasta una estrategia empresarial. Fowler lo comenta en <em>Service Oriented Ambiguity</em> (ver enlaces).
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 3. Principios
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-list-check"></i> Principios</span>
+  <h2 class="slide-title">Qué hace que un servicio sea "de SOA"</h2>
+  <p class="subtitle">Ocho principios habituales. Tocá cada tarjeta para ver qué significa y un ejemplo.</p>
+  <div class="tac-grid cols4 mt-3" id="principiosGrid" style="margin-top:16px;"></div>
+</div>
+`);
+
+// 4. Capas y anatomía
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-layer-group"></i> Anatomía</span>
+  <h2 class="slide-title">Las capas típicas de una SOA con ESB</h2>
+  <div class="grid-2">
+    <div class="card-panel" style="margin-top:0;">
+      <div class="zone" style="margin-bottom:6px;"><div class="zt">Consumidores</div>Portal web · App móvil · Socios externos</div>
+      <div class="zone" style="margin-bottom:6px; border-color:var(--accent-3);"><div class="zt" style="color:var(--accent-3);">Capa de proceso / orquestación</div>Flujos de negocio que coordinan servicios (por ejemplo, un proceso que invoca a otros en cierto orden)</div>
+      <div class="zone" style="margin-bottom:6px; border-color:var(--accent);"><div class="zt" style="color:var(--accent);">ESB (bus de servicios empresarial)</div>Enrutamiento · transformación · seguridad · monitoreo</div>
+      <div class="zone" style="margin-bottom:6px;"><div class="zt">Servicios de negocio</div>Cada uno con su contrato, su SLA y su base de datos</div>
+      <div class="zone"><div class="zt">Sistemas existentes</div>Mainframe · ERP · aplicaciones heredadas, expuestos mediante adaptadores</div>
+    </div>
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> Cómo leerlo</h4>
+        <ul class="clean">
+          <li>Los consumidores <strong style="color:var(--text)">no hablan directo</strong> con cada servicio: pasan por el ESB, que es el punto de mediación.</li>
+          <li>El <strong style="color:var(--text)">orquestador</strong> (a veces dentro del ESB, a veces un motor de procesos conectado a él) sabe el orden del flujo.</li>
+          <li>Los servicios no se conocen entre sí: <strong style="color:var(--text)">solo conocen sus contratos</strong>.</li>
+          <li>Los sistemas viejos se <strong style="color:var(--text)">envuelven</strong> con adaptadores para que parezcan servicios.</li>
+        </ul>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-plane"></i> Analogía: el aeropuerto central (hub)</div>
+        Las aerolíneas (servicios) no se conectan entre sí: todo pasa por el aeropuerto central (ESB), con torre de control (orquestador) que decide el orden de despegues y aterrizajes.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 5. Contrato y versionado
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-file-contract"></i> Contratos</span>
+  <h2 class="slide-title">Contratos explícitos y esquemas versionados</h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;">El <strong>contrato</strong> describe qué ofrece el servicio: operaciones, formato de mensajes (esquemas), reglas, errores y garantías (SLA). Es lo único que el consumidor necesita conocer.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;">Como los servicios evolucionan y tienen muchos consumidores, el contrato se <strong>versiona</strong>: una nueva versión no debe romper a quienes usan la anterior.</p>
+      </div>
+      <div class="compare-col" style="margin-top:12px;">
+        <h4><i class="fa-solid fa-code-branch" style="color:var(--accent)"></i> Compatible o rompe</h4>
+        <ul class="clean ok"><li>Agregar un campo <strong style="color:var(--text)">opcional</strong>: compatible hacia atrás.</li><li>Agregar una operación nueva.</li></ul>
+        <ul class="clean bad mt-2"><li>Quitar o renombrar un campo, o hacerlo <strong style="color:var(--text)">obligatorio</strong>.</li><li>Cambiar el significado de un valor existente.</li></ul>
+      </div>
+    </div>
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Simulador: servicio de envíos con 3 consumidores</div>
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <button class="sim-btn ok" onclick="ctChange('opt')">Agregar campo opcional</button>
+        <button class="sim-btn bad" onclick="ctChange('rompe')">Quitar un campo obligatorio</button>
+        <button class="sim-btn" onclick="ctChange('v2')">Publicar v2 y mantener v1</button>
+        <button class="sim-btn" onclick="ctReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div id="ctView" class="grid-3"></div>
+      <div class="log" id="ctLog" style="min-height:80px; margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+`);
+
+// 6. ESB
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-network-wired"></i> Componente central</span>
+  <h2 class="slide-title">El ESB: qué hace y qué riesgos trae</h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0; line-height:1.7; font-size:.95rem;">Un <strong>Enterprise Service Bus</strong> es una infraestructura intermedia por la que circulan las interacciones entre consumidores y servicios. Sus funciones habituales se tocan en la grilla de abajo.</p>
+      </div>
+      <div class="tac-grid mt-2" id="esbGrid" style="margin-top:12px; grid-template-columns:repeat(3,1fr);"></div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--bad)"></i> Riesgos</h4>
+      <ul class="clean bad">
+        <li><strong style="color:var(--text)">Cuello de botella y punto único de falla:</strong> todo pasa por él. Se mitiga con clúster y redundancia.</li>
+        <li><strong style="color:var(--text)">Lógica de negocio dentro del bus:</strong> se vuelve un "monolito distribuido" difícil de cambiar.</li>
+        <li><strong style="color:var(--text)">Equipo central saturado:</strong> cada cambio pasa por el mismo equipo.</li>
+        <li><strong style="color:var(--text)">Costo y complejidad</strong> de licencias, operación y especialización.</li>
+      </ul>
+      <h4 style="margin-top:10px;"><i class="fa-solid fa-thumbs-up" style="color:var(--ok)"></i> Beneficios</h4>
+      <ul class="clean ok">
+        <li>Un <strong style="color:var(--text)">único punto</strong> para aplicar seguridad, políticas y monitoreo.</li>
+        <li>Integra <strong style="color:var(--text)">tecnologías heterogéneas</strong> sin que cada sistema conozca a los demás.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+`);
+
+// 7. Orq vs coreo
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> Coordinación</span>
+  <h2 class="slide-title">Orquestación vs. coreografía</h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-person-chalkboard" style="color:var(--accent-3)"></i> Orquestación</h4>
+      <p style="font-size:.9rem; line-height:1.7;">Un <strong>coordinador central</strong> conoce el flujo completo: llama a cada servicio, espera la respuesta y decide el siguiente paso. Los servicios no saben del flujo.</p>
+      <div class="flow"><div class="bx m">Orquestador</div><span class="ar">→</span><div class="bx">A</div><span class="ar">→</span><div class="bx">B</div><span class="ar">→</span><div class="bx">C</div></div>
+      <div class="example-box amber" style="font-size:.84rem;"><strong>Director de orquesta:</strong> marca cuándo entra cada instrumento.</div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-people-group" style="color:var(--accent)"></i> Coreografía</h4>
+      <p style="font-size:.9rem; line-height:1.7;">No hay coordinador: cada servicio <strong>reacciona a eventos</strong> de otros y publica los suyos. El flujo emerge de esas reacciones.</p>
+      <div class="flow"><div class="bx">A</div><span class="ar">⇢ evento ⇢</span><div class="bx">B</div><span class="ar">⇢ evento ⇢</span><div class="bx">C</div></div>
+      <div class="example-box" style="font-size:.84rem;"><strong>Un baile:</strong> cada bailarín conoce su parte y responde a los demás.</div>
+    </div>
+  </div>
+  <div class="card-panel" style="margin-top:12px; padding:8px; overflow-x:auto;">
+    <table class="tbl">
+      <tr><th></th><th>Orquestación</th><th>Coreografía</th></tr>
+      <tr><td>Dónde está el flujo</td><td>En un lugar visible</td><td>Repartido entre los servicios</td></tr>
+      <tr><td>Acoplamiento</td><td>Servicios acoplados al orquestador</td><td>Servicios más desacoplados</td></tr>
+      <tr><td>Trazabilidad / monitoreo</td><td>Fácil: el orquestador ve todo</td><td>Más difícil: hay que reconstruir</td></tr>
+      <tr><td>Manejo de errores</td><td>Centralizado, con compensaciones</td><td>Cada servicio reacciona a fallas</td></tr>
+      <tr><td>Riesgo principal</td><td>Cuello de botella / "cerebro" central</td><td>Flujo difícil de entender</td></tr>
+    </table>
+  </div>
+</div>
+`);
+
+// 8. Orquestación sim
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> Orquestación</span>
+  <h2 class="slide-title">Simulador: un orquestador coordinando un flujo</h2>
+  <p class="subtitle">Flujo de ejemplo: alta de un socio en un club deportivo. Cada paso es un servicio distinto.</p>
+  <div class="grid-2">
+    <div class="sim">
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <button class="sim-btn ok" onclick="orqRun(false)">Ejecutar flujo (todo sale bien)</button>
+        <button class="sim-btn bad" onclick="orqRun(true)">Ejecutar flujo (falla el cobro)</button>
+        <button class="sim-btn" onclick="orqReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div id="orqSteps"></div>
+    </div>
+    <div>
+      <div class="log" id="orqLog" style="min-height:230px;"></div>
+      <div class="example-box amber" style="margin-top:10px; font-size:.84rem;">
+        <div class="ex-label"><i class="fa-solid fa-eye"></i> Observá</div>
+        El orquestador <strong>decide</strong> qué sigue y qué hacer ante un error. Los servicios individuales no conocen el flujo completo.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 9. Saga / compensaciones
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-rotate-left"></i> Excepciones y compensaciones</span>
+  <h2 class="slide-title">Cuando no hay una transacción global: compensar</h2>
+  <div class="grid-2">
+    <div>
+      <div class="card-panel">
+        <p style="margin:0 0 10px; line-height:1.7; font-size:.95rem;">En un flujo que cruza varios servicios, cada uno tiene su propia base de datos: <strong>no hay un "rollback" global</strong>. Si el paso 3 falla, los pasos 1 y 2 ya se confirmaron.</p>
+        <p style="margin:0; line-height:1.7; font-size:.95rem;">La respuesta es una <strong>compensación</strong>: una acción que deshace semánticamente el efecto de un paso ya hecho (cancelar la reserva, reembolsar el cobro). El conjunto de pasos con sus compensaciones se conoce como patrón <strong>Saga</strong>.</p>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-suitcase-rolling"></i> Analogía: un viaje armado por partes</div>
+        Reservaste vuelo, hotel y auto. Si el auto no está disponible, <strong>cancelás</strong> el hotel y el vuelo (con sus condiciones). No "des-reservás" por magia: ejecutás la cancelación de cada uno.
+      </div>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Puntos clave</h4>
+      <ul class="clean">
+        <li>Cada paso con efecto tiene una <strong style="color:var(--text)">compensación definida</strong>.</li>
+        <li>Las compensaciones se ejecutan en <strong style="color:var(--text)">orden inverso</strong>.</li>
+        <li>Las compensaciones y los pasos deben ser <strong style="color:var(--text)">idempotentes</strong>: poder repetirse sin efectos dobles.</li>
+        <li>Una compensación <strong style="color:var(--text)">no siempre devuelve exactamente al estado original</strong> (un correo enviado no se "des-envía").</li>
+        <li>En orquestación, el orquestador <strong style="color:var(--text)">lleva el estado</strong> de la saga y dispara las compensaciones.</li>
+      </ul>
+      <div class="d-flex gap-2 flex-wrap mt-2">
+        <button class="sim-btn" onclick="sgRun(0)">Todo ok</button>
+        <button class="sim-btn bad" onclick="sgRun(1)">Falla el paso 3</button>
+        <button class="sim-btn bad" onclick="sgRun(2)">Falla el paso 4</button>
+      </div>
+      <div class="log" id="sgLog" style="min-height:130px; margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+`);
+
+// 10. Gobernanza
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-scale-balanced"></i> Gobernanza</span>
+  <h2 class="slide-title">Gobernanza, registro, discovery y SLA</h2>
+  <p class="subtitle">Con muchos servicios y equipos, sin reglas comunes aparece el caos. Tocá cada tarjeta.</p>
+  <div class="tac-grid mt-3" id="gobGrid" style="margin-top:16px; grid-template-columns:repeat(4,1fr);"></div>
+</div>
+`);
+
+// 11. Seguridad y trazabilidad
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-route"></i> Transversales</span>
+  <h2 class="slide-title">Seguridad uniforme y trazabilidad de punta a punta</h2>
+  <div class="grid-2">
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-lock" style="color:var(--accent)"></i> Seguridad uniforme</h4>
+        <ul class="clean">
+          <li>Un <strong style="color:var(--text)">punto de aplicación</strong> en el ESB o gateway: autenticación, autorización, cifrado en tránsito.</li>
+          <li>Se <strong style="color:var(--text)">propaga la identidad</strong> (por ejemplo con tokens) para que cada servicio pueda decidir con quién habla.</li>
+          <li>Políticas iguales para todos los servicios, definidas en un solo lugar.</li>
+          <li>Cuidado: <strong style="color:var(--text)">no basta con el borde</strong>; los servicios también validan.</li>
+        </ul>
+      </div>
+      <div class="example-box">
+        <div class="ex-label"><i class="fa-solid fa-building"></i> Analogía: la recepción de un edificio</div>
+        Todos se identifican en una recepción única y reciben credencial. Igual, cada oficina puede pedir la credencial al entrar.
+      </div>
+    </div>
+    <div class="sim">
+      <div style="font-weight:800; margin-bottom:8px;"><i class="fa-solid fa-flask" style="color:var(--accent)"></i> Trazabilidad con un identificador de correlación</div>
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <button class="sim-btn ok" onclick="trCall(true)">Solicitud con ID de correlación</button>
+        <button class="sim-btn bad" onclick="trCall(false)">Solicitud sin ID</button>
+        <button class="sim-btn" onclick="trReset()"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+      <div class="log" id="trLog" style="min-height:150px;"></div>
+      <p style="font-size:.8rem; color:var(--text-dim); margin:8px 0 0; line-height:1.5;">Con el mismo identificador en cada registro, se reconstruye el recorrido completo de una solicitud entre servicios.</p>
+    </div>
+  </div>
+</div>
+`);
+
+// 12. SOA vs micro vs EDA
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-table"></i> Comparativa</span>
+  <h2 class="slide-title">SOA con orquestación, event-driven y microservicios</h2>
+  <div class="card-panel" style="margin-top:12px; padding:8px; overflow-x:auto;">
+    <table class="tbl">
+      <tr><th>Dimensión</th><th>SOA orquestada</th><th>Event-driven</th><th>Microservicios</th></tr>
+      <tr><td>Control</td><td>Centralizado (orquestador/ESB)</td><td>Distribuido, por eventos</td><td>Descentralizado</td></tr>
+      <tr><td>Comunicación típica</td><td>Solicitud/respuesta por el bus</td><td>Eventos asíncronos en un broker</td><td>APIs ligeras y eventos</td></tr>
+      <tr><td>Contratos y gobernanza</td><td>Fuertes, formales</td><td>Esquemas de eventos</td><td>Ligeros, por equipo</td></tr>
+      <tr><td>Acoplamiento</td><td>Medio (al contrato y al bus)</td><td>Bajo</td><td>Bajo</td></tr>
+      <tr><td>Datos</td><td>Cada servicio, con ESB integrando</td><td>Consistencia eventual</td><td>Base por servicio</td></tr>
+      <tr><td>Punto crítico</td><td>El ESB</td><td>El broker</td><td>La red y la operación</td></tr>
+      <tr><td>Encaja cuando</td><td>Integración empresarial con reglas y trazabilidad</td><td>Alta escala y reactividad</td><td>Equipos autónomos que cambian rápido</td></tr>
+    </table>
+  </div>
+  <div class="example-box amber mt-3" style="margin-top:14px;">
+    <div class="ex-label"><i class="fa-solid fa-lightbulb"></i> No son excluyentes</div>
+    Muchas empresas combinan estilos: un ESB que orquesta los flujos críticos con contrato estricto, y eventos para notificar lo que ya pasó.
+  </div>
+</div>
+`);
+
+// 13. Cuándo sí / no
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-compass"></i> Decisión</span>
+  <h2 class="slide-title">Cuándo conviene SOA con orquestación, y cuándo no</h2>
+  <div class="grid-2">
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-thumbs-up" style="color:var(--ok)"></i> Conviene cuando...</h4>
+      <ul class="clean ok">
+        <li>Hay <strong style="color:var(--text)">muchos sistemas existentes</strong> heterogéneos que integrar.</li>
+        <li>Los flujos son <strong style="color:var(--text)">compuestos y con reglas de negocio</strong> que deben ser visibles y auditables.</li>
+        <li>Se exige <strong style="color:var(--text)">gobernanza</strong>: contratos, versionado, SLA, seguridad uniforme.</li>
+        <li>Se necesita <strong style="color:var(--text)">trazabilidad</strong> de principio a fin.</li>
+        <li>La organización <strong style="color:var(--text)">ya cuenta con un ESB</strong> y un equipo para operarlo.</li>
+      </ul>
+    </div>
+    <div class="compare-col">
+      <h4><i class="fa-solid fa-ban" style="color:var(--bad)"></i> No conviene cuando...</h4>
+      <ul class="clean bad">
+        <li>La aplicación es <strong style="color:var(--text)">pequeña</strong> y de un solo equipo.</li>
+        <li>Se necesita <strong style="color:var(--text)">escala y latencia extremas</strong> que un bus central no soporta bien.</li>
+        <li>Los equipos deben <strong style="color:var(--text)">evolucionar y desplegar de forma independiente</strong> a alta velocidad.</li>
+        <li>El bus sería el <strong style="color:var(--text)">único punto de fallo</strong> que el negocio no tolera y no se puede hacer redundante.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="example-box mt-3" style="margin-top:14px;">
+    <div class="ex-label"><i class="fa-solid fa-pen"></i> Para justificar un estilo</div>
+    No alcanza con decir "es el más usado". Se justifica <strong>conectando cada requisito o restricción con una característica del estilo que lo habilita</strong>, y reconociendo el costo que ese estilo trae.
+  </div>
+</div>
+`);
+
+// 14. Método de justificación
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-pen-ruler"></i> Método · Parte 1</span>
+  <h2 class="slide-title">Cómo justificar un estilo en cuatro pasos</h2>
+  <div class="grid-2">
+    <div>
+      <div class="step on"><div class="sn">1</div><div><strong>Listá los drivers.</strong> Requisitos funcionales, no funcionales y restricciones del enunciado.</div></div>
+      <div class="step on"><div class="sn">2</div><div><strong>Agrupalos</strong> por tema: coordinación, integración, calidad, gobierno, tecnología impuesta.</div></div>
+      <div class="step on"><div class="sn">3</div><div><strong>Vinculá</strong> cada grupo con la característica del estilo que lo habilita y explicá <em>cómo</em>.</div></div>
+      <div class="step on"><div class="sn">4</div><div><strong>Reconocé el costo</strong> y compará con una alternativa razonable: por qué no ganó.</div></div>
+    </div>
+    <div class="card-panel" style="margin-top:0; padding:10px; overflow-x:auto;">
+      <div style="font-weight:800; font-size:.85rem; margin-bottom:6px;">Ejemplo de plantilla (dominio: aseguradora de autos)</div>
+      <table class="tbl" style="font-size:.78rem;">
+        <tr><th>Driver</th><th>Característica del estilo</th><th>Costo</th></tr>
+        <tr><td>Un reclamo atraviesa 4 áreas en orden fijo</td><td>Orquestador que conoce el flujo</td><td>Cerebro central</td></tr>
+        <tr><td>Auditoría exige saber qué pasó</td><td>Un punto único de monitoreo</td><td>Licencia / operación del bus</td></tr>
+        <tr><td>Áreas distintas, tecnologías distintas</td><td>Contratos independientes de la implementación</td><td>Disciplina de versionado</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+`);
+
+// 15. Notación UML
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-server"></i> UML · Parte 2</span>
+  <h2 class="slide-title">Diagrama de despliegue: la notación</h2>
+  <p class="subtitle">Un diagrama de despliegue muestra <strong>dónde corre cada cosa</strong>: el hardware o los entornos y qué software se instala en ellos. Tocá cada elemento.</p>
+  <div class="tac-grid cols4 mt-3" id="umlGrid" style="margin-top:16px;"></div>
+</div>
+`);
+
+// 16. Ejemplo diagrama
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-diagram-project"></i> Ejemplo (otro dominio)</span>
+  <h2 class="slide-title">Aseguradora: gestión de reclamos con SOA y ESB</h2>
+  <div class="card-panel" style="margin-top:8px; padding:8px;">
+    <svg viewBox="0 0 880 430" width="100%" style="font-family:Inter,sans-serif;">
+      <rect x="320" y="50" width="250" height="260" rx="10" fill="none" stroke="#ffb547" stroke-dasharray="6 4"/>
+      <text x="445" y="44" text-anchor="middle" font-size="10" fill="#ffb547">Clúster ESB (activo/activo)</text>
+      <rect x="600" y="20" width="270" height="400" rx="10" fill="none" stroke="#3ee6a8" stroke-dasharray="6 4"/>
+      <text x="735" y="14" text-anchor="middle" font-size="10" fill="#3ee6a8">Red interna de servicios</text>
+      ${NODE(10,60,120,70,'device','Dispositivo cliente','#8fa0bd',['Portal web / app'])}
+      ${NODE(165,60,125,90,'node','Gateway (DMZ)','#7b6bff',['«component» WAF','«component» API GW'])}
+      ${NODE(340,70,210,110,'executionEnvironment','ESB nodo 1','#3ec1ff',['«artifact» orquestador-reclamos','«artifact» adaptadores','«artifact» políticas.xml'])}
+      ${NODE(340,200,210,90,'executionEnvironment','ESB nodo 2','#3ec1ff',['«artifact» orquestador-reclamos','«artifact» adaptadores'])}
+      ${NODE(620,60,120,60,'node','Servicio Pólizas','#3ee6a8',['pólizas.war'])}
+      ${NODE(620,150,120,60,'node','Servicio Peritaje','#3ee6a8',['peritaje.war'])}
+      ${NODE(620,240,120,60,'node','Servicio Pagos','#3ee6a8',['pagos.war'])}
+      ${NODE(760,60,95,60,'device','BD Pólizas','#8fa0bd',['SQL'])}
+      ${NODE(760,240,95,60,'device','BD Pagos','#8fa0bd',['SQL'])}
+      ${NODE(340,350,210,60,'node','Registro de servicios','#ffb547',['contratos + SLA'])}
+      ${NODE(620,350,120,60,'node','Monitoreo','#ffb547',['trazas / métricas'])}
+      ${LN(140,95,165,95,'HTTPS')}
+      ${LN(300,95,340,110,'HTTPS')}
+      ${LN(300,110,340,235,'')}
+      ${LN(550,110,620,90,'SOAP/REST')}
+      ${LN(550,125,620,180,'')}
+      ${LN(550,235,620,270,'')}
+      ${LN(740,90,760,90,'JDBC')}
+      ${LN(740,270,760,270,'JDBC')}
+      ${LN(445,310,445,350,'consulta')}
+      ${LN(550,380,620,380,'telemetría','#ffb547')}
+    </svg>
+  </div>
+  <div class="grid-3 mt-2" style="margin-top:10px;">
+    <div class="card-panel" style="margin-top:0; padding:10px; font-size:.8rem;"><strong>Se distribuye:</strong> el ESB en dos nodos, los servicios en nodos propios, cada base de datos junto a su servicio.</div>
+    <div class="card-panel" style="margin-top:0; padding:10px; font-size:.8rem;"><strong>No se distribuye:</strong> el registro y el monitoreo, que aquí son un solo nodo cada uno (decisión que habría que justificar).</div>
+    <div class="card-panel" style="margin-top:0; padding:10px; font-size:.8rem;"><strong>Zonas:</strong> la DMZ expone solo el gateway; el resto queda en red interna.</div>
+  </div>
+</div>
+`);
+
+// 17. Cómo dibujar
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-pencil"></i> Método · Parte 2</span>
+  <h2 class="slide-title">Cómo armar un diagrama de despliegue paso a paso</h2>
+  <div class="grid-2">
+    <div>
+      <div class="step on"><div class="sn">1</div><div><strong>Listá los componentes</strong> del estilo: consumidores, gateway, ESB/orquestador, servicios, almacenes de datos, registro, monitoreo.</div></div>
+      <div class="step on"><div class="sn">2</div><div><strong>Definí los nodos:</strong> ¿qué corre junto y qué corre separado? ¿Qué es hardware y qué es entorno de ejecución?</div></div>
+      <div class="step on"><div class="sn">3</div><div><strong>Ubicá los artefactos</strong> dentro de cada nodo.</div></div>
+      <div class="step on"><div class="sn">4</div><div><strong>Conectá con rutas de comunicación</strong> y rotulalas con el protocolo.</div></div>
+      <div class="step on"><div class="sn">5</div><div><strong>Marcá zonas</strong> (borde, interna, datos) y qué se replica.</div></div>
+      <div class="step on"><div class="sn">6</div><div><strong>Revisá contra el enunciado:</strong> cada requisito debería tener su reflejo visible en el diagrama.</div></div>
+    </div>
+    <div>
+      <div class="compare-col">
+        <h4><i class="fa-solid fa-circle-question" style="color:var(--accent)"></i> Preguntas para decidir "se distribuye o no"</h4>
+        <ul class="clean">
+          <li>¿Su caída debe <strong style="color:var(--text)">detener todo el sistema</strong>? Entonces conviene replicarlo.</li>
+          <li>¿Necesita <strong style="color:var(--text)">escalar</strong> de forma independiente de otros?</li>
+          <li>¿Maneja <strong style="color:var(--text)">datos propios</strong> que requieren aislamiento?</li>
+          <li>¿Hay una <strong style="color:var(--text)">restricción</strong> que obliga a una forma (por ejemplo, usar cierto componente corporativo)?</li>
+          <li>¿El <strong style="color:var(--text)">costo</strong> de replicarlo se justifica?</li>
+        </ul>
+      </div>
+      <div class="example-box amber">
+        <div class="ex-label"><i class="fa-solid fa-triangle-exclamation"></i> Errores comunes</div>
+        Dibujar cajas sin estereotipos, mezclar componentes lógicos con nodos físicos, no rotular las conexiones y no explicar qué se replica.
+      </div>
+    </div>
+  </div>
+</div>
+`);
+
+// 18. Guía práctico
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-clipboard-list"></i> Práctico UT5-TA4</span>
+  <h2 class="slide-title">Cómo encarar cada parte</h2>
+  <p class="subtitle">No son las respuestas: es el método. Tocá cada parte.</p>
+  <div class="tac-grid mt-3" id="practicoGrid" style="margin-top:14px; grid-template-columns:repeat(3,1fr);"></div>
+  <div class="example-box amber mt-3" style="margin-top:16px;">
+    <div class="ex-label"><i class="fa-solid fa-pen"></i> Regla de oro</div>
+    En cada decisión escribí el <strong>porque</strong>: "uso X porque el requisito es Y, y X lo habilita haciendo Z; el costo es W".
+  </div>
+</div>
+`);
+
+// 19. Analogías
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-lightbulb"></i> Wrap-up</span>
+  <h2 class="slide-title">Cada concepto, en una imagen cotidiana</h2>
+  <p class="subtitle">Tocá una tarjeta.</p>
+  <div class="tac-grid cols4 mt-3" id="analogiasGrid" style="margin-top:18px;"></div>
+</div>
+`);
+
+// 20. Links
+slidesHTML.push(`
+<div class="slide-inner">
+  <span class="eyebrow"><i class="fa-solid fa-book-open"></i> Para profundizar</span>
+  <h2 class="slide-title">Lecturas de referencia</h2>
+  <div class="card-panel mt-3" style="margin-top:16px;">
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://www.martinfowler.com/bliki/ServiceOrientedAmbiguity.html" target="_blank" rel="noopener">Service Oriented Ambiguity (Martin Fowler)</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/saga" target="_blank" rel="noopener">Patrón Saga (Azure Architecture Center)</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-link" style="color:var(--accent)"></i><a href="https://learn.microsoft.com/azure/architecture/patterns/compensating-transaction" target="_blank" rel="noopener">Patrón Compensating Transaction</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+    <div class="link-row"><i class="fa-solid fa-layer-group" style="color:var(--accent-3)"></i><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/" target="_blank" rel="noopener">Catálogo: Cloud Design Patterns</a><span class="ext"><i class="fa-solid fa-arrow-up-right-from-square"></i></span></div>
+  </div>
+</div>
+`);
+
+// 21. Quiz
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:70vh;">
+  <span class="eyebrow"><i class="fa-solid fa-brain"></i> Chequeo de comprensión</span>
+  <h2 class="slide-title">10 preguntas sobre SOA y orquestación</h2>
+  <p class="subtitle mb-4">Escenarios nuevos, distintos a los del práctico, para que practiques cómo justificar y decidir.</p>
+  <button class="check-btn" onclick="lanzarQuiz()"><i class="fa-solid fa-play me-2"></i>Iniciar quiz</button>
+</div>
+`);
+
+// 22. Cierre
+slidesHTML.push(`
+<div class="slide-inner d-flex flex-column justify-content-center align-items-center text-center" style="min-height:78vh;">
+  <div class="icon-tile mb-3" style="width:72px;height:72px;font-size:2rem;"><i class="fa-solid fa-diagram-project"></i></div>
+  <span class="eyebrow"><i class="fa-solid fa-flag-checkered"></i> Repaso completo</span>
+  <h2 class="slide-title">Contratos claros, un coordinador visible y reglas comunes</h2>
+  <p class="subtitle mb-4" style="max-width:820px;">SOA con orquestación ofrece capacidades como servicios con contratos versionados, un ESB que media y un orquestador que conoce el flujo y compensa los errores. A cambio, concentra riesgo en un componente central y exige gobernanza. En el práctico: conectá cada requisito con una característica del estilo, reconocé el costo y reflejalo en el diagrama de despliegue.</p>
+</div>
+`);
+function initExplorers(){
+const EXB=(t,l)=>`<div style="text-align:left; background:rgba(62,193,255,.08); border:1px dashed rgba(62,193,255,.3); border-radius:10px; padding:10px 12px; font-size:.85rem; margin-top:10px;"><strong style="color:#3ec1ff;">${l}:</strong> ${t}</div>`;
+const lista=a=>`<ul style="text-align:left; font-size:.9rem; line-height:1.8; padding-left:20px;">${a.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+function mkTiles(id,arr,fn){
+  const g=document.getElementById(id);if(!g)return;
+  arr.forEach(t=>{
+    const tile=document.createElement('div');tile.className='tac-tile';
+    tile.innerHTML=`<i class="fa-solid ${t.icon}"></i><div class="tname">${t.nombre}</div><div class="tsub">${t.sub}</div>`;
+    tile.onclick=()=>Swal.fire({title:t.nombre,html:fn(t),...SW});
+    g.appendChild(tile);
+  });
+}
+mkTiles('principiosGrid',[
+ {nombre:'Contrato explícito',icon:'fa-file-contract',sub:'Lo único visible',que:'Cada servicio publica un contrato que describe operaciones, mensajes y errores.',ej:'Un menú: el cliente sabe qué puede pedir sin ver la cocina.'},
+ {nombre:'Bajo acoplamiento',icon:'fa-link-slash',sub:'Se conocen por contrato',que:'Consumidor y proveedor dependen del contrato, no de la implementación ni de la ubicación.',ej:'Un enchufe estándar: el aparato no sabe qué central genera la energía.'},
+ {nombre:'Abstracción',icon:'fa-eye-slash',sub:'Se oculta la lógica',que:'Se expone qué hace el servicio, no cómo lo hace.',ej:'Al pedir un taxi no te importa cómo se organiza la flota.'},
+ {nombre:'Reutilización',icon:'fa-recycle',sub:'Un servicio, muchos usos',que:'Un servicio se diseña para ser usado por varios procesos y aplicaciones.',ej:'El servicio de "calcular impuestos" lo usan facturación, presupuestos y cierres.'},
+ {nombre:'Autonomía',icon:'fa-user-gear',sub:'Control de su lógica y datos',que:'Cada servicio controla su propia lógica y sus datos, y puede evolucionar sin romper a otros.',ej:'Un negocio independiente en el shopping: decide su stock y su horario interno.'},
+ {nombre:'Sin estado',icon:'fa-eraser',sub:'No guarda sesión entre llamadas',que:'Cada solicitud trae lo necesario, lo que facilita replicar y escalar.',ej:'Cada pedido en la ventanilla trae su formulario completo.'},
+ {nombre:'Descubrible',icon:'fa-magnifying-glass',sub:'Se encuentra en el registro',que:'Los servicios publican metadatos y contratos en un registro para poder ser hallados.',ej:'Una guía telefónica de servicios.'},
+ {nombre:'Componible',icon:'fa-cubes-stacked',sub:'Se combinan en flujos',que:'Los servicios pueden coordinarse para formar procesos más grandes.',ej:'Ladrillos de construcción: con los mismos se arman distintas estructuras.'}
+],t=>`<p style="text-align:left; font-size:.92rem; line-height:1.6;">${t.que}</p>`+EXB(t.ej,'Analogía'));
+
+mkTiles('esbGrid',[
+ {nombre:'Enrutamiento',icon:'fa-route',sub:'A quién va cada mensaje',que:'Decide a qué servicio enviar según el contenido, la operación o reglas definidas.',ej:'Una central de correo que clasifica cartas por destino.'},
+ {nombre:'Transformación',icon:'fa-shuffle',sub:'Cambiar formato',que:'Convierte entre formatos de mensaje (por ejemplo XML a JSON) para que sistemas distintos se entiendan.',ej:'Un traductor entre dos personas que no comparten idioma.'},
+ {nombre:'Mediación de protocolo',icon:'fa-plug',sub:'Hablar distinto protocolo',que:'Conecta consumidores y servicios que usan protocolos diferentes (HTTP, colas, archivos).',ej:'Un adaptador de enchufes de viaje.'},
+ {nombre:'Seguridad',icon:'fa-lock',sub:'Políticas en un punto',que:'Autentica, autoriza y cifra de forma uniforme, aplicando las mismas políticas a todos los servicios.',ej:'La recepción de un edificio.'},
+ {nombre:'Monitoreo',icon:'fa-chart-line',sub:'Ver todo el tráfico',que:'Registra y mide las interacciones; permite alertas y auditoría.',ej:'La torre de control de un aeropuerto.'},
+ {nombre:'Orquestación',icon:'fa-wand-magic-sparkles',sub:'Coordinar flujos',que:'Puede ejecutar flujos de negocio que invocan varios servicios en orden, o integrarse con un motor de procesos.',ej:'El director de orquesta.'}
+],t=>`<p style="text-align:left; font-size:.92rem; line-height:1.6;">${t.que}</p>`+EXB(t.ej,'Analogía'));
+
+mkTiles('gobGrid',[
+ {nombre:'Gobernanza',icon:'fa-gavel',sub:'Reglas comunes',que:'Conjunto de políticas, procesos y roles que definen cómo se diseñan, aprueban, publican, versionan y retiran los servicios.',ej:'El reglamento de un edificio de departamentos.'},
+ {nombre:'Registro',icon:'fa-book',sub:'Catálogo de servicios',que:'Repositorio central con los servicios disponibles, sus contratos, versiones, responsables y estado.',ej:'El catálogo de una biblioteca.'},
+ {nombre:'Discovery controlado',icon:'fa-magnifying-glass-location',sub:'Encontrar lo aprobado',que:'Los consumidores buscan y obtienen servicios únicamente desde el registro, y solo los que están aprobados para su uso.',ej:'Comprar solo en proveedores homologados de la empresa.'},
+ {nombre:'SLA por servicio',icon:'fa-stopwatch',sub:'Compromisos medibles',que:'Acuerdo de nivel de servicio: disponibilidad, tiempo de respuesta, capacidad y soporte, medidos por servicio.',ej:'La garantía de entrega de un courier.'},
+ {nombre:'Versionado',icon:'fa-code-branch',sub:'Evolución ordenada',que:'Política que dice cómo se publican nuevas versiones, cuánto tiempo conviven y cuándo se retiran las viejas.',ej:'Una editorial que mantiene ediciones anteriores un tiempo.'},
+ {nombre:'Ciclo de vida',icon:'fa-hourglass-half',sub:'Propuesto → retirado',que:'Estados por los que pasa un servicio: propuesto, aprobado, publicado, deprecado y retirado.',ej:'Un producto: lanzamiento, madurez, descontinuación.'},
+ {nombre:'Propiedad',icon:'fa-user-tie',sub:'Un responsable claro',que:'Cada servicio tiene un dueño responsable de su contrato, su SLA y su evolución.',ej:'Cada puesto de una feria tiene su dueño.'},
+ {nombre:'Cumplimiento',icon:'fa-clipboard-check',sub:'Se verifica',que:'Auditorías y controles automáticos para verificar que los servicios cumplen estándares de seguridad y de contrato.',ej:'Inspección de bromatología.'}
+],t=>`<p style="text-align:left; font-size:.92rem; line-height:1.6;">${t.que}</p>`+EXB(t.ej,'Analogía'));
+
+mkTiles('umlGrid',[
+ {nombre:'Nodo',icon:'fa-server',sub:'«node»',que:'Recurso computacional donde se despliegan artefactos. Se dibuja como un cubo.',ej:'Un servidor físico o virtual.'},
+ {nombre:'Dispositivo',icon:'fa-microchip',sub:'«device»',que:'Un nodo que representa hardware físico específico.',ej:'Un teléfono, un lector o un servidor de base de datos dedicado.'},
+ {nombre:'Entorno de ejecución',icon:'fa-gear',sub:'«executionEnvironment»',que:'Un nodo que provee el entorno donde corren otros artefactos.',ej:'Un servidor de aplicaciones, un runtime, un contenedor.'},
+ {nombre:'Artefacto',icon:'fa-file-code',sub:'«artifact»',que:'Archivo físico que se despliega en un nodo: ejecutable, librería, configuración, esquema.',ej:'pedidos.war, config.yaml.'},
+ {nombre:'Componente',icon:'fa-puzzle-piece',sub:'«component»',que:'Pieza lógica del sistema. Un artefacto lo manifiesta, es decir, es su forma física.',ej:'Componente "Pagos" → artefacto pagos.jar.'},
+ {nombre:'Ruta de comunicación',icon:'fa-arrows-left-right',sub:'Línea entre nodos',que:'Conexión entre nodos. Se rotula con el protocolo o el tipo de comunicación.',ej:'HTTPS, AMQP, JDBC.'},
+ {nombre:'Especificación de despliegue',icon:'fa-sliders',sub:'Propiedades',que:'Parámetros de despliegue de un artefacto en un nodo, como puertos o réplicas.',ej:'replicas = 2, memoria = 2GB.'},
+ {nombre:'Zonas y agrupación',icon:'fa-object-group',sub:'Contenedores visuales',que:'Nodos anidados o recuadros que agrupan elementos por zona o clúster (borde, red interna, datos).',ej:'DMZ, clúster, red de datos.'}
+],t=>`<p style="text-align:left; font-size:.92rem; line-height:1.6;">${t.que}</p>`+EXB(t.ej,'Ejemplo'));
+
+mkTiles('practicoGrid',[
+ {nombre:'Parte 1',icon:'fa-scale-balanced',sub:'Justificar el estilo',q:['Listá los requisitos funcionales, no funcionales y restricciones del enunciado.','Para cada grupo, escribí qué característica del estilo lo habilita (contratos, orquestación central, gobernanza, bus de mediación...).','Una restricción del enunciado puede ser, por sí sola, un argumento fuerte: explicá por qué.','Reconocé al menos un costo o riesgo del estilo elegido.','Comparalo con un estilo alternativo y decí por qué ganó el elegido.']},
+ {nombre:'Parte 2',icon:'fa-diagram-project',sub:'Diagrama de despliegue',q:['Identificá los componentes que pide el estilo y el contexto: consumidores, punto de entrada, componente coordinador central, servicios, datos, registro, monitoreo.','Decidí qué nodos hay y qué corre en cada uno; usá estereotipos.','Rotulá cada conexión con su protocolo.','Mostrá qué se replica y qué no, y justificá en una frase.','Agregá zonas (borde, interna) si ayudan a mostrar la seguridad.']},
+ {nombre:'Consejos de entrega',icon:'fa-check-double',sub:'Antes de entregar',q:['Verificá que cada requisito y restricción tenga un reflejo en el texto y en el diagrama.','Usá los mismos nombres de componentes en la justificación y en el diagrama.','Incluí una leyenda corta si usás estereotipos poco comunes.','Explicá las decisiones que no son obvias (por ejemplo, por qué algo no se replica).']}
+],t=>`<p style="text-align:left; font-size:.85rem; color:#8fa0bd; margin-bottom:6px;">Preguntas guía:</p>`+lista(t.q));
+
+mkTiles('analogiasGrid',[
+ {nombre:'SOA',icon:'fa-utensils',sub:'Menú de restaurante',an:'El cliente conoce el menú (contrato) y no la cocina. La cocina puede cambiar sin que cambie el plato prometido.'},
+ {nombre:'ESB',icon:'fa-plane',sub:'Aeropuerto central',an:'Todas las aerolíneas pasan por el mismo hub: se aplican reglas y controles comunes, pero si el hub se cierra, se detiene todo.'},
+ {nombre:'Orquestación',icon:'fa-music',sub:'Director de orquesta',an:'Una persona marca cuándo entra cada instrumento. Los músicos no necesitan conocer toda la partitura.'},
+ {nombre:'Coreografía',icon:'fa-people-group',sub:'Baile en grupo',an:'Cada bailarín conoce su parte y reacciona a los demás; no hay director en el escenario.'},
+ {nombre:'Compensación',icon:'fa-suitcase-rolling',sub:'Cancelar un viaje',an:'Si falla una reserva, se cancelan las anteriores con sus condiciones: se compensa, no se borra.'},
+ {nombre:'Registro',icon:'fa-book',sub:'Guía de proveedores',an:'Un catálogo de proveedores homologados: solo se contrata a quienes figuran.'},
+ {nombre:'Contrato versionado',icon:'fa-code-branch',sub:'Ediciones de un libro',an:'La editorial mantiene la edición anterior mientras los lectores migran a la nueva.'},
+ {nombre:'ID de correlación',icon:'fa-ticket',sub:'Número de ticket',an:'Un número único acompaña tu trámite en todas las ventanillas y permite seguirlo de punta a punta.'}
+],t=>`<p style="text-align:left; font-size:.95rem; line-height:1.6;">${t.an}</p>`);
+}
+
+function addLog(id,t,c){const l=document.getElementById(id);if(!l)return;l.innerHTML+=`<div style="color:${c||'inherit'}">${t}</div>`;l.scrollTop=l.scrollHeight;}
+function clearLog(id){const l=document.getElementById(id);if(l)l.innerHTML='';}
+
+/* --- Contrato --- */
+let ct={f:['v1','v1','v1']};
+function ctView(){document.getElementById('ctView').innerHTML=ct.f.map((v,i)=>`<div class="subr ${v==='ok'||v==='v1'?'hit':''}" style="${v==='roto'?'border-color:#ff6b6b;color:#ff6b6b':''}">Consumidor ${i+1}<br><span class="mono">${v==='roto'?'❌ roto':'✔ funciona'}</span></div>`).join('');}
+function ctChange(k){
+  if(k==='opt'){addLog('ctLog','Se agrega un campo <b>opcional</b> "instrucciones". Los consumidores que no lo conocen lo ignoran: <b>nadie se rompe</b>.','#3ee6a8');}
+  if(k==='rompe'){ct.f=['roto','roto','roto'];addLog('ctLog','Se quita el campo obligatorio "codigoPostal" en la misma versión. Los 3 consumidores <b>fallan</b>.','#ff6b6b');}
+  if(k==='v2'){ct.f=['v1','v1','v1'];addLog('ctLog','Se publica <b>v2</b> con el cambio y se mantiene <b>v1</b> activa. Cada consumidor migra a su ritmo y luego se retira v1 con aviso.','#3ec1ff');}
+  ctView();
+}
+function ctReset(){ct={f:['v1','v1','v1']};clearLog('ctLog');ctView();addLog('ctLog','Servicio v1 con 3 consumidores.');}
+
+/* --- Orquestación --- */
+const ORQ=['Verificar datos del socio','Reservar plan','Cobrar la cuota','Emitir carné'];
+function orqRender(a){document.getElementById('orqSteps').innerHTML=ORQ.map((s,i)=>`<div class="step ${a.includes(i)?'on':''}"><div class="sn">${i+1}</div><div>${s}</div></div>`).join('');}
+function orqReset(){orqRender([]);clearLog('orqLog');addLog('orqLog','Orquestador listo.');}
+function orqRun(fail){
+  clearLog('orqLog');const done=[];orqRender(done);
+  for(let i=0;i<ORQ.length;i++){
+    if(fail&&i===2){addLog('orqLog',`Paso ${i+1} <b>falla</b>: el servicio de cobro no responde.`,'#ff6b6b');
+      addLog('orqLog','El orquestador ejecuta la compensación: liberar la reserva del plan (paso 2).','#ffb547');
+      addLog('orqLog','Flujo terminado con error controlado; se informa al consumidor.','#ffb547');return;}
+    done.push(i);orqRender(done);addLog('orqLog',`Orquestador → servicio "${ORQ[i]}" … ok`,'#3ee6a8');
+  }
+  addLog('orqLog','Flujo completo.','#3ec1ff');
+}
+
+/* --- Saga --- */
+const SG=['Reservar cupo','Reservar sala','Cobrar inscripción','Enviar confirmación'];
+const SGC=['Liberar cupo','Liberar sala','Reembolsar'];
+function sgRun(f){
+  clearLog('sgLog');
+  const fall=[null,2,3][f];
+  for(let i=0;i<SG.length;i++){
+    if(fall===i){addLog('sgLog',`✗ Paso ${i+1} (${SG[i]}) falla`,'#ff6b6b');
+      for(let j=i-1;j>=0;j--)addLog('sgLog',`↩ Compensación del paso ${j+1}: ${SGC[j]}`,'#ffb547');
+      addLog('sgLog','Estado final: consistente (sin cobros ni reservas colgadas).','#3ee6a8');return;}
+    addLog('sgLog',`✓ Paso ${i+1}: ${SG[i]}`,'#3ee6a8');
+  }
+  addLog('sgLog','Saga completada.','#3ec1ff');
+}
+
+/* --- Trazabilidad --- */
+let trN=0;
+function trReset(){trN=0;clearLog('trLog');addLog('trLog','Sin solicitudes aún.');}
+function trCall(withId){
+  trN++;const id='req-'+(1000+trN);
+  const tag=withId?`[${id}]`:'[?]';
+  addLog('trLog',`Gateway ${tag}: recibe la solicitud`,withId?'#3ee6a8':'#ff6b6b');
+  addLog('trLog',`ESB ${tag}: invoca al servicio A`,withId?'#3ee6a8':'#ff6b6b');
+  addLog('trLog',`Servicio A ${tag}: procesa`,withId?'#3ee6a8':'#ff6b6b');
+  addLog('trLog',`Servicio B ${tag}: error`,withId?'#3ee6a8':'#ff6b6b');
+  addLog('trLog',withId?`Se busca "${id}" y se reconstruye el recorrido completo.`:'Sin ID no se puede saber qué solicitud falló en cada servicio.',withId?'#3ec1ff':'#ffb547');
+}
+
+/* ============ MOTOR ============ */
+const container=document.getElementById('slidesContainer');
+slidesHTML.forEach((html,i)=>{
+  const div=document.createElement('div');
+  div.className='slide'+(i===0?' active':'');
+  div.id='slide'+i;
+  div.innerHTML=html;
+  container.appendChild(div);
+});
+initExplorers();
+ctReset();orqReset();trReset();
+
+let current=0;
+const total=slidesHTML.length;
+document.getElementById('hudTotal').textContent=total;
+const dotsWrap=document.getElementById('navDots');
+for(let i=0;i<total;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsWrap.appendChild(d);
+}
+function updateUI(){
+  document.querySelectorAll('.slide').forEach((s,i)=>{s.classList.toggle('active',i===current);});
+  document.querySelectorAll('.nav-dots .dot').forEach((d,i)=>{d.classList.toggle('active',i===current);});
+  document.getElementById('hudCurrent').textContent=current+1;
+  document.getElementById('progressFill').style.width=((current+1)/total*100)+'%';
+  const active=document.getElementById('slide'+current);
+  active.scrollTop=0;
+  const animTarget=active.querySelector('.slide-inner');
+  if(animTarget){
+    animTarget.classList.remove('animate__fadeIn');
+    void animTarget.offsetWidth;
+    animTarget.classList.add('animate__animated','animate__fadeIn');
+  }
+}
+function goTo(i){if(i<0||i>=total)return;current=i;updateUI();}
+document.getElementById('prevBtn').onclick=()=>goTo(current-1);
+document.getElementById('nextBtn').onclick=()=>goTo(current+1);
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='ArrowRight')goTo(current+1);
+  if(e.key==='ArrowLeft')goTo(current-1);
+});
+updateUI();
+
+/* ============ QUIZ ============ */
+const preguntas=[
+  {texto:'¿Qué distingue a un servicio de SOA de una función cualquiera expuesta por red?',
+   opciones:{a:'Que siempre se comunica con XML y SOAP, sin ninguna otra alternativa posible',b:'Tiene un contrato explícito y publicado que lo desacopla de su implementación',c:'Que se ejecuta obligatoriamente en el mismo servidor que sus consumidores principales',d:'Que guarda el estado de cada usuario entre llamadas para ofrecer un mejor servicio'},correcta:'b'},
+  {texto:'Un flujo de entrega de paquetes pasa por cuatro áreas en un orden fijo, y se quiere que un componente central conozca el flujo y decida cada paso. ¿Qué estilo de coordinación es?',
+   opciones:{a:'Coreografía, porque cada servicio decide solo cuándo actuar según los eventos que recibe',b:'Pub/sub puro, porque el emisor desconoce por completo quién consume sus mensajes',c:'Shared database, porque todas las áreas leen y escriben las mismas tablas centrales',d:'Orquestación: un coordinador invoca a cada servicio y decide el paso siguiente'},correcta:'d'},
+  {texto:'En un flujo que cruza tres servicios, el tercero falla después de que los dos primeros ya confirmaron sus cambios. ¿Qué es una compensación?',
+   opciones:{a:'Una acción que deshace semánticamente el efecto de un paso ya confirmado',b:'Un reintento automático infinito del paso fallido hasta que algún día funcione bien',c:'Un rollback automático que la base de datos de cada servicio ejecuta por sí sola',d:'Un cambio de proveedor del servicio fallido, sin necesidad de avisar a los consumidores'},correcta:'a'},
+  {texto:'¿Cuál es un riesgo clásico de concentrar todas las interacciones en un ESB?',
+   opciones:{a:'Obliga a que todos los servicios estén escritos en el mismo lenguaje de programación',b:'Hace imposible aplicar políticas de seguridad uniformes a los servicios que están conectados',c:'Puede volverse cuello de botella y punto único de falla si no es redundante',d:'Impide que los servicios tengan contratos explícitos y versionados entre sí'},correcta:'c'},
+  {texto:'El equipo de un servicio de reservas de salas quiere cambiar su mensaje de respuesta. ¿Qué cambio es compatible hacia atrás?',
+   opciones:{a:'Renombrar el campo "fecha" a "fechaReserva" en la misma versión del contrato',b:'Agregar un campo opcional que los consumidores actuales pueden ignorar sin problema',c:'Hacer obligatorio un campo que antes era opcional en la misma versión del contrato',d:'Cambiar el significado de un valor existente, avisando a los consumidores por correo'},correcta:'b'},
+  {texto:'¿Para qué sirve el discovery controlado a través de un registro de servicios?',
+   opciones:{a:'Para que cada consumidor guarde una copia local del código fuente de todos los servicios',b:'Para evitar que los servicios necesiten tener un contrato escrito, porque se descubren solos',c:'Para ocultar los servicios a los consumidores y que solo el ESB pueda invocarlos',d:'Para que los consumidores hallen servicios aprobados y sus contratos, sin pactar a mano'},correcta:'d'},
+  {texto:'Un SLA por servicio es:',
+   opciones:{a:'Un compromiso medible entre proveedor y consumidor, como disponibilidad y latencia',b:'Una herramienta de monitoreo que reemplaza al ESB cuando este presenta algún problema',c:'Un tipo de contrato que describe solamente el formato de los mensajes de cada operación',d:'Una política de seguridad que cifra los mensajes entre el gateway y los servicios internos'},correcta:'a'},
+  {texto:'Se quiere reconstruir el recorrido de una solicitud que pasó por gateway, ESB y cuatro servicios. ¿Qué práctica ayuda más?',
+   opciones:{a:'Guardar los logs de cada servicio en un archivo local distinto, sin ninguna referencia entre ellos',b:'Aumentar la cantidad de instancias del ESB para que registre más rápido cada solicitud recibida',c:'Propagar un identificador de correlación en cada llamada y registrarlo en todos los servicios',d:'Pedir a cada equipo que describa por escrito, cada semana, qué solicitudes recibió su servicio'},correcta:'c'},
+  {texto:'En un diagrama de despliegue UML, ¿cuál es la diferencia entre un artefacto y un nodo?',
+   opciones:{a:'No hay diferencia: ambos son cubos que representan un servidor físico dentro del diagrama',b:'El artefacto es el recurso de hardware y el nodo es el archivo que se ejecuta en él',c:'El artefacto solo existe en diagramas de clases y el nodo solo en diagramas de secuencia',d:'El artefacto es el archivo desplegado; el nodo es el recurso donde corre'},correcta:'d'},
+  {texto:'¿En cuál de estas situaciones SOA con orquestación centralizada probablemente NO sea la mejor elección?',
+   opciones:{a:'Una empresa grande con muchos sistemas heredados que debe integrar bajo reglas comunes',b:'Una aplicación pequeña de un solo equipo, sin necesidad de reutilización ni de gobierno',c:'Una organización que necesita auditar de punta a punta flujos compuestos entre varias áreas',d:'Un proyecto donde la empresa ya cuenta con un bus corporativo y el equipo que lo opera'},correcta:'b'}
+];
+let idxPregunta=0,aciertos=0;
+function lanzarQuiz(){idxPregunta=0;aciertos=0;mostrarPregunta();}
+function mostrarPregunta(){
+  if(idxPregunta>=preguntas.length){
+    Swal.fire({title:'Resultado',html:`Acertaste <b>${aciertos}/${preguntas.length}</b>.`,icon:aciertos===preguntas.length?'success':'info',...SW});
+    return;
+  }
+  const p=preguntas[idxPregunta];
+  Swal.fire({
+    title:p.texto,input:'radio',inputOptions:p.opciones,...SW,
+    confirmButtonText:'Responder',
+    inputValidator:(value)=>!value&&'Elegí una opción'
+  }).then(res=>{
+    if(!res.isConfirmed)return;
+    const ok=res.value===p.correcta;
+    if(ok)aciertos++;
+    Swal.fire({
+      title:ok?'¡Correcto!':'No es así',
+      html:`La respuesta correcta era: <b>${p.opciones[p.correcta]}</b>`,
+      icon:ok?'success':'error',...SW
+    }).then(()=>{idxPregunta++;mostrarPregunta();});
+  });
+}
+</script>
+</body>
+</html>
